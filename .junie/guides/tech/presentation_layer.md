@@ -39,28 +39,18 @@ class EventChannel<E> : OneTimeEventEmitter<E> {
 ViewModels rules (required)
 - All ViewModels must extend `androidx.lifecycle.ViewModel` (KMP).
 - Do not perform work in `init` blocks. Be lifecycle‑aware and start work in lifecycle callbacks (or Compose effects) instead.
-- Do NOT store a `CoroutineScope` field. Instead, pass a custom scope to the `ViewModel` superclass constructor (e.g., `CloseableCoroutineScope`) and use `viewModelScope` internally.
+- Do NOT store a `CoroutineScope` field. Instead, pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally.
 - Use `SavedStateHandle` when necessary to persist screen state/inputs across configuration changes or process death (Android fully supported).
 - Do not expose mutable collections; prefer `kotlinx.collections.immutable` types (`ImmutableList`, `ImmutableMap`, etc.).
 - For one‑time events, implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>`.
-
-Canonical helpers (place in `:core:util` commonMain)
-```kotlin
-class CloseableCoroutineScope(
-  context: CoroutineContext = SupervisorJob() + Dispatchers.Main.immediate
-) : Closeable, CoroutineScope {
-  override val coroutineContext: CoroutineContext = context
-  override fun close() { coroutineContext.cancel() }
-}
-```
 
 Example ViewModel with lifecycle start and SavedStateHandle
 ```kotlin
 class HomeViewModel(
     private val repository: Repository,
     private val savedStateHandle: SavedStateHandle,
-    customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
-) : ViewModel(customScope),
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+) : ViewModel(viewModelScope),
     UiStateHolder<HomeUiState, HomeUiEvent>,
     OneTimeEventEmitter<HomeOneShotEvent> by EventChannel() {
 
@@ -107,8 +97,8 @@ Minimal example without a use case
 ```kotlin
 class ProfileViewModel(
     private val userRepository: UserRepository,
-    customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
-) : ViewModel(customScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+) : ViewModel(viewModelScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     override val uiState: StateFlow<ProfileUiState> = _uiState
 
@@ -248,8 +238,8 @@ Example (receiving nav args via SavedStateHandle)
 class ProfileViewModel(
   private val repo: UserRepository,
   private val savedStateHandle: SavedStateHandle,
-  customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
-) : ViewModel(customScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
+  viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+) : ViewModel(viewModelScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
   // assume "userId" is provided by the entry/route
   private val userId: String = checkNotNull(savedStateHandle.get<String>("userId"))
   private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)

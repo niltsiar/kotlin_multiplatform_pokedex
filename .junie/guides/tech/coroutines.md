@@ -21,19 +21,12 @@ Purpose: Ensure coroutine usage is testable, predictable, and aligned with platf
 
 - ViewModel scopes (KMP)
   - All ViewModels must extend `androidx.lifecycle.ViewModel`.
-  - Do NOT store a `CoroutineScope` field. Instead, pass a custom scope to the `ViewModel` superclass constructor and use `viewModelScope` internally.
-  - Recommended helper (place in `:core:util` commonMain):
+  - Do NOT store a `CoroutineScope` field. Instead, pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally.
+  - Example:
     ```kotlin
-    class CloseableCoroutineScope(
-      context: CoroutineContext = SupervisorJob() + Dispatchers.Main.immediate
-    ) : Closeable, CoroutineScope {
-      override val coroutineContext: CoroutineContext = context
-      override fun close() { coroutineContext.cancel() }
-    }
-
     class MyViewModel(
-      customScope: CloseableCoroutineScope = CloseableCoroutineScope()
-    ) : ViewModel(customScope) {
+      viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    ) : ViewModel(viewModelScope) {
       fun doSomething() = viewModelScope.launch { /* ... */ }
     }
     ```
