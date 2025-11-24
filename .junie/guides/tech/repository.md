@@ -1,244 +1,111 @@
 # Repository Guidelines
 
 ## Overview
-Repository classes handle data access and business logic coordination between different data sources (API, local storage, cache). This document outlines preferred patterns for repository implementation in any project.
+Repositories coordinate data from remote APIs, local storage, and caches, and expose domain models to the rest of the app. In this project, repositories are the boundary where transport/storage failures are mapped into Arrow `Either` results.
 
-## Prefer Concrete Classes Over Interfaces
+Key decisions
+- Use Arrow `Either` at repository boundaries.
+- Wrap throwing code with `Either.catch { ... }` and map exceptions to a sealed error type.
+- Keep mapping between DTO/entity and domain close to repositories.
+- Prefer vertical-slice ownership: repositories live in feature `impl` modules and implement contracts declared in feature `api` modules when cross-feature usage is needed.
 
-### When NOT to use interfaces
-- **Single implementation**: If there's only one implementation of a repository, avoid creating an interface
-- **No testing variations**: If you don't need to swap implementations for testing
-- **Simple CRUD operations**: For straightforward data access patterns
-- **Local-only operations**: When operations don't require server interaction
+## Interfaces vs Concrete
 
-### When TO use interfaces  
-- **Multiple implementations**: When you have different implementations (e.g., RemoteRepository, LocalRepository)
-- **Testing requirements**: When you need to inject mock implementations for testing
-- **Complex abstraction**: When the interface represents a complex business concept
+- Define repository interfaces in `:features:<feature>:api` when other features consume them or when you need substitution in tests at the module boundary.
+- Use concrete classes in `:features:<feature>:impl` for the actual implementation and keep them internal to the feature when possible.
 
-## Local vs Server Operations
+## Error Modeling with Arrow
 
-### Local Database Operations
-Operations like marking jobs as "seen" or "applied", and saving jobs should use local database storage:
+Define a feature-level error model for repository failures:
 
 ```kotlin
-class JobRepository(
-    private val apiService: JobApiService,
-    private val savedJobDao: SavedJobDao,
-    private val seenJobDao: SeenJobDao,
-    private val backgroundExecutor: BackgroundExecutor = BackgroundExecutor.IO
-) {
-    
-    suspend fun markJobAsSeen(jobId: String) = 
-        backgroundExecutor.execute {
-            val seenJobEntity = SeenJobEntity(
-                jobId = jobId,
-                seenAt = Clock.System.now().toEpochMilliseconds(),
-                isApplied = false
-            )
-            seenJobDao.upsert(seenJobEntity)
-            Result.success(Unit)
-        }
-    
-    suspend fun saveJob(job: Job): Result<Unit> = 
-        backgroundExecutor.execute {
-            // Save to server first
-            val request = SaveJobRequest(jobId = job.id)
-            jobApiService.saveJob(request)
-            
-            // Then save to local database
-            val savedJobEntity = SavedJobEntity(
-                jobId = job.id,
-                title = job.title,
-                // ... map all fields
-                savedAt = Clock.System.now().toEpochMilliseconds()
-            )
-            savedJobDao.upsert(savedJobEntity)
-            Result.success(Unit)
-        }
+sealed interface RepoError {
+  data object Network : RepoError
+  data class Http(val code: Int, val message: String?) : RepoError
+  data object NotFound : RepoError
+  data object Unauthorized : RepoError
+  data class Unknown(val cause: Throwable) : RepoError
 }
 ```
 
-### Server Operations
-Only send server requests for operations that need persistence:
+Map exceptions to errors in one place (helpers):
 
 ```kotlin
-suspend fun getJobs(page: Int, limit: Int): Result<List<Job>> {
-    return apiService.getJobs(page, limit)
-}
-
-suspend fun saveJob(job: Job): Result<Unit> {
-    return apiService.saveJob(job.id)
-}
-```
-
-## Dependency Injection
-
-### Concrete Class Injection
-When using concrete classes, inject directly without interface binding:
-
-```kotlin
-// In Koin module
-singleOf(::JobRepository)
-
-// In consumer class
-class HomeUiStateHolder(
-    private val jobRepository: JobRepository
-) : UiStateHolder()
-```
-
-### Interface Injection (when needed)
-Only when multiple implementations exist:
-
-```kotlin
-// In Koin module
-singleOf(::RemoteJobRepository) bind JobRepository::class
-
-// In consumer class
-class HomeUiStateHolder(
-    private val jobRepository: JobRepository
-) : UiStateHolder()
-```
-
-## BackgroundExecutor Usage
-
-Repositories should use BackgroundExecutor for operations that need to run on background threads.
-
-### Exception Handling with BackgroundExecutor
-
-**IMPORTANT**: BackgroundExecutor already handles exceptions internally. When using `backgroundExecutor.execute()`, **do NOT wrap the code in additional try-catch blocks** unless you need specific exception handling logic beyond what BackgroundExecutor provides.
-
-BackgroundExecutor's `execute()` method:
-- Automatically catches all exceptions (except CancellationException)
-- Logs errors with AppLogger
-- Returns `Result.failure(exception)` for caught exceptions
-- Returns the Result from your function if no exception occurs
-
-### Correct Usage (Recommended)
-
-```kotlin
-class JobRepository(
-    private val jobApiService: JobApiService,
-    private val backgroundExecutor: BackgroundExecutor = BackgroundExecutor.IO
-) {
-    
-    // ✅ CORRECT - No redundant try-catch needed
-    suspend fun getJobs(page: Int, limit: Int): Result<List<Job>> = 
-        backgroundExecutor.execute {
-            val response = jobApiService.getJobs(page, limit)
-            response.handleAsResult { data ->
-                Result.success(data?.asDomainModels() ?: emptyList())
-            }
-        }
-    
-    // ✅ CORRECT - Simple operations
-    suspend fun saveJob(job: Job): Result<Unit> = 
-        backgroundExecutor.execute {
-            jobApiService.saveJob(job.id)
-            Result.success(Unit)
-        }
-    
-    // Local operations - direct execution
-    fun markJobAsSeen(jobId: String) {
-        seenJobIds.add(jobId)
-    }
+fun Throwable.toRepoError(): RepoError = when (this) {
+  is ClientRequestException -> RepoError.Http(response.status.value, message)
+  is ServerResponseException -> RepoError.Http(response.status.value, message)
+  is UnauthorizedException -> RepoError.Unauthorized
+  is NotFoundException -> RepoError.NotFound
+  is IOException, is TimeoutCancellationException -> RepoError.Network
+  else -> RepoError.Unknown(this)
 }
 ```
 
-### Incorrect Usage (Anti-Pattern)
+## Return Types
+
+- One-shot operations: `suspend fun op(...): Either<RepoError, DomainModel>`
+- Streams: prefer `Flow<DomainModel>` for stable local streams; for network-backed streams use `Flow<Either<RepoError, DomainModel>>` or expose a cached `Flow<DomainModel>` with a separate refresh call returning `Either`.
+
+## Typical Implementation Pattern
 
 ```kotlin
-// ❌ INCORRECT - Redundant try-catch block
-suspend fun getJobs(page: Int, limit: Int): Result<List<Job>> = 
-    backgroundExecutor.execute {
-        try {
-            val response = jobApiService.getJobs(page, limit)
-            response.handleAsResult { data ->
-                Result.success(data?.asDomainModels() ?: emptyList())
-            }
-        } catch (e: Exception) {
-            AppLogger.e("Error fetching jobs: ${e.message}")
-            Result.failure(e)
-        }
-    }
-```
+class JobRepositoryImpl(
+  private val api: JobApiService,
+  private val dao: SavedJobDao
+) : JobRepository { // Declared in :features:jobs:api when cross-feature
 
-### When to Use try-catch with BackgroundExecutor
+  override suspend fun getJobs(page: Int, limit: Int): Either<RepoError, List<Job>> =
+    Either.catch {
+      val response = api.getJobs(GetJobsRequest(page, limit))
+      response.jobs.map { it.asDomain() }
+    }.mapLeft { it.toRepoError() }
 
-Only use try-catch inside `backgroundExecutor.execute()` when you need:
-- **Custom error handling logic** beyond logging and returning Result.failure
-- **Different error types** to be handled differently
-- **Resource cleanup** that must happen in the catch block
+  override suspend fun saveJob(job: Job): Either<RepoError, Unit> =
+    Either.catch {
+      api.saveJob(SaveJobRequest(job.id))
+      dao.upsert(SavedJobEntity.from(job))
+      Unit
+    }.mapLeft { it.toRepoError() }
 
-Example of justified try-catch usage:
-```kotlin
-suspend fun complexOperation(): Result<Data> = backgroundExecutor.execute {
-    var resource: Resource? = null
-    try {
-        resource = acquireResource()
-        val result = performComplexOperation(resource)
-        Result.success(result)
-    } catch (e: SpecificException) {
-        // Custom handling for specific exception type
-        handleSpecificError(e)
-        Result.failure(CustomException("Custom error message"))
-    } finally {
-        resource?.release() // Required cleanup
-    }
+  fun markJobAsSeen(jobId: String) {
+    // Local-only, no Either needed
+    dao.markSeen(jobId)
+  }
 }
 ```
+
+Notes
+- API services throw exceptions. Repositories wrap with `Either.catch` and map errors.
+- Keep repository methods small and composable; push DTO→domain mapping here.
 
 ## API Service vs Repository Responsibilities
 
-### API Services
-- Return raw data types (not Result wrappers)
-- Handle network communication
-- Can throw exceptions for network errors
+API Services
+- Use Ktor client (or other transport) and return DTOs.
+- Throw exceptions for HTTP/IO failures.
 
-### Repositories  
-- Wrap API service calls with Result types
-- Use BackgroundExecutor for background operations
-- Handle caching and local state management
-- Coordinate between different data sources
+Repositories
+- Wrap service calls in `Either` and map failures to `RepoError`.
+- Orchestrate calls across sources (remote/local/cache).
+- Expose domain models to callers.
 
-## Best Practices
+## Testing
 
-1. **Keep it simple**: Don't over-abstract. Prefer concrete implementations until you need the flexibility
-2. **Local state management**: Use in-memory collections for user interaction tracking
-3. **Clear separation**: Distinguish between local operations (synchronous) and server operations (async with BackgroundExecutor)
-4. **Error handling**: Handle network errors gracefully, but don't make local operations fail
-5. **Caching strategy**: Cache server data locally, but keep user interactions separate
-6. **Background execution**: Use BackgroundExecutor for all API calls and heavy operations
+- Unit-test repository behavior with fakes or MockK. Assert on `Either` values using Kotest matchers.
+- Use Kotest property testing where applicable (e.g., mapping invariants). Example:
+
+```kotlin
+class JobRepositorySpec : StringSpec({
+  "saveJob returns Right(Unit) on happy path" {
+    // setup mocks
+    val repo = JobRepositoryImpl(api, dao)
+    repo.saveJob(sampleJob) shouldBe Right(Unit)
+  }
+})
+```
 
 ## Anti-Patterns
 
-❌ **Unnecessary interfaces**
-```kotlin
-interface JobRepository { /* only one implementation */ }
-class JobRepositoryImpl : JobRepository { /* unnecessary abstraction */ }
-```
-
-❌ **Server calls for local operations**  
-```kotlin
-suspend fun markJobAsSeen(jobId: String): Result<Unit> {
-    return apiService.markJobAsSeen(jobId) // Unnecessary server call
-}
-```
-
-❌ **Complex local operations**
-```kotlin
-suspend fun markJobAsSeen(jobId: String) {
-    // Don't make simple local operations async
-}
-```
-
-✅ **Concrete implementation with clear separation**
-```kotlin
-class JobRepository(private val apiService: JobApiService) {
-    // Server operations - async
-    suspend fun getJobs(): Result<List<Job>> = apiService.getJobs()
-    
-    // Local operations - sync  
-    fun markJobAsSeen(jobId: String) { seenJobIds.add(jobId) }
-}
-```
+- Returning `Result` from repositories. Project standard is Arrow `Either`.
+- Swallowing errors or returning nulls; always model failure as `Either.Left(RepoError)`.
+- Leaking DTOs beyond the repository boundary; map to domain.

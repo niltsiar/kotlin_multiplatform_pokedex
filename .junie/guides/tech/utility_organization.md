@@ -12,20 +12,20 @@ Purpose: Establish consistent patterns for organizing utility classes, extension
 ### Functional Domain Structure
 Organize utilities by what they do, not what they are:
 
-```
+```text
 util/
 ├── analytics/          # Analytics and tracking utilities
 ├── extensions/         # Extension functions
-├── file/              # File operations and management
-├── inappreview/       # In-app review functionality
-├── logging/           # Logging infrastructure
-└── Platform.kt        # Platform-specific abstractions
+├── file/               # File operations and management
+├── inappreview/        # In-app review functionality
+├── logging/            # Logging infrastructure
+└── Platform.kt         # Platform-specific abstractions
 ```
 
 ### Cross-Cutting Concerns
 Group related functionality together:
 
-```kotlin
+```text
 // util/logging/
 ├── Logger.kt           # Logger interface and AppLogger
 ├── LogLevel.kt         # Log level definitions
@@ -44,21 +44,22 @@ Group related functionality together:
 
 ## Utility Design Patterns
 
-### Singleton Pattern for Stateful Utilities
-Use object declarations for utilities that maintain state:
+### Singleton or Injected Class for Stateful Utilities
+Prefer constructor-injected classes for utilities that depend on other services. For global singletons, expose via DI.
 
 ```kotlin
-object AppLogger : Logger, KoinComponent {
-    private val loggers = getKoin().getAll<Logger>()
-    
+// Metro DI will inject a Set<Logger> via multibinding
+class AppLogger @Inject constructor(
+    private val loggers: Set<Logger>
+) : Logger {
     override fun d(message: String, throwable: Throwable?, tag: String?) {
         loggers.forEach { it.d(message, throwable, tag) }
     }
 }
 
-object AnalyticsManager {
+object AnalyticsManager { // self-contained process-wide holder
     private val trackers = mutableListOf<AnalyticsTracker>()
-    
+
     fun initialize(vararg trackers: AnalyticsTracker) {
         this.trackers.clear()
         this.trackers.addAll(trackers)
@@ -101,12 +102,14 @@ class DataValidator {
 }
 
 class FileUtils {
-    suspend fun saveToCache(data: ByteArray, filename: String): Result<String> {
-        // File operations
+    suspend fun saveToCache(data: ByteArray, filename: String): String {
+        // File operations that may throw; repositories catch and map to Either
+        TODO()
     }
-    
-    suspend fun readFromCache(filename: String): Result<ByteArray> {
-        // File operations
+
+    suspend fun readFromCache(filename: String): ByteArray {
+        // File operations that may throw; repositories catch and map to Either
+        TODO()
     }
 }
 ```
@@ -172,29 +175,15 @@ object IOSUtils {
 ## Dependency Integration
 
 ### Injectable Utilities
-Design utilities to work with dependency injection:
+Design utilities with constructor injection so Metro can wire them. Avoid hardcoding dispatchers; inject them for testability.
 
 ```kotlin
-class BackgroundExecutor(
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
-) {
-    suspend fun <T> execute(block: suspend () -> Result<T>): Result<T> {
-        return withContext(dispatcher) {
-            try {
-                block()
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-    }
-}
+class BackgroundDispatcherProvider @Inject constructor(
+    val io: CoroutineDispatcher,
+    val default: CoroutineDispatcher
+)
 
-// DI Module
-val utilModule = module {
-    singleOf(::BackgroundExecutor)
-    singleOf(::ApplicationScope)
-    singleOf(::DataValidator)
-}
+class DataValidator @Inject constructor()
 ```
 
 ### Self-Contained Utilities
@@ -224,26 +213,26 @@ object CryptoUtils {
 Use consistent error handling across utilities:
 
 ```kotlin
-class NetworkUtils {
-    suspend fun checkConnection(): Result<Boolean> {
+class NetworkUtils @Inject constructor(private val logger: Logger) {
+    suspend fun checkConnection(): Boolean {
         return try {
             // Network check logic
-            Result.success(true)
+            true
         } catch (e: Exception) {
-            AppLogger.e("Network check failed", e)
-            Result.failure(NetworkException("Connection check failed", e))
+            logger.e("Network check failed", e)
+            false
         }
     }
 }
 
-class FileUtils {
-    suspend fun saveFile(filename: String, data: ByteArray): Result<String> {
+class FileUtils @Inject constructor(private val logger: Logger) {
+    suspend fun saveFile(filename: String, data: ByteArray): String {
         return try {
             // File save logic
-            Result.success(savedPath)
+            "savedPath"
         } catch (e: IOException) {
-            AppLogger.e("File save failed", e)
-            Result.failure(FileOperationException("Failed to save file", e))
+            logger.e("File save failed", e)
+            throw FileOperationException("Failed to save file", e)
         }
     }
 }
@@ -384,18 +373,23 @@ Document utility classes thoroughly:
 ```kotlin
 /**
  * Manages application-wide logging with support for multiple log destinations.
- * 
- * Automatically discovers all Logger implementations through Koin DI and
+ *
+ * Receives all Logger implementations via Metro multibinding (Set<Logger>) and
  * delegates log calls to all registered loggers.
- * 
+ *
  * Usage:
- * ```kotlin
- * AppLogger.d("Debug message")
- * AppLogger.e("Error message", exception)
- * ```
+ * val appLogger: Logger = di.appGraph.logger // or injected where needed
+ * appLogger.d("Debug message")
  */
-object AppLogger : Logger, KoinComponent {
-    // Implementation
+class AppLogger @Inject constructor(
+    private val loggers: Set<Logger>
+) : Logger {
+    override fun d(message: String, throwable: Throwable?, tag: String?) {
+        loggers.forEach { it.d(message, throwable, tag) }
+    }
+    override fun e(message: String, throwable: Throwable?, tag: String?) {
+        loggers.forEach { it.e(message, throwable, tag) }
+    }
 }
 ```
 

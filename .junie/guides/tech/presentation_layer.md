@@ -11,26 +11,43 @@ Purpose: Establish consistent patterns for UI architecture, state management, an
 ## Screen Architecture Pattern
 
 ### UiStateHolder Pattern
-Use UiStateHolder is a viewmodel for complex screens with business logic:
+Use UiStateHolder as a viewmodel for complex screens with business logic. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
 
 ```kotlin
 class HomeUiStateHolder(
     private val repository: Repository,
     private val applicationScope: ApplicationScope
 ) : UiStateHolder() {
-    
-    val uiState: StateFlow<HomeUiState> = combine(
-        repository.dataFlow,
-        // other flows
-    ) { data, ... ->
-        HomeUiState(
-            // map to UI state
-        )
-    }.stateIn(applicationScope, SharingStarted.Eagerly, HomeUiState.Loading)
-    
+
+    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
+    val uiState: StateFlow<HomeUiState> = _uiState
+
+    init {
+        // Example: initial load
+        viewModelScope.launch {
+            _uiState.value = HomeUiState.Loading
+            val result = repository.loadItems()
+            _uiState.value = result.fold(
+                ifLeft = { err -> HomeUiState.Error(mapError(err)) },
+                ifRight = { items -> HomeUiState.Content(items.map(::toUi)) }
+            )
+        }
+    }
+
     fun onUiEvent(event: HomeUiEvent) {
         when (event) {
-            is HomeUiEvent.Action -> handleAction(event)
+            is HomeUiEvent.Refresh -> refresh()
+            is HomeUiEvent.ItemClicked -> {/* navigate */}
+        }
+    }
+
+    private fun refresh() {
+        viewModelScope.launch {
+            _uiState.value = HomeUiState.Loading
+            repository.loadItems().fold(
+                ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
+                ifRight = { _uiState.value = HomeUiState.Content(it.map(::toUi)) }
+            )
         }
     }
 }
@@ -64,7 +81,11 @@ fun HomeScreen(
     onUiEvent: (HomeUiEvent) -> Unit,
     onNavigate: (destination) -> Unit
 ) {
-    // UI implementation
+    when (uiState) {
+        is HomeUiState.Loading -> Loading()
+        is HomeUiState.Error -> ErrorView(message = uiState.message) { onUiEvent(HomeUiState.DefaultRetryEvent) }
+        is HomeUiState.Content -> ContentList(uiState.items, onUiEvent)
+    }
 }
 ```
 
@@ -76,14 +97,14 @@ fun HomeScreen(
 - Group related state in nested data classes when appropriate
 
 ```kotlin
-data class HomeUiState(
-    val isLoading: Boolean = false,
-    val items: List<ItemUiState> = emptyList(),
-    val error: String? = null,
-    val selectedFilter: FilterType = FilterType.All
-) {
-    val hasItems: Boolean get() = items.isNotEmpty()
-    val isEmpty: Boolean get() = !isLoading && items.isEmpty()
+sealed interface HomeUiState {
+    data object Loading : HomeUiState
+    data class Error(val message: String) : HomeUiState
+    data class Content(val items: List<ItemUiState>) : HomeUiState
+
+    companion object {
+        val DefaultRetryEvent = HomeUiEvent.Refresh
+    }
 }
 ```
 
@@ -129,6 +150,10 @@ fun VideoCardItem(
 - Follow design system naming conventions (e.g., `AppButton`, `AppCard`)
 - Keep presentation components generic and parameterized
 
+## Vertical Slices & Module Boundaries
+- Presentation for each feature lives in that feature’s modules. Only expose what other features need via `:features:<feature>:api`.
+- Keep navigation contracts (routes, deep links, entry points) in `api` and implementations in `impl`.
+
 ## Screen Wrapper Patterns
 
 ### Common Screen Structure
@@ -136,7 +161,10 @@ Use consistent screen wrapper pattern:
 
 ```kotlin
 @Composable
-fun FeatureScreen(...) {
+fun FeatureScreen(
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit
+) {
     ScreenWithToolbar(
         title = stringResource(Res.string.feature_title),
         onNavigationClick = onBackClick
