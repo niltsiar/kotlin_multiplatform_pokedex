@@ -5,6 +5,7 @@ Purpose: Define a cohesive, multiplatform testing strategy using Kotest and Mock
 ## Frameworks
 - Kotest for test framework, assertions, and property-based testing.
 - MockK for mocking/stubbing on JVM/Android; prefer fakes for Native targets.
+ - Roborazzi for Android/JVM Compose UI screenshot testing (Robolectric-based) and optional Desktop tasks.
 
 ## Gradle Setup (Multiplatform)
 ```kotlin
@@ -21,6 +22,10 @@ kotlin {
     val jvmTest by getting {
       dependencies {
         implementation("io.mockk:mockk:<version>")
+        // Screenshot testing
+        implementation("io.github.takahirom.roborazzi:roborazzi:<version>")
+        implementation("io.github.takahirom.roborazzi:roborazzi-compose:<version>")
+        testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:<version>")
       }
     }
     // Add platform-specific test deps as required.
@@ -87,6 +92,77 @@ class JobRepositorySpec : StringSpec({
 ## Repositories and Arrow Either
 - Assert on `Either` using Kotest matchers or pattern matching via `fold`.
 - Prefer property tests for mapping and error-classification helpers.
+
+## Screenshot Testing (Roborazzi)
+
+Purpose
+- Catch UI regressions by diffing rendered Compose UI against committed baselines.
+- Runs on JVM using Robolectric (fast, device-free). Optional Desktop (Compose Desktop) targets are supported.
+
+Setup
+- Add dependencies shown in Gradle Setup above.
+- Optionally configure the Roborazzi Gradle extension if generating tests from @Preview:
+```kotlin
+roborazzi {
+  generateComposePreviewRobolectricTests {
+    enable = true
+  }
+}
+```
+
+Running locally
+```bash
+# Record baselines (writes to build/outputs/roborazzi by default)
+./gradlew recordRoborazziDebug
+
+# Compare current vs baseline (generates diffs)
+./gradlew compareRoborazziDebug
+
+# Verify (fails build on diff)
+./gradlew verifyRoborazziDebug
+
+# Alternatively trigger through unit tests with properties:
+./gradlew testDebugUnitTest -Proborazzi.test.record=true
+./gradlew testDebugUnitTest -Proborazzi.test.compare=true
+./gradlew testDebugUnitTest -Proborazzi.test.verify=true
+```
+
+Compose example (Robolectric)
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class HomeScreenScreenshotTest {
+  @get:Rule val compose = createComposeRule()
+
+  @Test fun recordHomeScreen() {
+    compose.setContent {
+      HomeScreen(
+        uiState = HomeUiState.Content(items = sampleItems()),
+        onUiEvent = {},
+        onNavigate = {}
+      )
+    }
+    // Capture, compare, or verify depending on -P flags
+    captureRoboImage("home/HomeScreen_content.png")
+  }
+}
+```
+
+Determinism tips
+- Use fixed fonts, locale, and time (inject a clock) to reduce diffs.
+- Disable animations and ensure consistent sizes/densities.
+- Isolate network/IO; render from deterministic sample UI state.
+
+Desktop tasks (optional)
+```bash
+./gradlew recordRoborazziDesktop
+./gradlew compareRoborazziDesktop
+./gradlew verifyRoborazziDesktop
+```
+
+Scope and CI
+- Android/JVM only by default (fast checks). Do not run iOS tasks unless an issue explicitly requires it.
+- Store baselines under `composeApp/src/test/snapshots` (or a repo-level `snapshots/`).
+- In CI, run `verifyRoborazziDebug` on PRs; allow updating baselines only behind an explicit flag (e.g., `-Proborazzi.test.record=true`).
 
 ## Running Tests (project guidelines)
 - Shared unit tests: `./gradlew :composeApp:testDebugUnitTest` (or relevant target-specific tasks)

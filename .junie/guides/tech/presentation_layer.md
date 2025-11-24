@@ -10,21 +10,46 @@ Purpose: Establish consistent patterns for UI architecture, state management, an
 
 ## Screen Architecture Pattern
 
-### UiStateHolder Pattern
-Use UiStateHolder as a viewmodel for complex screens with business logic. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
+### UiStateHolder Pattern (as an interface)
+Define a small interface that viewmodels implement. Keep classes framework-agnostic and free of DI annotations. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
+
+Recommended interfaces
+```kotlin
+// Generic UI state holder interface
+interface UiStateHolder<S, E> {
+    val uiState: StateFlow<S>
+    fun onUiEvent(event: E)
+}
+
+// One-time events (snackbars, toasts, navigations). Backed by a Channel.
+interface OneTimeEventEmitter<E> {
+    val events: Flow<E>
+}
+
+// Simple helper you can reuse per feature (optional)
+class EventChannel<E> : OneTimeEventEmitter<E> {
+    private val channel = Channel<E>(capacity = Channel.BUFFERED)
+    override val events: Flow<E> = channel.receiveAsFlow()
+    suspend fun emit(event: E) = channel.send(event)
+}
+```
 
 ```kotlin
-class HomeUiStateHolder(
+class HomeViewModel(
     private val repository: Repository,
-    private val applicationScope: ApplicationScope
-) : UiStateHolder() {
+    private val applicationScope: ApplicationScope,
+    private val scope: CoroutineScope
+) : UiStateHolder<HomeUiState, HomeUiEvent>, OneTimeEventEmitter<HomeOneShotEvent> {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    val uiState: StateFlow<HomeUiState> = _uiState
+    override val uiState: StateFlow<HomeUiState> = _uiState
+
+    private val _events = EventChannel<HomeOneShotEvent>()
+    override val events: Flow<HomeOneShotEvent> = _events.events
 
     init {
         // Example: initial load
-        viewModelScope.launch {
+        scope.launch {
             _uiState.value = HomeUiState.Loading
             val result = repository.loadItems()
             _uiState.value = result.fold(
@@ -34,15 +59,17 @@ class HomeUiStateHolder(
         }
     }
 
-    fun onUiEvent(event: HomeUiEvent) {
+    override fun onUiEvent(event: HomeUiEvent) {
         when (event) {
             is HomeUiEvent.Refresh -> refresh()
-            is HomeUiEvent.ItemClicked -> {/* navigate */}
+            is HomeUiEvent.ItemClicked -> scope.launch {
+                _events.emit(HomeOneShotEvent.NavigateToDetail(event.id))
+            }
         }
     }
 
     private fun refresh() {
-        viewModelScope.launch {
+        scope.launch {
             _uiState.value = HomeUiState.Loading
             repository.loadItems().fold(
                 ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
@@ -53,18 +80,54 @@ class HomeUiStateHolder(
 }
 ```
 
+### No empty use cases
+- Avoid overengineering. If a screen only needs to call a single repository method and apply simple mapping to UI state, call the repository directly from the `UiStateHolder`. Do not introduce a pass-through use case that just forwards parameters and returns the same result.
+
+Minimal example without a use case
+```kotlin
+class ProfileViewModel(
+    private val userRepository: UserRepository,
+    private val scope: CoroutineScope
+) : UiStateHolder<ProfileUiState, ProfileUiEvent> {
+    private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
+    override val uiState: StateFlow<ProfileUiState> = _uiState
+
+    fun load(userId: String) = scope.launch {
+        _uiState.value = ProfileUiState.Loading
+        userRepository.getUser(userId).fold(
+            ifLeft = { _uiState.value = ProfileUiState.Error(mapError(it)) },
+            ifRight = { user -> _uiState.value = ProfileUiState.Content(user.toUi()) }
+        )
+    }
+    override fun onUiEvent(event: ProfileUiEvent) { /* handle */ }
+}
+```
+
 ### Screen Composables
 Follow function overloading pattern for flexibility:
 
 ```kotlin
-// Main entry point with StateHolder
+// Main entry point with StateHolder interface
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    uiStateHolder: HomeUiStateHolder,
+    uiStateHolder: UiStateHolder<HomeUiState, HomeUiEvent>,
     onNavigate: (destination) -> Unit
 ) {
     val uiState by uiStateHolder.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
+    // Collect one-time events if the holder also implements OneTimeEventEmitter
+    (uiStateHolder as? OneTimeEventEmitter<HomeOneShotEvent>)?.let { emitter ->
+        LaunchedEffect(emitter) {
+            emitter.events.collect { event ->
+                when (event) {
+                    is HomeOneShotEvent.NavigateToDetail -> onNavigate(event.id)
+                    is HomeOneShotEvent.ShowMessage -> {/* show snackbar */}
+                }
+            }
+        }
+    }
     HomeScreen(
         modifier = modifier,
         uiState = uiState,

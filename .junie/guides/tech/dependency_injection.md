@@ -8,7 +8,7 @@ References
 
 ## Framework Choice
 - We use Metro across all platforms. It’s Kotlin Multiplatform-ready and performs full binding graph validation at compile time.
-- Prefer constructor injection via `@Inject` and explicit providers via `@Provides`.
+- Keep production classes free of DI annotations where possible. Prefer explicit `@Provides` functions in DI/wiring modules to assemble dependencies.
 - Use Metro’s scopes, graph factories, and contribution annotations to wire feature modules cleanly.
 
 ## Architecture: Vertical Slices with api/impl
@@ -45,40 +45,35 @@ Notes
 - Use `@DependencyGraph` for the root. Metro generates an `$$MetroGraph` implementation.
 - Use a `Factory` to pass runtime parameters (e.g., base URL, configs) using `@Provides`.
 
-## Providing and Binding Dependencies
+## Providing and Binding Dependencies (no annotations on classes)
 
 ```kotlin
-// Simple provider inside a graph or contributed graph
-@Provides
-fun provideHttpClient(): HttpClient = buildHttpClient()
+// Prefer explicit provider functions in a wiring/DI module.
+// Classes remain DI-agnostic (no @Inject on constructors).
 
-// Binding an implementation to an interface within a scope
-@ContributesBinding(AppScope::class)
-@SingleIn(AppScope::class)
-@Inject
-class RealUserRepository(
-  private val api: UserApiService,
-  private val storage: UserStorage
-) : UserRepository
+// Example provider for a client
+@Provides
+fun provideHttpClient(json: Json, engine: HttpClientEngine): HttpClient = buildHttpClient(json, engine)
+
+// Bind interface to implementation without annotating the class
+@Provides
+fun provideUserRepository(
+  api: UserApiService,
+  storage: UserStorage
+): UserRepository = RealUserRepository(api, storage)
 ```
 
 Multibinding (sets/maps)
 ```kotlin
-// Contribute into a Set<Logger>
-@ContributesIntoSet(AppScope::class)
-@Inject
-class ConsoleLogger : Logger
+// If you want to avoid class annotations, provide sets directly
+@Provides
+fun provideLoggers(
+  console: ConsoleLogger,
+  crash: CrashLogger,
+): Set<Logger> = setOf(console, crash)
 
-@ContributesIntoSet(AppScope::class)
-@Inject
-class CrashLogger : Logger
-```
-
-Consumers receive collections directly
-```kotlin
-class AppLogger @Inject constructor(
-  private val loggers: Set<Logger>
-) : Logger { /* delegate to all */ }
+// Or if convenient, you may still use Metro multibinding annotations in wiring modules only,
+// keeping production classes clean.
 ```
 
 ## Feature Modules and DI
@@ -87,21 +82,31 @@ In :features:<name>:api
 - Expose only the contracts needed cross-feature (e.g., `UserRepository`, navigation contracts, and any domain/use case interfaces that other features must call). Avoid leaking implementation details.
 
 In :features:<name>:impl
-- Implement the contracts and contribute them to the `AppScope` via `@ContributesBinding` (and `@SingleIn` as appropriate).
+- Implement the contracts. Keep classes DI-agnostic.
+- Provide bindings in a feature wiring module via `@Provides` that returns the interface type.
 - Provide feature-scoped factories when needed using Metro graph extensions.
 
 ```kotlin
 // features/profile/api/src/commonMain/.../ProfileRepository.kt
 interface ProfileRepository { suspend fun load(): Either<RepoError, Profile> }
 
-// features/profile/impl/src/commonMain/.../di/ProfileBindings.kt
-@ContributesBinding(AppScope::class)
-@SingleIn(AppScope::class)
-@Inject
-class RealProfileRepository(
+// features/profile/impl/src/commonMain/.../RealProfileRepository.kt
+internal class RealProfileRepository(
   private val api: ProfileApiService
 ) : ProfileRepository
+
+// features/profile/wiring/src/commonMain/.../ProfileWiring.kt
+@Provides
+fun provideProfileRepository(api: ProfileApiService): ProfileRepository = RealProfileRepository(api)
 ```
+
+### Wiring/Aggregation Modules
+- We use wiring modules to assemble and aggregate dependencies for a feature or a group of features, keeping implementation classes free of DI annotations and private to their modules.
+- Naming: `:features:<feature>:wiring` (feature-local) or `:wiring:<area>` (cross-feature aggregation).
+- Responsibilities:
+  - Provide `@Provides` functions that wire implementations to interfaces
+  - Aggregate multibindings (e.g., sets of `FeatureEntry` for navigation)
+  - Optionally expose graph extensions/factories for contextual scopes
 
 ## Graph Extensions for Subgraphs
 Use graph extensions for lifecycle or contextual scopes (e.g., logged-in user):
@@ -148,15 +153,15 @@ Tip: The exact invocation depends on the generated API for your graph (see Metro
 
 ## Best Practices
 - Keep DI setup in commonMain where feasible; isolate platform specifics.
-- Prefer small graphs and contributed bindings over large monoliths.
-- Use `@SingleIn` for repositories, network clients, and stateful services; use unscoped/`factory`-like patterns for ephemeral objects.
-- Validate module visibility: only `api` modules are visible to other features; `impl` should not be exported.
+- Prefer small graphs and wiring modules over large monoliths.
+- Use scoping as needed for repositories, network clients, and stateful services; use unscoped/`factory`-like patterns for ephemeral objects.
+- Validate module visibility: only `api` modules are visible to other features; `impl` and `wiring` should not be exported.
 
 ## iOS Umbrella (shared module)
-- The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and any public-facing contracts while keeping implementations internal. Ensure Gradle `export` entries include only the `api` modules that the iOS wrapper must see.
+- The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and any public-facing contracts while keeping implementations internal. Ensure Gradle `export` entries include only the `api` modules that the iOS wrapper must see. Do not export `impl` or `wiring` modules.
 
 ## Testing Considerations
-- For tests, construct small test graphs or directly instantiate classes with fakes/mocks. Metro validates graphs at compile time; prefer unit tests with constructor injection over heavy DI bootstrapping in tests.
+- For tests, construct small test graphs or directly instantiate classes with fakes/mocks. Metro validates graphs at compile time; prefer unit tests with explicit constructors over heavy DI bootstrapping in tests.
 
 Notes from Metro docs
-- Metro performs full binding graph validation and supports K2/KSP. See the official docs for `@DependencyGraph`, `@Provides`, `@ContributesBinding`, `@ContributesIntoSet`, and graph extension patterns.
+- Metro performs full binding graph validation and supports K2/KSP. See the official docs for `@DependencyGraph`, `@Provides`, `@Binds`, `@ContributesBinding`, `@ContributesIntoSet`, and graph extension patterns.

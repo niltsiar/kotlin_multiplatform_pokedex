@@ -44,12 +44,12 @@ Group related functionality together:
 
 ## Utility Design Patterns
 
-### Singleton or Injected Class for Stateful Utilities
-Prefer constructor-injected classes for utilities that depend on other services. For global singletons, expose via DI.
+### Singleton or Injectable Class for Stateful Utilities
+Prefer plain constructors (no DI annotations) for utilities that depend on other services. Wire them via DI provider functions in wiring modules. For global singletons, expose via DI.
 
 ```kotlin
-// Metro DI will inject a Set<Logger> via multibinding
-class AppLogger @Inject constructor(
+// DI-agnostic class. Provide instances via DI wiring modules.
+class AppLogger(
     private val loggers: Set<Logger>
 ) : Logger {
     override fun d(message: String, throwable: Throwable?, tag: String?) {
@@ -175,15 +175,15 @@ object IOSUtils {
 ## Dependency Integration
 
 ### Injectable Utilities
-Design utilities with constructor injection so Metro can wire them. Avoid hardcoding dispatchers; inject them for testability.
+Design utilities with plain constructors so Metro can wire them via provider functions. Avoid hardcoding dispatchers; inject them for testability.
 
 ```kotlin
-class BackgroundDispatcherProvider @Inject constructor(
+class BackgroundDispatcherProvider(
     val io: CoroutineDispatcher,
     val default: CoroutineDispatcher
 )
 
-class DataValidator @Inject constructor()
+class DataValidator()
 ```
 
 ### Self-Contained Utilities
@@ -213,7 +213,7 @@ object CryptoUtils {
 Use consistent error handling across utilities:
 
 ```kotlin
-class NetworkUtils @Inject constructor(private val logger: Logger) {
+class NetworkUtils(private val logger: Logger) {
     suspend fun checkConnection(): Boolean {
         return try {
             // Network check logic
@@ -225,7 +225,7 @@ class NetworkUtils @Inject constructor(private val logger: Logger) {
     }
 }
 
-class FileUtils @Inject constructor(private val logger: Logger) {
+class FileUtils(private val logger: Logger) {
     suspend fun saveFile(filename: String, data: ByteArray): String {
         return try {
             // File save logic
@@ -381,7 +381,7 @@ Document utility classes thoroughly:
  * val appLogger: Logger = di.appGraph.logger // or injected where needed
  * appLogger.d("Debug message")
  */
-class AppLogger @Inject constructor(
+class AppLogger(
     private val loggers: Set<Logger>
 ) : Logger {
     override fun d(message: String, throwable: Throwable?, tag: String?) {
@@ -424,4 +424,17 @@ object ErrorMessageMapper {
         }
     }
 }
+```
+
+### Wiring Utilities via DI (example)
+Provide utilities via Metro in wiring modules while keeping classes DI-agnostic:
+
+```kotlin
+// :features:logging:wiring/src/commonMain/.../LoggingWiring.kt
+@Provides fun provideLoggers(console: ConsoleLogger, crash: CrashLogger): Set<Logger> = setOf(console, crash)
+@Provides fun provideAppLogger(loggers: Set<Logger>): Logger = AppLogger(loggers)
+
+// Dispatcher provider
+@Provides fun provideDispatchers(io: CoroutineDispatcher, default: CoroutineDispatcher): BackgroundDispatcherProvider =
+  BackgroundDispatcherProvider(io, default)
 ```
