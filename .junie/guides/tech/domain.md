@@ -23,7 +23,7 @@ Purpose: Make domain models and logic stable, pure, platform-agnostic, and easy 
   - Define them in a common domain/exceptions package
    
 - APIs and Boundaries
-  - MVP-first minimalism: avoid overengineering. Do NOT add pass-through use cases that only call a single repository method. Call repositories directly from the presentation layer when no domain policy/orchestration is needed.
+  - MVP-first minimalism: avoid overengineering. Do NOT add pass-through/empty use cases that only call a single repository method. Call repositories directly from the presentation layer when no domain policy/orchestration is needed. Avoid empty use cases at all costs.
   - Introduce a use case only when it adds value: aggregates multiple repositories, enforces business rules, coordinates transactions, applies throttling/debouncing, validation, or cross-cutting concerns.
   - Repository interfaces: With vertical slicing, define repository interfaces in the feature `api` module when cross-feature access is required; otherwise, keep repositories concrete and internal to the feature `impl`.
   - Implementations (network/database) live in feature `impl` (data) modules and depend on domain contracts from the feature `api` (or core domain `api`) — never the other way around.
@@ -41,6 +41,55 @@ Purpose: Make domain models and logic stable, pure, platform-agnostic, and easy 
   - Domain should be unit-testable without Android/iOS. Use simple fakes for repository interfaces.
   - Cover invariants and exception cases (Unauthenticated, PurchaseRequired) with tests.
   - Prefer Kotest for property-based testing where appropriate (e.g., validation logic, value objects).
+
+## Use Cases: When to Create Them (and When Not To)
+
+Rules of thumb
+- Do not create a use case that simply forwards arguments to a repository and returns the result.
+- Create a use case only if at least one of these is true:
+  - Orchestrates 2+ repositories or data sources
+  - Enforces business rules/authorization gates (see Domain Exceptions)
+  - Applies cross-cutting policies (rate limiting, retries, input validation, transactions)
+  - Transforms/massages multiple inputs into a domain decision
+
+Anti-pattern (don’t do this)
+```kotlin
+// Empty pass-through use case — avoid
+class GetUserUseCase(private val repo: UserRepository) {
+  suspend operator fun invoke(id: String) = repo.getUser(id)
+}
+```
+
+Preferred
+```kotlin
+// Call repository directly from presentation when no domain policy is needed
+class ProfileViewModel(
+  private val repo: UserRepository,
+  private val scope: CoroutineScope
+) : UiStateHolder<ProfileUiState, ProfileUiEvent> {
+  override val uiState: StateFlow<ProfileUiState> = MutableStateFlow(ProfileUiState.Loading)
+  override fun onUiEvent(event: ProfileUiEvent) { /* handle events */ }
+  // ... call repo.getUser(id) inside scope and map Either to UI state
+}
+```
+
+Value-adding example
+```kotlin
+// Aggregates multiple repositories and enforces a rule
+class SubmitOrderUseCase(
+  private val cartRepo: CartRepository,
+  private val paymentRepo: PaymentRepository,
+  private val inventoryRepo: InventoryRepository,
+) {
+  suspend operator fun invoke(): Either<RepoError, Receipt> = either {
+    val cart = cartRepo.current().bind()
+    ensure(cart.items.isNotEmpty()) { RepoError.Unknown(IllegalStateException("Empty cart")) }
+    inventoryRepo.reserve(cart.items).bind()
+    val receipt = paymentRepo.charge(cart.total).bind()
+    receipt
+  }
+}
+```
 
 - Alignment with Product Docs
   - When modeling entities, constraints, and states, prefer the canonical definitions from .junie/guides/project/prd.md and .junie/guides/project/user_flow.md. If conflicts arise, follow PRD for data rules and user_flow for sequence/UX; call out discrepancies.
