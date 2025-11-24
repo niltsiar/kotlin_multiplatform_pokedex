@@ -65,8 +65,8 @@ Preferred
 // Call repository directly from presentation when no domain policy is needed
 class ProfileViewModel(
   private val repo: UserRepository,
-  customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
-) : ViewModel(customScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
+  viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+) : ViewModel(viewModelScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
   private val _ui = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
   override val uiState: StateFlow<ProfileUiState> = _ui
   override fun onUiEvent(event: ProfileUiEvent) { /* handle events */ }
