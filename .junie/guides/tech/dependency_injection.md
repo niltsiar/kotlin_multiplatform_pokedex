@@ -1,261 +1,162 @@
 # Dependency Injection Guidelines
 
-Purpose: Establish consistent dependency injection patterns using Koin for Compose Multiplatform projects.
+Purpose: Establish consistent DI patterns using Metro for Kotlin Multiplatform with compile-time graph validation and vertical-slice feature modules.
+
+References
+- Metro docs and API: zacsweers.github.io/metro (compile-time DI, K2, KSP, multiplatform)
+- Examples in this guide are adapted from Metro reference docs such as dependency-graphs and aggregation pages.
 
 ## Framework Choice
-- Use Koin for dependency injection across all platforms
-- Leverage Koin's multiplatform support and Compose integration
-- Prefer declarative module definitions over imperative configuration
+- We use Metro across all platforms. It’s Kotlin Multiplatform-ready and performs full binding graph validation at compile time.
+- Prefer constructor injection via `@Inject` and explicit providers via `@Provides`.
+- Use Metro’s scopes, graph factories, and contribution annotations to wire feature modules cleanly.
+
+## Architecture: Vertical Slices with api/impl
+- Each feature lives in its own set of modules using the pattern:
+  - :features:<feature-name>:api — public contracts (interfaces, models that need to be shared), navigation contracts, and DI entry points to be consumed by other features.
+  - :features:<feature-name>:impl — private implementations, internal mappers, data sources, and DI contributions using Metro annotations.
+- Only the `api` modules are visible to other features; `impl` remains private. `impl` contributes bindings to the application graph.
 
 ## Location and Structure
-- DI modules: `composeApp/src/commonMain/kotlin/com/<org>/<app>/di/`
-- Platform-specific modules: `composeApp/src/androidMain/kotlin/.../di/` and `composeApp/src/iosMain/kotlin/.../di/`
-- Module organization by layer: `DataModule.kt`, `DomainModule.kt`, `PresentationModule.kt`
+- DI code that declares the app/root graph lives in a top-level commonMain module (e.g., `composeApp/src/commonMain/.../di`).
+- Feature-specific DI contributions live in each feature’s `impl` module under `src/commonMain/.../di`.
+- Platform-specific DI (if needed) is placed in platform source sets. Prefer commonMain where possible.
 
-## Module Organization
-
-### Layer-Based Modules
-Organize modules by architectural layers:
+## Defining the App Graph
 
 ```kotlin
-// DataModule.kt
-val dataModule = module {
-    // Repositories
-    singleOf(::UserRepository)
-    singleOf(::SubscriptionRepository)
-    singleOf(::AiInfluencerRepository)
-    
-    // Data sources
-    singleOf(::UserPreferences)
-    singleOf(::AuthService)
-    
-    // API services
-    singleOf(::JobApiService)
-    singleOf(::MediaApiService)
-    
-    // Database
-    singleOf(::DatabaseProvider)
-}
+// Define an application scope marker
+interface AppScope
 
-// PresentationModule.kt
-val presentationModule = module {
-    // UiStateHolders with factory scope for screen lifecycle
-    factoryOf(::HomeUiStateHolder)
-    factoryOf(::PaywallUiStateHolder)
-    factoryOf(::OnboardingUiStateHolder)
-}
+// Root graph defines app-wide dependencies
+@DependencyGraph
+interface AppGraph {
+  val loggerSet: Set<Logger> // example multibinding
 
-// UtilModule.kt
-val utilModule = module {
-    // Utilities and cross-cutting concerns
-    singleOf(::ApplicationScope)
-    singleOf(::BackgroundExecutor)
-    
-    // Multiple logger implementations
-    singleOf(::ConsoleLogger) bind Logger::class
-    singleOf(::FirebaseLogger) bind Logger::class
-    // AppLogger uses getAll<Logger>() to get all implementations
+  @DependencyGraph.Factory
+  fun interface Factory {
+    // Factory can accept runtime inputs using @Provides
+    fun create(@Provides baseUrl: String): AppGraph
+  }
 }
 ```
 
-### Platform-Specific Modules
-Handle platform differences with separate modules:
+Notes
+- Use `@DependencyGraph` for the root. Metro generates an `$$MetroGraph` implementation.
+- Use a `Factory` to pass runtime parameters (e.g., base URL, configs) using `@Provides`.
+
+## Providing and Binding Dependencies
 
 ```kotlin
-// androidMain/di/PlatformModule.kt
-val androidModule = module {
-    singleOf(::AndroidLogger) bind Logger::class
-    singleOf(::AndroidFileManager) bind FileManager::class
-    singleOf(::GoogleAuthProvider) bind AuthProvider::class
-}
+// Simple provider inside a graph or contributed graph
+@Provides
+fun provideHttpClient(): HttpClient = buildHttpClient()
 
-// iosMain/di/PlatformModule.kt
-val iosModule = module {
-    singleOf(::IOSLogger) bind Logger::class
-    singleOf(::IOSFileManager) bind FileManager::class
-    singleOf(::AppleAuthProvider) bind AuthProvider::class
+// Binding an implementation to an interface within a scope
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
+@Inject
+class RealUserRepository(
+  private val api: UserApiService,
+  private val storage: UserStorage
+) : UserRepository
+```
+
+Multibinding (sets/maps)
+```kotlin
+// Contribute into a Set<Logger>
+@ContributesIntoSet(AppScope::class)
+@Inject
+class ConsoleLogger : Logger
+
+@ContributesIntoSet(AppScope::class)
+@Inject
+class CrashLogger : Logger
+```
+
+Consumers receive collections directly
+```kotlin
+class AppLogger @Inject constructor(
+  private val loggers: Set<Logger>
+) : Logger { /* delegate to all */ }
+```
+
+## Feature Modules and DI
+
+In :features:<name>:api
+- Expose only the contracts needed cross-feature (e.g., `UserRepository`, navigation contracts, and any domain/use case interfaces that other features must call). Avoid leaking implementation details.
+
+In :features:<name>:impl
+- Implement the contracts and contribute them to the `AppScope` via `@ContributesBinding` (and `@SingleIn` as appropriate).
+- Provide feature-scoped factories when needed using Metro graph extensions.
+
+```kotlin
+// features/profile/api/src/commonMain/.../ProfileRepository.kt
+interface ProfileRepository { suspend fun load(): Either<RepoError, Profile> }
+
+// features/profile/impl/src/commonMain/.../di/ProfileBindings.kt
+@ContributesBinding(AppScope::class)
+@SingleIn(AppScope::class)
+@Inject
+class RealProfileRepository(
+  private val api: ProfileApiService
+) : ProfileRepository
+```
+
+## Graph Extensions for Subgraphs
+Use graph extensions for lifecycle or contextual scopes (e.g., logged-in user):
+
+```kotlin
+@ContributesGraphExtension(LoggedInScope::class)
+interface LoggedInGraph {
+  val sessionUser: SessionUser
+
+  @ContributesGraphExtension.Factory(AppScope::class)
+  interface Factory {
+    fun createLoggedInGraph(@Provides userId: String): LoggedInGraph
+  }
 }
 ```
 
-## Scoping Strategies
-
-### Singleton vs Factory
-Choose appropriate scoping based on usage:
+## Initialization
+- Construct the app graph at startup via the generated factory. Provide runtime parameters via `@Provides` args.
 
 ```kotlin
-// Singleton for stateful services and repositories
-singleOf(::UserRepository)
-singleOf(::NetworkClient)
-singleOf(::DatabaseInstance)
+// Pseudo-code: exact API is generated by Metro for your graph.
+// Common options include a companion `invoke` or a generated Factory.
 
-// Factory for stateless services and UI components
-factoryOf(::DataValidator)
-factoryOf(::HomeUiStateHolder)
-factoryOf(::PaymentProcessor)
-```
+// Example options (one of these will exist after compilation):
+// val appGraph: AppGraph = AppGraph(/* @Provides args like baseUrl */)
+// val appGraph: AppGraph = AppGraph.Factory.create(/* baseUrl */)
 
-### Scope Guidelines
-- **Single**: Repositories, network clients, databases, application-wide services
-- **Factory**: UiStateHolders, validators, processors, screen-scoped services
-- **Scoped**: Use sparingly, only for specific lifecycle requirements
+// Keep a singleton reference you can pass where needed
+object DI {
+  lateinit var appGraph: AppGraph
+    private set
 
-## Interface Binding
-
-### Multiple Implementations
-Use interface binding for polymorphic dependencies:
-
-```kotlin
-// Multiple logger implementations
-singleOf(::ConsoleLogger) bind Logger::class
-singleOf(::FileLogger) bind Logger::class
-singleOf(::RemoteLogger) bind Logger::class
-
-// Consumer uses getAll() to get all implementations
-object AppLogger : Logger, KoinComponent {
-    private val loggers = getKoin().getAll<Logger>()
-    // Implementation delegates to all loggers
+  fun init(baseUrl: String) {
+    // initialize appGraph using the generated factory for AppGraph
+    // e.g., appGraph = AppGraph.Factory.create(baseUrl)
+  }
 }
 ```
 
-### Single Implementation Binding
-Only bind interfaces when truly needed:
-
-```kotlin
-// Only if you need to swap implementations
-singleOf(::ProductionAuthService) bind AuthService::class
-
-// Prefer direct injection for single implementations
-singleOf(::UserRepository) // No interface binding needed
-```
-
-## Initialization Patterns
-
-### Application Initialization
-Initialize Koin at application startup:
-
-```kotlin
-// App.kt or AppInitializer.kt
-fun initializeKoin() {
-    startKoin {
-        modules(
-            dataModule,
-            presentationModule,
-            utilModule,
-            platformModule
-        )
-    }
-}
-```
-
-
-## Integration Patterns
-
-
-
-### Repository Dependencies
-Inject dependencies into repositories properly:
-
-```kotlin
-class UserRepository(
-    private val authService: AuthService,
-    private val userPreferences: UserPreferences,
-    private val subscriptionRepository: SubscriptionRepository,
-    private val backgroundExecutor: BackgroundExecutor = BackgroundExecutor.IO,
-    private val applicationScope: ApplicationScope
-) {
-    // Implementation
-}
-
-// Module definition
-val dataModule = module {
-    singleOf(::UserRepository)
-    // Dependencies will be automatically resolved
-}
-```
-
-## Testing with Koin
-
-### Test Module Override
-Override dependencies for testing:
-
-```kotlin
-@BeforeTest
-fun setupKoin() {
-    startKoin {
-        modules(
-            testModule // Override production modules
-        )
-    }
-}
-
-val testModule = module {
-    singleOf(::MockUserRepository) bind UserRepository::class
-    singleOf(::MockAuthService) bind AuthService::class
-    singleOf(::TestApplicationScope) bind ApplicationScope::class
-}
-```
-
-### Koin Test Extensions
-Use Koin test utilities:
-
-```kotlin
-class UserRepositoryTest : KoinTest {
-    private val userRepository: UserRepository by inject()
-    private val mockAuthService: MockAuthService by inject()
-    
-    @Test
-    fun testUserFlow() {
-        mockAuthService.mockUser = testUser
-        val result = userRepository.getCurrentUser()
-        // Assertions
-    }
-}
-```
+Tip: The exact invocation depends on the generated API for your graph (see Metro docs). Generally there is a factory or `invoke` operator on the companion.
 
 ## Platform-Specific Dependencies
-
-### Expect/Actual Pattern
-Combine with expect/actual for platform abstraction:
-
-```kotlin
-// commonMain
-expect class PlatformService
-
-// androidMain
-actual class PlatformService {
-    // Android implementation
-}
-
-// iosMain
-actual class PlatformService {
-    // iOS implementation
-}
-
-// Module
-val platformModule = module {
-    singleOf(::PlatformService)
-}
-```
+- Use expect/actual when you must bind platform-specific services. Contribute the actuals in platform source sets and expose their contracts in commonMain.
 
 ## Best Practices
+- Keep DI setup in commonMain where feasible; isolate platform specifics.
+- Prefer small graphs and contributed bindings over large monoliths.
+- Use `@SingleIn` for repositories, network clients, and stateful services; use unscoped/`factory`-like patterns for ephemeral objects.
+- Validate module visibility: only `api` modules are visible to other features; `impl` should not be exported.
 
-### Module Organization
-- Keep modules focused and cohesive
-- Separate platform-specific dependencies
-- Use clear naming conventions for modules
+## iOS Umbrella (shared module)
+- The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and any public-facing contracts while keeping implementations internal. Ensure Gradle `export` entries include only the `api` modules that the iOS wrapper must see.
 
-### Dependency Declaration
-- Prefer constructor injection over property injection
-- Use the minimum required scope (factory over singleton when possible)
-- Avoid complex object graphs that are hard to test
+## Testing Considerations
+- For tests, construct small test graphs or directly instantiate classes with fakes/mocks. Metro validates graphs at compile time; prefer unit tests with constructor injection over heavy DI bootstrapping in tests.
 
-### Documentation
-- Document complex dependency relationships
-- Explain unusual scoping decisions
-- Provide examples for platform-specific usage
-
-## Alignment with Architecture
-- Repositories and services use singleton scope for state consistency
-- UiStateHolders use factory scope for proper lifecycle management
-- Platform abstractions follow expect/actual patterns
-- Cross-cutting concerns (logging, analytics) use multiple binding patterns
+Notes from Metro docs
+- Metro performs full binding graph validation and supports K2/KSP. See the official docs for `@DependencyGraph`, `@Provides`, `@ContributesBinding`, `@ContributesIntoSet`, and graph extension patterns.
