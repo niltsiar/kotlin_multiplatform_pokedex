@@ -11,7 +11,7 @@ Purpose: Establish consistent patterns for UI architecture, state management, an
 ## Screen Architecture Pattern
 
 ### UiStateHolder Pattern (as an interface)
-Define a small interface that viewmodels implement. Keep classes framework‑agnostic and free of DI annotations. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
+Define a small interface that viewmodels implement. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
 
 Recommended interfaces
 ```kotlin
@@ -22,49 +22,62 @@ interface UiStateHolder<S, E> {
 }
 
 // One-time events (snackbars, toasts, navigations). Backed by a Channel.
+// Includes a suspend emit(event) to enable clean delegation.
 interface OneTimeEventEmitter<E> {
     val events: Flow<E>
+    suspend fun emit(event: E)
 }
 
 // Simple helper you can reuse per feature (optional)
 class EventChannel<E> : OneTimeEventEmitter<E> {
     private val channel = Channel<E>(capacity = Channel.BUFFERED)
     override val events: Flow<E> = channel.receiveAsFlow()
-    suspend fun emit(event: E) = channel.send(event)
+    override suspend fun emit(event: E) = channel.send(event)
 }
 ```
 
 ViewModels rules (required)
+- All ViewModels must extend `androidx.lifecycle.ViewModel` (KMP).
 - Do not perform work in `init` blocks. Be lifecycle‑aware and start work in lifecycle callbacks (or Compose effects) instead.
-- Accept a `CoroutineScope` parameter (your `viewModelScope`) in the constructor for easy substitution in tests.
-- Use `SavedStateHandle` when necessary to persist screen state/inputs across configuration changes or process death.
+- Do NOT store a `CoroutineScope` field. Instead, pass a custom scope to the `ViewModel` superclass constructor (e.g., `CloseableCoroutineScope`) and use `viewModelScope` internally.
+- Use `SavedStateHandle` when necessary to persist screen state/inputs across configuration changes or process death (Android fully supported).
 - Do not expose mutable collections; prefer `kotlinx.collections.immutable` types (`ImmutableList`, `ImmutableMap`, etc.).
+- For one‑time events, implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>`.
+
+Canonical helpers (place in `:core:util` commonMain)
+```kotlin
+class CloseableCoroutineScope(
+  context: CoroutineContext = SupervisorJob() + Dispatchers.Main.immediate
+) : Closeable, CoroutineScope {
+  override val coroutineContext: CoroutineContext = context
+  override fun close() { coroutineContext.cancel() }
+}
+```
 
 Example ViewModel with lifecycle start and SavedStateHandle
 ```kotlin
 class HomeViewModel(
     private val repository: Repository,
     private val savedStateHandle: SavedStateHandle,
-    private val scope: CoroutineScope
-) : UiStateHolder<HomeUiState, HomeUiEvent>, OneTimeEventEmitter<HomeOneShotEvent> {
+    customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
+) : ViewModel(customScope),
+    UiStateHolder<HomeUiState, HomeUiEvent>,
+    OneTimeEventEmitter<HomeOneShotEvent> by EventChannel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     override val uiState: StateFlow<HomeUiState> = _uiState
 
-    private val _events = EventChannel<HomeOneShotEvent>()
-    override val events: Flow<HomeOneShotEvent> = _events.events
-
     override fun onUiEvent(event: HomeUiEvent) {
         when (event) {
             is HomeUiEvent.Refresh -> refresh()
-            is HomeUiEvent.ItemClicked -> scope.launch {
-                _events.emit(HomeOneShotEvent.NavigateToDetail(event.id))
+            is HomeUiEvent.ItemClicked -> viewModelScope.launch {
+                emit(HomeOneShotEvent.NavigateToDetail(event.id))
             }
         }
     }
 
     fun start(lifecycle: Lifecycle) {
-        scope.launch {
+        viewModelScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 _uiState.value = HomeUiState.Loading
                 repository.loadItems().fold(
@@ -76,7 +89,7 @@ class HomeViewModel(
     }
 
     private fun refresh() {
-        scope.launch {
+        viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             repository.loadItems().fold(
                 ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
@@ -94,12 +107,12 @@ Minimal example without a use case
 ```kotlin
 class ProfileViewModel(
     private val userRepository: UserRepository,
-    private val scope: CoroutineScope
-) : UiStateHolder<ProfileUiState, ProfileUiEvent> {
+    customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
+) : ViewModel(customScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
     override val uiState: StateFlow<ProfileUiState> = _uiState
 
-    fun load(userId: String) = scope.launch {
+    fun load(userId: String) = viewModelScope.launch {
         _uiState.value = ProfileUiState.Loading
         userRepository.getUser(userId).fold(
             ifLeft = { _uiState.value = ProfileUiState.Error(mapError(it)) },
@@ -235,8 +248,8 @@ Example (receiving nav args via SavedStateHandle)
 class ProfileViewModel(
   private val repo: UserRepository,
   private val savedStateHandle: SavedStateHandle,
-  private val scope: CoroutineScope
-) : UiStateHolder<ProfileUiState, ProfileUiEvent> {
+  customScope: CloseableCoroutineScope = CloseableCoroutineScope(),
+) : ViewModel(customScope), UiStateHolder<ProfileUiState, ProfileUiEvent> {
   // assume "userId" is provided by the entry/route
   private val userId: String = checkNotNull(savedStateHandle.get<String>("userId"))
   private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
@@ -245,7 +258,7 @@ class ProfileViewModel(
   override fun onUiEvent(event: ProfileUiEvent) { /* ... */ }
 
   fun start(lifecycle: Lifecycle) {
-    scope.launch {
+    viewModelScope.launch {
       lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
         repo.getUser(userId).fold(
           ifLeft = { _uiState.value = ProfileUiState.Error(mapError(it)) },
