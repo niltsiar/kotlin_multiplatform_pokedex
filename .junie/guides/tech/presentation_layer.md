@@ -3,15 +3,15 @@
 Purpose: Establish consistent patterns for UI architecture, state management, and component design in Compose Multiplatform projects.
 
 ## Location and Structure
-- All presentation code under `composeApp/src/commonMain/kotlin/com/<org>/<app>/presentation/`
+- Feature‑local presentation code lives under `:features:<feature>:presentation/src/commonMain/kotlin/com/<org>/<app>/presentation/<feature>/...`
 - Organize by feature: `presentation/screens/<feature>/` (e.g., `home/`, `paywall/`, `onboarding/`)
-- Shared components: `presentation/components/` with sub-packages for related components
-- Screen-level navigation: `presentation/screens/<feature>/<Feature>ScreenRoute.kt`
+- Shared components: prefer a shared module (e.g., `:core:designsystem`) or feature‑local `presentation/components/`
+- Screen‑level route contracts live in `:features:<feature>:api`; screen implementations/composables live in `:features:<feature>:presentation`
 
 ## Screen Architecture Pattern
 
 ### UiStateHolder Pattern (as an interface)
-Define a small interface that viewmodels implement. Keep classes framework-agnostic and free of DI annotations. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
+Define a small interface that viewmodels implement. Keep classes framework‑agnostic and free of DI annotations. Repositories return Arrow `Either`, so handle both Left and Right paths near the boundary and map to UI state.
 
 Recommended interfaces
 ```kotlin
@@ -34,10 +34,17 @@ class EventChannel<E> : OneTimeEventEmitter<E> {
 }
 ```
 
+ViewModels rules (required)
+- Do not perform work in `init` blocks. Be lifecycle‑aware and start work in lifecycle callbacks (or Compose effects) instead.
+- Accept a `CoroutineScope` parameter (your `viewModelScope`) in the constructor for easy substitution in tests.
+- Use `SavedStateHandle` when necessary to persist screen state/inputs across configuration changes or process death.
+- Do not expose mutable collections; prefer `kotlinx.collections.immutable` types (`ImmutableList`, `ImmutableMap`, etc.).
+
+Example ViewModel with lifecycle start and SavedStateHandle
 ```kotlin
 class HomeViewModel(
     private val repository: Repository,
-    private val applicationScope: ApplicationScope,
+    private val savedStateHandle: SavedStateHandle,
     private val scope: CoroutineScope
 ) : UiStateHolder<HomeUiState, HomeUiEvent>, OneTimeEventEmitter<HomeOneShotEvent> {
 
@@ -46,18 +53,6 @@ class HomeViewModel(
 
     private val _events = EventChannel<HomeOneShotEvent>()
     override val events: Flow<HomeOneShotEvent> = _events.events
-
-    init {
-        // Example: initial load
-        scope.launch {
-            _uiState.value = HomeUiState.Loading
-            val result = repository.loadItems()
-            _uiState.value = result.fold(
-                ifLeft = { err -> HomeUiState.Error(mapError(err)) },
-                ifRight = { items -> HomeUiState.Content(items.map(::toUi)) }
-            )
-        }
-    }
 
     override fun onUiEvent(event: HomeUiEvent) {
         when (event) {
@@ -68,12 +63,24 @@ class HomeViewModel(
         }
     }
 
+    fun start(lifecycle: Lifecycle) {
+        scope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                _uiState.value = HomeUiState.Loading
+                repository.loadItems().fold(
+                    ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
+                    ifRight = { items -> _uiState.value = HomeUiState.Content(items.map(::toUi).toImmutableList()) }
+                )
+            }
+        }
+    }
+
     private fun refresh() {
         scope.launch {
             _uiState.value = HomeUiState.Loading
             repository.loadItems().fold(
                 ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
-                ifRight = { _uiState.value = HomeUiState.Content(it.map(::toUi)) }
+                ifRight = { _uiState.value = HomeUiState.Content(it.map(::toUi).toImmutableList()) }
             )
         }
     }
@@ -81,7 +88,7 @@ class HomeViewModel(
 ```
 
 ### No empty use cases
-- Avoid overengineering. If a screen only needs to call a single repository method and apply simple mapping to UI state, call the repository directly from the `UiStateHolder`. Do not introduce a pass-through use case that just forwards parameters and returns the same result.
+- Avoid overengineering. If a screen only needs to call a single repository method and apply simple mapping to UI state, call the repository directly from the `UiStateHolder`. Do not introduce a pass‑through use case.
 
 Minimal example without a use case
 ```kotlin
@@ -104,7 +111,7 @@ class ProfileViewModel(
 ```
 
 ### Screen Composables
-Follow function overloading pattern for flexibility:
+Follow function overloading pattern for flexibility and collect one‑time events:
 
 ```kotlin
 // Main entry point with StateHolder interface
@@ -112,11 +119,11 @@ Follow function overloading pattern for flexibility:
 fun HomeScreen(
     modifier: Modifier = Modifier,
     uiStateHolder: UiStateHolder<HomeUiState, HomeUiEvent>,
-    onNavigate: (destination) -> Unit
+    onNavigate: (destination: Any) -> Unit
 ) {
     val uiState by uiStateHolder.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
-    val coroutineScope = rememberCoroutineScope()
+
     // Collect one-time events if the holder also implements OneTimeEventEmitter
     (uiStateHolder as? OneTimeEventEmitter<HomeOneShotEvent>)?.let { emitter ->
         LaunchedEffect(emitter) {
@@ -128,6 +135,7 @@ fun HomeScreen(
             }
         }
     }
+
     HomeScreen(
         modifier = modifier,
         uiState = uiState,
@@ -142,7 +150,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     uiState: HomeUiState,
     onUiEvent: (HomeUiEvent) -> Unit,
-    onNavigate: (destination) -> Unit
+    onNavigate: (destination: Any) -> Unit
 ) {
     when (uiState) {
         is HomeUiState.Loading -> Loading()
@@ -157,13 +165,13 @@ fun HomeScreen(
 ### UI State Classes
 - Use immutable data classes for UI state
 - Provide meaningful defaults for easy construction
-- Group related state in nested data classes when appropriate
+- Use immutable collections from `kotlinx.collections.immutable`
 
 ```kotlin
 sealed interface HomeUiState {
     data object Loading : HomeUiState
     data class Error(val message: String) : HomeUiState
-    data class Content(val items: List<ItemUiState>) : HomeUiState
+    data class Content(val items: ImmutableList<ItemUiState>) : HomeUiState
 
     companion object {
         val DefaultRetryEvent = HomeUiEvent.Refresh
@@ -197,65 +205,57 @@ fun VideoCardItem(
     onPlayClick: () -> Unit,
     onMoreOptionsClick: () -> Unit,
     modifier: Modifier = Modifier
-) {
-    // Implementation
-}
+) { /* ... */ }
 ```
 
 ### Component Organization
-- Group related components in dedicated packages:
-  - `presentation/components/video/` - video-related components
-  - `presentation/components/premium/` - premium/subscription components
-  - `presentation/components/ads/` - advertisement components
+- Group related components in dedicated packages (feature‑local):
+  - `presentation/components/video/` – video related
+  - `presentation/components/premium/` – premium/subscription
+  - `presentation/components/ads/` – ads
 
 ### Design System Integration
-- Use design system components from `designsystem` module when available
-- Follow design system naming conventions (e.g., `AppButton`, `AppCard`)
-- Keep presentation components generic and parameterized
-
-## Vertical Slices & Module Boundaries
-- Presentation for each feature lives in that feature’s modules. Only expose what other features need via `:features:<feature>:api`.
-- Keep navigation contracts (routes, deep links, entry points) in `api` and implementations in `impl`.
-
-## Screen Wrapper Patterns
-
-### Common Screen Structure
-Use consistent screen wrapper pattern:
-
-```kotlin
-@Composable
-fun FeatureScreen(
-    modifier: Modifier = Modifier,
-    onBackClick: () -> Unit
-) {
-    ScreenWithToolbar(
-        title = stringResource(Res.string.feature_title),
-        onNavigationClick = onBackClick
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = paddingValues
-        ) {
-            // Screen content
-        }
-    }
-}
-```
-
-
-### User Feedback
-- Use proper loading indicators for async operations
-- Show meaningful error messages with retry options
-- Provide haptic feedback for important actions
-
+- Use components from the `designsystem` module when available.
+- Keep presentation components generic and parameterized.
 
 ## Performance Considerations
 
 ### State Management
-- Use `remember` for expensive calculations
-- Implement proper `key` parameters for LazyColumn/LazyRow items
-- Avoid unnecessary recomposition with stable parameters
+- Use `remember` for expensive calculations.
+- Provide stable keys for Lazy lists.
+- Avoid unnecessary recomposition with stable parameters and immutable state.
 
+## Navigation 3 integration (Compose Multiplatform)
+- We standardize on Navigation 3. Feature routes/entries live in `:features:<feature>:api`; composables live in `:features:<feature>:presentation`.
+- Use a back stack model (e.g., `rememberNavBackStack(startKey)`) and drive UI by adding/removing keys.
+- `SavedStateHandle` can be used to save input state and restore across configuration/process death.
+
+Example (receiving nav args via SavedStateHandle)
+```kotlin
+class ProfileViewModel(
+  private val repo: UserRepository,
+  private val savedStateHandle: SavedStateHandle,
+  private val scope: CoroutineScope
+) : UiStateHolder<ProfileUiState, ProfileUiEvent> {
+  // assume "userId" is provided by the entry/route
+  private val userId: String = checkNotNull(savedStateHandle.get<String>("userId"))
+  private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)
+  override val uiState: StateFlow<ProfileUiState> = _uiState
+
+  override fun onUiEvent(event: ProfileUiEvent) { /* ... */ }
+
+  fun start(lifecycle: Lifecycle) {
+    scope.launch {
+      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        repo.getUser(userId).fold(
+          ifLeft = { _uiState.value = ProfileUiState.Error(mapError(it)) },
+          ifRight = { user -> _uiState.value = ProfileUiState.Content(user.toUi()) }
+        )
+      }
+    }
+  }
+}
+```
 
 ## Alignment with Product Docs
 - Map UI states to user flows from `.junie/guides/project/user_flow.md`

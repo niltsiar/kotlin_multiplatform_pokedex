@@ -3,8 +3,8 @@
 Purpose: Establish consistent patterns for organizing utility classes, extensions, and cross-cutting concerns in Compose Multiplatform projects.
 
 ## Location and Structure
-- Base utilities: `composeApp/src/commonMain/kotlin/com/<org>/<app>/util/`
-- Platform-specific utilities: `composeApp/src/androidMain/kotlin/.../util/` and `composeApp/src/iosMain/kotlin/.../util/`
+- Feature-scoped utilities: place under each feature module as needed, e.g. `:features:<feature>:impl/src/commonMain/kotlin/.../util/` (data/presentation-specific) 
+- Shared utilities: prefer a focused core module (e.g., `:core:util`) with `src/commonMain/.../util/` and platform-specific actuals in `src/androidMain` / `src/iosMain` when necessary
 - Organize by functional domain, not by technical type
 
 ## Package Organization
@@ -45,7 +45,7 @@ Group related functionality together:
 ## Utility Design Patterns
 
 ### Singleton or Injectable Class for Stateful Utilities
-Prefer plain constructors (no DI annotations) for utilities that depend on other services. Wire them via DI provider functions in wiring modules. For global singletons, expose via DI.
+Prefer plain constructors (no DI annotations) for utilities that depend on other services. Wire them via DI provider functions in wiring modules. For global singletons, expose via DI. Utilities should not throw — return `Either<Throwable, T>` consistently.
 
 ```kotlin
 // DI-agnostic class. Provide instances via DI wiring modules.
@@ -88,7 +88,7 @@ fun Modifier.fillWidthOfParent(percentage: Float = 1f): Modifier =
 ```
 
 ### Utility Classes for Stateless Operations
-Use regular classes for complex operations that don't need global state:
+Use regular classes for complex operations that don't need global state. Return `Either<Throwable, T>` from suspend functions instead of throwing. Prefer `Either.catch { ... }` to wrap potentially-throwing code because it respects `CancellationException` and other non-recoverable cases.
 
 ```kotlin
 class DataValidator {
@@ -101,16 +101,12 @@ class DataValidator {
     }
 }
 
-class FileUtils {
-    suspend fun saveToCache(data: ByteArray, filename: String): String {
-        // File operations that may throw; repositories catch and map to Either
-        TODO()
-    }
+class FileUtils(private val fm: FileManager) {
+    suspend fun saveToCache(data: ByteArray, filename: String): Either<Throwable, String> =
+        Either.catch { fm.writeFile(filename, data) }
 
-    suspend fun readFromCache(filename: String): ByteArray {
-        // File operations that may throw; repositories catch and map to Either
-        TODO()
-    }
+    suspend fun readFromCache(filename: String): Either<Throwable, ByteArray> =
+        Either.catch { fm.readFile(filename) }
 }
 ```
 
@@ -127,8 +123,8 @@ expect object Platform {
 }
 
 expect class FileManager {
-    suspend fun writeFile(filename: String, content: ByteArray): Result<String>
-    suspend fun readFile(filename: String): Result<ByteArray>
+    suspend fun writeFile(filename: String, content: ByteArray): String
+    suspend fun readFile(filename: String): ByteArray
     fun deleteFile(filename: String): Boolean
 }
 
@@ -139,9 +135,10 @@ actual object Platform {
 }
 
 actual class FileManager(private val context: Context) {
-    actual suspend fun writeFile(filename: String, content: ByteArray): Result<String> {
+    actual suspend fun writeFile(filename: String, content: ByteArray): String {
         // Android implementation
     }
+    // ... other actuals
 }
 ```
 
@@ -191,13 +188,8 @@ Some utilities should be self-contained and not require DI:
 
 ```kotlin
 object DateTimeUtils {
-    fun formatRelativeTime(instant: Instant): String {
-        // Pure function, no dependencies
-    }
-    
-    fun isToday(instant: Instant): Boolean {
-        // Pure function, no dependencies
-    }
+    fun formatRelativeTime(instant: Instant): String { /* use kotlinx-datetime */ }
+    fun isToday(instant: Instant): Boolean { /* pure */ }
 }
 
 object CryptoUtils {
@@ -210,31 +202,21 @@ object CryptoUtils {
 ## Error Handling in Utilities
 
 ### Consistent Error Patterns
-Use consistent error handling across utilities:
+Utilities should not throw; return `Either<Throwable, T>` consistently. Prefer `Either.catch { ... }` in suspend functions so coroutine cancellation is preserved.
 
 ```kotlin
 class NetworkUtils(private val logger: Logger) {
-    suspend fun checkConnection(): Boolean {
-        return try {
-            // Network check logic
-            true
-        } catch (e: Exception) {
-            logger.e("Network check failed", e)
-            false
-        }
-    }
+    suspend fun checkConnection(): Either<Throwable, Boolean> = Either.catch {
+        // Network check logic
+        true
+    }.also { if (it.isLeft()) logger.e("Network check failed", it.swap().getOrNull()) }
 }
 
-class FileUtils(private val logger: Logger) {
-    suspend fun saveFile(filename: String, data: ByteArray): String {
-        return try {
-            // File save logic
-            "savedPath"
-        } catch (e: IOException) {
-            logger.e("File save failed", e)
-            throw FileOperationException("Failed to save file", e)
-        }
-    }
+class SafeFileSaver(private val logger: Logger) {
+    suspend fun saveFile(filename: String, data: ByteArray): Either<Throwable, String> = Either.catch {
+        // File save logic
+        "savedPath"
+    }.onLeft { e -> logger.e("File save failed", e) }
 }
 ```
 
@@ -427,7 +409,7 @@ object ErrorMessageMapper {
 ```
 
 ### Wiring Utilities via DI (example)
-Provide utilities via Metro in wiring modules while keeping classes DI-agnostic:
+Provide utilities via Metro in wiring modules while keeping classes DI-agnostic. Use Impl + Factory pattern for interfaces as well.
 
 ```kotlin
 // :features:logging:wiring/src/commonMain/.../LoggingWiring.kt
@@ -437,4 +419,13 @@ Provide utilities via Metro in wiring modules while keeping classes DI-agnostic:
 // Dispatcher provider
 @Provides fun provideDispatchers(io: CoroutineDispatcher, default: CoroutineDispatcher): BackgroundDispatcherProvider =
   BackgroundDispatcherProvider(io, default)
+
+// Impl + Factory pattern for a utility interface
+interface TimeFormatter { fun relative(instant: Instant): String }
+internal class TimeFormatterImpl(private val clock: Clock) : TimeFormatter {
+  override fun relative(instant: Instant): String = /* ... */ ""
+}
+fun TimeFormatter(clock: Clock): TimeFormatter = TimeFormatterImpl(clock)
+
+@Provides fun provideTimeFormatter(clock: Clock): TimeFormatter = TimeFormatter(clock)
 ```

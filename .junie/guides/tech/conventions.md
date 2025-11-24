@@ -15,12 +15,45 @@ Purpose: Encode the cross-cutting rules we follow across modules and features. T
   - Only `api` modules are exposed to other features and the iOS umbrella. Do not export `impl`, `data`, `presentation`, or `wiring` modules.
   - Shared/core modules are allowed (e.g., `:core:domain:api`, `:core:network:api`, `:core:designsystem`) but must remain small and focused.
 
+### Interfaces: Impl + Factory Function pattern (required)
+- When you define an interface (e.g., `SomeRepository` or `SomeService`) implement it with a private/internal class named `<InterfaceName>Impl` and expose a public top‑level factory function named exactly like the interface that returns the interface type.
+- Rationale: keeps implementations hidden, simplifies DI wiring, and improves Gradle compilation avoidance.
+- Example:
+```kotlin
+// :features:jobs:api/src/commonMain/.../JobRepository.kt
+interface JobRepository {
+  suspend fun refresh(page: Int): Either<RepoError, Unit>
+  fun stream(): Flow<List<Job>>
+}
+
+// :features:jobs:impl/src/commonMain/.../JobRepositoryImpl.kt (internal)
+internal class JobRepositoryImpl(
+  private val api: JobApiService,
+  private val cache: JobCache
+) : JobRepository { /* ... */ }
+
+// Public factory (same module as Impl or in api if you want discoverability)
+fun JobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepositoryImpl(api, cache)
+
+// :features:jobs:wiring/... calls the factory
+@Provides fun provideJobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepository(api, cache)
+```
+
 ## Dependency Injection (Metro)
 - Use Metro for DI across all platforms.
 - Keep production classes free of DI annotations. Prefer wiring modules with `@Provides` functions that return interface types.
 - Root graph: define an `AppGraph` with `@DependencyGraph` in commonMain and a marker scope `AppScope`.
 - Use wiring/aggregation modules to bind implementations of `api` contracts into the graph (multibinding supported).
 - Graph extensions: use `@ContributesGraphExtension` for contextual/lifecycle scopes (e.g., logged-in).
+
+### Wiring modules and Gradle Compilation Avoidance
+- Wiring modules are created specifically to improve build speed by leveraging Gradle’s Compilation Avoidance. See:
+  - Gradle blog: https://blog.gradle.org/our-approach-to-faster-compilation
+  - Aggregation Module pattern: https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611
+- Dependency edges:
+  - App modules depend on wiring modules.
+  - Wiring depends on feature `impl` and `api`.
+  - Other features depend only on feature `api` (not `impl`), minimizing recompilation when `impl` changes.
 
 ## Repository Boundary and Error Handling
 - Repositories return Arrow `Either<RepoError, T>` and use `Either.catch { ... }.mapLeft { it.toRepoError() }` to map failures.
@@ -36,6 +69,7 @@ Purpose: Encode the cross-cutting rules we follow across modules and features. T
 - Do not create pass-through/empty use cases. Call repositories directly from viewmodels when no domain orchestration is needed. Introduce use cases only when they add value.
 - Define `UiStateHolder<S, E>` as an interface; have viewmodels implement it. One-time events should be emitted via a `OneTimeEventEmitter<E>` backed by a Channel.
 - Keep navigation contracts in feature `api`; implementations in feature modules; aggregate via wiring where needed.
+ - ViewModels: do not perform work in `init`. Be lifecycle-aware (load on lifecycle callbacks) and accept a `CoroutineScope` (your `viewModelScope`) via constructor for easy testing. Use `SavedStateHandle` when needed to restore state/inputs. Do not expose mutable collections; prefer `kotlinx.collections.immutable` types.
 
 ## iOS Shared Umbrella
 - The `shared` module produces a single umbrella framework for iOS. Export only required `api` modules and shared contracts. Keep `impl`, layer-specific modules, and `wiring` internal.
@@ -45,6 +79,12 @@ Purpose: Encode the cross-cutting rules we follow across modules and features. T
 - Use MockK for mocking in multiplatform (JVM/Android supported; use fakes for Native if needed).
 - Prefer property-based testing (Kotest `checkAll`/`forAll`) where appropriate (parsers, mappers, invariants).
  - Screenshot testing: Use Roborazzi for Android/JVM Compose UI screenshot tests. Store baselines under `composeApp/src/test/snapshots` (or a central `snapshots/`) and verify in PRs. Record/update only behind a flag in CI.
+
+### JSON round‑trip tests
+- For modules dealing with JSON, favor round‑trip tests:
+  - json → object → json (equality or semantic equivalence)
+  - object → json → object (structural equality)
+- Use Kotlinx Serialization and AssertK/Kotest matchers to assert.
 
 ### Gradle (Multiplatform test deps example)
 ```kotlin
@@ -91,3 +131,15 @@ kotlin {
 
 ## No Empty Use Cases
 - Avoid pass-through use cases that simply call a repository. Call repositories directly from presentation when no orchestration/business rule is needed. Create a use case only when it adds value (aggregation, policy, cross-cutting concerns).
+
+## Navigation
+- We standardize on Navigation 3 for Compose Multiplatform (supported since CMP 1.10.0‑beta02).
+- Artifacts to include via version catalog:
+  - `org.jetbrains.androidx.navigation3:navigation3-ui`
+  - `org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3`
+  - Optional: `org.jetbrains.compose.material3.adaptive:adaptive-navigation3`
+
+## Code Quality
+- Lint/formatting: ktlint.
+- Static analysis: detekt.
+- Configure both via convention plugins in `build-logic` and run them in CI.
