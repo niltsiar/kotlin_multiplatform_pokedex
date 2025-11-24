@@ -104,15 +104,14 @@ See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical 
 - **Metro DI issues**: Ensure KSP is configured correctly; check generated code in `build/generated/ksp`
 - **Arrow Either**: Never catch and swallow `CancellationException`; use `Either.catch` which respects cancellation
 
-## Product Knowledge (PRD & User Flows & UI/UX))
-When asked about product behavior, UX, feature scope, acceptance criteria, copy, or edge cases, Junie must leverage the project’s product documentation located at `.junie/guides/project` folder:
+## Product Knowledge (PRD & User Flows & UI/UX)
+When asked about product behavior, UX, feature scope, acceptance criteria, copy, or edge cases, leverage the project's product documentation located at `.junie/guides/project` folder:
 - **PRIMARY REFERENCE - Always consult first:**
   - `.junie/guides/project/prd.md` — **canonical product requirements, scope, constraints, and acceptance criteria. This is the definitive source for implementation decisions.**
 - Supporting documentation:
   - `.junie/guides/project/user_flow.md` — end-to-end user journeys and step-by-step flow details
   - `.junie/guides/project/onboarding.md` — onboarding-specific flows and content
   - `.junie/guides/project/ui_ux.md` — UI/UX guidelines, animations
-  - `.junie/guides/project/paywall.md` — paywall and monetization flow guidance
   - `.junie/guides/project/easter_eggs_and_mini_games_for_clipugc.md` — interactive features and gamification elements
 
 How to use these documents when answering:
@@ -166,7 +165,6 @@ Notes:
 ### UI/UX Development Guidelines
 When implementing UI screens and user experiences:
 - **Onboarding screens**: Use `.junie/guides/project/onboarding.md` for content and flow guidance
-- **Paywall screens**: Use `.junie/guides/project/paywall.md` for content and flow guidance (if exists)
 - **Generic/Other screens** (profile, settings, main features, etc.): Reference `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md` for implementation patterns and creative UI development guidance
 - **Overall UI/UX strategy**: Use `.junie/guides/prompts/uiux_agent_system_prompt.md` for high-level design direction and screen planning
 
