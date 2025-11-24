@@ -428,4 +428,18 @@ internal class TimeFormatterImpl(private val clock: Clock) : TimeFormatter {
 fun TimeFormatter(clock: Clock): TimeFormatter = TimeFormatterImpl(clock)
 
 @Provides fun provideTimeFormatter(clock: Clock): TimeFormatter = TimeFormatter(clock)
+
+// EventChannel helper is shared in :core:util for ViewModel one-time events
+// to enable delegation of OneTimeEventEmitter<E>.
+// :core:util/src/commonMain/.../EventChannel.kt
+interface OneTimeEventEmitter<E> {
+  val events: Flow<E>
+  suspend fun emit(event: E)
+}
+
+class EventChannel<E> : OneTimeEventEmitter<E> {
+  private val channel = Channel<E>(Channel.BUFFERED)
+  override val events: Flow<E> = channel.receiveAsFlow()
+  override suspend fun emit(event: E) = channel.send(event)
+}
 ```

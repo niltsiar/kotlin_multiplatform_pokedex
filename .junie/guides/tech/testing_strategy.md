@@ -7,6 +7,7 @@ Purpose: Define a cohesive, multiplatform testing strategy using Kotest and Mock
 - MockK for mocking/stubbing on JVM/Android; prefer fakes for Native targets.
  - Roborazzi for Android/JVM Compose UI screenshot testing (Robolectric-based) and optional Desktop tasks.
  - AssertK (JVM/Android) for fluent assertions; prefer in JVM tests. For commonMain/commonTest where AssertK is not available, use Kotest assertions.
+ - Lifecycle ViewModel testing (KMP): use `lifecycle-viewmodel-testing` and `ViewModelScenario` for isolated ViewModel tests where appropriate.
 
 ## Gradle Setup (Multiplatform)
 ```kotlin
@@ -18,6 +19,8 @@ kotlin {
         implementation("io.kotest:kotest-assertions-core:<version>")
         implementation("io.kotest:kotest-framework-engine:<version>")
         implementation("io.kotest:kotest-property:<version>")
+        // ViewModel testing (KMP)
+        // testImplementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-testing:<version>")
         // Optional matcher modules (examples; confirm coordinates in libs.versions.toml)
         // implementation("io.kotest:kotest-assertions-json:<version>")
         // implementation("io.kotest:kotest-assertions-kotlinx-datetime:<version>")

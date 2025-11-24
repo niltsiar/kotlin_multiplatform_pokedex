@@ -117,6 +117,8 @@ class ConventionFeaturePresentationPlugin : Plugin<Project> {
           // Immutable collections and datetime for UI state
           implementation(libs.kotlinx.immutable)
           implementation(libs.kotlinx.datetime)
+          // Lifecycle ViewModel (KMP)
+          implementation(libs.lifecycle.viewmodel)
         }
       }
     }
@@ -167,6 +169,7 @@ compose-compiler = "1.5.15"
 compose-mpp = "1.10.0-beta02" # CMP plugin version
 navigation3 = "1.0.0-alpha05"
 lifecycle-nav3 = "2.10.0-alpha05"
+lifecycle = "2.10.0-alpha05"
 adaptive-nav3 = "1.3.0-alpha02"
 kotlinx-immutable = "0.3.7"
 kotlinx-datetime = "0.6.1"
@@ -190,6 +193,8 @@ kotlinx-datetime  = "org.jetbrains.kotlinx:kotlinx-datetime:${versions.kotlinx-d
 navigation3-ui    = "org.jetbrains.androidx.navigation3:navigation3-ui:${versions.navigation3}"
 lifecycle-viewmodel-navigation3 = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3:${versions.lifecycle-nav3}"
 adaptive-navigation3 = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3:${versions.adaptive-nav3}"
+lifecycle-viewmodel = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:${versions.lifecycle}"
+lifecycle-viewmodel-testing = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-testing:${versions.lifecycle}"
 ```
 
 ## Applying Plugins in Modules

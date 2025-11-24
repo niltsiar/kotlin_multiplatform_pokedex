@@ -116,6 +116,7 @@ Button(onClick = {
 ## Testing
 - Unit-test contract behavior (route building, parameter encoding/decoding) with Kotest, using property-based testing for round-trip invariants when applicable.
 - UI navigation tests (Android) live under `:features:<feature>:presentation/src/commonTest/screentest` when implemented.
+ - ViewModels used by destinations must extend `androidx.lifecycle.ViewModel` and can use `viewModelScope`; prefer constructing them via your DI/wiring or using factory methods aligned with Navigation 3 patterns.
 
 ## Notes
 - Keep navigation state ephemeral and derived from the backstack where possible; avoid duplicating route state in view models.

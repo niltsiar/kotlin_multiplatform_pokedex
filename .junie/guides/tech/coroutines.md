@@ -19,6 +19,25 @@ Purpose: Ensure coroutine usage is testable, predictable, and aligned with platf
   - For long-running operations that should continue across screens, delegate to ApplicationScope.
   - Use withContext(ioDispatcher) around discrete IO when a new scope is not required.
 
+- ViewModel scopes (KMP)
+  - All ViewModels must extend `androidx.lifecycle.ViewModel`.
+  - Do NOT store a `CoroutineScope` field. Instead, pass a custom scope to the `ViewModel` superclass constructor and use `viewModelScope` internally.
+  - Recommended helper (place in `:core:util` commonMain):
+    ```kotlin
+    class CloseableCoroutineScope(
+      context: CoroutineContext = SupervisorJob() + Dispatchers.Main.immediate
+    ) : Closeable, CoroutineScope {
+      override val coroutineContext: CoroutineContext = context
+      override fun close() { coroutineContext.cancel() }
+    }
+
+    class MyViewModel(
+      customScope: CloseableCoroutineScope = CloseableCoroutineScope()
+    ) : ViewModel(customScope) {
+      fun doSomething() = viewModelScope.launch { /* ... */ }
+    }
+    ```
+
 - Structured Concurrency
   - Prefer structured concurrency; avoid GlobalScope.
   - Use SupervisorJob for scopes handling independent child coroutines so one failure doesn’t cancel siblings.
