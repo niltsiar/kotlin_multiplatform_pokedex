@@ -2,14 +2,23 @@
 
 ## Project Overview
 
-This is a **Kotlin Multiplatform project** targeting Android, iOS, Desktop (JVM), and Server using Compose Multiplatform. The codebase is in **early POC stage**—only skeleton modules exist with minimal implementation. Comprehensive architecture patterns are documented in `.junie/guides/` but NOT yet implemented.
+This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for Android and Desktop (JVM)**, and a **native SwiftUI app for iOS** that consumes shared business logic. The codebase is in **early POC stage**—only skeleton modules exist with minimal implementation. Comprehensive architecture patterns are documented in `.junie/guides/` but NOT yet implemented.
 
 ### Current Module Structure
 ```
-:composeApp   → Shared UI (commonMain, androidMain, jvmMain)
-:shared       → iOS umbrella framework + shared constants (SERVER_PORT=8080)
-:server       → Ktor backend (Netty on port 8080)
-:iosApp       → Xcode wrapper project
+:composeApp   → Compose Multiplatform UI (Android + Desktop JVM)
+              ├── commonMain: Shared Compose UI code
+              ├── androidMain: Android-specific implementations
+              └── jvmMain: Desktop-specific implementations
+
+:shared       → iOS umbrella framework
+              └── Exports: Other KMP modules (:features:*:api, :core:*) to iOS
+              Note: Does NOT contain business logic itself
+
+:iosApp       → Native SwiftUI iOS app
+              └── Consumes: shared.framework to access KMP modules
+
+:server       → Ktor backend (Netty on port 8080) - Backend-for-Frontend (BFF)
 ```
 
 ### Planned Architecture (NOT Implemented)
@@ -45,8 +54,11 @@ Vertical-slice modularization with api/impl/wiring pattern:
 ### iOS Build Policy ⚠️
 **NEVER run iOS builds during routine validation.** iOS builds are extremely slow (5-10min). Only execute when:
 1. Explicitly requested by user
-2. Testing iOS-specific expect/actual implementations
-3. Validating framework exports from `:shared`
+2. Testing iOS framework exports (verifying which modules are exposed)
+3. Validating iOS-specific expect/actual implementations in KMP modules
+4. Working on SwiftUI integration with shared.framework
+
+**Note**: iOS uses native SwiftUI for UI (not Compose). The `:shared` module is an umbrella that exports KMP modules.
 
 Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
 
@@ -177,17 +189,21 @@ class ProfileViewModel(private val repo: UserRepository, ...) {
 ## Common Patterns & Conventions
 
 ### Code Organization
-- **Shared logic**: `commonMain/kotlin/`
-- **Platform-specific**: `androidMain/`, `iosMain/`, `jvmMain/`
-- **expect/actual pattern**: See `shared/src/.../Platform.kt` for platform abstractions
+- **Compose UI (Android/Desktop)**: `composeApp/src/commonMain/` for shared UI
+- **Platform-specific UI**: `androidMain/`, `jvmMain/` (iOS uses SwiftUI separately)
+- **Business logic**: In feature modules (`:features:<feature>:api`, `:features:<feature>:impl`) and core modules
+- **iOS umbrella**: `shared/` module exports other KMP modules to iOS (minimal code, mostly Gradle config)
+- **expect/actual pattern**: In feature/core modules, e.g., `shared/src/.../Platform.kt` for platform abstractions
+
 ```kotlin
+// Example in any KMP module (not necessarily in :shared)
 // commonMain
 expect fun getPlatform(): Platform
 
 // androidMain
 actual fun getPlatform(): Platform = AndroidPlatform()
 
-// iosMain
+// iosMain (exported via :shared umbrella to SwiftUI app)
 actual fun getPlatform(): Platform = IOSPlatform()
 ```
 
@@ -204,9 +220,22 @@ actual fun getPlatform(): Platform = IOSPlatform()
   ```
 
 ### Integration Points
-- **Server ↔ ComposeApp**: Ktor server on port 8080 (defined in `shared/Constants.kt`)
-- **Shared ↔ iOS**: Export only `api` modules, never `impl` or `wiring`
-- **Platform abstractions**: Use expect/actual for platform-specific implementations
+- **Server (BFF)**: Ktor backend on port 8080 provides APIs for all clients
+  - Defined in: Shared constants module or configuration
+  - Used by: Android app, Desktop app, iOS app
+  - Purpose: Backend-for-Frontend, aggregation, business logic
+
+- **:shared Umbrella ↔ iOS SwiftUI**: 
+  - `:shared` exports: Only `:features:<feature>:api` and `:core:*` modules to iOS
+  - Never export: `:impl`, `:wiring`, or UI modules (`:composeApp`)
+  - iOS accesses: KMP business logic via shared.framework
+  - iOS implements: Native SwiftUI views, calls exported KMP APIs
+  
+- **Compose UI (Android/Desktop)**:
+  - Shared: Common Compose UI in `composeApp/commonMain`
+  - Platform-specific: `androidMain`, `jvmMain` for platform adaptations
+  
+- **Platform abstractions**: Use expect/actual in feature/core modules for iOS platform APIs
 
 ## Development Workflow Best Practices
 

@@ -1,25 +1,28 @@
-# Project Guidelines — Kotlin + Compose Multiplatform
+# Project Guidelines — Kotlin Multiplatform + Compose Multiplatform
 
-This repository is a Kotlin Multiplatform project using Jetpack Compose Multiplatform to target Android, iOS, Desktop (JVM), and Server.
+This repository is a Kotlin Multiplatform project using:
+- **Compose Multiplatform** for Android + Desktop (JVM) UI
+- **Native SwiftUI** for iOS UI (consuming shared Kotlin business logic)
+- **Ktor** for Backend-for-Frontend (BFF) server
 
 ## Project Overview
-- **Languages/Tech**: Kotlin, Compose Multiplatform, Gradle (Kotlin DSL), Metro DI, Arrow (Either), Kotest, MockK, Roborazzi, Navigation 3
+- **Languages/Tech**: Kotlin, Compose Multiplatform, SwiftUI, Gradle (Kotlin DSL), Metro DI, Arrow (Either), Kotest, MockK, Roborazzi, Navigation 3
 - **Targets**:
-  - Android app in composeApp
-  - Desktop (JVM) app in composeApp
-  - iOS app in iosApp (Swift/Xcode wrapper around shared code)
-  - Server in server (Ktor-based backend)
+  - **Android app**: Compose Multiplatform UI in `:composeApp`
+  - **Desktop (JVM) app**: Compose Multiplatform UI in `:composeApp`
+  - **iOS app**: Native SwiftUI in `:iosApp` consuming `:shared` framework (business logic only)
+  - **Server**: Ktor-based BFF in `:server`
 - **Module Structure**:
-  - `composeApp` — application code shared across platforms (commonMain) + platform-specific source sets (androidMain, jvmMain)
-  - `shared` — iOS umbrella framework that exports required public contracts
-  - `server` — Ktor server application
-  - `iosApp` — Xcode project that embeds the shared code
-  - `:features:<feature>:api` — public contracts (interfaces, navigation contracts, shared domain models)
-  - `:features:<feature>:impl` — private implementations (repositories, data sources, UI implementations)
-  - `:features:<feature>:wiring` — DI assembly and aggregation
-  - `:core:designsystem` — reusable Compose components, theming, design tokens
-  - `:core:util` — shared utilities
-  - `:core:domain:api` — shared domain types
+  - `composeApp` — Compose Multiplatform UI for Android + Desktop (commonMain for shared UI, androidMain/jvmMain for platform-specific)
+  - `shared` — iOS umbrella framework that exports other KMP modules (minimal code, mostly Gradle config)
+  - `iosApp` — Native SwiftUI iOS app that imports shared.framework to access KMP modules
+  - `server` — Ktor Backend-for-Frontend providing REST APIs for all clients
+  - `:features:<feature>:api` — public contracts (exported to iOS via :shared umbrella)
+  - `:features:<feature>:impl` — private implementations (NOT exported to iOS)
+  - `:features:<feature>:wiring` — DI assembly (NOT exported to iOS)
+  - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
+  - `:core:util` — shared utilities (exported to iOS via :shared)
+  - `:core:domain` — shared domain types (exported to iOS via :shared)
 
 ## Architecture
 - **Clean Architecture with vertical slices** — each feature owns its code end-to-end
@@ -31,14 +34,25 @@ This repository is a Kotlin Multiplatform project using Jetpack Compose Multipla
   - Arrow Either: repositories return `Either<RepoError, T>` at boundaries
 
 ## Directory Structure
-- `composeApp/`
-  - `src/commonMain` — shared business/UI logic in Kotlin/Compose
-  - `src/androidMain` — Android-specific code and resources
-  - `src/jvmMain` — Desktop (JVM) specific code
-  - `src/commonTest` — shared tests (place UI/Compose tests in `screentest` package)
-- `shared/` — iOS umbrella framework module
-- `server/` — Ktor server application
-- `iosApp/` — Xcode project/workspace and iOS assets
+- `composeApp/` — **Compose Multiplatform UI (Android + Desktop ONLY)**
+  - `src/commonMain` — Shared Compose UI logic
+  - `src/androidMain` — Android-specific UI code and resources
+  - `src/jvmMain` — Desktop (JVM) specific UI code
+  - `src/commonTest` — Shared UI tests (place Compose tests in `screentest` package)
+- `shared/` — **iOS umbrella framework (exports other KMP modules)**
+  - `build.gradle.kts` — Configures which modules to export to iOS
+  - Exports: `:features:*:api`, `:core:*` modules only
+  - Does NOT contain business logic itself (that lives in feature/core modules)
+- `features/` — **Feature modules (when created)**
+  - `:features:<name>:api` — Public contracts (exported to iOS)
+  - `:features:<name>:impl` — Implementations (NOT exported)
+  - Business logic, domain models, repositories, use cases live here
+- `iosApp/` — **Native SwiftUI iOS app**
+  - SwiftUI views and iOS-specific UI code
+  - Imports `shared.framework` to access KMP modules
+- `server/` — **Ktor Backend-for-Frontend**
+  - REST API endpoints for all clients
+  - Port 8080 (configurable in project constants)
 
 ## Prerequisites
 - JDK 17+
