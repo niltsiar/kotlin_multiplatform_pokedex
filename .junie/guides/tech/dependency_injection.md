@@ -18,8 +18,8 @@ References
 - Only the `api` modules are visible to other features; `impl` remains private. `impl` contributes bindings to the application graph.
 
 ## Location and Structure
-- DI code that declares the app/root graph lives in a top-level commonMain module (e.g., `composeApp/src/commonMain/.../di`).
-- Feature-specific DI contributions live in each feature’s `impl` module under `src/commonMain/.../di`.
+- DI code that declares the app/root graph lives in the app composition module’s `src/commonMain/.../di`.
+- Feature-specific DI contributions live in each feature’s `wiring` module under `:features:<feature>:wiring/src/commonMain/.../di` (providers/aggregators), while implementations remain in `:features:<feature>:impl`.
 - Platform-specific DI (if needed) is placed in platform source sets. Prefer commonMain where possible.
 
 ## Defining the App Graph
@@ -55,12 +55,12 @@ Notes
 @Provides
 fun provideHttpClient(json: Json, engine: HttpClientEngine): HttpClient = buildHttpClient(json, engine)
 
-// Bind interface to implementation without annotating the class
+// Impl + Factory: bind interface to implementation by calling a public factory function
 @Provides
 fun provideUserRepository(
   api: UserApiService,
   storage: UserStorage
-): UserRepository = RealUserRepository(api, storage)
+): UserRepository = UserRepository(api, storage) // factory returns interface, hiding *Impl
 ```
 
 Multibinding (sets/maps)
@@ -82,22 +82,27 @@ In :features:<name>:api
 - Expose only the contracts needed cross-feature (e.g., `UserRepository`, navigation contracts, and any domain/use case interfaces that other features must call). Avoid leaking implementation details.
 
 In :features:<name>:impl
-- Implement the contracts. Keep classes DI-agnostic.
-- Provide bindings in a feature wiring module via `@Provides` that returns the interface type.
+- Implement the contracts. Keep classes DI-agnostic. Implementations should be private/internal and named `<InterfaceName>Impl`.
+
+In :features:<name>:wiring
+- Provide bindings via `@Provides` that return the interface type by invoking the top‑level factory function named after the interface (Impl + Factory pattern).
 - Provide feature-scoped factories when needed using Metro graph extensions.
 
 ```kotlin
 // features/profile/api/src/commonMain/.../ProfileRepository.kt
 interface ProfileRepository { suspend fun load(): Either<RepoError, Profile> }
 
-// features/profile/impl/src/commonMain/.../RealProfileRepository.kt
-internal class RealProfileRepository(
+// features/profile/impl/src/commonMain/.../ProfileRepositoryImpl.kt
+internal class ProfileRepositoryImpl(
   private val api: ProfileApiService
 ) : ProfileRepository
 
 // features/profile/wiring/src/commonMain/.../ProfileWiring.kt
 @Provides
-fun provideProfileRepository(api: ProfileApiService): ProfileRepository = RealProfileRepository(api)
+fun provideProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepository(api) // calls factory
+
+// features/profile/impl/src/commonMain/.../ProfileRepositoryFactory.kt
+fun ProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepositoryImpl(api)
 ```
 
 ### Wiring/Aggregation Modules
@@ -156,6 +161,9 @@ Tip: The exact invocation depends on the generated API for your graph (see Metro
 - Prefer small graphs and wiring modules over large monoliths.
 - Use scoping as needed for repositories, network clients, and stateful services; use unscoped/`factory`-like patterns for ephemeral objects.
 - Validate module visibility: only `api` modules are visible to other features; `impl` and `wiring` should not be exported.
+
+### Build performance: Compilation Avoidance
+- Wiring modules exist to improve build speed by leveraging Gradle Compilation Avoidance. App modules depend on wiring; wiring depends on `api` + `impl`; other features depend only on `api`. See Gradle’s write‑up: https://blog.gradle.org/our-approach-to-faster-compilation and the Aggregation Module pattern: https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611
 
 ## iOS Umbrella (shared module)
 - The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and any public-facing contracts while keeping implementations internal. Ensure Gradle `export` entries include only the `api` modules that the iOS wrapper must see. Do not export `impl` or `wiring` modules.

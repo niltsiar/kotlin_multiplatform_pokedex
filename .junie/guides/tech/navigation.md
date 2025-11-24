@@ -3,9 +3,13 @@
 Purpose: Define how navigation contracts are exposed and implemented in a vertical-slice, feature-modularized Compose Multiplatform app.
 
 ## Architecture
-- Keep navigation feature-local. Each feature owns its entry points and routes.
+- Keep navigation feature‑local. Each feature owns its entry points and routes.
 - Expose navigation contracts in `:features:<feature>:api` and keep implementations in `:features:<feature>:impl`.
 - Avoid leaking implementation details (screens, view models) across module boundaries; expose only contracts.
+- Standard: Compose Navigation 3 (supported in Compose Multiplatform 1.10.0‑beta02). Artifacts:
+  - `org.jetbrains.androidx.navigation3:navigation3-ui`
+  - `org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3`
+  - Optional: `org.jetbrains.compose.material3.adaptive:adaptive-navigation3`
 
 ## Contracts in api
 ```kotlin
@@ -36,12 +40,13 @@ fun provideProfileEntry(): ProfileEntry = ProfileEntryImpl()
 ```
 
 ## Composition Root
-- The app/root navigation setup depends on platform and chosen nav library. For Compose Multiplatform, centralize route wiring in the app module and request feature entries via DI (Metro) as needed.
+- Centralize route wiring in the app module and request feature entries via DI (Metro) as needed.
 - Use multibinding (`Set<FeatureEntry>`) if you need to aggregate dynamic destinations.
+- With Navigation 3, drive navigation by adding/removing items from a back stack list.
 
 ```kotlin
-class NavRegistry @Inject constructor(
-  private val entries: Set<@JvmSuppressWildcards FeatureEntry>
+class NavRegistry(
+  private val entries: Set<FeatureEntry>
 ) {
   fun allRoutes(): Set<String> = entries.mapTo(mutableSetOf()) { it.route }
 }
@@ -69,13 +74,48 @@ Notes
 - Keep wiring modules internal to the app; do not export them in the iOS umbrella. Only `api` modules should be exported.
 - Feature `impl` modules remain private; wiring depends on them and exposes only contracts defined in `api`.
 
+## Navigation 3 basics (examples)
+
+Persistent back stack and entries
+```kotlin
+@Serializable data object Home : NavKey
+@Serializable data class Profile(val userId: String) : NavKey
+
+@Composable
+fun AppNav(registry: NavRegistry) {
+  val backStack = rememberNavBackStack(Home)
+  NavDisplay(
+    backStack = backStack,
+    onBack = { backStack.removeLastOrNull() },
+    entryProvider = entryProvider {
+      entry<Home> {
+        HomeScreen(
+          onNavigateProfile = { id -> backStack.add(Profile(id)) }
+        )
+      }
+      entry<Profile> { key ->
+        ProfileScreen(userId = key.userId)
+      }
+    }
+  )
+}
+```
+
+Result passing example (pop with result)
+```kotlin
+Button(onClick = {
+  resultStore.setResult("updated", resultKey = "profile_action")
+  backStack.removeLastOrNull()
+}) { Text("Done") }
+```
+
 ## Deep Links
 - Define deep link parsing and mapping to feature routes in a single place; forward parameters to feature screens via the contract methods.
 - Keep parsing logic independent of UI for testability.
 
 ## Testing
 - Unit-test contract behavior (route building, parameter encoding/decoding) with Kotest, using property-based testing for round-trip invariants when applicable.
-- UI navigation tests (Android) live under `composeApp/src/commonTest/screentest` when implemented.
+- UI navigation tests (Android) live under `:features:<feature>:presentation/src/commonTest/screentest` when implemented.
 
 ## Notes
 - Keep navigation state ephemeral and derived from the backstack where possible; avoid duplicating route state in view models.

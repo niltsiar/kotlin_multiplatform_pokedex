@@ -6,6 +6,7 @@ Purpose: Define a cohesive, multiplatform testing strategy using Kotest and Mock
 - Kotest for test framework, assertions, and property-based testing.
 - MockK for mocking/stubbing on JVM/Android; prefer fakes for Native targets.
  - Roborazzi for Android/JVM Compose UI screenshot testing (Robolectric-based) and optional Desktop tasks.
+ - AssertK (JVM/Android) for fluent assertions; prefer in JVM tests. For commonMain/commonTest where AssertK is not available, use Kotest assertions.
 
 ## Gradle Setup (Multiplatform)
 ```kotlin
@@ -17,11 +18,15 @@ kotlin {
         implementation("io.kotest:kotest-assertions-core:<version>")
         implementation("io.kotest:kotest-framework-engine:<version>")
         implementation("io.kotest:kotest-property:<version>")
+        // Optional matcher modules (examples; confirm coordinates in libs.versions.toml)
+        // implementation("io.kotest:kotest-assertions-json:<version>")
+        // implementation("io.kotest:kotest-assertions-kotlinx-datetime:<version>")
       }
     }
     val jvmTest by getting {
       dependencies {
         implementation("io.mockk:mockk:<version>")
+        implementation("com.willowtreeapps.assertk:assertk-jvm:<version>")
         // Screenshot testing
         implementation("io.github.takahirom.roborazzi:roborazzi:<version>")
         implementation("io.github.takahirom.roborazzi:roborazzi-compose:<version>")
@@ -41,6 +46,7 @@ Notes
 - Name test classes with `Spec` or `Test` suffix, mirroring production package structure.
 - Use Given/When/Then comments or Kotest contexts (`context`, `should`) to structure scenarios.
 - Prefer immutable test data and builder helpers.
+- Prefer AssertK fluent assertions in JVM tests, e.g., `assertThat(value).isEqualTo(...)`. In common tests, use Kotest `shouldBe`, `should` matchers.
 
 ## Property-Based Testing
 Use Kotest `checkAll`/`forAll` to validate invariants across many generated inputs.
@@ -92,6 +98,11 @@ class JobRepositorySpec : StringSpec({
 ## Repositories and Arrow Either
 - Assert on `Either` using Kotest matchers or pattern matching via `fold`.
 - Prefer property tests for mapping and error-classification helpers.
+ - Consider including Arrow-specific matcher helpers if available, or write small extension helpers in tests:
+```kotlin
+fun <L, R> Either<L, R>.shouldBeRight(): R = this.getOrNull() ?: fail("Expected Right but was $this")
+fun <L, R> Either<L, R>.shouldBeLeft(): L = this.swap().getOrNull() ?: fail("Expected Left but was $this")
+```
 
 ## Screenshot Testing (Roborazzi)
 
@@ -165,9 +176,11 @@ Scope and CI
 - In CI, run `verifyRoborazziDebug` on PRs; allow updating baselines only behind an explicit flag (e.g., `-Proborazzi.test.record=true`).
 
 ## Running Tests (project guidelines)
-- Shared unit tests: `./gradlew :composeApp:testDebugUnitTest` (or relevant target-specific tasks)
-- Android UI tests on device (if any under `composeApp/src/commonTest/screentest`): `./gradlew :composeApp:connectedDebugAndroidTest`
+- Shared unit tests: run the most relevant module task, e.g. `./gradlew :features:<feature>:presentation:jvmTest` or `:features:<feature>:impl:allTests` as applicable.
+- Android UI tests on device (if any under `:features:<feature>:presentation/src/androidTest`): `./gradlew :features:<feature>:presentation:connectedDebugAndroidTest`
 - Do not run iOS tests by default; only if explicitly required for an issue.
+
+Note: For feature presentation modules, place UI tests under `:features:<feature>:presentation/src/jvmTest` or `src/androidTest` as appropriate. Roborazzi tests typically run in JVM (`jvmTest`).
 
 ## Test Data Generators
 - Use Kotest `Arb` for generators (UUIDs, strings, emails, numerics).
@@ -180,3 +193,31 @@ Scope and CI
 ## Alignment with Architecture
 - Tests should reflect vertical-slice boundaries: unit-test feature `impl` against `api` contracts.
 - Use Metro DI sparingly in tests; prefer constructor injection and explicit fakes/mocks.
+
+## JSON round‑trip tests (recommended)
+Purpose: Validate that JSON adapters are symmetric and stable over time.
+
+Example (Kotlinx Serialization)
+```kotlin
+@Serializable data class UserDto(@SerialName("id") val id: String, @SerialName("name") val name: String)
+
+class UserJsonRoundTripSpec : StringSpec({
+  val json = Json { ignoreUnknownKeys = true }
+
+  "json -> object -> json is stable" {
+    val source = """{"id":"1","name":"Jane"}"""
+    val obj = json.decodeFromString<UserDto>(source)
+    val out = json.encodeToString(obj)
+    // AssertK (JVM):
+    // assertThat(Json.parseToJsonElement(out)).isEqualTo(Json.parseToJsonElement(source))
+    // Or Kotest JSON matcher:
+    out shouldContainJsonKeyValue "id" to "1"
+  }
+
+  "object -> json -> object is equal" {
+    val obj = UserDto(id = "1", name = "Jane")
+    val back = json.decodeFromString<UserDto>(json.encodeToString(obj))
+    back shouldBe obj
+  }
+})
+```

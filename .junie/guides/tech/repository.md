@@ -9,6 +9,9 @@ Key decisions
 - Keep mapping between DTO/entity and domain close to repositories.
 - Prefer vertical-slice ownership: repositories live in feature `impl` modules and implement contracts declared in feature `api` modules when cross-feature usage is needed.
 
+Interfaces, implementations, and factories
+- Implement interfaces with a private/internal class named `<InterfaceName>Impl` and expose a top-level factory function named exactly like the interface that returns the interface type. Wiring modules call the factory.
+
 ## Interfaces vs Concrete
 
 - Define repository interfaces in `:features:<feature>:api` when other features consume them or when you need substitution in tests at the module boundary.
@@ -46,7 +49,7 @@ fun Throwable.toRepoError(): RepoError = when (this) {
 - One-shot operations: `suspend fun op(...): Either<RepoError, DomainModel>`
 - Streams: prefer `Flow<DomainModel>` for stable local streams; for network-backed streams use `Flow<Either<RepoError, DomainModel>>` or expose a cached `Flow<DomainModel>` with a separate refresh call returning `Either`.
 
-## Typical Implementation Pattern
+## Typical Implementation Pattern (Impl + Factory)
 
 ```kotlin
 class JobRepositoryImpl(
@@ -74,9 +77,59 @@ class JobRepositoryImpl(
 }
 ```
 
+Factory and wiring
+```kotlin
+// Top-level factory (public), returns the interface type
+fun JobRepository(api: JobApiService, dao: SavedJobDao): JobRepository = JobRepositoryImpl(api, dao)
+
+// :features:jobs:wiring/src/commonMain/.../JobsWiring.kt
+@Provides fun provideJobRepository(api: JobApiService, dao: SavedJobDao): JobRepository = JobRepository(api, dao)
+```
+
 Notes
 - API services throw exceptions. Repositories wrap with `Either.catch` and map errors.
 - Keep repository methods small and composable; push DTO→domain mapping here.
+
+Cancellation
+- Never swallow `CancellationException`. Prefer `Either.catch` for wrapping throwing blocks — Arrow already treats cancellation and other non‑recoverable exceptions appropriately.
+
+Monad comprehensions (preferred when orchestrating steps)
+```kotlin
+// Using Arrow either {} DSL for clarity
+suspend fun submitAndCache(job: Job): Either<RepoError, JobId> = either {
+  val saved: Unit = saveJob(job).bind()
+  val refreshed: List<Job> = getJobs(page = 0, limit = 20).bind()
+  refreshed.first { it.id == job.id }.id
+}
+```
+
+## Offline‑first and Single Source of Truth (SSoT)
+- Expose a stable, cached `Flow<Domain>` from local storage (DB or in‑memory cache) as the single source of truth.
+- Provide an explicit `refresh()` suspend function that fetches from network and updates the local source, returning `Either<RepoError, Unit>`.
+- UI layers observe the `Flow` and trigger `refresh()` as needed; this enables offline behavior by default.
+
+Example
+```kotlin
+interface JobRepository {
+  fun stream(): Flow<List<Job>> // backed by local DB/cache
+  suspend fun refresh(page: Int, limit: Int): Either<RepoError, Unit>
+}
+
+internal class JobRepositoryImpl(
+  private val api: JobApiService,
+  private val dao: JobDao
+) : JobRepository {
+  override fun stream(): Flow<List<Job>> = dao.observeAll().map { list -> list.map(JobEntity::asDomain) }
+
+  override suspend fun refresh(page: Int, limit: Int): Either<RepoError, Unit> = Either.catch {
+    val response = api.getJobs(GetJobsRequest(page, limit))
+    dao.transaction {
+      dao.replaceAll(response.jobs.map(JobEntity::from))
+    }
+    Unit
+  }.mapLeft { it.toRepoError() }
+}
+```
 
 ## API Service vs Repository Responsibilities
 
@@ -103,6 +156,12 @@ class JobRepositorySpec : StringSpec({
   }
 })
 ```
+
+Round‑trip JSON tests
+- For modules that parse/emit JSON, favor round‑trip tests to ensure adapters are symmetric:
+  - `json -> object -> json`
+  - `object -> json -> object`
+- Use Kotlinx Serialization, Kotest, and/or AssertK for assertions.
 
 ## Anti-Patterns
 
