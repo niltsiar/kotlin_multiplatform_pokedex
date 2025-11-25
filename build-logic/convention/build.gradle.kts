@@ -53,6 +53,10 @@ gradlePlugin {
             id = "convention.feature.wiring"
             implementationClass = "ConventionFeatureWiringPlugin"
         }
+        register("featureUi") {
+            id = "convention.feature.ui"
+            implementationClass = "ConventionFeatureUiPlugin"
+        }
         register("kmpAndroidApp") {
             id = "convention.kmp.android.app"
             implementationClass = "ConventionKmpAndroidAppPlugin"

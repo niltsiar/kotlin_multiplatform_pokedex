@@ -3,10 +3,18 @@
 Purpose: Establish consistent patterns for UI architecture, state management, and component design in Compose Multiplatform projects.
 
 ## Location and Structure
-- Feature‑local presentation code lives under `:features:<feature>:presentation/src/commonMain/kotlin/com/<org>/<app>/presentation/<feature>/...`
-- Organize by feature: `presentation/screens/<feature>/` (e.g., `home/`, `paywall/`, `onboarding/`)
-- Shared components: prefer a shared module (e.g., `:core:designsystem`) or feature‑local `presentation/components/`
-- Screen‑level route contracts live in `:features:<feature>:api`; screen implementations/composables live in `:features:<feature>:presentation`
+- Feature‑local presentation code lives in `:features:<feature>:presentation/src/commonMain/kotlin/com/<org>/<app>/...`
+- **ViewModels and UI state are KMP and shared across ALL platforms** (Android, Desktop, iOS)
+- Organize by feature: ViewModels, UI state, event definitions
+- **Compose UI screens live separately** in `:features:<feature>:ui` modules (Android + JVM only)
+- Screen‑level route contracts live in `:features:<feature>:api` (plain data classes/objects for Navigation 3)
+- Shared Compose components: prefer a shared module (e.g., `:core:designsystem`) or feature‑local components in `:ui` module
+
+**Module Separation**:
+```
+:features:<feature>:presentation/  → ViewModels, UiState (KMP - exported to iOS)
+:features:<feature>:ui/            → Compose UI, @Composable functions (Android + JVM only)
+```
 
 ## Screen Architecture Pattern
 

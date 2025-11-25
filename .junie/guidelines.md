@@ -18,13 +18,13 @@ This repository is a Kotlin Multiplatform project using:
   - `:iosApp` — Native SwiftUI iOS app that imports shared.framework to access KMP modules
   - `:server` — Ktor Backend-for-Frontend providing REST APIs for all clients
   - `:build-logic/convention` — Custom Gradle convention plugins
-  - **Required feature structure** (create as needed):
+  - **Required feature structure** (split-by-layer for all features):
     - `:features:<feature>:api` — public contracts (interfaces, navigation, shared domain models) - exported to iOS via :shared umbrella
-    - `:features:<feature>:impl` — ALL layers (network, data, domain, presentation, UI) - NOT exported to iOS
-      - `data/` — API services (Ktor), DTOs, repositories, mappers
-      - `domain/` — Business logic, use cases, validators (if needed)
-      - `presentation/` — ViewModels, UI screens
-    - `:features:<feature>:wiring` — DI assembly (NOT exported to iOS)
+    - `:features:<feature>:data` — network layer (API services, DTOs), data layer (repositories, mappers) - KMP all targets, NOT exported to iOS
+    - `:features:<feature>:presentation` — ViewModels, UI state - **KMP all targets, shared with iOS**, exported to iOS via :shared umbrella
+    - `:features:<feature>:ui` — Compose UI (@Composable screens) - **Android + JVM only**, NOT exported to iOS
+    - `:features:<feature>:wiring` — DI assembly (Metro) - KMP with platform-specific source sets, NOT exported to iOS
+    - `:features:<feature>:domain` (optional) — Use cases, validators - only if orchestrating 2+ repositories
   - **Optional shared infrastructure** (use sparingly):
     - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
     - `:core:util` — generic utilities used by 3+ features (exported to iOS via :shared)
@@ -46,20 +46,26 @@ Each feature contains ALL layers it needs internally:
 ### Required Module Structure
 
 ```
-:features:<feature>:api    → Public contracts ONLY (shared interfaces, domain models)
-:features:<feature>:impl   → ALL layers (network, data, domain, presentation, UI)
-:features:<feature>:wiring → DI assembly
+:features:<feature>:api          → Public contracts (interfaces, domain models, navigation)
+:features:<feature>:data         → Network + Data layer (API services, repos, DTOs, mappers)
+:features:<feature>:presentation → ViewModels, UI state (shared with iOS)
+:features:<feature>:ui           → Compose UI (Android + JVM only)
+:features:<feature>:wiring       → DI assembly (Metro)
 ```
 
 **Example:**
 ```
-:features:pokemonlist:impl/
-  ├── data/
-  │   ├── PokemonListApiService.kt  (feature's network layer)
-  │   ├── dto/                      (feature's DTOs)
-  │   └── PokemonListRepositoryImpl.kt
-  ├── domain/                       (feature's business logic)
-  └── presentation/                 (feature's ViewModels & UI)
+:features:pokemonlist:data/
+  ├── PokemonListApiService.kt      (feature's network layer)
+  ├── dto/                        (feature's DTOs)
+  └── PokemonListRepositoryImpl.kt
+
+:features:pokemonlist:presentation/
+  ├── PokemonListViewModel.kt      (shared across all platforms)
+  └── PokemonListUiState.kt        (immutable collections)
+
+:features:pokemonlist:ui/
+  └── PokemonListScreen.kt         (Compose UI - Android/JVM only)
 ```
 
 ### Core Modules (Use Sparingly)

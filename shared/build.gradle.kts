@@ -11,6 +11,7 @@ kotlin {
             baseName = "Shared"
             isStatic = true
             export(projects.features.pokemonlist.api)
+            export(projects.features.pokemonlist.presentation)
         }
     }
 
@@ -18,6 +19,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.features.pokemonlist.api)
+            api(projects.features.pokemonlist.presentation)
         }
     }
 }
