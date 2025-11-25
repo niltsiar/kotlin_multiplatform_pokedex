@@ -1,9 +1,12 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.data
 
 import arrow.core.Either
+import com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListRepository
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.dto.PokemonListDto
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.dto.PokemonSummaryDto
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.RepoError
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -21,7 +24,7 @@ import io.mockk.mockk
 
 class PokemonListRepositoryTest : StringSpec({
     lateinit var mockApi: PokemonListApiService
-    lateinit var repository: com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListRepository
+    lateinit var repository: PokemonListRepository
     
     beforeTest {
         mockApi = mockk()
@@ -43,8 +46,7 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage(limit = 20, offset = 0)
         
-        result.shouldBeInstanceOf<Either.Right<*>>()
-        val page = (result as Either.Right).value
+        val page = result.shouldBeRight()
         page.pokemons.size shouldBe 2
         page.pokemons[0].id shouldBe 1
         page.pokemons[0].name shouldBe "Bulbasaur"
@@ -59,8 +61,7 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage()
         
-        result.shouldBeInstanceOf<Either.Left<*>>()
-        val error = (result as Either.Left).value
+        val error = result.shouldBeLeft()
         error shouldBe RepoError.Network
     }
     
@@ -70,8 +71,7 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage()
         
-        result.shouldBeInstanceOf<Either.Left<*>>()
-        val error = (result as Either.Left).value
+        val error = result.shouldBeLeft()
         error shouldBe RepoError.Network
     }
     
@@ -85,8 +85,8 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage()
         
-        result.shouldBeInstanceOf<Either.Left<*>>()
-        val error = (result as Either.Left).value as RepoError.Http
+        val error = result.shouldBeLeft()
+        error.shouldBeInstanceOf<RepoError.Http>()
         error.code shouldBe 404
     }
     
@@ -100,8 +100,8 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage()
         
-        result.shouldBeInstanceOf<Either.Left<*>>()
-        val error = (result as Either.Left).value as RepoError.Http
+        val error = result.shouldBeLeft()
+        error.shouldBeInstanceOf<RepoError.Http>()
         error.code shouldBe 500
     }
     
@@ -112,8 +112,8 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage()
         
-        result.shouldBeInstanceOf<Either.Left<*>>()
-        val error = (result as Either.Left).value as RepoError.Unknown
+        val error = result.shouldBeLeft()
+        error.shouldBeInstanceOf<RepoError.Unknown>()
         error.cause shouldBe unexpectedException
     }
     
@@ -131,8 +131,7 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage(limit = 20, offset = 1272)
         
-        result.shouldBeInstanceOf<Either.Right<*>>()
-        val page = (result as Either.Right).value
+        val page = result.shouldBeRight()
         page.hasMore shouldBe false
     }
     
@@ -148,7 +147,7 @@ class PokemonListRepositoryTest : StringSpec({
         
         val result = repository.loadPage()
         
-        result.shouldBeInstanceOf<Either.Right<*>>()
+        result.shouldBeRight()
     }
     
     // Property-based tests for repository behavior
@@ -179,8 +178,7 @@ class PokemonListRepositoryTest : StringSpec({
             
             val result = repository.loadPage(limit, offset)
             
-            result.shouldBeInstanceOf<Either.Right<*>>()
-            val page = (result as Either.Right).value
+            val page = result.shouldBeRight()
             page.pokemons.size shouldBe results.size
             page.hasMore shouldBe (next != null)
         }
@@ -202,8 +200,8 @@ class PokemonListRepositoryTest : StringSpec({
             
             val result = repository.loadPage()
             
-            result.shouldBeInstanceOf<Either.Left<*>>()
-            val error = (result as Either.Left).value as RepoError.Http
+            val error = result.shouldBeLeft()
+            error.shouldBeInstanceOf<RepoError.Http>()
             error.code shouldBe statusCode
         }
     }
@@ -221,7 +219,7 @@ class PokemonListRepositoryTest : StringSpec({
             
             val result = repository.loadPage(limit, offset)
             
-            result.shouldBeInstanceOf<Either.Right<*>>()
+            result.shouldBeRight()
         }
     }
 })
