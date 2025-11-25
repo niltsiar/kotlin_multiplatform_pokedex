@@ -1,5 +1,6 @@
 package com.minddistrict.multiplatformpoc.core.di
 
+import com.minddistrict.multiplatformpoc.core.designsystem.navigation.AppDestination
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
@@ -17,6 +18,12 @@ interface AppGraph {
      * Provides access to the PokemonList ViewModel.
      */
     val pokemonListViewModel: PokemonListViewModel
+    
+    /**
+     * All navigation destinations contributed via @IntoSet in feature wiring modules.
+     * Used to configure NavigationSuiteScaffold with adaptive navigation (Bar/Rail/Drawer).
+     */
+    val destinations: Set<AppDestination>
     
     /**
      * Factory for creating the AppGraph with runtime dependencies.

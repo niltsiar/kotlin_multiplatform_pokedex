@@ -133,7 +133,7 @@ Research → Plan → Implement → Test → Validate
 - ✅ `:features:pokemonlist:data/PokemonListApiService.kt`
 
 **Shared infrastructure ONLY for:**
-- Design system (UI components, theme)
+- Design system (`:core:designsystem`) - Material 3 Expressive theme, typography with Google Sans Flex variable font, color schemes with light/dark support, emphasized motion system, adaptive layout utilities, reusable Compose components
 - Generic utilities (3+ features use it)
 - Platform abstractions (expect/actual)
 

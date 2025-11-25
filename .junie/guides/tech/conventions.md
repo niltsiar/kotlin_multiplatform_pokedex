@@ -411,7 +411,14 @@ kotlin {
 
 ## Desktop JVM App and Design System
 - Desktop JVM target is a full-featured app, not just a design showcase.
-- Maintain a reusable `designsystem` module for shared Compose components and tokens. Both Android and Desktop apps consume it.
+- Maintain a reusable `:core:designsystem` module for shared Compose components, theming, and design tokens following Material 3 Expressive guidelines.
+- Design system includes:
+  - Color schemes (light/dark) with Pokémon type colors adjusted for WCAG AA
+  - Typography with Google Sans Flex variable font (Android/Desktop) and system fonts (iOS)
+  - Motion system with emphasized easing curves (EmphasizedDecelerate/Accelerate)
+  - Adaptive layout utilities using Material 3 Adaptive components
+  - Navigation patterns with NavigationSuiteScaffold for responsive nav (bar/rail/drawer)
+- Both Android and Desktop apps consume designsystem. iOS accesses via :shared umbrella (theme constants only, not Compose UI).
 
 ## Aggregation/Wiring Modules
 - Use wiring modules alongside feature `api` and implementation modules to assemble dependencies and registries without leaking implementation details.

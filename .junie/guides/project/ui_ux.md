@@ -193,39 +193,47 @@ Launch → [ANTICIPATION] → Browse → [FLOW/CALM] → Tap → [CURIOSITY]
   - **Type Badges**: Glow pulses on tap
   - **Loading**: Circular progress with rotating gradient border
 
-### Option 3 — **Playful & Vibrant Explorer**
-*Bold, colorful, and energetic design that celebrates the fun and diversity of Pokémon.*
+### Option 3 — **Playful & Vibrant Explorer** (SELECTED - Material 3 Expressive)
+*Bold, colorful, and energetic design that celebrates the fun and diversity of Pokémon using Material 3 Expressive design guidelines.*
 
 - **Color Palette**:
-  - Background: `#FFFBF0` (Warm white with subtle yellow tint)
+  - Background Light: `#FFFBF0` (Warm white with subtle yellow tint)
+  - Background Dark: `#1A1A1A` (Near-black for dark mode)
   - Cards: Gradient backgrounds matching primary type color (very subtle, 10% opacity)
-  - Accents: Full-saturation type colors (vibrant, joyful)
-  - Text: `#1A1A1A` (Near-black for contrast)
+  - Accents: Full-saturation type colors (vibrant, joyful) - adjusted for dark mode WCAG AA
+  - Text Light: `#1A1A1A` (Near-black for contrast)
+  - Text Dark: `#F5F5F5` (Off-white for readability)
   - Highlights: `#FF5E57` (Coral for buttons), `#FFCA3A` (Yellow for success)
   
-- **Typography**:
-  - Headings: **Rounded Bold** with slight playful slant — e.g., Quicksand Bold
-  - Body: **Friendly Sans** — e.g., Nunito Regular
-  - Numbers: **Rounded Monospace** — e.g., DM Mono
-  - Personality: Fun, accessible, kid-friendly but not childish
+- **Typography** (Material 3 Expressive):
+  - **Android/Desktop**: Google Sans Flex variable font (weight 100-900, width 75-100)
+    - Display Large: 57sp/64sp line height, weight 400
+    - Headline Large: 32sp/40sp line height, weight 500
+    - Title Large: 22sp/28sp line height, weight 700
+    - Body Large: 16sp/24sp line height, weight 400
+    - Dynamic weight animations: button press 400→700, card hover 400→500
+  - **iOS**: San Francisco (system default)
+  - Personality: Expressive, rounded, accessible, kid-friendly but not childish
   
 - **Iconography**:
   - **Filled with outline combo** (depth and clarity)
   - Rounded corners everywhere
   - Emoji-like style for type icons (🔥💧🌿⚡🪨 simplified)
   
-- **Animation Style**:
-  - **Bubble Pop**: Elements appear with elastic bounce
-  - **Confetti & Particles**: Celebrations with colorful confetti
-  - **Wobble & Jiggle**: Playful wiggle on interactions
-  - Transition: **Ink Spill** for screen changes (colorful liquid flow)
+- **Animation Style** (Material 3 Expressive - Emphasized Motion):
+  - **Emphasized Easing**: EmphasizedDecelerate (0.05, 0.7, 0.1, 1.0) for enter, EmphasizedAccelerate (0.3, 0.0, 0.8, 0.15) for exit
+  - **Durations**: Major transitions 400-600ms, micro-interactions 200-300ms
+  - **Bubble Pop**: Elements appear with elastic bounce using spring physics
+  - **Circular Reveal**: Screen transitions with scale + fade (400ms enter, 300ms exit)
+  - **Staggered Entrance**: Cards cascade in with 50ms delays (capped at 10 items)
+  - Transition: Circular reveal from tapped element for screen changes
   
-- **Micro-interactions**:
-  - **Tap Feedback**: Card bounces with slight rotation + haptic
-  - **Stat Bars**: Fill with rainbow gradient, overshoot, then settle
-  - **Type Badges**: Bounce in with particle trail matching type color
-  - **Loading**: Bouncing Pokéball with squash-and-stretch animation
-  - **Easter Egg**: Shake device → rainbow confetti explosion across screen
+- **Micro-interactions** (with emphasized motion):
+  - **Tap Feedback**: Card scale 1.0→0.95→1.0 (200ms, EmphasizedDecelerate) + haptic
+  - **Font Weight Animation**: Button labels 400→700 on press, card text 400→500 on hover
+  - **Stat Bars**: Progressive fill with 600ms duration + 200ms stagger, color-coded
+  - **Type Badges**: Bounce in with animateContentSize (400ms, EmphasizedDecelerate)
+  - **Loading**: Skeleton shimmer with infinite transition + pulsing scale animation
 
 ---
 

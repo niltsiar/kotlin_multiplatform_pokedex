@@ -38,6 +38,7 @@ include(":server")
 include(":shared")
 
 // Core modules
+include(":core:designsystem")
 include(":core:di")
 include(":core:httpclient")
 
@@ -47,3 +48,6 @@ include(":features:pokemonlist:data")
 include(":features:pokemonlist:presentation")
 include(":features:pokemonlist:ui")
 include(":features:pokemonlist:wiring")
+
+// Pokemon Detail feature (placeholder)
+include(":features:pokemondetail:api")
