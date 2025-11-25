@@ -144,16 +144,59 @@ Repositories
 
 ## Testing
 
-- Unit-test repository behavior with fakes or MockK. Assert on `Either` values using Kotest matchers.
-- Use Kotest property testing where applicable (e.g., mapping invariants). Example:
+- Unit-test repository behavior with fakes or MockK. Assert on `Either` values using **Kotest Arrow extensions**.
+- Use Kotest property testing where applicable (e.g., mapping invariants).
+
+### Preferred Either Assertions (Kotest Arrow)
 
 ```kotlin
-class JobRepositorySpec : StringSpec({
-  "saveJob returns Right(Unit) on happy path" {
-    // setup mocks
-    val repo = JobRepositoryImpl(api, dao)
-    repo.saveJob(sampleJob) shouldBe Right(Unit)
-  }
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
+
+class JobRepositoryTest : StringSpec({
+    "saveJob returns Right on success" {
+        coEvery { mockApi.saveJob(any()) } returns Unit
+        
+        val result = repository.saveJob(sampleJob)
+        
+        // Returns Unit - no casting needed
+        result.shouldBeRight()
+    }
+    
+    "loadJob returns Right with mapped domain" {
+        coEvery { mockApi.getJob(1) } returns JobDto(id = 1, title = "Engineer")
+        
+        val result = repository.loadJob(1)
+        
+        // Returns unwrapped Job - no casting needed
+        val job = result.shouldBeRight()
+        job.id shouldBe 1
+        job.title shouldBe "Engineer"
+    }
+    
+    "loadJob returns Left on error" {
+        coEvery { mockApi.getJob(any()) } throws ConnectTimeoutException("timeout")
+        
+        val result = repository.loadJob(1)
+        
+        // Returns unwrapped RepoError - no casting needed
+        val error = result.shouldBeLeft()
+        error shouldBe RepoError.Network
+    }
+    
+    "loadJob returns Http error" {
+        val mockResponse = mockk<HttpResponse> {
+            coEvery { status } returns HttpStatusCode.NotFound
+        }
+        coEvery { mockApi.getJob(any()) } throws 
+            ClientRequestException(mockResponse, "Not found")
+        
+        val result = repository.loadJob(1)
+        
+        val error = result.shouldBeLeft()
+        error.shouldBeInstanceOf<RepoError.Http>()
+        error.code shouldBe 404  // Smart cast - no manual cast!
+    }
 })
 ```
 

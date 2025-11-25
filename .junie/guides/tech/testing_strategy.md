@@ -573,24 +573,39 @@ val mockApi = mockk<PokemonListApiService>(relaxed = true)
 Test Either returns using helper extensions:
 
 ```kotlin
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
+
 "repository returns Right on success" {
     coEvery { mockApi.getPokemonList(any(), any()) } returns mockDto
     
-    repository.loadPage().shouldBeRight { page ->
-        page.pokemons shouldNotBeEmpty()
-    }
+    val result = repository.loadPage()
+    
+    // Returns unwrapped PokemonPage - no casting needed
+    val page = result.shouldBeRight()
+    page.pokemons shouldNotBeEmpty()
 }
 
 "repository returns Left on error" {
     coEvery { mockApi.getPokemonList(any(), any()) } throws IOException()
     
-    repository.loadPage().shouldBeLeft { error ->
-        error shouldBe RepoError.Network
-    }
+    val result = repository.loadPage()
+    
+    // Returns unwrapped RepoError - no casting needed
+    val error = result.shouldBeLeft()
+    error shouldBe RepoError.Network
 }
 ```
- - Consider including Arrow-specific matcher helpers if available, or write small extension helpers in tests:
+ - Consider including Arrow-specific matcher helpers from Kotest Arrow extensions:
 ```kotlin
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
+
+// ✅ PREFERRED: Kotest Arrow extensions (returns unwrapped value)
+val user = result.shouldBeRight()
+val error = result.shouldBeLeft()
+
+// ❌ DEPRECATED: Custom extensions (old pattern)
 fun <L, R> Either<L, R>.shouldBeRight(): R = this.getOrNull() ?: fail("Expected Right but was $this")
 fun <L, R> Either<L, R>.shouldBeLeft(): L = this.swap().getOrNull() ?: fail("Expected Left but was $this")
 ```
