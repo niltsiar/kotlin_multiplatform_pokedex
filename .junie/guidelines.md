@@ -169,6 +169,111 @@ Important notes:
 - Must keep sensitive or internal doc content out of public-facing code comments unless strictly necessary.
 - If the documents appear outdated relative to the code, flag this immediately and ask for an update.
 
+## Project Conventions Enforcement
+
+**CRITICAL**: After any code generation, modification, or refactoring, you MUST validate compliance with project conventions. This is non-negotiable.
+
+### Enforcement Checklist
+
+Run through this checklist after implementing any code:
+
+#### 1. Architecture Validation
+- [ ] Code follows Clean Architecture with vertical slices
+- [ ] Features are properly modularized (api/impl/wiring pattern)
+- [ ] Only `api` modules are exposed to other features
+- [ ] `impl`, `data`, `presentation`, and `wiring` modules remain internal
+
+#### 2. Interface Pattern Enforcement (CRITICAL)
+Every interface (repositories, services, use cases) MUST follow the Impl + Factory Function pattern:
+- [ ] Implementation class named `<InterfaceName>Impl` (internal/private)
+- [ ] Public top-level factory function named exactly like the interface
+- [ ] Factory function returns the interface type
+
+**Example**:
+```kotlin
+// Interface
+interface JobRepository { ... }
+
+// Implementation (internal)
+internal class JobRepositoryImpl(...) : JobRepository { ... }
+
+// Factory function (public)
+fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
+```
+
+#### 3. Dependency Injection Compliance
+- [ ] Production classes are free of DI annotations
+- [ ] Wiring modules use `@Provides` functions returning interface types
+- [ ] Wiring modules properly aggregate dependencies
+- [ ] Graph structure is correct (`AppGraph`, `@DependencyGraph`, scope markers)
+
+#### 4. Repository Boundary Rules
+- [ ] Repositories return `Either<RepoError, T>` using Arrow
+- [ ] API services throw exceptions and expose DTOs
+- [ ] Repositories map DTOs to domain models
+- [ ] Use `Either.catch { }.mapLeft { it.toRepoError() }` pattern
+- [ ] NEVER use Kotlin `Result` or nulls for error signaling at boundaries
+
+#### 5. Presentation Layer Standards
+- [ ] ViewModels extend `androidx.lifecycle.ViewModel`
+- [ ] NO work in `init` blocks
+- [ ] NO stored `CoroutineScope` field - use `viewModelScope` parameter with default
+- [ ] Implement `UiStateHolder<S, E>` interface
+- [ ] One-time events via `OneTimeEventEmitter<E>` delegated to `EventChannel<E>`
+- [ ] Use `SavedStateHandle` for state restoration
+- [ ] Expose immutable collections only (`kotlinx.collections.immutable`)
+- [ ] NO empty/pass-through use cases - call repositories directly unless orchestration is needed
+
+#### 6. Testing Requirements
+- [ ] Kotest as primary framework
+- [ ] MockK for JVM/Android mocking (fakes for Native)
+- [ ] Property-based tests for parsers, mappers, invariants (use `checkAll`/`forAll`)
+- [ ] JSON modules have round-trip tests (json→object→json, object→json→object)
+- [ ] Roborazzi screenshot tests with baselines in `composeApp/src/test/snapshots`
+
+#### 7. Navigation & Lifecycle
+- [ ] Navigation 3 for Compose Multiplatform
+- [ ] Navigation contracts in feature `api`, implementations in feature modules
+- [ ] Dispatchers are injected (IO/Default), never hardcoded
+- [ ] Use structured concurrency and cancellation-aware IO
+
+#### 8. Module Structure & Naming
+- [ ] Features follow `:features:<feature>:api`, `:features:<feature>:impl`, `:features:<feature>:wiring`
+- [ ] Shared modules: `:core:<domain>:api` (kept minimal)
+- [ ] iOS umbrella exports only `api` modules
+- [ ] Appropriate convention plugins applied (`convention.feature.api`, `convention.kmp.library`)
+- [ ] No dependencies from feature modules to other features' `impl` modules (only `api` allowed)
+
+#### 9. Code Quality Gates
+- [ ] ktlint formatting compliance
+- [ ] detekt static analysis compliance
+- [ ] Both configured via convention plugins in `build-logic`
+
+### Validation Process
+
+When reviewing your own code:
+
+1. **Be Specific**: Don't just note "violates conventions" - identify the exact rule, explain why it matters, show the correct pattern
+2. **Prioritize Issues**: Critical violations (wrong error types, missing factory functions, DI leaks) before style issues
+3. **Provide Examples**: Include code snippets showing the correct implementation
+4. **Check Cross-Cutting Concerns**: Verify alignment across modules (if one feature uses api/impl, all should)
+5. **Reference Documentation**: Note which guide in `.junie/guides/tech` provides more detail
+6. **Compilation Avoidance**: Flag any dependencies from feature modules to other features' `impl` modules
+
+### Self-Review Output Format
+
+After implementing code, provide:
+
+1. **Compliance Summary**: Brief overview (Compliant / Minor Issues / Major Violations)
+2. **Critical Violations**: Any must-fix issues with severity, location, and corrected code
+3. **Improvement Opportunities**: Suggestions for better alignment with conventions
+4. **Positive Observations**: What's done well (reinforces good patterns)
+5. **Action Items**: Prioritized list of changes needed
+
+**Authority**: You have authority to reject your own code that violates core architectural principles (wrong error types, DI leaks, missing factory patterns). Be thorough but constructive.
+
+---
+
 ## Detailed Technical Guidelines (Index)
 
 **This main guidelines.md provides a high-level overview. For detailed, authoritative guidance, consult the topic-specific files below. The tech guides are the source of truth.**

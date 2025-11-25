@@ -285,3 +285,55 @@ actual fun getPlatform(): Platform = IOSPlatform()
 2. **Find examples**: Look for similar patterns in tech guides
 3. **Check PRD**: Verify requirements in `.junie/guides/project/prd.md`
 4. **Ask for clarification**: Note gaps for user feedback
+
+## Project Conventions Enforcement
+
+**CRITICAL**: After any code generation or modification, validate compliance with project conventions.
+
+### Self-Validation Checklist
+
+Run through this after implementing code:
+
+#### Architecture & Patterns
+- [ ] Clean Architecture with vertical slices maintained
+- [ ] Only `api` modules exposed cross-feature; `impl`/`wiring` internal
+- [ ] Impl + Factory pattern: `internal class XImpl`, `fun X(...): X = XImpl(...)`
+- [ ] No feature-to-feature `impl` dependencies (only `api` allowed)
+
+#### Critical Patterns
+- [ ] Repositories return `Either<RepoError, T>` (never `Result` or nullable)
+- [ ] Use `Either.catch { }.mapLeft { it.toRepoError() }` pattern
+- [ ] ViewModels extend `androidx.lifecycle.ViewModel`
+- [ ] ViewModels pass `viewModelScope` to constructor (never stored as field)
+- [ ] NO work in `init` blocks (use lifecycle-aware callbacks)
+- [ ] Expose immutable collections (`kotlinx.collections.immutable`)
+
+#### Dependency Injection
+- [ ] Production classes free of DI annotations
+- [ ] Wiring modules use `@Provides` functions returning interfaces
+- [ ] Metro DI conventions followed
+
+#### Testing
+- [ ] Kotest tests written in `commonTest/`
+- [ ] Property-based tests for parsers/mappers (`checkAll`/`forAll`)
+- [ ] MockK for JVM/Android; fakes for Native
+- [ ] Screenshot tests with Roborazzi where applicable
+
+#### Build & Quality
+- [ ] Dependencies added to `gradle/libs.versions.toml`
+- [ ] Convention plugins applied appropriately
+- [ ] Code passes ktlint/detekt (configured via convention plugins)
+- [ ] Android build validates: `./gradlew :composeApp:assembleDebug`
+
+### Quick Validation
+
+After coding, ask yourself:
+1. Does this follow the Impl + Factory pattern?
+2. Does the repository return `Either<RepoError, T>`?
+3. Does the ViewModel follow lifecycle-aware pattern?
+4. Are tests written (Kotest)?
+5. Is the Android build green?
+
+**If any answer is NO**: Fix before proceeding.
+
+Consult `.junie/guides/tech/conventions.md` for detailed rules.
