@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -8,7 +10,7 @@ plugins {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
     
@@ -50,14 +52,20 @@ kotlin {
         
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-            implementation(libs.kotest.assertions)
-            implementation(libs.kotest.framework)
-            implementation(libs.kotest.property)
             implementation(libs.kotlinx.coroutines.test)
         }
         
+        // Kotest is JVM-only
         jvmTest.dependencies {
+            implementation(libs.kotest.assertions)
+            implementation(libs.kotest.framework)
+            implementation(libs.kotest.property)
             implementation(libs.mockk)
+        }
+        
+        // Android tests can also use Kotest
+        androidInstrumentedTest.dependencies {
+            implementation(libs.kotest.assertions)
         }
     }
 }
