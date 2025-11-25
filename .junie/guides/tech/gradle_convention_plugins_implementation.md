@@ -208,7 +208,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Compose dependencies already included by plugin
-            implementation(projects.shared)
         }
     }
 }
