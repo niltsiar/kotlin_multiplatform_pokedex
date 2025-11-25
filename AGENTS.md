@@ -48,9 +48,33 @@ settings.gradle.kts                     ← Module structure
 ```bash
 # First actions for any task:
 1. Read task requirements completely
-2. Search .junie/guides/ for relevant patterns
-3. Check current module structure: ./gradlew projects
-4. Identify if you need new modules or modify existing
+2. **Identify task type**: Product design? UI/UX? Implementation? Testing?
+3. **Choose agent mode**: Consult specialized prompts if needed
+4. Search .junie/guides/ for relevant patterns
+5. Check current module structure: ./gradlew projects
+6. Identify if you need new modules or modify existing
+```
+
+**Task Type Decision Tree:**
+```
+Is this about product features/requirements?
+  → YES: Use Product Design Mode (.junie/guides/prompts/product_designer_agent_system_prompt.md)
+  
+Is this about visual design/animations/screens?
+  → YES: Use UI/UX Design Mode (.junie/guides/prompts/uiux_agent_system_prompt.md)
+  → Reference: animation_example_guides.md, easter_eggs_and_mini_games_guide.md
+  
+Is this about onboarding copy/flow?
+  → YES: Use Onboarding Design Mode (.junie/guides/prompts/onboarding_agent_system_prompt.md)
+  
+Is this about user journeys/navigation?
+  → YES: Use User Flow Planning Mode (.junie/guides/prompts/user_flow_agent_system_prompt.md)
+  
+Is this about implementing UI from specs?
+  → YES: Use Screen Implementation Mode (.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md)
+  
+Is this about repositories/ViewModels/tests/technical?
+  → YES: Use Standard Development Mode (this document)
 ```
 
 ### 2. Validate Before Starting
@@ -417,6 +441,234 @@ class HomeScreenScreenshotTest {
 
 ---
 
+## 🎨 Creative UI/UX Implementation Guide
+
+### When Building Delightful UIs
+
+**Always consult these guides before implementing UI:**
+- `.junie/guides/prompts/animation_example_guides.md` — Motion patterns and transitions
+- `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md` — Interactive surprises
+
+### Animation Categories & Examples
+
+#### Screen Transitions
+```kotlin
+// Circular Reveal (from animation guide)
+AnimatedContent(
+    targetState = currentScreen,
+    transitionSpec = {
+        // Expands from tapped element with spring physics
+        fadeIn() + scaleIn(initialScale = 0.3f) with
+        fadeOut() + scaleOut(targetScale = 1.5f)
+    }
+) { screen -> /* content */ }
+
+// Ink Spill / Liquid Flow
+// Use viscous easing for realistic feel
+```
+
+**Available Patterns**: Circular Reveal, Origami Fold, Portal Warp, Puzzle Piece, Ink Spill, Ripple Gate
+
+#### Button Micro-Interactions
+```kotlin
+// Micro-Bounce with Overshoot (from animation guide)
+Button(
+    onClick = { },
+    modifier = Modifier
+        .graphicsLayer {
+            scaleX = animatedScale
+            scaleY = animatedScale
+        }
+) {
+    // Shrink → expand with spring overshoot
+}
+
+// Confetti Burst on Success
+// Physics-driven particles with gravity and bounce
+```
+
+**Available Patterns**: Micro-Bounce, Shape Shifter, Rocket Launch, Confetti Burst, Ripple Feedback
+
+#### List Animations
+```kotlin
+// Staggered Entrance (from animation guide)
+LazyColumn {
+    itemsIndexed(items) { index, item ->
+        AnimatedVisibility(
+            visible = true,
+            enter = slideInHorizontally(
+                initialOffsetX = { it },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ).plus(fadeIn())
+        ) {
+            ItemCard(item)
+        }
+    }
+}
+```
+
+**Available Patterns**: Staggered Entrance, Bubble Pop, Magnet Shuffle, Parallax Scrolling, Comic POW
+
+#### Gesture-Based Interactions
+```kotlin
+// Pull-to-Refresh Morph (from animation guide)
+PullRefreshIndicator(
+    refreshing = isRefreshing,
+    state = pullRefreshState,
+    modifier = Modifier
+        .graphicsLayer {
+            // Goo stretch effect
+            scaleY = stretchProgress
+            rotationZ = wobbleRotation
+        }
+)
+
+// Elastic Edge on Overscroll
+// Springy bounce with dampened velocity
+```
+
+**Available Patterns**: Pull-to-Refresh Morph, Liquid Swipe, Elastic Edge, Portal Drag, Magnetic Attraction
+
+### Easter Eggs & Interactive Surprises
+
+#### Device-Based Interactions
+```kotlin
+// From easter_eggs_and_mini_games_guide.md
+
+// Tilt Detection
+val sensorManager = LocalContext.current.getSystemService<SensorManager>()
+LaunchedEffect(Unit) {
+    // Register accelerometer
+    // On tilt → mascot slides, ink spills
+}
+
+// Shake Detection
+// On shake → particle storm, mascot dance
+
+// Long Press Secrets
+Modifier.pointerInput(Unit) {
+    detectTapGestures(
+        onLongPress = { 
+            // Icons wiggle, particles burst, secret messages
+        }
+    )
+}
+```
+
+#### Time-Sensitive Triggers
+```kotlin
+// From easter_eggs_and_mini_games_guide.md
+
+val currentTime = LocalTime.now()
+when {
+    currentTime.hour == 3 && currentTime.minute == 33 -> {
+        // Cosmic starburst animation
+    }
+    currentTime.hour == 12 && currentTime.minute == 34 -> {
+        // Rainbow confetti
+    }
+    isUserBirthday -> {
+        // Mascot waves
+    }
+}
+```
+
+#### Hidden Touch Patterns
+```kotlin
+// Konami code or custom gesture sequences
+var gestureSequence by remember { mutableStateOf(listOf<Gesture>()) }
+
+Box(modifier = Modifier.pointerInput(Unit) {
+    detectDragGestures { change, dragAmount ->
+        // Track swipe pattern
+        if (gestureSequence.matches(SECRET_PATTERN)) {
+            // Unlock hidden theme, mini-game, or animation
+        }
+    }
+})
+```
+
+#### Mini-Games & Playful Interactions
+```kotlin
+// Hidden mascot that moves across UI
+var mascotPosition by remember { mutableStateOf(Offset.Zero) }
+
+AnimatedVisibility(visible = mascotVisible) {
+    Image(
+        painter = painterResource(R.drawable.mascot),
+        contentDescription = null,
+        modifier = Modifier
+            .offset { IntOffset(mascotPosition.x.toInt(), mascotPosition.y.toInt()) }
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    // "Catch" the mascot
+                    onMascotCaught()
+                }
+            }
+    )
+}
+
+// Physics-based playground on device shake
+// UI elements fly, bounce, attract each other
+```
+
+### Tiered Easter Egg Strategy
+
+**From easter_eggs_and_mini_games_guide.md:**
+
+1. **Common & Subtle** (10% discovery rate)
+   - Tiny winks, trail particles, small icon dances
+   - Example: Button ripple leaves temporary sparkles
+
+2. **Rare & Magical** (1% discovery rate)
+   - Mascot dances, screen-wide transformations, mini-games
+   - Example: 10x rapid tap → fireworks burst
+
+3. **Legendary & Context-Sensitive** (0.1% discovery rate)
+   - Time-based, tilt-based, collectible chains
+   - Example: Swipe Konami code → unlock retro theme
+   - Example: Shake during full moon → cosmic animation
+
+### Implementation Checklist
+
+When implementing creative UI:
+- [ ] Consulted animation_example_guides.md for motion patterns
+- [ ] Considered easter eggs from easter_eggs_and_mini_games_guide.md
+- [ ] Added @Preview for all states (loading, success, error, empty)
+- [ ] Implemented with spring physics for natural feel
+- [ ] Added haptic feedback where appropriate
+- [ ] Used velocity-based animations for gesture responsiveness
+- [ ] Considered accessibility (reduced motion preferences)
+- [ ] Tested on different device sizes
+- [ ] Added subtle audio cues (optional)
+- [ ] Balanced delight with performance
+
+### AI Prompt Template for UI Implementation
+
+When in **Screen Implementation Mode**, use this template:
+
+```
+Generate a Compose Multiplatform screen for [SCREEN_NAME] based on [MARKDOWN_FILE].
+
+Requirements:
+- Extract content from markdown (no placeholders)
+- Create multiple UI variations (e.g., minimal, playful, premium)
+- Include animations from animation_example_guides.md:
+  - Screen transitions: [specify type, e.g., Circular Reveal]
+  - Button interactions: [specify type, e.g., Micro-Bounce]
+  - List animations: [specify type, e.g., Staggered Entrance]
+- Consider easter eggs from easter_eggs_and_mini_games_guide.md:
+  - [specify if relevant, e.g., tilt interaction, time-based trigger]
+- Add @Preview for each variation with realistic data
+- Implement with spring physics and dopamine triggers
+- Ensure accessibility (color contrast, reduced motion)
+```
+
+---
+
 ## 🔧 Common Tasks & Solutions
 
 ### Adding a New Dependency
@@ -667,6 +919,134 @@ cat gradle/libs.versions.toml
 - **Modules**: `settings.gradle.kts`
 - **Properties**: `gradle.properties`
 
+### Specialized Agent Prompts
+- **Product Designer Agent**: `.junie/guides/prompts/product_designer_agent_system_prompt.md`
+- **UI/UX Agent**: `.junie/guides/prompts/uiux_agent_system_prompt.md`
+- **Onboarding Agent**: `.junie/guides/prompts/onboarding_agent_system_prompt.md`
+- **User Flow Agent**: `.junie/guides/prompts/user_flow_agent_system_prompt.md`
+- **Generic Screen UI Agent**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md`
+- **Animation Guides**: `.junie/guides/prompts/animation_example_guides.md`
+- **Easter Eggs & Mini-Games**: `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md`
+
+---
+
+## 🎭 Specialized Agent Modes
+
+When working on specific types of tasks, agents should adopt specialized modes by consulting the relevant system prompts:
+
+### Product Design Mode
+**When to use**: Creating or refining product requirements, defining features, analyzing competitors
+
+**Prompt**: `.junie/guides/prompts/product_designer_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Turn raw ideas into structured PRDs
+- Define core features with measurable requirements
+- Identify USPs and competitive positioning
+- Specify technical and design constraints
+
+### UI/UX Design Mode
+**When to use**: Planning screen layouts, designing user flows, creating visual directions
+
+**Prompt**: `.junie/guides/prompts/uiux_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Design screen structures with delight factors
+- Plan animations and micro-interactions
+- Create multiple design direction options
+- Consider emotional journey and dopamine triggers
+- **Always reference animation guides** for creative motion patterns
+
+**Animation Resources**:
+- `.junie/guides/prompts/animation_example_guides.md` — Screen transitions, button animations, list effects, gestures
+- `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md` — Device interactions (tilt, shake), hidden patterns, mini-games
+
+### Onboarding Design Mode
+**When to use**: Creating onboarding flows, writing copy, designing welcome screens
+
+**Prompt**: `.junie/guides/prompts/onboarding_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Hook users emotionally from first screen
+- Show problem → solution → benefit progression
+- Write benefit-driven, relatable copy
+- Design soft paywall hybrid screens
+- Provide detailed illustration descriptions
+
+### User Flow Planning Mode
+**When to use**: Mapping navigation paths, defining screen sequences, planning user journeys
+
+**Prompt**: `.junie/guides/prompts/user_flow_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Map complete user journeys from launch to goal
+- Define all screens with purposes and actions
+- Specify primary and secondary navigation
+- Cover edge cases and error states
+
+### Screen Implementation Mode
+**When to use**: Building UI screens in Compose Multiplatform from markdown specifications
+
+**Prompt**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md`
+
+**Key responsibilities**:
+- Create production-ready Compose Multiplatform code
+- Implement multiple UI variations in single file
+- Add animations, transitions, micro-interactions
+- Include @Preview annotations for all variations
+- Extract content from markdown specs
+- Reference animation and easter egg guides for creative implementations
+
+**Implementation Pattern**:
+```kotlin
+// Create modular, reusable composables
+@Composable
+fun ScreenVariation1(data: ScreenData, modifier: Modifier = Modifier) { }
+
+@Composable
+fun ScreenVariation2(data: ScreenData, modifier: Modifier = Modifier) { }
+
+@Preview
+@Composable
+private fun ScreenVariation1Preview() { }
+
+@Preview
+@Composable
+private fun ScreenVariation2Preview() { }
+```
+
+### Mode Selection Guidelines
+
+**Product questions** → Product Design Mode
+- "Define the app features"
+- "What should the MVP include?"
+- "Who are our competitors?"
+
+**Design questions** → UI/UX Design Mode
+- "Design the home screen"
+- "What should the visual style be?"
+- "Add delightful animations"
+
+**Copy/messaging questions** → Onboarding Design Mode
+- "Write onboarding screens"
+- "Create welcome messages"
+- "Design paywall screen"
+
+**Navigation questions** → User Flow Planning Mode
+- "Map the user journey"
+- "Plan screen sequences"
+- "Define navigation structure"
+
+**Implementation questions** → Screen Implementation Mode
+- "Implement the onboarding screen"
+- "Create UI from onboarding.md"
+- "Build the paywall interface"
+
+**Technical questions** → Standard Development Mode (this document)
+- "Implement repository"
+- "Create ViewModel"
+- "Write tests"
+
 ---
 
 ## 🎓 Learning Path for New Agents
@@ -676,21 +1056,31 @@ cat gradle/libs.versions.toml
 2. Read `.junie/guides/tech/conventions.md`
 3. Run `./gradlew projects` to see structure
 4. Run `./gradlew :composeApp:assembleDebug` successfully
+5. **Review specialized agent prompts** in `.junie/guides/prompts/`
 
-### Day 2: Patterns
+### Day 2: Technical Patterns
 1. Study Arrow Either in `.junie/guides/tech/repository.md`
 2. Study ViewModel pattern in `.junie/guides/tech/presentation_layer.md`
 3. Review existing code in `:composeApp` and `:server`
 
-### Day 3: Practice
+### Day 3: Design & UX Patterns
+1. Read animation guides in `.junie/guides/prompts/animation_example_guides.md`
+2. Review easter egg patterns in `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md`
+3. Study UI/UX agent prompt for screen design principles
+4. Understand how to create delightful, dopamine-triggering UIs
+
+### Day 4: Practice
 1. Write a simple repository with Either
 2. Write a ViewModel following the pattern
 3. Write Kotest tests for both
-4. Run `./gradlew :composeApp:testDebugUnitTest`
+4. Create a UI screen with @Preview and animations
+5. Run `./gradlew :composeApp:testDebugUnitTest`
 
 ### Ongoing
 - Reference `.junie/guides/` for specific patterns
 - Check `.junie/guides/project/prd.md` for requirements
+- **Switch to specialized agent modes** for product/design/flow tasks
+- Use animation guides for creative UI implementations
 - Validate all changes with Android build
 - Never run iOS builds unless required
 
@@ -706,6 +1096,9 @@ cat gradle/libs.versions.toml
 - [ ] Validate changes with `./gradlew :composeApp:assembleDebug`
 - [ ] Find answers in `.junie/guides/` documentation
 - [ ] Avoid common pitfalls (scope storage, init work, iOS builds)
+- [ ] **Switch to appropriate agent mode** for non-technical tasks
+- [ ] **Reference animation guides** when implementing UI
+- [ ] **Create delightful UIs** with micro-interactions and easter eggs
 
 **You're ready for complex tasks when you can**:
 - [ ] Create new feature modules (api/impl/wiring)
@@ -714,11 +1107,16 @@ cat gradle/libs.versions.toml
 - [ ] Create Roborazzi screenshot tests
 - [ ] Implement Navigation 3 contracts
 - [ ] Design sealed error hierarchies
+- [ ] **Design product requirements** using Product Design Mode
+- [ ] **Plan UI/UX flows** with animation and delight factors
+- [ ] **Implement screens from markdown** using Screen Implementation Mode
+- [ ] **Create onboarding flows** with emotional engagement
 
 ---
 
 ## 💡 Pro Tips
 
+### Technical Excellence
 1. **Always search `.junie/guides/` first** before asking questions
 2. **Android build is your friend** - run it often (45s feedback)
 3. **iOS builds are your enemy** - avoid unless absolutely necessary (5-10min)
@@ -727,6 +1125,15 @@ cat gradle/libs.versions.toml
 6. **ViewModels are lifecycle-aware** - never init work
 7. **Kotest is your safety net** - write tests as you code
 8. **Patterns are documented** - follow them exactly
+
+### Design & UX Excellence
+9. **Use specialized agent modes** - switch context for product/design/flow tasks
+10. **Animation guides are essential** - reference them for every UI implementation
+11. **Easter eggs add magic** - consider device interactions, hidden patterns, mini-games
+12. **Every @Composable needs @Preview** - with realistic data, not placeholders
+13. **Delight factors matter** - think dopamine triggers, micro-interactions, emotional journey
+14. **Multiple variations help** - loading, error, empty, success states need previews
+15. **Extract from markdown** - screen implementation mode uses .md files as source of truth
 
 ---
 
