@@ -641,4 +641,216 @@ cat gradle/libs.versions.toml
 
 ---
 
+## 🛡️ Project Conventions Enforcement
+
+**MANDATORY**: After implementing any code, you MUST validate compliance with project conventions. This ensures consistency and quality across the codebase.
+
+### Post-Implementation Validation Checklist
+
+#### 1. Architecture Compliance
+- [ ] **Vertical slices**: Features properly modularized (api/impl/wiring)
+- [ ] **Module visibility**: Only `api` modules exposed; `impl`/`wiring` internal
+- [ ] **iOS exports**: Only `:api` and `:core:*` in `:shared` umbrella (never `:impl` or `:wiring`)
+- [ ] **No cross-impl dependencies**: Features depend only on other features' `api` modules
+
+#### 2. Interface Pattern (CRITICAL - Always Validate)
+**Every interface MUST follow Impl + Factory Function pattern**:
+
+```kotlin
+// ✅ CORRECT
+interface JobRepository { ... }
+internal class JobRepositoryImpl(...) : JobRepository { ... }
+fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
+
+// ❌ WRONG
+class JobRepository(...) { ... }  // Missing interface
+class JobRepositoryImpl(...) : JobRepository  // Public impl
+```
+
+- [ ] Implementation class: `<InterfaceName>Impl` (internal/private)
+- [ ] Factory function: `fun <InterfaceName>(...): <InterfaceName> = <InterfaceName>Impl(...)`
+- [ ] Factory is public, implementation is internal
+
+#### 3. Repository Boundary Rules (CRITICAL)
+- [ ] Returns `Either<RepoError, T>` (NEVER `Result`, nullable, or throws)
+- [ ] Uses `Either.catch { }.mapLeft { it.toRepoError() }` pattern
+- [ ] Defines sealed error hierarchy per feature
+- [ ] Maps DTOs to domain at boundary
+- [ ] Never swallows `CancellationException`
+
+**Example**:
+```kotlin
+// ✅ CORRECT
+override suspend fun getJobs(): Either<RepoError, List<Job>> =
+  Either.catch {
+    api.getJobs().jobs.map { it.asDomain() }
+  }.mapLeft { it.toRepoError() }
+
+// ❌ WRONG
+suspend fun getJobs(): List<Job> = api.getJobs().jobs  // Throws
+suspend fun getJobs(): List<Job>? = try { ... } catch { null }  // Nullable
+suspend fun getJobs(): Result<List<Job>> = ...  // Result type
+```
+
+#### 4. ViewModel Pattern (CRITICAL)
+- [ ] Extends `androidx.lifecycle.ViewModel`
+- [ ] `viewModelScope` passed to superclass constructor (default value provided)
+- [ ] NO `CoroutineScope` stored as field
+- [ ] NO work in `init` block
+- [ ] Implements `UiStateHolder<S, E>`
+- [ ] Uses `kotlinx.collections.immutable` types
+- [ ] Lifecycle-aware data loading
+
+**Example**:
+```kotlin
+// ✅ CORRECT
+class HomeViewModel(
+  private val repo: JobRepository,
+  viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+) : ViewModel(viewModelScope), UiStateHolder<HomeUiState, HomeUiEvent> {
+  
+  fun start(lifecycle: Lifecycle) {
+    viewModelScope.launch {
+      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        loadData()
+      }
+    }
+  }
+}
+
+// ❌ WRONG
+class HomeViewModel : ViewModel() {
+  private val scope = CoroutineScope(SupervisorJob())  // Field storage
+  init { loadData() }  // Work in init
+}
+```
+
+#### 5. Dependency Injection (Metro)
+- [ ] Production classes free of DI annotations
+- [ ] Wiring modules use `@Provides` functions
+- [ ] `@Provides` functions return interface types
+- [ ] Factory functions used in wiring modules
+- [ ] Graph structure correct (`AppGraph`, scopes)
+
+#### 6. Testing Requirements
+- [ ] Kotest tests written in `commonTest/` (or platform-specific)
+- [ ] MockK for JVM/Android (fakes for Native)
+- [ ] Property-based tests for parsers/mappers (`checkAll`, `forAll`)
+- [ ] Repository tests cover success and error cases
+- [ ] ViewModel tests cover all UI states
+- [ ] Screenshot tests (Roborazzi) for UI components
+
+#### 7. Navigation Contracts (When Applicable)
+- [ ] Contracts in `:api` module
+- [ ] Implementations in `:impl` module
+- [ ] Wired in `:wiring` module
+- [ ] Navigation 3 artifacts used
+
+#### 8. Module Structure
+- [ ] Correct naming: `:features:<feature>:api/impl/wiring`
+- [ ] Convention plugins applied (`convention.feature.api`, etc.)
+- [ ] No direct feature-to-feature `impl` dependencies
+- [ ] Compilation avoidance respected
+
+#### 9. Code Quality
+- [ ] Dependencies in `gradle/libs.versions.toml`
+- [ ] Type-safe project accessors used (`projects.shared`, `libs.arrow.core`)
+- [ ] ktlint formatting (configured via convention plugins)
+- [ ] detekt static analysis (configured via convention plugins)
+
+#### 10. Build Validation
+- [ ] Android build passes: `./gradlew :composeApp:assembleDebug`
+- [ ] Unit tests pass: `./gradlew :composeApp:testDebugUnitTest`
+- [ ] No iOS builds run (unless explicitly required)
+
+### Self-Review Process
+
+After implementing code, perform this self-review:
+
+1. **Identify Pattern**: What pattern does this code follow? (Repository, ViewModel, Navigation, etc.)
+2. **Check Critical Rules**: 
+   - Impl + Factory? ✅/❌
+   - Either boundary? ✅/❌
+   - ViewModel lifecycle? ✅/❌
+3. **Validate Dependencies**: Are modules correctly structured?
+4. **Run Tests**: Do tests cover critical paths?
+5. **Build Validation**: Does Android build pass?
+
+### Reporting Violations
+
+If you find violations in your own code:
+
+**Format**:
+```
+❌ VIOLATION: [Pattern Name]
+Location: [File:Line]
+Issue: [Specific problem]
+Fix: [Code showing correct implementation]
+```
+
+**Example**:
+```
+❌ VIOLATION: Impl + Factory Pattern
+Location: JobRepositoryImpl.kt:15
+Issue: JobRepositoryImpl is public; should be internal
+Fix:
+  // Change:
+  class JobRepositoryImpl(...) : JobRepository
+  // To:
+  internal class JobRepositoryImpl(...) : JobRepository
+```
+
+### Severity Levels
+
+- **CRITICAL**: Wrong error types, missing factory pattern, DI leaks, work in init
+- **HIGH**: Missing tests, wrong module dependencies, missing immutable types
+- **MEDIUM**: Naming conventions, documentation gaps
+- **LOW**: Code style, minor optimizations
+
+**Fix CRITICAL and HIGH violations immediately**. MEDIUM and LOW can be noted for later improvement.
+
+### Self-Validation Output Template
+
+After implementing code, provide:
+
+```
+## Compliance Review
+
+### Summary
+[Compliant / Minor Issues / Major Violations]
+
+### Critical Violations (Fix Immediately)
+[List with location, issue, fix]
+
+### High Priority Issues
+[List with location, issue, fix]
+
+### Improvement Opportunities
+[Suggestions for better alignment]
+
+### Positive Observations
+[What follows conventions well]
+
+### Build Validation
+- [ ] Android build: ./gradlew :composeApp:assembleDebug
+- [ ] Unit tests: ./gradlew :composeApp:testDebugUnitTest
+```
+
+### Quick Reference: Common Violations
+
+| Violation | Correct Pattern |
+|-----------|----------------|
+| `class XImpl : X` (public) | `internal class XImpl : X` |
+| Missing factory function | `fun X(...): X = XImpl(...)` |
+| `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` |
+| `private val scope = ...` | `viewModelScope: CoroutineScope` param |
+| `init { loadData() }` | `fun start(lifecycle: Lifecycle) { ... }` |
+| `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` |
+| Empty use case | Call repository directly from ViewModel |
+| `:impl` exported to iOS | Only `:api` and `:core:*` in `:shared` |
+
+---
+
 **Remember**: This is a POC. Patterns are documented but not fully implemented. Your job is to implement them correctly following the guides, or work within the existing structure. When in doubt, consult `.junie/guides/tech/conventions.md` first.
+
+**Enforcement is mandatory**: After any code change, run through the validation checklist. This ensures consistency and prevents technical debt.
