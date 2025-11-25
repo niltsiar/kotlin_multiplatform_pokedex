@@ -7,7 +7,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.data)
-            implementation(projects.features.pokemonlist.presentation)
+            api(projects.features.pokemonlist.presentation)  // API: types exposed in @Provides functions
             implementation(projects.core.httpclient)
             implementation(libs.ktor.client.core)
         }

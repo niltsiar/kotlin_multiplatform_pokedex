@@ -3,12 +3,14 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     id("convention.kmp.android.app")
     id("convention.compose.multiplatform")
+    alias(libs.plugins.metro)  // Needed for createGraphFactory() extension
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.features.pokemonlist.presentation)
+            // Core DI module contains AppGraph with Metro plugin applied
+            implementation(projects.core.di)
             implementation(projects.features.pokemonlist.ui)
             implementation(projects.features.pokemonlist.wiring)
         }
