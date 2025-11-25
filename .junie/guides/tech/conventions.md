@@ -317,6 +317,26 @@ kotlin {
 - Apply plugins such as `convention.kmp.library`, `convention.android.app`, and feature-specific ones like `convention.feature.api`, `convention.feature.data`, `convention.feature.presentation`, `convention.feature.wiring`.
 - Centralize common configuration (Compose MPP, Kotlin options, Kotest/MockK, Roborazzi, lint). See `.junie/guides/tech/gradle_convention_plugins.md` for details.
 
+## Dependency Management
+- **Version Catalog**: All dependency versions centralized in `gradle/libs.versions.toml`
+- **Ben Manes Versions Plugin**: Automated dependency update checking configured in root `build.gradle.kts`
+- **Check for updates**: `./gradlew dependencyUpdates`
+- **View report**: `build/dependencyUpdates/report.html`
+- **Stability rules**:
+  - Stable versions (e.g., `2.8.4`) will NOT upgrade to unstable versions (e.g., `2.9.0-alpha01`)
+  - Unstable versions (e.g., `2.9.0-alpha01`) WILL upgrade within same major.minor version only:
+    - `2.9.0-alpha01` → `2.9.0-alpha03` ✅ (same major.minor)
+    - `2.9.0-alpha01` → `2.9.0-beta01` ✅ (same major.minor)
+    - `2.9.0-rc02` → `2.9.0` ✅ (same major.minor)
+    - `2.9.0-alpha01` → `2.10.0-alpha01` ❌ (different minor)
+    - `2.9.0-alpha01` → `3.0.0-alpha01` ❌ (different major)
+    - `2.9.0-alpha01` → `3.9.0-alpha01` ❌ (different major)
+  - Unstable versions WILL upgrade to ANY stable version:
+    - `2.9.0-alpha02` → `3.1.1` ✅ (stable release)
+    - `1.0.0-rc02` → `1.0.0` ✅ (stable release)
+  - Gradle wrapper updates also checked
+- **Workflow**: Check for updates before adding new dependencies to ensure you use the latest compatible version
+
 ## No Empty Use Cases
 - Avoid pass-through use cases that simply call a repository. Call repositories directly from presentation when no orchestration/business rule is needed. Create a use case only when it adds value (aggregation, policy, cross-cutting concerns).
 

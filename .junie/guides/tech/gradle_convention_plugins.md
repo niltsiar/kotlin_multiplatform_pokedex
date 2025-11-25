@@ -7,6 +7,18 @@ Purpose: Standardize and centralize Gradle configuration across modules using Co
 - Reduce copy/paste and drift; make new modules trivial to add.
 - Enforce module roles (feature api/data/presentation/wiring) with tailored defaults.
 
+## Dependency Management vs Convention Plugins
+
+**Convention plugins** are for module-level build configuration (targets, source sets, testing frameworks).
+
+**Dependency version management** is handled at the **root project level**:
+- **Version Catalog**: `gradle/libs.versions.toml` - centralized dependency versions
+- **Ben Manes Versions Plugin**: Root `build.gradle.kts` - automated update checking with stability rules
+- **Check updates**: `./gradlew dependencyUpdates` - see available dependency and Gradle wrapper updates
+- **Report**: `build/dependencyUpdates/report.html`
+
+Convention plugins consume the version catalog but do NOT manage version updates themselves.
+
 ## Repository Layout (example)
 ```text
 build-logic/

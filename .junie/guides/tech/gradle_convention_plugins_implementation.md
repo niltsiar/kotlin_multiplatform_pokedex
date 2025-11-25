@@ -21,6 +21,23 @@ pluginManagement {
 }
 ```
 
+**Root `build.gradle.kts`**:
+```kotlin
+plugins {
+    // ... module plugins with apply false ...
+    alias(libs.plugins.benManesVersions)  // ← Dependency update checking
+}
+```
+
+**Dependency Management** (Root Level):
+- **Version Catalog**: `gradle/libs.versions.toml` - All dependency versions
+- **Ben Manes Versions Plugin**: Root `build.gradle.kts` - Automated update checking
+- **Check updates**: `./gradlew dependencyUpdates`
+- **Report**: `build/dependencyUpdates/report.html`
+- **Stability Rules**: Stable versions stay stable; unstable upgrade within same minor version only
+
+See `.junie/guides/tech/conventions.md` for detailed dependency management rules.
+
 **`build-logic/settings.gradle.kts`**:
 ```kotlin
 dependencyResolutionManagement {
