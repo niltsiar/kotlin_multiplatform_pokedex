@@ -55,17 +55,14 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         
-        // Kotest is JVM-only
         jvmTest.dependencies {
             implementation(libs.kotest.assertions)
             implementation(libs.kotest.framework)
             implementation(libs.kotest.property)
+            implementation(libs.kotest.runner.junit5)
+            implementation(libs.kotest.assertions.arrow)
             implementation(libs.mockk)
-        }
-        
-        // Android tests can also use Kotest
-        androidInstrumentedTest.dependencies {
-            implementation(libs.kotest.assertions)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
