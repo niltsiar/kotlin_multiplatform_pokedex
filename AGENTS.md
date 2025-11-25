@@ -137,6 +137,25 @@ Research → Plan → Implement → Test → Validate
 - Generic utilities (3+ features use it)
 - Platform abstractions (expect/actual)
 
+### Convention Plugin Architecture (Updated November 2025)
+
+Following patterns from [Now in Android](https://github.com/android/nowinandroid):
+
+**Shared Configuration Utilities** in `build-logic/convention/src/main/kotlin/com/minddistrict/multiplatformpoc/`:
+- `KotlinMultiplatform.kt` - `configureKmpTargets()` centralizes target configuration
+- `TestConfiguration.kt` - `configureTests()` standardizes test setup
+- `ComposeConfiguration.kt` - `configureComposeMultiplatform()` for Compose dependencies
+- `ProjectExtensions.kt` - `libs` property and `getVersion()`/`getLibrary()` extensions
+
+**Base Plugin Composition**:
+- `convention.feature.base` provides KMP targets, tests, common dependencies (Arrow, Coroutines, Collections)
+- Feature layer plugins (api/impl/wiring) compose the base plugin
+- UI plugin maintains explicit target configuration (Android + JVM only)
+
+**Benefits**: 38% code reduction, single source of truth, automatic dependencies
+
+**See**: `.junie/guides/tech/convention_plugins_quick_ref.md` for complete usage guide
+
 ### Dependency Injection: Metro (Implemented in pokemonlist)
 **Classes are DI-agnostic. Wire via `@Provides` in wiring modules with platform-specific source sets.**
 
@@ -949,6 +968,8 @@ cat gradle/libs.versions.toml
 - **ViewModels**: `.junie/guides/tech/presentation_layer.md`
 - **Testing**: `.junie/guides/tech/testing_strategy.md`
 - **Navigation**: `.junie/guides/tech/navigation.md`
+- **Convention Plugins**: `.junie/guides/tech/convention_plugins_quick_ref.md` ← **Quick reference**
+- **Convention Plugins Improvements**: `.junie/guides/tech/convention_plugins_improvements.md` ← **Implementation details**
 
 ### Product Documentation
 - **Requirements**: `.junie/guides/project/prd.md`
@@ -1389,13 +1410,13 @@ After implementing code, provide:
 | `:impl` exported to iOS | Only `:api` and `:core:*` in `:shared` |
 | @Composable without @Preview | Add `@Preview` with realistic data |
 | SwiftUI View without #Preview | Add `#Preview` with realistic data |
-| Manual cast after `shouldBeInstanceOf` | Use smart cast directly (see kotest-smart-casting-quick-ref.md) |
+| Manual cast after `shouldBeInstanceOf` | Use smart cast directly (see kotest_smart_casting_quick_ref.md) |
 
 ### Common Testing Pitfalls
 
 **Manual casting after type-checking matchers** - Kotest matchers provide smart casting through compiler contracts.
 
-See `.junie/guides/tech/kotest-smart-casting-quick-ref.md` for complete guide.
+See `.junie/guides/tech/kotest_smart_casting_quick_ref.md` for complete guide.
 
 **Quick checklist**:
 - ✅ No manual casts after `shouldBeInstanceOf<T>()`

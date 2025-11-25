@@ -69,7 +69,7 @@ in your IDE's toolbar or open the [/iosApp](./iosApp) directory in Xcode and run
 ## Quick References
 
 ### Testing
-- **[Kotest Smart Casting](.junie/guides/tech/kotest-smart-casting-quick-ref.md)** - Avoid unnecessary manual casts in tests
+- **[Kotest Smart Casting](.junie/guides/tech/kotest_smart_casting_quick_ref.md)** - Avoid unnecessary manual casts in tests
 
 ---
 

@@ -1,6 +1,23 @@
+package com.minddistrict.multiplatformpoc
+
+import org.gradle.api.Project
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.artifacts.VersionCatalog
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.getByType
+
+/**
+ * Extension property to access the version catalog in a cleaner way.
+ * 
+ * Usage:
+ * ```kotlin
+ * val libs = project.libs
+ * implementation(libs.getLibrary("arrow-core"))
+ * ```
+ */
+internal val Project.libs: VersionCatalog
+    get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 /**
  * Extension function to get a version from the catalog as a String.
