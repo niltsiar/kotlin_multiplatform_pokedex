@@ -3,7 +3,6 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     id("convention.kmp.android.app")
     id("convention.compose.multiplatform")
-    alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
