@@ -195,6 +195,92 @@ sealed interface HomeUiEvent {
 
 ## Component Design
 
+### Compose Previews (MANDATORY)
+
+**Every @Composable function MUST have a @Preview:**
+
+```kotlin
+@Composable
+fun PokemonCard(
+    pokemon: Pokemon,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier) {
+        Column {
+            AsyncImage(model = pokemon.imageUrl, contentDescription = pokemon.name)
+            Text(text = "#${pokemon.id}")
+            Text(text = pokemon.name)
+        }
+    }
+}
+
+// ✅ REQUIRED: Preview with realistic data
+@Preview
+@Composable
+private fun PokemonCardPreview() {
+    MaterialTheme {
+        Surface {
+            PokemonCard(
+                pokemon = Pokemon(
+                    id = 25,
+                    name = "Pikachu",
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+                )
+            )
+        }
+    }
+}
+
+// ✅ RECOMMENDED: Multiple previews for different states
+@Preview
+@Composable
+private fun PokemonCardLongNamePreview() {
+    MaterialTheme {
+        Surface {
+            PokemonCard(
+                pokemon = Pokemon(
+                    id = 1,
+                    name = "Bulbasaur with very long name",
+                    imageUrl = "url"
+                )
+            )
+        }
+    }
+}
+```
+
+**Preview Requirements:**
+- ✅ Use `@Preview` from `org.jetbrains.compose.ui.tooling.preview.Preview`
+- ✅ Preview function must be `private`
+- ✅ Name pattern: `<ComponentName>Preview`
+- ✅ Wrap in `MaterialTheme` and `Surface`
+- ✅ Provide realistic data (not empty/null)
+- ✅ Complex components need multiple previews (loading, error, content states)
+
+**For SwiftUI Views:**
+```swift
+struct PokemonCard: View {
+    let pokemon: Pokemon
+    
+    var body: some View {
+        VStack {
+            AsyncImage(url: URL(string: pokemon.imageUrl))
+            Text("#\(pokemon.id)")
+            Text(pokemon.name)
+        }
+    }
+}
+
+// ✅ REQUIRED: Swift Preview
+#Preview {
+    PokemonCard(pokemon: Pokemon(
+        id: 25,
+        name: "Pikachu",
+        imageUrl: "https://..."
+    ))
+}
+```
+
 ### Reusable Components
 - Keep components small and focused on single responsibility
 - Use `modifier: Modifier = Modifier` parameter for all custom composables

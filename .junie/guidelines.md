@@ -18,16 +18,71 @@ This repository is a Kotlin Multiplatform project using:
   - `:iosApp` — Native SwiftUI iOS app that imports shared.framework to access KMP modules
   - `:server` — Ktor Backend-for-Frontend providing REST APIs for all clients
   - `:build-logic/convention` — Custom Gradle convention plugins
-  - **Required module structure** (create as needed):
-    - `:features:<feature>:api` — public contracts (exported to iOS via :shared umbrella)
-    - `:features:<feature>:impl` — private implementations (NOT exported to iOS)
+  - **Required feature structure** (create as needed):
+    - `:features:<feature>:api` — public contracts (interfaces, navigation, shared domain models) - exported to iOS via :shared umbrella
+    - `:features:<feature>:impl` — ALL layers (network, data, domain, presentation, UI) - NOT exported to iOS
+      - `data/` — API services (Ktor), DTOs, repositories, mappers
+      - `domain/` — Business logic, use cases, validators (if needed)
+      - `presentation/` — ViewModels, UI screens
     - `:features:<feature>:wiring` — DI assembly (NOT exported to iOS)
+  - **Optional shared infrastructure** (use sparingly):
     - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
-    - `:core:util` — shared utilities (exported to iOS via :shared)
-    - `:core:domain` — shared domain types (exported to iOS via :shared)
+    - `:core:util` — generic utilities used by 3+ features (exported to iOS via :shared)
+    - `:core:httpclient` — ONLY HttpClient instance configuration (NOT generic API services)
 
 ## Architecture Requirements
-- **Clean Architecture with vertical slices** — each feature must own its code end-to-end
+
+**Core Principle**: True vertical slicing - each feature is a complete vertical slice owning ALL its layers end-to-end.
+
+### Vertical Slicing Defined
+
+Each feature contains ALL layers it needs internally:
+- Domain models specific to that feature
+- Network/API services for that feature's endpoints  
+- Data/Repository layer for that feature
+- Presentation/UI for that feature's screens
+- Navigation contracts for that feature
+
+### Required Module Structure
+
+```
+:features:<feature>:api    → Public contracts ONLY (shared interfaces, domain models)
+:features:<feature>:impl   → ALL layers (network, data, domain, presentation, UI)
+:features:<feature>:wiring → DI assembly
+```
+
+**Example:**
+```
+:features:pokemonlist:impl/
+  ├── data/
+  │   ├── PokemonListApiService.kt  (feature's network layer)
+  │   ├── dto/                      (feature's DTOs)
+  │   └── PokemonListRepositoryImpl.kt
+  ├── domain/                       (feature's business logic)
+  └── presentation/                 (feature's ViewModels & UI)
+```
+
+### Core Modules (Use Sparingly)
+
+**ONLY create :core modules for:**
+- ✅ Design system (reusable UI components)
+- ✅ Generic utilities used by 3+ features
+- ✅ Cross-cutting domain types (User, Error)
+- ✅ Platform abstractions (expect/actual)
+
+**DO NOT create :core modules for:**
+- ❌ Generic network layer (each feature has its own)
+- ❌ Generic repository patterns (each feature implements its own)
+- ❌ Generic API services (each feature defines its own)
+
+### Feature Independence
+
+- Features MUST NOT depend on other features' `:impl` modules
+- Each feature owns its network layer (API service, DTOs, mappers)
+- Each feature defines its own DTOs (even for same backend endpoint)
+- Domain models in :api only if shared across features
+
+**Clean Architecture with vertical slices** — each feature must own its code end-to-end
 - **Vertical-slice feature modules** must follow api/impl/wiring pattern (see `.junie/guides/tech/conventions.md`)
 - **Required patterns**:
   - Impl + Factory: interfaces must be implemented by internal `*Impl` classes, exposed via public factory functions
@@ -231,13 +286,39 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 - [ ] JSON modules have round-trip tests (json→object→json, object→json→object)
 - [ ] Roborazzi screenshot tests with baselines in `composeApp/src/test/snapshots`
 
-#### 7. Navigation & Lifecycle
+#### 7. Testing Strategy (Mobile-First)
+- [ ] Primary tests in `androidTest/` to leverage Kotest and MockK
+- [ ] Android tests validate ALL shared business logic
+- [ ] `commonTest/` only for platform-agnostic utilities (no dependencies)
+- [ ] Property-based testing with Kotest's `checkAll`/`forAll`
+- [ ] MockK for powerful mocking (repositories, APIs)
+- [ ] Roborazzi for screenshot tests (Android/Robolectric)
+- [ ] Focus on mobile scenarios (primary target)
+- [ ] iOS compiles same code (type safety guaranteed)
+- [ ] Native-specific code uses expect/actual (minimal, isolated)
+
+**Testing Trade-offs:**
+- ✅ Full Kotest + MockK in Android tests
+- ✅ Faster feedback (seconds vs iOS minutes)
+- ✅ Tests cover shared KMP business logic
+- ✅ Mobile-first (Android validates, iOS shares same code)
+- ⚠️ Native-only edge cases test separately (expect/actual)
+
+#### 8. Navigation & Lifecycle
 - [ ] Navigation 3 for Compose Multiplatform
 - [ ] Navigation contracts in feature `api`, implementations in feature modules
 - [ ] Dispatchers are injected (IO/Default), never hardcoded
 - [ ] Use structured concurrency and cancellation-aware IO
 
-#### 8. Module Structure & Naming
+#### 8. UI Components & Previews (MANDATORY)
+- [ ] Every @Composable function has a @Preview
+- [ ] Preview shows realistic data (not empty/null states)
+- [ ] Preview is annotated with `@Preview` from `org.jetbrains.compose.ui.tooling.preview.Preview`
+- [ ] Previews should be private functions named `<ComponentName>Preview`
+- [ ] For SwiftUI views, include `#Preview` macro
+- [ ] Complex screens have multiple previews (loading, content, error states)
+
+#### 9. Module Structure & Naming
 - [ ] Features follow `:features:<feature>:api`, `:features:<feature>:impl`, `:features:<feature>:wiring`
 - [ ] Shared modules: `:core:<domain>:api` (kept minimal)
 - [ ] iOS umbrella exports only `api` modules
@@ -248,6 +329,7 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 - [ ] ktlint formatting compliance
 - [ ] detekt static analysis compliance
 - [ ] Both configured via convention plugins in `build-logic`
+- [ ] All @Composable functions have @Preview annotations
 
 ### Validation Process
 

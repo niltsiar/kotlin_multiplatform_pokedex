@@ -2,18 +2,148 @@
 
 Purpose: Encode the cross-cutting rules we follow across modules and features. These conventions complement topic-specific guides in `.junie/guides/tech`.
 
-## Architecture
-- Clean Architecture with vertical slices. Each feature owns its code end-to-end.
-- Feature modularization patterns (choose one and keep consistent):
-  - api/impl (+ wiring):
-    - `:features:<feature>:api` — public contracts to be shared (interfaces, navigation contracts, domain models required by others).
-    - `:features:<feature>:impl` — private implementations (repositories, data sources, mappers, UI implementations). Keep classes DI-agnostic. Add `:features:<feature>:wiring` to assemble DI providers and registries.
-  - Split-by-layer (+ api + wiring):
-    - `:features:<feature>:api` — public contracts (repository interfaces, navigation contracts, domain types shared across features).
-    - `:features:<feature>:data`, `:features:<feature>:presentation`, (optional `:features:<feature>:domain` if domain logic grows) — private implementations per layer.
-    - `:features:<feature>:wiring` — aggregates and wires implementations for the app graph.
-  - Only `api` modules are exposed to other features and the iOS umbrella. Do not export `impl`, `data`, `presentation`, or `wiring` modules.
-  - Shared/core modules are allowed (e.g., `:core:domain:api`, `:core:network:api`, `:core:designsystem`) but must remain small and focused.
+## Architecture: True Vertical Slicing
+
+**Core Principle**: Each feature is a complete vertical slice owning ALL its layers end-to-end. Features should be self-contained and minimize shared infrastructure.
+
+### What is Vertical Slicing?
+
+Vertical slicing means each feature contains ALL the layers it needs internally:
+- **Domain models** specific to that feature
+- **Network/API services** for that feature's endpoints
+- **Data/Repository layer** for that feature's data access
+- **Presentation/UI** for that feature's screens
+- **Navigation contracts** for that feature's routes
+
+### Module Structure (Recommended Pattern)
+
+```
+:features:<feature>:api       → Public contracts ONLY (interfaces, domain models shared with other features)
+:features:<feature>:impl      → ALL implementation layers (network, data, domain logic, UI, ViewModels)
+:features:<feature>:wiring    → DI assembly
+```
+
+**Example for Pokemon List feature:**
+```
+:features:pokemonlist:api/
+  └── src/commonMain/kotlin/
+      ├── PokemonListRepository.kt        (interface - public)
+      ├── domain/Pokemon.kt               (domain model - public if shared)
+      └── navigation/PokemonListEntry.kt  (navigation contract)
+
+:features:pokemonlist:impl/
+  └── src/commonMain/kotlin/
+      ├── data/
+      │   ├── PokemonListApiService.kt       (Ktor HTTP client for this feature)
+      │   ├── dto/PokemonListDto.kt          (DTOs for this feature's API)
+      │   ├── mappers/PokemonMappers.kt      (DTO → Domain mappers)
+      │   └── PokemonListRepositoryImpl.kt   (Repository implementation)
+      ├── domain/
+      │   └── PokemonListValidator.kt        (Business rules if needed)
+      └── presentation/
+          ├── PokemonListViewModel.kt        (ViewModel)
+          └── PokemonListScreen.kt           (Compose UI)
+
+:features:pokemonlist:wiring/
+  └── src/commonMain/kotlin/
+      └── PokemonListModule.kt               (@Provides functions)
+```
+
+### When to Share Infrastructure (:core modules)
+
+**ONLY create :core modules for:**
+1. **Truly generic utilities** used by 3+ features (e.g., date formatters, string utils)
+2. **Design system** (reusable UI components, theme, tokens)
+3. **Cross-cutting domain models** (e.g., `User`, `Error` types used everywhere)
+4. **Platform abstractions** (expect/actual for platform APIs)
+
+**DO NOT create :core modules for:**
+- ❌ Generic network layer (each feature has its own HttpClient configuration)
+- ❌ Generic repository base classes (each feature implements its own patterns)
+- ❌ Generic database layer (each feature manages its own data)
+- ❌ Generic API service interfaces (each feature defines its own)
+
+### Feature Independence Rules
+
+1. **Features MUST NOT depend on other features' `:impl` modules**
+   - ✅ `features:profile:impl` → `features:auth:api` (public interface)
+   - ❌ `features:profile:impl` → `features:auth:impl` (implementation)
+
+2. **Each feature owns its network layer**
+   ```kotlin
+   // :features:pokemonlist:impl - Pokemon List's API service
+   internal class PokemonListApiService(private val httpClient: HttpClient) {
+       suspend fun getPokemons(limit: Int, offset: Int): PokemonListDto { ... }
+   }
+   
+   // :features:pokemondetail:impl - Pokemon Detail's API service  
+   internal class PokemonDetailApiService(private val httpClient: HttpClient) {
+       suspend fun getPokemonById(id: Int): PokemonDetailDto { ... }
+   }
+   ```
+
+3. **Each feature defines its own DTOs**
+   - Even if features call the same backend endpoint, they define their own DTOs
+   - Why: Features evolve independently; shared DTOs create coupling
+
+4. **Domain models in :api only if shared**
+   - If `Pokemon` model is needed by multiple features → `features:pokemonlist:api`
+   - If `PokemonDetail` model is only used internally → `features:pokemondetail:impl/domain/`
+
+### Alternative: Split-by-Layer (Use sparingly)
+
+If a feature grows very large, split implementation by layer:
+
+```
+:features:<feature>:api          → Public contracts
+:features:<feature>:data         → Network, DTOs, repositories (internal)
+:features:<feature>:domain       → Business logic, use cases (internal)
+:features:<feature>:presentation → ViewModels, UI (internal)
+:features:<feature>:wiring       → DI assembly
+```
+
+**When to use**: Feature has 10+ screens or complex domain logic.
+
+### HttpClient Configuration
+
+Each feature CAN share a root HttpClient instance (configured in app or a thin :core:httpclient module), but API services are feature-specific:
+
+```kotlin
+// Optional: :core:httpclient - ONLY provides HttpClient instance
+fun createHttpClient(): HttpClient = HttpClient {
+    install(ContentNegotiation) { json() }
+    install(Logging)
+}
+
+// :features:pokemonlist:wiring
+@Provides
+fun providePokemonListApiService(httpClient: HttpClient): PokemonListApiService =
+    PokemonListApiService(httpClient)
+
+// :features:pokemondetail:wiring
+@Provides  
+fun providePokemonDetailApiService(httpClient: HttpClient): PokemonDetailApiService =
+    PokemonDetailApiService(httpClient)
+```
+
+### Benefits of True Vertical Slicing
+
+1. **Compilation Avoidance**: Changing Pokemon Detail doesn't recompile Pokemon List
+2. **Team Autonomy**: Teams can work on features independently
+3. **Testability**: Features are self-contained with clear boundaries
+4. **Deployability**: Features can be feature-flagged or modularized independently
+5. **Clarity**: All code for a feature lives in one place
+
+### Migration from Horizontal Layers
+
+If you started with `:core:network`, `:core:data`, `:core:domain`:
+1. Move feature-specific code to feature modules
+2. Keep only truly generic utilities in :core
+3. Duplicate code across features if needed (coupling is worse than duplication)
+
+---
+
+## Architecture (Original Content Preserved)
 
 ### Interfaces: Impl + Factory Function pattern (required)
 - When you define an interface (e.g., `SomeRepository` or `SomeService`) implement it with a private/internal class named `<InterfaceName>Impl` and expose a public top‑level factory function named exactly like the interface that returns the interface type.
@@ -74,35 +204,75 @@ fun JobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepos
 ## iOS Shared Umbrella
 - The `shared` module produces a single umbrella framework for iOS. Export only required `api` modules and shared contracts. Keep `impl`, layer-specific modules, and `wiring` internal.
 
-## Testing Stack
-- Use Kotest as the primary test framework (unit + property-based).
-- Use MockK for mocking in multiplatform (JVM/Android supported; use fakes for Native if needed).
-- Prefer property-based testing (Kotest `checkAll`/`forAll`) where appropriate (parsers, mappers, invariants).
- - Screenshot testing: Use Roborazzi for Android/JVM Compose UI screenshot tests. Store baselines under `composeApp/src/test/snapshots` (or a central `snapshots/`) and verify in PRs. Record/update only behind a flag in CI.
+## Testing Stack (Mobile-First)
+
+### Primary: androidTest/ for Business Logic
+- **Kotest** - Full framework (StringSpec, BehaviorSpec, FunSpec) with property-based testing
+- **MockK** - Powerful mocking (JVM/Android only, not available for Native)
+- **Location**: Place ALL business logic tests in `androidTest/` source sets
+- **Rationale**: Android is primary mobile target; iOS shares same Kotlin code (type safety guarantees)
+
+### Minimal: commonTest/ for Simple Utilities
+- **kotlin-test** - Basic assertions only
+- **Use for**: Pure functions with NO dependencies
+- **Rule**: If it needs mocking or Kotest features, put it in androidTest/
+
+### Framework Limitations
+- ❌ Kotest does NOT support iOS/Native targets
+- ❌ MockK does NOT support iOS/Native targets
+- ✅ Both fully support Android/JVM
+
+### Testing Philosophy
+1. Write tests in `androidTest/` for repositories, ViewModels, mappers
+2. Android tests validate ALL shared business logic  
+3. iOS compiles same Kotlin code (type system ensures compatibility)
+4. Fast feedback: JVM tests run in seconds vs iOS builds in minutes
+5. Mobile-first: Android primary target, Desktop convenience feature
+
+### Screenshot Testing
+- **Roborazzi** - Android/JVM Compose UI screenshot tests (Robolectric-based)
+- Store baselines under `composeApp/src/test/snapshots`
+- Record: `./gradlew recordRoborazziDebug`
+- Verify: `./gradlew verifyRoborazziDebug`
+
+### Property-Based Testing
+- Use Kotest `checkAll`/`forAll` in **androidTest/** for:
+  - Mappers (DTO ↔ Domain invariants)
+  - Parsers (round-trip tests)
+  - Value objects (laws and constraints)
 
 ### JSON round‑trip tests
-- For modules dealing with JSON, favor round‑trip tests:
+- For modules dealing with JSON, favor round‑trip tests in **androidTest/**:
   - json → object → json (equality or semantic equivalence)
   - object → json → object (structural equality)
-- Use Kotlinx Serialization and AssertK/Kotest matchers to assert.
+- Use Kotlinx Serialization and Kotest matchers to assert
 
-### Gradle (Multiplatform test deps example)
+### Gradle Example (Mobile-First)
 ```kotlin
 kotlin {
   sourceSets {
-    val commonTest by getting {
-      dependencies {
-        implementation("io.kotest:kotest-assertions-core:<version>")
-        implementation("io.kotest:kotest-framework-engine:<version>")
-        implementation("io.kotest:kotest-property:<version>")
-      }
+    // Common: Basic utilities only
+    commonTest.dependencies {
+      implementation(kotlin("test"))
+      implementation(libs.kotlinx.coroutines.test)
     }
-    val jvmTest by getting {
-      dependencies {
-        implementation("io.mockk:mockk:<version>")
-      }
+    
+    // Android: PRIMARY - All business logic
+    androidTest.dependencies {
+      implementation(libs.kotest.assertions)
+      implementation(libs.kotest.framework)
+      implementation(libs.kotest.property)
+      implementation(libs.mockk)
     }
-    // Add platform-specific MockK or fakes as needed
+    
+    // JVM: Full testing + screenshots
+    jvmTest.dependencies {
+      implementation(libs.kotest.assertions)
+      implementation(libs.kotest.framework)
+      implementation(libs.kotest.property)
+      implementation(libs.mockk)
+      implementation(libs.roborazzi)
+    }
   }
 }
 ```
