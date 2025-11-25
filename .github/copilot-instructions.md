@@ -355,7 +355,7 @@ struct PokemonCard: View {
 
 Before marking any code complete:
 - ✅ Every production file has a test file
-- ✅ Tests are in correct location (androidTest/ for business logic)
+- ✅ Tests are in correct location (androidUnitTest/ for business logic)
 - ✅ Minimum coverage achieved (success + error paths)
 - ✅ @Composable functions have @Preview
 - ✅ All tests pass
@@ -370,29 +370,29 @@ Before marking any code complete:
 - ❌ Manual cast after `shouldBeInstanceOf`, `shouldBeLeft`, or other smart-casting matchers
 
 ### Testing Strategy
-- **Unit tests first**: Write tests in `androidTest/` to leverage Kotest and MockK
-- **Mobile-first approach**: Android is the primary mobile target, tests cover shared logic
+- **Unit tests first**: Write tests in `androidUnitTest/` to leverage Kotest and MockK
+- **Mobile-first approach**: Android/iOS are primary targets, tests validate shared KMP logic
 - **Property-based testing**: Use Kotest's `checkAll`/`forAll` for invariants
-- **MockK for dependencies**: Available in Android tests for powerful mocking
-- **Screenshot tests**: Use Roborazzi (Robolectric-based, Android tests)
-- **Test Location**: Use `androidTest/` for business logic tests (repository, mappers, use cases)
+- **MockK for dependencies**: Available in Android unit tests for powerful mocking
+- **Screenshot tests**: Use Roborazzi (Robolectric-based, Android unit tests)
+- **Test Location**: Use `androidUnitTest/` for business logic tests (repository, mappers, use cases)
 - **Common tests**: Only for platform-agnostic utilities that need no mocking
-- **Smart casting**: Use Kotest matcher smart casting, never manually cast after type assertions (see `.junie/guides/tech/kotest-smart-casting-quick-ref.md`)
+- **Smart casting**: Use Kotest matcher smart casting, never manually cast after type assertions (see kotest-smart-casting-quick-ref.md)
 
-**Why Android Tests for Business Logic:**
+**Why Android Unit Tests for Business Logic:**
 - ✅ Full Kotest support (assertions, property testing, framework)
 - ✅ MockK available for powerful mocking
-- ✅ Faster than iOS builds (seconds vs minutes)
-- ✅ Tests cover shared KMP code (runs on JVM, validates all logic)
-- ✅ Mobile is the primary target (Android + iOS share code)
-- ✅ JVM desktop is convenience, not primary target
+- ✅ Fast execution on JVM (Robolectric-based, seconds not minutes)
+- ✅ Tests cover shared KMP code (validates logic for all platforms)
+- ✅ Android/iOS are primary mobile targets for this project
+- ✅ Android unit tests run on JVM (same speed as jvmTest)
 
 **Trade-off Rationale:**
-- Android tests validate ALL shared business logic
+- Android unit tests validate ALL shared business logic
 - iOS compiles the same Kotlin code (type safety guarantees)
 - Native-specific code uses expect/actual (minimal, well-isolated)
 - Testing on Android JVM validates multiplatform Kotlin behavior
-- Focus testing effort on mobile scenarios (primary use case)
+- Fast feedback loop enables rapid development
 
 ### Error Handling Checklist
 - ✅ Repositories return `Either<RepoError, T>`

@@ -16,14 +16,14 @@ Every production code file MUST have a corresponding test file. Tests are not op
 
 | Production Code Type | Test Required | Test Location | Framework |
 |---------------------|---------------|---------------|-----------|
-| Repository | ✅ MANDATORY | androidTest/ | Kotest + MockK |
-| ViewModel | ✅ MANDATORY | androidTest/ | Kotest + MockK |
-| Mapper (DTO ↔ Domain) | ✅ MANDATORY | androidTest/ | Kotest properties |
-| Use Case | ✅ MANDATORY | androidTest/ | Kotest + MockK |
-| API Service | ✅ MANDATORY | androidTest/ | Kotest + MockK |
+| Repository | ✅ MANDATORY | androidUnitTest/ | Kotest + MockK |
+| ViewModel | ✅ MANDATORY | androidUnitTest/ | Kotest + MockK |
+| Mapper (DTO ↔ Domain) | ✅ MANDATORY | androidUnitTest/ | Kotest properties |
+| Use Case | ✅ MANDATORY | androidUnitTest/ | Kotest + MockK |
+| API Service | ✅ MANDATORY | androidUnitTest/ | Kotest + MockK |
 | @Composable UI | ✅ MANDATORY | @Preview + Screenshot | Roborazzi |
 | Simple Utility | ✅ MANDATORY | commonTest/ | kotlin-test |
-| Platform-specific | ✅ MANDATORY | iosTest/androidTest | kotlin-test |
+| Platform-specific | ✅ MANDATORY | iosTest/androidUnitTest | kotlin-test |
 
 **Minimum Coverage Requirements:**
 - Repositories: Success + all error types (Network, Http, Unknown)
@@ -38,26 +38,26 @@ Every production code file MUST have a corresponding test file. Tests are not op
 - ❌ @Composable without @Preview
 - ❌ Modified code without updated tests
 
-## Strategic Decision: Android-First Testing
+## Strategic Decision: Mobile-First Testing
 
-**Primary Testing Location: `androidTest/` source sets**
+**Primary Testing Location: `androidUnitTest/` source sets**
 
 ### Framework Limitations
-- ❌ **Kotest**: Does NOT support iOS/Native targets (JVM/Android only)
-- ❌ **MockK**: Does NOT support iOS/Native targets (JVM/Android only)
+- ❌ **Kotest**: Does NOT support iOS/Native targets (JVM only)
+- ❌ **MockK**: Does NOT support iOS/Native targets (JVM only)
 - ✅ **kotlin-test**: Multiplatform support (basic assertions only)
 
 ### Mobile-First Rationale
-1. **Android = Primary mobile target** - Largest user base
+1. **Android/iOS = Primary mobile targets** - Core product focus
 2. **iOS shares identical Kotlin code** - Type safety guarantees compatibility
-3. **JVM desktop = Convenience feature** - Multiplatform bonus, not core focus
-4. **Testing on Android validates ALL shared logic** - Same code runs on iOS
-5. **Fast feedback** - JVM tests run in seconds vs iOS builds in minutes
+3. **Testing on Android validates ALL shared logic** - Same code runs on iOS
+4. **Fast feedback** - Android unit tests run on JVM in seconds
+5. **Full framework support** - Kotest + MockK available
 
 ### Trade-off Analysis
 
-| Aspect | androidTest/ | commonTest/ | iosTest/ |
-|--------|-------------|-------------|----------|
+| Aspect | androidUnitTest/ | commonTest/ | iosTest/ |
+|--------|-------------|-------------|---------|
 | **Test Framework** | ✅ Full Kotest | ⚠️ kotlin-test only | ⚠️ kotlin-test only |
 | **Mocking** | ✅ MockK | ❌ None | ❌ None (use fakes) |
 | **Primary Use** | ✅ Business logic | ⚠️ Simple utilities | ⚠️ Platform code |
@@ -65,11 +65,11 @@ Every production code file MUST have a corresponding test file. Tests are not op
 | **Coverage** | ✅ Complete | ⚠️ Partial | ⚠️ Platform-specific |
 | **iOS Validation** | ✅ Type safety | ✅ Type safety | ✅ Direct |
 
-**Conclusion**: Place ALL business logic tests in `androidTest/` for maximum testing power.
+**Conclusion**: Place ALL business logic tests in `androidUnitTest/` for maximum testing power.
 
 ## Frameworks
 
-### Primary (androidTest/)
+### Primary (androidUnitTest/)
 - **Kotest** - Full framework, specs, assertions, property-based testing
 - **MockK** - Powerful mocking and stubbing
 - **Roborazzi** - Compose UI screenshot testing (Robolectric-based)
@@ -138,7 +138,7 @@ kotlin {
 
 ## Testing by Source Set
 
-### androidTest/ - PRIMARY (Business Logic)
+### androidUnitTest/ - PRIMARY (Business Logic)
 
 **What to test here:**
 - ✅ Repositories
@@ -149,7 +149,7 @@ kotlin {
 
 **Directory structure:**
 ```
-features/pokemonlist/impl/src/androidTest/kotlin/
+features/pokemonlist/data/src/androidUnitTest/kotlin/
 ├── data/
 │   ├── PokemonRepositoryTest.kt      // Repository with mocked API
 │   ├── PokemonMappersTest.kt         // Property-based mapper tests
@@ -185,7 +185,7 @@ features/pokemonlist/impl/src/commonTest/kotlin/
 - ❌ No Kotest
 - ❌ No MockK
 
-**Rule**: If it needs mocking or complex assertions, put it in `androidTest/`
+**Rule**: If it needs mocking or complex assertions, put it in `androidUnitTest/`
 
 ### iosTest/ - RARE (Platform-Specific)
 

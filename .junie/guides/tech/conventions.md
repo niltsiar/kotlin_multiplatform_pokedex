@@ -291,9 +291,9 @@ sourceSets {
 Every production file requires a test file. This is not optional.
 
 **Quick Reference:**
-- Repository → androidTest/ (Kotest + MockK) ✅ MANDATORY
-- ViewModel → androidTest/ (Kotest + MockK) ✅ MANDATORY
-- Mapper → androidTest/ (Property tests) ✅ MANDATORY
+- Repository → androidUnitTest/ (Kotest + MockK) ✅ MANDATORY
+- ViewModel → androidUnitTest/ (Kotest + MockK) ✅ MANDATORY
+- Mapper → androidUnitTest/ (Property tests) ✅ MANDATORY
 - @Composable → @Preview in same file ✅ MANDATORY
 - Utility → commonTest/ (kotlin-test) ✅ MANDATORY
 
@@ -302,31 +302,31 @@ Every production file requires a test file. This is not optional.
 - Initial state + All state transitions
 - Data preservation (property-based)
 
-### Primary: androidTest/ for Business Logic
+### Primary: androidUnitTest/ for Business Logic
 - **Kotest** - Full framework (StringSpec, BehaviorSpec, FunSpec) with property-based testing
-- **MockK** - Powerful mocking (JVM/Android only, not available for Native)
-- **Location**: Place ALL business logic tests in module-specific `androidTest/` source sets:
-  - Repository tests → `:features:<feature>:data/src/androidTest`
-  - ViewModel tests → `:features:<feature>:presentation/src/androidTest`
-  - Mapper tests → `:features:<feature>:data/src/androidTest`
-- **Rationale**: Android is primary mobile target; iOS shares same Kotlin code (type safety guarantees)
+- **MockK** - Powerful mocking (JVM-based, runs via Robolectric)
+- **Location**: Place ALL business logic tests in module-specific `androidUnitTest/` source sets:
+  - Repository tests → `:features:<feature>:data/src/androidUnitTest`
+  - ViewModel tests → `:features:<feature>:presentation/src/androidUnitTest`
+  - Mapper tests → `:features:<feature>:data/src/androidUnitTest`
+- **Rationale**: Android/iOS are primary mobile targets; tests run on JVM (fast), validate shared Kotlin code
 
 ### Minimal: commonTest/ for Simple Utilities
 - **kotlin-test** - Basic assertions only
 - **Use for**: Pure functions with NO dependencies
-- **Rule**: If it needs mocking or Kotest features, put it in androidTest/
+- **Rule**: If it needs mocking or Kotest features, put it in androidUnitTest/
 
 ### Framework Limitations
 - ❌ Kotest does NOT support iOS/Native targets
 - ❌ MockK does NOT support iOS/Native targets
-- ✅ Both fully support Android/JVM
+- ✅ Both fully support Android unit tests (JVM-based via Robolectric)
 
 ### Testing Philosophy
-1. Write tests in `androidTest/` for repositories, ViewModels, mappers
-2. Android tests validate ALL shared business logic  
+1. Write tests in `androidUnitTest/` for repositories, ViewModels, mappers
+2. Android unit tests validate ALL shared business logic  
 3. iOS compiles same Kotlin code (type system ensures compatibility)
-4. Fast feedback: JVM tests run in seconds vs iOS builds in minutes
-5. Mobile-first: Android primary target, Desktop convenience feature
+4. Fast feedback: Android unit tests run on JVM in seconds
+5. Mobile-first: Android/iOS primary targets
 
 ### Smart Casting in Tests
 **Never manually cast after type-checking matchers** - Kotest matchers provide smart casting through Kotlin compiler contracts.
@@ -340,13 +340,13 @@ See [kotest-smart-casting-quick-ref.md](./kotest-smart-casting-quick-ref.md) for
 - Verify: `./gradlew verifyRoborazziDebug`
 
 ### Property-Based Testing
-- Use Kotest `checkAll`/`forAll` in **androidTest/** for:
+- Use Kotest `checkAll`/`forAll` in **androidUnitTest/** for:
   - Mappers (DTO ↔ Domain invariants)
   - Parsers (round-trip tests)
   - Value objects (laws and constraints)
 
 ### JSON round‑trip tests
-- For modules dealing with JSON, favor round‑trip tests in **androidTest/**:
+- For modules dealing with JSON, favor round‑trip tests in **androidUnitTest/**:
   - json → object → json (equality or semantic equivalence)
   - object → json → object (structural equality)
 - Use Kotlinx Serialization and Kotest matchers to assert
@@ -361,16 +361,8 @@ kotlin {
       implementation(libs.kotlinx.coroutines.test)
     }
     
-    // Android: PRIMARY - All business logic
-    androidTest.dependencies {
-      implementation(libs.kotest.assertions)
-      implementation(libs.kotest.framework)
-      implementation(libs.kotest.property)
-      implementation(libs.mockk)
-    }
-    
-    // JVM: Full testing + screenshots
-    jvmTest.dependencies {
+    // Android: PRIMARY - All business logic + screenshots
+    androidUnitTest.dependencies {
       implementation(libs.kotest.assertions)
       implementation(libs.kotest.framework)
       implementation(libs.kotest.property)

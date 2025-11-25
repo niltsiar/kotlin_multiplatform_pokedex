@@ -320,10 +320,10 @@ Every production code file MUST have a corresponding test file. Tests are not op
 **Quick Enforcement Rules:**
 | Production Code | Test Location | Framework |
 |----------------|---------------|-----------|
-| Repository | androidTest/ | Kotest + MockK |
-| ViewModel | androidTest/ | Kotest + MockK |
-| Mapper | androidTest/ | Kotest properties |
-| Use Case | androidTest/ | Kotest + MockK |
+| Repository | androidUnitTest/ | Kotest + MockK |
+| ViewModel | androidUnitTest/ | Kotest + MockK |
+| Mapper | androidUnitTest/ | Kotest properties |
+| Use Case | androidUnitTest/ | Kotest + MockK |
 | @Composable | Same file | @Preview + Roborazzi |
 | Simple Utility | commonTest/ | kotlin-test |
 
@@ -333,20 +333,20 @@ Every production code file MUST have a corresponding test file. Tests are not op
 3. ✅ Tests pass
 4. ✅ Preview added (for UI)
 
-### Primary Testing: Android Test Sources
+### Primary Testing: Android Unit Test Sources
 
-**Why Android Tests for Business Logic:**
+**Why Android Unit Tests for Business Logic:**
 - ❌ Kotest doesn't support iOS/Native targets
 - ❌ MockK doesn't support iOS/Native targets  
-- ✅ Both fully support Android (JVM-based tests)
-- ✅ Android is primary mobile target
-- ✅ iOS shares same Kotlin code (type safety guarantees)
-- ✅ Fast feedback (seconds vs iOS minutes)
+- ✅ Both fully support Android (JVM-based unit tests via Robolectric)
+- ✅ Android/iOS are primary mobile targets for this app
+- ✅ Android unit tests run on JVM (fast, same speed as jvmTest)
+- ✅ Type safety guarantees iOS compatibility
 
 **Testing Location Strategy:**
 ```kotlin
-// ✅ PRIMARY: androidTest/ for business logic
-features/pokemonlist/impl/src/androidTest/kotlin/
+// ✅ PRIMARY: androidUnitTest/ for business logic (Android target unit tests)
+features/pokemonlist/data/src/androidUnitTest/kotlin/
 ├── data/
 │   ├── PokemonRepositoryTest.kt      // Full Kotest + MockK
 │   ├── PokemonMappersTest.kt         // Property tests
@@ -355,15 +355,15 @@ features/pokemonlist/impl/src/androidTest/kotlin/
     └── PokemonViewModelTest.kt       // ViewModel tests
 
 // ⚠️ MINIMAL: commonTest/ for simple utilities only
-features/pokemonlist/impl/src/commonTest/kotlin/
+features/pokemonlist/data/src/commonTest/kotlin/
 └── utils/
     └── UrlUtilsTest.kt               // kotlin-test only, no deps
 ```
 
-### Kotest + MockK Pattern (Android Tests)
+### Kotest + MockK Pattern (Android Unit Tests)
 
 ```kotlin
-// androidTest/kotlin/.../PokemonRepositoryTest.kt
+// androidUnitTest/kotlin/.../PokemonRepositoryTest.kt
 class PokemonRepositoryTest : StringSpec({
     lateinit var mockApi: PokemonListApiService
     lateinit var repository: PokemonListRepository
