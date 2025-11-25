@@ -5,28 +5,73 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListReposit
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListApiService
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListRepository as createPokemonListRepository
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import io.ktor.client.HttpClient
 
-// Manual DI (Metro integration later)
-object PokemonListModule {
+/**
+ * Metro DI module for Pokemon List feature.
+ * 
+ * Provides all dependencies needed for the Pokemon List feature:
+ * - HttpClient (singleton, shared across all API services)
+ * - PokemonListApiService
+ * - PokemonListRepository
+ * - PokemonListViewModel
+ */
+@BindingContainer
+@ContributesTo(AppScope::class)
+interface PokemonListProviders {
     
-    private var httpClientInstance: HttpClient? = null
-    
-    fun provideHttpClient(): HttpClient {
-        return httpClientInstance ?: createHttpClient().also {
-            httpClientInstance = it
+    companion object {
+        /**
+         * Provides a singleton HttpClient instance for making API requests.
+         * Configured with content negotiation and logging.
+         */
+        @Provides
+        @SingleIn(AppScope::class)
+        fun provideHttpClient(): HttpClient {
+            return createHttpClient()
         }
-    }
-    
-    fun providePokemonListApiService(): PokemonListApiService {
-        return PokemonListApiService(provideHttpClient())
-    }
-    
-    fun providePokemonListRepository(): PokemonListRepository {
-        return createPokemonListRepository(providePokemonListApiService())
-    }
-    
-    fun providePokemonListViewModel(): PokemonListViewModel {
-        return PokemonListViewModel(providePokemonListRepository())
+        
+        /**
+         * Provides the API service for Pokemon List endpoints.
+         * 
+         * @param httpClient The HTTP client for making requests
+         * @param baseUrl The base API URL (injected at graph creation)
+         */
+        @Provides
+        fun providePokemonListApiService(
+            httpClient: HttpClient,
+            @Provides baseUrl: String
+        ): PokemonListApiService {
+            return PokemonListApiService(httpClient)
+        }
+        
+        /**
+         * Provides the repository for Pokemon List data.
+         * 
+         * @param apiService The API service for fetching data
+         */
+        @Provides
+        fun providePokemonListRepository(
+            apiService: PokemonListApiService
+        ): PokemonListRepository {
+            return createPokemonListRepository(apiService)
+        }
+        
+        /**
+         * Provides the ViewModel for Pokemon List screen.
+         * 
+         * @param repository The repository for Pokemon data
+         */
+        @Provides
+        fun providePokemonListViewModel(
+            repository: PokemonListRepository
+        ): PokemonListViewModel {
+            return PokemonListViewModel(repository)
+        }
     }
 }

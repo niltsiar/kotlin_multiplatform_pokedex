@@ -38,6 +38,7 @@ include(":server")
 include(":shared")
 
 // Core modules
+include(":core:di")
 include(":core:httpclient")
 
 // Pokemon List feature

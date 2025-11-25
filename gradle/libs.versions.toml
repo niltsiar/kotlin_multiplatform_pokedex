@@ -20,9 +20,10 @@ kotlin = "2.2.21"
 kotlinx-coroutines = "1.10.2"
 kotlinx-immutable = "0.4.0"
 kotlinx-serialization = "1.9.0"
-ksp = "2.2.21-1.0.29"
+ksp = "2.2.21-2.0.4"
 ktor = "3.3.2"
 logback = "1.5.21"
+metro = "0.7.7"
 mockk = "1.14.6"
 
 [libraries]
@@ -30,6 +31,8 @@ mockk = "1.14.6"
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-gradlePlugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "composeMultiplatform" }
+ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+metro-gradlePlugin = { module = "dev.zacsweers.metro:gradle-plugin", version.ref = "metro" }
 
 # Kotlin
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -42,6 +45,7 @@ kotest-assertions-arrow = { module = "io.kotest.extensions:kotest-assertions-arr
 kotest-framework = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # AndroidX
@@ -108,3 +112,4 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+metro = { id = "dev.zacsweers.metro", version.ref = "metro" }

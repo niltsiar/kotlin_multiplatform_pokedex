@@ -1,5 +1,8 @@
+import com.minddistrict.multiplatformpoc.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
  * Convention plugin for feature wiring/DI modules.
@@ -10,7 +13,11 @@ import org.gradle.api.Project
  * - Multi-binding contributions
  * 
  * NOT exported to iOS.
- * When Metro DI is added, this plugin will apply KSP for graph generation.
+ * 
+ * Metro's Gradle plugin automatically:
+ * - Adds runtime dependency
+ * - Configures Kotlin compiler plugin for code generation (not KSP)
+ * - Works with all KMP targets
  * 
  * Composes: convention.feature.base
  * - KMP targets (Android, JVM, iOS)
@@ -21,10 +28,14 @@ class ConventionFeatureWiringPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
             apply("convention.feature.base")
-            // TODO: Apply KSP and Metro DI when dependencies are added
-            // apply("com.google.devtools.ksp")
+            apply("dev.zacsweers.metro")  // Metro plugin handles everything automatically
         }
         
-        // Wiring modules will add Metro DI dependencies when the library is integrated
+        extensions.configure<KotlinMultiplatformExtension> {
+            sourceSets.apply {
+                // No dependencies needed - Metro provides AppScope and other DI utilities
+                // Feature-specific dependencies added in individual wiring module build files
+            }
+        }
     }
 }
