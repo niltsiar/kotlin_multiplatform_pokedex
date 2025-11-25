@@ -276,6 +276,28 @@ class SubmitOrderUseCase(
 
 ## 🧪 Testing Strategy: Mobile-First Approach
 
+### ⚠️ TEST ENFORCEMENT: MANDATORY
+
+**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+
+Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
+
+**Quick Enforcement Rules:**
+| Production Code | Test Location | Framework |
+|----------------|---------------|-----------|
+| Repository | androidTest/ | Kotest + MockK |
+| ViewModel | androidTest/ | Kotest + MockK |
+| Mapper | androidTest/ | Kotest properties |
+| Use Case | androidTest/ | Kotest + MockK |
+| @Composable | Same file | @Preview + Roborazzi |
+| Simple Utility | commonTest/ | kotlin-test |
+
+**Before marking code complete:**
+1. ✅ Test file created
+2. ✅ Minimum coverage (success + errors)
+3. ✅ Tests pass
+4. ✅ Preview added (for UI)
+
 ### Primary Testing: Android Test Sources
 
 **Why Android Tests for Business Logic:**
