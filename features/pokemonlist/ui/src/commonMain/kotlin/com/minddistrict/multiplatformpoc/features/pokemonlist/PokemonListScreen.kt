@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
+import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListUiState
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
@@ -151,7 +152,7 @@ private fun PokemonCard(
 @Preview
 @Composable
 private fun PokemonCardPreview() {
-    MaterialTheme {
+    PokemonTheme {
         Surface {
             PokemonCard(
                 pokemon = com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
@@ -167,7 +168,7 @@ private fun PokemonCardPreview() {
 @Preview
 @Composable
 private fun PokemonCardLongNamePreview() {
-    MaterialTheme {
+    PokemonTheme {
         Surface {
             PokemonCard(
                 pokemon = com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
@@ -183,7 +184,7 @@ private fun PokemonCardLongNamePreview() {
 @Preview
 @Composable
 private fun PokemonListLoadingPreview() {
-    MaterialTheme {
+    PokemonTheme {
         Surface {
             PokemonListContent(
                 uiState = PokemonListUiState.Loading,
@@ -196,7 +197,7 @@ private fun PokemonListLoadingPreview() {
 @Preview
 @Composable
 private fun PokemonListErrorPreview() {
-    MaterialTheme {
+    PokemonTheme {
         Surface {
             PokemonListContent(
                 uiState = PokemonListUiState.Error("Network error. Please check your connection."),
@@ -209,7 +210,7 @@ private fun PokemonListErrorPreview() {
 @Preview
 @Composable
 private fun PokemonListContentPreview() {
-    MaterialTheme {
+    PokemonTheme {
         Surface {
             PokemonListContent(
                 uiState = PokemonListUiState.Content(
@@ -257,7 +258,7 @@ private fun PokemonListContentPreview() {
 @Preview
 @Composable
 private fun PokemonListContentLoadingMorePreview() {
-    MaterialTheme {
+    PokemonTheme {
         Surface {
             PokemonListContent(
                 uiState = PokemonListUiState.Content(

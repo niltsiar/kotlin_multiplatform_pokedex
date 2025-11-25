@@ -11,8 +11,21 @@ kotlin {
         commonMain.dependencies {
             // Core DI module contains AppGraph with Metro plugin applied
             implementation(projects.core.di)
+            implementation(projects.core.designsystem)
             implementation(projects.features.pokemonlist.ui)
             implementation(projects.features.pokemonlist.wiring)
+            
+            // Navigation 3
+            implementation(libs.androidx.navigation3.ui)
+            implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+            
+            // Material 3 Adaptive
+            implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.adaptive.layout)
+            implementation(libs.compose.material3.adaptive.navigation3)
+            
+            // Window Size Classes
+            implementation(libs.androidx.window.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
