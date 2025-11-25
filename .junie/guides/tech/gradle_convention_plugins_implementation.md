@@ -315,12 +315,13 @@ kotlin {
 
 ---
 
-### 7. `convention.feature.wiring`
-Feature DI wiring module (Metro DI assembly).
+### Wiring Plugin (Metro DI)
 
-**What it does**:
-- Applies `convention.kmp.library` (transitively)
-- Placeholder for Metro DI setup (KSP to be added later)
+- Composes `convention.feature.base`
+- Applies Metro Gradle plugin (configures K2 compiler plugin automatically)
+- Metro runtime added automatically
+
+See working implementation in `build-logic/convention/src/main/kotlin/com/minddistrict/multiplatformpoc/ConventionFeatureWiringPlugin.kt`
 
 **When to use**: Feature wiring modules
 
@@ -335,9 +336,7 @@ Feature DI wiring module (Metro DI assembly).
 ```kotlin
 // features/jobs/wiring/build.gradle.kts
 plugins {
-    id("convention.feature.wiring")
-    // TODO: Add KSP when Metro DI is configured
-    // id("com.google.devtools.ksp")
+    id("convention.feature.wiring")  // Applies Metro K2 compiler plugin
 }
 
 kotlin {

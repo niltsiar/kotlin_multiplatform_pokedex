@@ -336,6 +336,8 @@ class SubmitOrderUseCase(
 
 Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
 
+**Metro DI Patterns**: See [metro_di_quick_ref.md](.junie/guides/tech/metro_di_quick_ref.md) for DI setup and troubleshooting.
+
 **Quick Enforcement Rules:**
 | Production Code | Test Location | Framework |
 |----------------|---------------|-----------|
