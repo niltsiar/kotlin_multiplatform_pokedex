@@ -36,3 +36,11 @@ plugins {
 include(":composeApp")
 include(":server")
 include(":shared")
+
+// Core modules
+include(":core:httpclient")
+
+// Pokemon List feature
+include(":features:pokemonlist:api")
+include(":features:pokemonlist:impl")
+include(":features:pokemonlist:wiring")
