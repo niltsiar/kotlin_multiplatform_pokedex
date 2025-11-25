@@ -1,7 +1,8 @@
 package com.minddistrict.multiplatformpoc.core.di
 
-import com.minddistrict.multiplatformpoc.core.designsystem.navigation.AppDestination
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.navigation.Navigator
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
@@ -20,10 +21,17 @@ interface AppGraph {
     val pokemonListViewModel: PokemonListViewModel
     
     /**
-     * All navigation destinations contributed via @IntoSet in feature wiring modules.
-     * Used to configure NavigationSuiteScaffold with adaptive navigation (Bar/Rail/Drawer).
+     * The Navigator manages the navigation back stack.
+     * Follows Android nav3-recipes modular architecture pattern.
      */
-    val destinations: Set<AppDestination>
+    val navigator: Navigator
+    
+    /**
+     * All navigation entry provider installers contributed via @IntoSet
+     * from feature wiring modules. Each installer registers a route and its
+     * corresponding composable screen.
+     */
+    val entryProviderInstallers: Set<EntryProviderInstaller>
     
     /**
      * Factory for creating the AppGraph with runtime dependencies.
@@ -38,3 +46,4 @@ interface AppGraph {
         fun create(@Provides baseUrl: String): AppGraph
     }
 }
+

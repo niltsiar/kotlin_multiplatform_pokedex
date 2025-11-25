@@ -6,9 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.di.AppGraph
-import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.PokemonListScreen
 import dev.zacsweers.metro.createGraphFactory
 
 @Composable
@@ -20,8 +21,16 @@ fun App() {
     
     PokemonTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            val viewModel = graph.pokemonListViewModel
-            PokemonListScreen(viewModel = viewModel)
+            NavDisplay(
+                backStack = graph.navigator.backStack,
+                onBack = { graph.navigator.goBack() },
+                entryProvider = entryProvider {
+                    graph.entryProviderInstallers.forEach { installer ->
+                        this.installer()
+                    }
+                }
+            )
         }
     }
 }
+

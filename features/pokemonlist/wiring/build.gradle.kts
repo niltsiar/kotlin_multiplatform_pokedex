@@ -1,14 +1,16 @@
 plugins {
     id("convention.feature.wiring")
+    id("convention.compose.multiplatform")
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.features.pokemonlist.api)
+            api(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.data)
             api(projects.features.pokemonlist.presentation)  // API: types exposed in @Provides functions
-            implementation(projects.core.designsystem)       // For AppDestination navigation contracts
+            implementation(projects.features.pokemondetail.api)  // For PokemonDetail route
+            implementation(projects.core.navigation)          // For Navigator and EntryProviderInstaller
             implementation(projects.core.httpclient)
             implementation(libs.ktor.client.core)
         }
@@ -17,10 +19,12 @@ kotlin {
         // Android and JVM can depend on :ui module
         androidMain.dependencies {
             implementation(projects.features.pokemonlist.ui)
+            implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
         }
         
         jvmMain.dependencies {
             implementation(projects.features.pokemonlist.ui)
+            implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
         }
         
         // iOS targets use only commonMain (no UI module dependency)

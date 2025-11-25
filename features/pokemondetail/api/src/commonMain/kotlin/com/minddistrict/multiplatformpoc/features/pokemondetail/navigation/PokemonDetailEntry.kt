@@ -1,22 +1,8 @@
 package com.minddistrict.multiplatformpoc.features.pokemondetail.navigation
 
-import com.minddistrict.multiplatformpoc.core.designsystem.navigation.AppDestination
-
 /**
- * Navigation destination for Pokémon Detail feature.
+ * Navigation route for Pokémon Detail screen.
+ * Data class carries the pokemon ID as a parameter.
  */
-data object PokemonDetailDestination : AppDestination {
-    override val route: String = "pokemonDetail/{pokemonId}"
-    override val label: String = "Detail"
-    // Detail screen should not appear in navigation suite
-    override val showInNavigation: Boolean = false
-}
+data class PokemonDetail(val id: Int)
 
-/**
- * Navigation entry point for Pokémon Detail feature.
- * Provides route building with parameters.
- */
-interface PokemonDetailEntry {
-    val destination: AppDestination
-    fun buildRoute(pokemonId: Int): String
-}

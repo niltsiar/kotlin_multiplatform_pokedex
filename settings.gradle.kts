@@ -41,6 +41,7 @@ include(":shared")
 include(":core:designsystem")
 include(":core:di")
 include(":core:httpclient")
+include(":core:navigation")
 
 // Pokemon List feature
 include(":features:pokemonlist:api")
@@ -49,5 +50,8 @@ include(":features:pokemonlist:presentation")
 include(":features:pokemonlist:ui")
 include(":features:pokemonlist:wiring")
 
-// Pokemon Detail feature (placeholder)
+// Pokemon Detail feature
+include(":features:pokemondetail:api")
+include(":features:pokemondetail:ui")
+include(":features:pokemondetail:wiring")
 include(":features:pokemondetail:api")

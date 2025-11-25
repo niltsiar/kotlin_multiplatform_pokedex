@@ -5,7 +5,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(projects.core.designsystem)  // For AppDestination navigation contract
+            // No additional dependencies needed for route objects
         }
     }
 }

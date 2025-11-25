@@ -268,26 +268,56 @@ class HomeViewModel(
 - ❌ NEVER store `CoroutineScope` as a field
 - ❌ NEVER perform work in constructor or `init`
 
-### Navigation: Navigation 3 (Planned)
-**Contracts in `:api`, implementations in `:impl`, wiring in `:wiring`**
+### Navigation: Navigation 3 Modular Architecture (Implemented)
+**Route objects in `:api`, UI in `:ui`, wiring in platform-specific source sets**
 
 ```kotlin
-// :features:profile:api
-interface ProfileEntry {
-  val route: String
-  fun build(userId: String): String
+// :features:pokemonlist:api - Route object
+object PokemonList
+
+// :features:pokemondetail:api - Parameterized route
+data class PokemonDetail(val id: Int)
+
+// :core:navigation - Navigator class
+class Navigator(startDestination: Any) {
+  private val _backStack = mutableStateListOf(startDestination)
+  val backStack: List<Any> = _backStack
+  
+  fun goTo(destination: Any) { _backStack.add(destination) }
+  fun goBack() { if (_backStack.size > 1) _backStack.removeAt(_backStack.lastIndex) }
 }
 
-// :features:profile:impl
-internal class ProfileEntryImpl : ProfileEntry {
-  override val route = "profile/{userId}"
-  override fun build(userId: String) = "profile/$userId"
+// :features:pokemonlist:wiring/androidMain - UI registration
+@Provides @IntoSet
+fun provideNavigation(
+  navigator: Navigator,
+  viewModel: PokemonListViewModel
+): EntryProviderInstaller = {
+  entry<PokemonList> {
+    PokemonListScreen(
+      viewModel = viewModel,
+      onPokemonClick = { navigator.goTo(PokemonDetail(it.id)) }
+    )
+  }
 }
 
-// :features:profile:wiring
-@Provides
-fun provideProfileEntry(): ProfileEntry = ProfileEntryImpl()
+// App.kt - NavDisplay integration
+NavDisplay(
+  backStack = graph.navigator.backStack,
+  onBack = { graph.navigator.goBack() },
+  entryProvider = entryProvider {
+    graph.entryProviderInstallers.forEach { this.it() }
+  }
+)
 ```
+
+**Key Points**:
+- ✅ Route objects are plain Kotlin objects/data classes (no @Serializable)
+- ✅ Navigator manages explicit back stack (SnapshotStateList)
+- ✅ EntryProviderInstaller = typealias for `EntryProviderScope<Any>.() -> Unit`
+- ✅ Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers
+- ✅ Metro DI @IntoSet collects all navigation entries
+- ❌ NOT exported to iOS (Compose-specific navigation)
 
 ### No Empty Use Cases
 **Call repositories directly from ViewModels unless orchestrating multiple repos.**
@@ -1165,11 +1195,11 @@ private fun ScreenVariation2Preview() { }
 - [ ] **Create delightful UIs** with micro-interactions and easter eggs
 
 **You're ready for complex tasks when you can**:
-- [ ] Create new feature modules (api/impl/wiring)
-- [ ] Implement Metro DI patterns
+- [ ] Create new feature modules (api/data/presentation/ui/wiring)
+- [ ] Implement Metro DI patterns with platform-specific wiring
 - [ ] Write property-based tests
 - [ ] Create Roborazzi screenshot tests
-- [ ] Implement Navigation 3 contracts
+- [ ] Implement Navigation 3 modular architecture (route objects, EntryProviderInstaller)
 - [ ] Design sealed error hierarchies
 - [ ] **Design product requirements** using Product Design Mode
 - [ ] **Plan UI/UX flows** with animation and delight factors
@@ -1301,13 +1331,15 @@ class HomeViewModel : ViewModel() {
 - [ ] Screenshot tests (Roborazzi) for UI components
 
 #### 7. Navigation Contracts (When Applicable)
-- [ ] Contracts in `:api` module
-- [ ] Implementations in `:impl` module
-- [ ] Wired in `:wiring` module
-- [ ] Navigation 3 artifacts used
+- [ ] Route objects in `:api` module (plain Kotlin objects/data classes)
+- [ ] UI screens in `:ui` module (Android + JVM only)
+- [ ] EntryProviderInstallers in `:wiring` platform-specific source sets (androidMain/jvmMain)
+- [ ] Navigator injected for cross-feature navigation
+- [ ] Metro DI @IntoSet for EntryProviderInstaller collection
+- [ ] No @Serializable on route objects (not needed for Navigation 3)
 
 #### 8. Module Structure
-- [ ] Correct naming: `:features:<feature>:api/impl/wiring`
+- [ ] Correct naming: `:features:<feature>:api/data/presentation/ui/wiring`
 - [ ] Convention plugins applied (`convention.feature.api`, etc.)
 - [ ] No direct feature-to-feature `impl` dependencies
 - [ ] Compilation avoidance respected
