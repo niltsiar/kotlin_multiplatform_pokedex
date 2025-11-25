@@ -3,6 +3,7 @@ agp = "8.11.2"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
+benManesVersions = "0.51.0"
 androidx-activity = "1.11.0"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
@@ -14,7 +15,7 @@ coil3 = "3.0.4"
 composeHotReload = "1.0.0-rc02"
 composeMultiplatform = "1.9.1"
 junit = "4.13.2"
-kotest = "6.1.1"
+kotest = "6.0.5"
 kotlin = "2.2.20"
 kotlinx-coroutines = "1.10.2"
 kotlinx-immutable = "0.3.8"
@@ -22,7 +23,7 @@ kotlinx-serialization = "1.7.3"
 ksp = "2.2.20-1.0.29"
 ktor = "3.3.1"
 logback = "1.5.20"
-mockk = "1.13.18"
+mockk = "1.13.13"
 
 [libraries]
 # Gradle plugins (for convention plugins)
@@ -37,8 +38,10 @@ kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-assertions-arrow = { module = "io.kotest.extensions:kotest-assertions-arrow", version = "1.4.0" }
 kotest-framework = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 # AndroidX
@@ -88,6 +91,7 @@ ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.re
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+benManesVersions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersions" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

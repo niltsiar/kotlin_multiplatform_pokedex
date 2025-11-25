@@ -82,6 +82,9 @@ Is this about repositories/ViewModels/tests/technical?
 # ALWAYS run Android build first (fastest feedback):
 ./gradlew :composeApp:assembleDebug
 
+# Check for dependency updates periodically:
+./gradlew dependencyUpdates
+
 # ⚠️ NEVER run iOS builds unless explicitly required
 # iOS builds take 5-10 minutes and are rarely necessary
 ```
@@ -671,21 +674,47 @@ Requirements:
 
 ## 🔧 Common Tasks & Solutions
 
+### Checking for Dependency Updates
+```bash
+# Check for available dependency updates
+./gradlew dependencyUpdates
+
+# View detailed report
+open build/dependencyUpdates/report.html
+```
+
+**Stability Rules** (configured in root `build.gradle.kts`):
+- ✅ Stable versions (e.g., `2.8.4`) stay stable—won't upgrade to `2.9.0-alpha01`
+- ✅ Unstable versions (e.g., `2.9.0-alpha01`) upgrade within same major.minor only:
+  - `2.9.0-alpha01` → `2.9.0-alpha03` ✅ (same major.minor)
+  - `2.9.0-alpha01` → `2.9.0-beta01` ✅ (same major.minor)
+  - `2.9.0-rc02` → `2.9.0` ✅ (same major.minor)
+  - `2.9.0-alpha01` → `2.10.0-alpha01` ❌ (different minor)
+  - `2.9.0-alpha01` → `3.0.0-alpha01` ❌ (different major)
+  - `2.9.0-alpha01` → `3.9.0-alpha01` ❌ (different major)
+- ✅ Unstable versions upgrade to ANY stable version:
+  - `2.9.0-alpha02` → `3.1.1` ✅ (stable release)
+  - `1.0.0-rc02` → `1.0.0` ✅ (stable release)
+- ✅ Gradle wrapper updates also checked
+
 ### Adding a New Dependency
 ```bash
-# 1. Add to gradle/libs.versions.toml
+# 1. Check if newer version exists
+./gradlew dependencyUpdates
+
+# 2. Add to gradle/libs.versions.toml
 [versions]
 arrow = "1.2.0"
 
 [libraries]
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
-# 2. Add to module's build.gradle.kts
+# 3. Add to module's build.gradle.kts
 commonMain.dependencies {
   implementation(libs.arrow.core)
 }
 
-# 3. Sync and validate
+# 4. Sync and validate
 ./gradlew :composeApp:assembleDebug
 ```
 

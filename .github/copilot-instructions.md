@@ -47,6 +47,29 @@ Vertical-slice modularization with api/impl/wiring pattern:
 ./gradlew :composeApp:assembleDebug
 ```
 
+### Dependency Management
+```bash
+# Check for available dependency updates
+./gradlew dependencyUpdates
+
+# View detailed report
+open build/dependencyUpdates/report.html
+```
+
+**Stability Rules** (configured in root `build.gradle.kts`):
+- ✅ Stable versions (e.g., `2.8.4`) stay stable—won't upgrade to `2.9.0-alpha01`
+- ✅ Unstable versions (e.g., `2.9.0-alpha01`) upgrade within same major.minor only:
+  - `2.9.0-alpha01` → `2.9.0-alpha03` ✅ (same major.minor)
+  - `2.9.0-alpha01` → `2.9.0-beta01` ✅ (same major.minor)
+  - `2.9.0-rc02` → `2.9.0` ✅ (same major.minor)
+  - `2.9.0-alpha01` → `2.10.0-alpha01` ❌ (different minor)
+  - `2.9.0-alpha01` → `3.0.0-alpha01` ❌ (different major)
+  - `2.9.0-alpha01` → `3.9.0-alpha01` ❌ (different major)
+- ✅ Unstable versions upgrade to ANY stable version:
+  - `2.9.0-alpha02` → `3.1.1` ✅ (stable release)
+  - `1.0.0-rc02` → `1.0.0` ✅ (stable release)
+- ✅ Gradle wrapper updates also checked
+
 ### Platform-Specific Commands
 ```bash
 # Desktop/JVM
@@ -262,8 +285,9 @@ actual fun getPlatform(): Platform = IOSPlatform()
 
 ### When Adding Dependencies
 1. **Use version catalog**: Add to `gradle/libs.versions.toml`
-2. **Check compatibility**: Ensure KMP support for multiplatform modules
-3. **Prefer common dependencies**: Add to `commonMain` unless platform-specific
+2. **Check for updates first**: Run `./gradlew dependencyUpdates` to see available versions
+3. **Check compatibility**: Ensure KMP support for multiplatform modules
+4. **Prefer common dependencies**: Add to `commonMain` unless platform-specific
 
 ### UI Development Requirements (MANDATORY)
 
