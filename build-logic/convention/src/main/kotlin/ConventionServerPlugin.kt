@@ -60,10 +60,10 @@ class ConventionServerPlugin : Plugin<Project> {
 
         // Add common server dependencies
         dependencies {
-            add("implementation", libs.findLibrary("logback").get())
-            add("implementation", libs.findLibrary("ktor-serverCore").get())
-            add("testImplementation", libs.findLibrary("ktor-serverTestHost").get())
-            add("testImplementation", libs.findLibrary("kotlin-testJunit").get())
+            add("implementation", libs.getLibrary("logback"))
+            add("implementation", libs.getLibrary("ktor-serverCore"))
+            add("testImplementation", libs.getLibrary("ktor-serverTestHost"))
+            add("testImplementation", libs.getLibrary("kotlin-testJunit"))
         }
     }
 }

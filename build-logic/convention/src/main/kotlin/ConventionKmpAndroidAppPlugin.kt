@@ -51,11 +51,11 @@ class ConventionKmpAndroidAppPlugin : Plugin<Project> {
         }
 
         extensions.configure<ApplicationExtension> {
-            compileSdk = libs.findVersion("android-compileSdk").get().toString().toInt()
+            compileSdk = libs.getVersion("android-compileSdk").toInt()
 
             defaultConfig {
-                minSdk = libs.findVersion("android-minSdk").get().toString().toInt()
-                targetSdk = libs.findVersion("android-targetSdk").get().toString().toInt()
+                minSdk = libs.getVersion("android-minSdk").toInt()
+                targetSdk = libs.getVersion("android-targetSdk").toInt()
             }
 
             compileOptions {

@@ -55,10 +55,10 @@ class ConventionFeatureApiPlugin : Plugin<Project> {
         }
         
         extensions.configure<LibraryExtension> {
-            compileSdk = libs.findVersion("android-compileSdk").get().toString().toInt()
+            compileSdk = libs.getVersion("android-compileSdk").toInt()
 
             defaultConfig {
-                minSdk = libs.findVersion("android-minSdk").get().toString().toInt()
+                minSdk = libs.getVersion("android-minSdk").toInt()
             }
 
             compileOptions {
