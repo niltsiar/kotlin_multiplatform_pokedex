@@ -429,7 +429,7 @@ kotlin {
 **After modifying**:
 1. Rebuild: `./gradlew :build-logic:convention:build`
 2. Sync project: `./gradlew projects`
-3. Validate: `./gradlew :composeApp:assembleDebug`
+3. Validate: `./gradlew :composeApp:assembleDebug test --continue`
 
 **⚠️ Never validate with iOS builds** (5-10min) - use Android builds (45s)
 
@@ -476,7 +476,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 
 **Validate Android build (ALWAYS use this for validation)**:
 ```bash
-./gradlew :composeApp:assembleDebug
+./gradlew :composeApp:assembleDebug test --continue
 ```
 
 **Run tests**:

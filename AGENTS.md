@@ -79,8 +79,8 @@ Is this about repositories/ViewModels/tests/technical?
 
 ### 2. Validate Before Starting
 ```bash
-# ALWAYS run Android build first (fastest feedback):
-./gradlew :composeApp:assembleDebug
+# ALWAYS run Android build + ALL tests (fastest feedback):
+./gradlew :composeApp:assembleDebug test --continue
 
 # Check for dependency updates periodically:
 ./gradlew dependencyUpdates
@@ -100,7 +100,7 @@ Research → Plan → Implement → Test → Validate
 ### 4. Completion Checklist
 - [ ] Code follows conventions in `.junie/guides/tech/conventions.md`
 - [ ] Unit tests written (Kotest in `commonTest/`)
-- [ ] Android build passes: `./gradlew :composeApp:assembleDebug`
+- [ ] Android build + ALL tests pass: `./gradlew :composeApp:assembleDebug test --continue`
 - [ ] No iOS builds run (unless specifically required)
 - [ ] Dependencies added to `gradle/libs.versions.toml`
 
@@ -715,7 +715,7 @@ commonMain.dependencies {
 }
 
 # 4. Sync and validate
-./gradlew :composeApp:assembleDebug
+./gradlew :composeApp:assembleDebug test --continue
 ```
 
 ### Creating expect/actual Implementations
@@ -899,7 +899,7 @@ IF iOS framework configuration     → Configure in :shared build.gradle.kts (ex
 
 # 2. Clean build
 ./gradlew clean
-./gradlew :composeApp:assembleDebug
+./gradlew :composeApp:assembleDebug test --continue
 
 # 3. Check version catalog
 cat gradle/libs.versions.toml
@@ -1084,7 +1084,7 @@ private fun ScreenVariation2Preview() { }
 1. Read this file completely
 2. Read `.junie/guides/tech/conventions.md`
 3. Run `./gradlew projects` to see structure
-4. Run `./gradlew :composeApp:assembleDebug` successfully
+4. Run `./gradlew :composeApp:assembleDebug test --continue` successfully
 5. **Review specialized agent prompts** in `.junie/guides/prompts/`
 
 ### Day 2: Technical Patterns
@@ -1122,7 +1122,7 @@ private fun ScreenVariation2Preview() { }
 - [ ] Create ViewModels following lifecycle-aware pattern
 - [ ] Write Kotest tests with proper assertions
 - [ ] Add dependencies via version catalog
-- [ ] Validate changes with `./gradlew :composeApp:assembleDebug`
+- [ ] Validate changes with `./gradlew :composeApp:assembleDebug test --continue`
 - [ ] Find answers in `.junie/guides/` documentation
 - [ ] Avoid common pitfalls (scope storage, init work, iOS builds)
 - [ ] **Switch to appropriate agent mode** for non-technical tasks
@@ -1286,7 +1286,7 @@ class HomeViewModel : ViewModel() {
 - [ ] All SwiftUI Views have #Preview macros
 
 #### 10. Build Validation
-- [ ] Android build passes: `./gradlew :composeApp:assembleDebug`
+- [ ] Android build + ALL tests pass: `./gradlew :composeApp:assembleDebug test --continue`
 - [ ] Unit tests pass: `./gradlew :composeApp:testDebugUnitTest`
 - [ ] No iOS builds run (unless explicitly required)
 
@@ -1359,7 +1359,7 @@ After implementing code, provide:
 [What follows conventions well]
 
 ### Build Validation
-- [ ] Android build: ./gradlew :composeApp:assembleDebug
+- [ ] Android build: ./gradlew :composeApp:assembleDebug test --continue
 - [ ] Unit tests: ./gradlew :composeApp:testDebugUnitTest
 ```
 
@@ -1377,6 +1377,19 @@ After implementing code, provide:
 | `:impl` exported to iOS | Only `:api` and `:core:*` in `:shared` |
 | @Composable without @Preview | Add `@Preview` with realistic data |
 | SwiftUI View without #Preview | Add `#Preview` with realistic data |
+| Manual cast after `shouldBeInstanceOf` | Use smart cast directly (see kotest-smart-casting-quick-ref.md) |
+
+### Common Testing Pitfalls
+
+**Manual casting after type-checking matchers** - Kotest matchers provide smart casting through compiler contracts.
+
+See `.junie/guides/tech/kotest-smart-casting-quick-ref.md` for complete guide.
+
+**Quick checklist**:
+- ✅ No manual casts after `shouldBeInstanceOf<T>()`
+- ✅ Use return value of `shouldBeLeft()` / `shouldBeRight()`
+- ✅ No safe calls (`?.`) after `shouldNotBeNull()`
+- ✅ IDE warnings about unnecessary casts should be fixed
 
 ---
 

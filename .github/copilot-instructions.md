@@ -43,8 +43,8 @@ Vertical-slice modularization with api/impl/wiring pattern:
 
 ### Primary Validation Command
 ```bash
-# Always validate with Android build first (fastest feedback)
-./gradlew :composeApp:assembleDebug
+# Always validate with Android build + ALL tests (fastest feedback)
+./gradlew :composeApp:assembleDebug test --continue
 ```
 
 ### Dependency Management
@@ -278,7 +278,7 @@ actual fun getPlatform(): Platform = IOSPlatform()
 3. **Review conventions**: Reference `.junie/guides/tech/conventions.md` for patterns
 
 ### When Implementing Features
-1. **Start with Android validation**: `./gradlew :composeApp:assembleDebug` (fastest feedback)
+1. **Start with Android validation**: `./gradlew :composeApp:assembleDebug test --continue` (fastest feedback)
 2. **Test incrementally**: Run unit tests after each logical change
 3. **Avoid premature optimization**: Implement working code first, optimize if needed
 4. **Don't create feature modules prematurely**: Only 3 modules exist (composeApp, server, shared)
@@ -351,6 +351,7 @@ Before marking any code complete:
 - ✅ Minimum coverage achieved (success + error paths)
 - ✅ @Composable functions have @Preview
 - ✅ All tests pass
+- ✅ No manual casts after type-checking matchers (see kotest-smart-casting-quick-ref.md)
 
 **Automatic Rejection Criteria:**
 - ❌ Repository without tests
@@ -358,6 +359,7 @@ Before marking any code complete:
 - ❌ Mapper without property-based tests
 - ❌ @Composable without @Preview
 - ❌ Modified code without updated tests
+- ❌ Manual cast after `shouldBeInstanceOf`, `shouldBeLeft`, or other smart-casting matchers
 
 ### Testing Strategy
 - **Unit tests first**: Write tests in `androidTest/` to leverage Kotest and MockK
@@ -367,6 +369,7 @@ Before marking any code complete:
 - **Screenshot tests**: Use Roborazzi (Robolectric-based, Android tests)
 - **Test Location**: Use `androidTest/` for business logic tests (repository, mappers, use cases)
 - **Common tests**: Only for platform-agnostic utilities that need no mocking
+- **Smart casting**: Use Kotest matcher smart casting, never manually cast after type assertions (see `.junie/guides/tech/kotest-smart-casting-quick-ref.md`)
 
 **Why Android Tests for Business Logic:**
 - ✅ Full Kotest support (assertions, property testing, framework)
@@ -443,7 +446,7 @@ Run through this after implementing code:
 - [ ] Dependencies added to `gradle/libs.versions.toml`
 - [ ] Convention plugins applied appropriately
 - [ ] Code passes ktlint/detekt (configured via convention plugins)
-- [ ] Android build validates: `./gradlew :composeApp:assembleDebug`
+- [ ] Android build + ALL tests validate: `./gradlew :composeApp:assembleDebug test --continue`
 - [ ] All @Composable functions have @Preview
 
 ### UI Preview Requirements (MANDATORY)

@@ -76,7 +76,7 @@ class PokemonListRepositoryTest : StringSpec({
     }
     
     "should return Http error on ClientRequestException (4xx)" {
-        val mockResponse = mockk<HttpResponse> {
+        val mockResponse = mockk<HttpResponse>(relaxed = true) {
             coEvery { status } returns HttpStatusCode.NotFound
         }
         
@@ -91,7 +91,7 @@ class PokemonListRepositoryTest : StringSpec({
     }
     
     "should return Http error on ServerResponseException (5xx)" {
-        val mockResponse = mockk<HttpResponse> {
+        val mockResponse = mockk<HttpResponse>(relaxed = true) {
             coEvery { status } returns HttpStatusCode.InternalServerError
         }
         
@@ -186,7 +186,7 @@ class PokemonListRepositoryTest : StringSpec({
     
     "property: repository maps all HTTP error codes to RepoError.Http" {
         checkAll(Arb.int(400..599)) { statusCode ->
-            val mockResponse = mockk<HttpResponse> {
+            val mockResponse = mockk<HttpResponse>(relaxed = true) {
                 coEvery { status } returns HttpStatusCode.fromValue(statusCode)
             }
             

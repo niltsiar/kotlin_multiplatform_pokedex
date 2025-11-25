@@ -42,9 +42,8 @@ class PokemonListViewModelTest : StringSpec({
         
         val state = viewModel.uiState.value
         state.shouldBeInstanceOf<PokemonListUiState.Content>()
-        val content = state as PokemonListUiState.Content
-        content.pokemons.size shouldBe 1
-        content.pokemons[0].name shouldBe "Bulbasaur"
+        state.pokemons.size shouldBe 1
+        state.pokemons[0].name shouldBe "Bulbasaur"
         
         coVerify(exactly = 1) { mockRepository.loadPage(20, 0) }
     }
@@ -57,8 +56,7 @@ class PokemonListViewModelTest : StringSpec({
         
         val state = viewModel.uiState.value
         state.shouldBeInstanceOf<PokemonListUiState.Error>()
-        val error = state as PokemonListUiState.Error
-        error.message shouldBe "Network error. Please check your connection."
+        state.message shouldBe "Network error. Please check your connection."
     }
     
     "loadNextPage should not load when state is not Content" {
