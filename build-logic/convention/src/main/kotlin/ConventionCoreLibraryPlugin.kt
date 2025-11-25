@@ -9,25 +9,27 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * Convention plugin for feature implementation modules.
+ * Convention plugin for core library modules.
  * 
- * These modules contain:
- * - Internal implementations of API contracts
- * - Repository implementations
- * - Data sources (network, database)
- * - DTO to domain mappers
+ * Core modules are KMP libraries that need Android support for:
+ * - Android-specific implementations (e.g., Ktor OkHttp)
+ * - Android namespace for publishing
  * 
- * NOT exported to iOS (only :api modules are exported).
+ * Configures:
+ * - KMP with Android, JVM, and iOS targets
+ * - Android library settings
+ * 
+ * Examples: :core:httpclient, :core:database, :core:util
  */
-class ConventionFeatureImplPlugin : Plugin<Project> {
+class ConventionCoreLibraryPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
             apply("org.jetbrains.kotlin.multiplatform")
             apply("com.android.library")
         }
-        
+
         val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-        
+
         extensions.configure<KotlinMultiplatformExtension> {
             androidTarget {
                 compilerOptions {
@@ -51,7 +53,7 @@ class ConventionFeatureImplPlugin : Plugin<Project> {
                 }
             }
         }
-        
+
         extensions.configure<LibraryExtension> {
             compileSdk = libs.findVersion("android-compileSdk").get().toString().toInt()
 

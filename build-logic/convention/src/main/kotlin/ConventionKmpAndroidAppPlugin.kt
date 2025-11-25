@@ -1,4 +1,4 @@
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -9,25 +9,24 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * Convention plugin for feature implementation modules.
+ * Convention plugin for Kotlin Multiplatform Android applications.
  * 
- * These modules contain:
- * - Internal implementations of API contracts
- * - Repository implementations
- * - Data sources (network, database)
- * - DTO to domain mappers
+ * Configures:
+ * - Android target with proper JVM target
+ * - JVM target for Desktop
+ * - Android application settings (compileSdk, minSdk, targetSdk, packaging)
  * 
- * NOT exported to iOS (only :api modules are exported).
+ * Use for main app module that has both Android and Desktop (JVM) targets.
  */
-class ConventionFeatureImplPlugin : Plugin<Project> {
+class ConventionKmpAndroidAppPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
             apply("org.jetbrains.kotlin.multiplatform")
-            apply("com.android.library")
+            apply("com.android.application")
         }
-        
+
         val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-        
+
         extensions.configure<KotlinMultiplatformExtension> {
             androidTarget {
                 compilerOptions {
@@ -41,27 +40,30 @@ class ConventionFeatureImplPlugin : Plugin<Project> {
                 }
             }
 
-            iosArm64()
-            iosSimulatorArm64()
-            iosX64()
-
             sourceSets.apply {
                 commonTest.dependencies {
                     implementation(kotlin("test"))
                 }
             }
         }
-        
-        extensions.configure<LibraryExtension> {
+
+        extensions.configure<ApplicationExtension> {
             compileSdk = libs.findVersion("android-compileSdk").get().toString().toInt()
 
             defaultConfig {
                 minSdk = libs.findVersion("android-minSdk").get().toString().toInt()
+                targetSdk = libs.findVersion("android-targetSdk").get().toString().toInt()
             }
 
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_11
                 targetCompatibility = JavaVersion.VERSION_11
+            }
+
+            packaging {
+                resources {
+                    excludes += "/META-INF/{AL2.0,LGPL2.1}"
+                }
             }
         }
     }

@@ -53,5 +53,13 @@ gradlePlugin {
             id = "convention.feature.wiring"
             implementationClass = "ConventionFeatureWiringPlugin"
         }
+        register("kmpAndroidApp") {
+            id = "convention.kmp.android.app"
+            implementationClass = "ConventionKmpAndroidAppPlugin"
+        }
+        register("coreLibrary") {
+            id = "convention.core.library"
+            implementationClass = "ConventionCoreLibraryPlugin"
+        }
     }
 }
