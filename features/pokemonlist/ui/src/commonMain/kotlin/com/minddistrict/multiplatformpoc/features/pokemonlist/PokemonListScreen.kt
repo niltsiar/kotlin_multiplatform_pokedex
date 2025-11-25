@@ -22,7 +22,8 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
 @Composable
 fun PokemonListScreen(
     viewModel: PokemonListViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPokemonClick: (Pokemon) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
@@ -33,6 +34,7 @@ fun PokemonListScreen(
     PokemonListContent(
         uiState = uiState,
         onLoadMore = viewModel::loadNextPage,
+        onPokemonClick = onPokemonClick,
         modifier = modifier
     )
 }
@@ -41,6 +43,7 @@ fun PokemonListScreen(
 private fun PokemonListContent(
     uiState: PokemonListUiState,
     onLoadMore: () -> Unit,
+    onPokemonClick: (Pokemon) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -80,7 +83,10 @@ private fun PokemonListContent(
                     items = uiState.pokemons,
                     key = { _, pokemon -> pokemon.id }
                 ) { index, pokemon ->
-                    PokemonCard(pokemon = pokemon)
+                    PokemonCard(
+                        pokemon = pokemon,
+                        onClick = { onPokemonClick(pokemon) }
+                    )
                     
                     // Load more when near end
                     if (index >= uiState.pokemons.size - 4 && !uiState.isLoadingMore && uiState.hasMore) {
@@ -110,9 +116,11 @@ private fun PokemonListContent(
 @Composable
 private fun PokemonCard(
     pokemon: com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f)

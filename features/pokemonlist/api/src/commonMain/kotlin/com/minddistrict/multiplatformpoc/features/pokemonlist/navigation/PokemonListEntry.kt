@@ -1,21 +1,8 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.navigation
 
-import com.minddistrict.multiplatformpoc.core.designsystem.navigation.AppDestination
-
 /**
- * Navigation destination for Pokémon List feature.
+ * Navigation route for Pokémon List screen.
+ * Simple object used as navigation key - no string routes needed.
  */
-data object PokemonListDestination : AppDestination {
-    override val route: String = "pokemonList"
-    override val label: String = "Pokémon"
-    override val showInNavigation: Boolean = true
-}
+object PokemonList
 
-/**
- * Navigation entry point for Pokémon List feature.
- * Provides route building for navigation.
- */
-interface PokemonListEntry {
-    val destination: AppDestination
-    fun buildRoute(): String
-}

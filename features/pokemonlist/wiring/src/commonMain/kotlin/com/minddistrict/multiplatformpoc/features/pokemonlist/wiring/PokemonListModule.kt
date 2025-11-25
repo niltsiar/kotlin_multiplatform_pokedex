@@ -1,13 +1,13 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring
 
-import com.minddistrict.multiplatformpoc.core.designsystem.navigation.AppDestination
 import com.minddistrict.multiplatformpoc.core.httpclient.createHttpClient
 import com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListRepository
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListApiService
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListRepository as createPokemonListRepository
-import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonListDestination
-import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonListEntry
+import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.navigation.Navigator
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
@@ -24,7 +24,6 @@ import io.ktor.client.HttpClient
  * - PokemonListApiService
  * - PokemonListRepository
  * - PokemonListViewModel
- * - Navigation destination and entry point
  */
 @BindingContainer
 @ContributesTo(AppScope::class)
@@ -77,28 +76,6 @@ interface PokemonListProviders {
             repository: PokemonListRepository
         ): PokemonListViewModel {
             return PokemonListViewModel(repository)
-        }
-        
-        /**
-         * Contributes the Pokemon List destination to the app's navigation set.
-         * Used by NavigationSuiteScaffold to configure adaptive navigation.
-         */
-        @Provides
-        @IntoSet
-        fun providePokemonListDestination(): AppDestination {
-            return PokemonListDestination
-        }
-        
-        /**
-         * Provides the navigation entry point for Pokemon List feature.
-         * Used for building navigation routes.
-         */
-        @Provides
-        fun providePokemonListEntry(): PokemonListEntry {
-            return object : PokemonListEntry {
-                override val destination: AppDestination = PokemonListDestination
-                override fun buildRoute(): String = PokemonListDestination.route
-            }
         }
     }
 }

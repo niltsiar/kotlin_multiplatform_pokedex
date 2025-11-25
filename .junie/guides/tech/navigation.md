@@ -1,103 +1,540 @@
 # Navigation Guidelines
 
-Purpose: Define how navigation contracts are exposed and implemented in a vertical-slice, feature-modularized Compose Multiplatform app.
+## Overview
 
-## Architecture
-- Keep navigation feature‑local. Each feature owns its entry points and routes.
-- Expose navigation contracts in `:features:<feature>:api` and keep implementations in `:features:<feature>:impl`.
-- Avoid leaking implementation details (screens, view models) across module boundaries; expose only contracts.
-- Standard: Compose Navigation 3 (supported in Compose Multiplatform 1.10.0‑beta02). Artifacts:
-  - `org.jetbrains.androidx.navigation3:navigation3-ui`
-  - `org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3`
-  - Optional: `org.jetbrains.compose.material3.adaptive:adaptive-navigation3`
+This guide covers Navigation 3 modular architecture for Kotlin Multiplatform with Compose. Navigation follows split-by-layer pattern: route contracts in `:api`, UI in `:ui`, and wiring in platform-specific source sets (androidMain/jvmMain).
 
-## Contracts in api
-```kotlin
-// :features:profile:api
-interface ProfileEntry {
-  val route: String
-  fun build(deeplink: String? = null): String // optional helpers
-}
-```
+## Architecture Principles
 
-## Implementation in impl
-```kotlin
-// :features:profile:impl
-internal class ProfileEntryImpl : ProfileEntry {
-  override val route: String = "profile/{userId}"
-  override fun build(deeplink: String?): String = "profile/${deeplink ?: "me"}"
-}
+- **Feature-local navigation**: Each feature owns its routes and UI registration
+- **Route objects in :api**: Plain Kotlin objects/data classes as navigation keys
+- **UI in platform-specific wiring**: androidMain/jvmMain provide EntryProviderInstallers
+- **No iOS exports**: Navigation is Compose-only (not exported via :shared)
+- **Explicit back stack**: Navigator class manages navigation state
 
-// Screen composable kept internal to impl
-@Composable internal fun ProfileScreen(modifier: Modifier = Modifier) { /* ... */ }
-```
+## Core Components
 
-Bind via wiring (no annotations on the class)
-```kotlin
-// :features:profile:wiring/src/commonMain/.../ProfileNavigationWiring.kt
-@Provides
-fun provideProfileEntry(): ProfileEntry = ProfileEntryImpl()
-```
+### Navigator (`:core:navigation`)
 
-## Composition Root
-- Centralize route wiring in the app module and request feature entries via DI (Metro) as needed.
-- Use multibinding (`Set<FeatureEntry>`) if you need to aggregate dynamic destinations.
-- With Navigation 3, drive navigation by adding/removing items from a back stack list.
+Back stack manager with explicit navigation control:
 
 ```kotlin
-class NavRegistry(
-  private val entries: Set<FeatureEntry>
-) {
-  fun allRoutes(): Set<String> = entries.mapTo(mutableSetOf()) { it.route }
-}
-```
-
-## Wiring/Aggregation Modules for Navigation
-- Prefer aggregating navigation entries in a wiring module to keep the app module thin and to avoid adding direct dependencies on each feature `impl`.
-- Naming: `:features:<feature>:wiring` (feature-local) or `:wiring:navigation` (cross-feature aggregator).
-
-Example (wiring module)
-```kotlin
-// :wiring:navigation/src/commonMain/.../NavigationWiring.kt
-@Provides
-fun provideFeatureEntries(
-  profile: ProfileEntry,
-  settings: SettingsEntry,
-  home: HomeEntry
-): Set<FeatureEntry> = setOf(profile, settings, home)
-
-@Provides
-fun provideNavRegistry(entries: Set<FeatureEntry>): NavRegistry = NavRegistry(entries)
-```
-
-Notes
-- Keep wiring modules internal to the app; do not export them in the iOS umbrella. Only `api` modules should be exported.
-- Feature `impl` modules remain private; wiring depends on them and exposes only contracts defined in `api`.
-
-## Navigation 3 basics (examples)
-
-Persistent back stack and entries
-```kotlin
-@Serializable data object Home : NavKey
-@Serializable data class Profile(val userId: String) : NavKey
-
-@Composable
-fun AppNav(registry: NavRegistry) {
-  val backStack = rememberNavBackStack(Home)
-  NavDisplay(
-    backStack = backStack,
-    onBack = { backStack.removeLastOrNull() },
-    entryProvider = entryProvider {
-      entry<Home> {
-        HomeScreen(
-          onNavigateProfile = { id -> backStack.add(Profile(id)) }
-        )
-      }
-      entry<Profile> { key ->
-        ProfileScreen(userId = key.userId)
-      }
+// core/navigation/src/commonMain/kotlin/.../Navigator.kt
+class Navigator(startDestination: Any) {
+    private val _backStack = mutableStateListOf(startDestination)
+    val backStack: List<Any> = _backStack
+    
+    fun goTo(destination: Any) {
+        _backStack.add(destination)
     }
-  )
+    
+    fun goBack() {
+        if (_backStack.size > 1) {
+            _backStack.removeAt(_backStack.lastIndex)
+        }
+    }
+}
+```
+
+**Key features**:
+- Uses `SnapshotStateList` for Compose reactivity
+- Accepts `Any` type for destination keys
+- Maintains minimum one destination (start destination)
+
+### EntryProviderInstaller (`:core:navigation`)
+
+Type alias for feature navigation contributions:
+
+```kotlin
+// core/navigation/src/commonMain/kotlin/.../EntryProviderInstaller.kt
+typealias EntryProviderInstaller = EntryProviderScope<Any>.() -> Unit
+```
+
+**Purpose**: Enables Metro DI `@IntoSet` multibinding for dynamic navigation graph assembly
+
+## Route Definition Pattern
+
+### Simple Route (No Parameters)
+
+```kotlin
+// :features:pokemonlist:api/src/commonMain/.../navigation/PokemonListEntry.kt
+object PokemonList
+```
+
+**Characteristics**:
+- Plain Kotlin `object` (singleton)
+- No properties or methods
+- Acts as navigation key
+- No @Serializable needed
+- Exported to iOS via :shared (for reference in shared code)
+
+### Parameterized Route
+
+```kotlin
+// :features:pokemondetail:api/src/commonMain/.../navigation/PokemonDetailEntry.kt
+data class PokemonDetail(val id: Int)
+```
+
+**Characteristics**:
+- Plain Kotlin `data class`
+- Parameters as constructor properties
+- No @Serializable needed
+- Acts as navigation key with state
+- Exported to iOS via :shared (for reference in shared code)
+
+**Why no @Serializable?**: Navigation 3 uses routes as in-memory keys, not for URL serialization
+
+## Wiring Pattern (Platform-Specific)
+
+### Module Structure
+
+```
+:features:pokemonlist:wiring/
+├── build.gradle.kts                    # Depends on :core:navigation, :ui, :presentation
+└── src/
+    ├── commonMain/kotlin/              # Provides ViewModels, repositories
+    ├── androidMain/kotlin/             # Provides EntryProviderInstaller for Android
+    └── jvmMain/kotlin/                 # Provides EntryProviderInstaller for Desktop
+```
+
+### Common Main (Data Layer)
+
+```kotlin
+// :features:pokemonlist:wiring/src/commonMain/.../PokemonListModule.kt
+@ContributesTo(AppScope::class)
+interface PokemonListModule {
+    
+    @Provides
+    fun provideRepository(api: PokemonListApiService): PokemonListRepository =
+        PokemonListRepository(api)
+    
+    @Provides
+    fun provideViewModel(repository: PokemonListRepository): PokemonListViewModel =
+        PokemonListViewModel(repository)
+}
+```
+
+### Android Main (UI Navigation)
+
+```kotlin
+// :features:pokemonlist:wiring/src/androidMain/.../PokemonListNavigationProviders.kt
+@ContributesTo(AppScope::class)
+interface PokemonListNavigationProviders {
+    
+    @Provides
+    @IntoSet
+    fun provideNavigation(
+        navigator: Navigator,
+        viewModel: PokemonListViewModel
+    ): EntryProviderInstaller = {
+        entry<PokemonList> {
+            PokemonListScreen(
+                viewModel = viewModel,
+                onPokemonClick = { pokemon ->
+                    navigator.goTo(PokemonDetail(pokemon.id))
+                }
+            )
+        }
+    }
+}
+```
+
+**Key points**:
+- `@IntoSet` collects all EntryProviderInstallers into `Set<EntryProviderInstaller>`
+- `entry<RouteType>` registers composable for route
+- Navigator injected for cross-feature navigation
+- ViewModel injected from common module
+
+### JVM Main (Desktop UI Navigation)
+
+```kotlin
+// :features:pokemonlist:wiring/src/jvmMain/.../PokemonListNavigationProviders.kt
+@ContributesTo(AppScope::class)
+interface PokemonListNavigationProviders {
+    
+    @Provides
+    @IntoSet
+    fun provideNavigation(
+        navigator: Navigator,
+        viewModel: PokemonListViewModel
+    ): EntryProviderInstaller = {
+        entry<PokemonList> {
+            PokemonListScreen(
+                viewModel = viewModel,
+                onPokemonClick = { pokemon ->
+                    navigator.goTo(PokemonDetail(pokemon.id))
+                }
+            )
+        }
+    }
+}
+```
+
+**Pattern**: Identical to androidMain for simple cases, can diverge for platform-specific UI
+
+### Parameterized Routes
+
+```kotlin
+// :features:pokemondetail:wiring/src/androidMain/.../PokemonDetailNavigationProviders.kt
+@Provides
+@IntoSet
+fun provideNavigation(navigator: Navigator): EntryProviderInstaller = {
+    entry<PokemonDetail> { key ->
+        PokemonDetailScreen(
+            pokemonId = key.id,
+            onBackClick = { navigator.goBack() }
+        )
+    }
+}
+```
+
+**Key difference**: `entry<T> { key -> }` receives typed route object for parameter extraction
+
+## Application Integration
+
+### App Graph (`:core:di`)
+
+```kotlin
+// core/di/src/commonMain/kotlin/.../AppGraph.kt
+@ContributesTo(AppScope::class)
+interface AppGraph {
+    val navigator: Navigator
+    val entryProviderInstallers: Set<EntryProviderInstaller>
+    val pokemonListViewModel: PokemonListViewModel
+}
+```
+
+**Components**:
+- `navigator`: Single Navigator instance for entire app
+- `entryProviderInstallers`: Collected from all feature wiring modules via @IntoSet
+- ViewModels: Exposed for lifecycle management in App.kt
+
+### Navigator Provider
+
+```kotlin
+// core/di/src/commonMain/kotlin/.../NavigationProviders.kt
+@ContributesTo(AppScope::class)
+interface NavigationProviders {
+    
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideNavigator(): Navigator = Navigator(
+        startDestination = PokemonList
+    )
+}
+```
+
+**Singleton**: Navigator is app-wide singleton managing global back stack
+
+### App.kt Integration
+
+```kotlin
+// composeApp/src/commonMain/kotlin/.../App.kt
+@Composable
+fun App() {
+    val graph: AppGraph = remember { 
+        createGraphFactory<AppGraph.Factory>()
+            .create(baseUrl = "https://pokeapi.co/api/v2")
+    }
+    
+    PokemonTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            NavDisplay(
+                backStack = graph.navigator.backStack,
+                onBack = { graph.navigator.goBack() },
+                entryProvider = entryProvider {
+                    graph.entryProviderInstallers.forEach { this.it() }
+                }
+            )
+        }
+    }
+}
+```
+
+**Flow**:
+1. Create AppGraph (Metro DI assembles all modules)
+2. NavDisplay observes navigator.backStack (SnapshotStateList)
+3. entryProvider installs all EntryProviderInstallers from features
+4. Back navigation triggers navigator.goBack()
+
+## Navigation Operations
+
+### Forward Navigation
+
+```kotlin
+// In feature screen
+onPokemonClick = { pokemon ->
+    navigator.goTo(PokemonDetail(pokemon.id))
+}
+```
+
+**Cross-feature navigation**: Navigator injected via wiring, route object from :api module
+
+### Back Navigation
+
+```kotlin
+// In feature screen
+onBackClick = {
+    navigator.goBack()
+}
+```
+
+**Safety**: Navigator ensures at least one destination remains (start destination)
+
+### Conditional Navigation
+
+```kotlin
+onSaveClick = {
+    viewModelScope.launch {
+        repository.save().fold(
+            ifLeft = { /* show error */ },
+            ifRight = { 
+                navigator.goBack()  // Navigate on success
+            }
+        )
+    }
+}
+```
+
+## Module Dependencies
+
+### :core:navigation Dependencies
+
+```kotlin
+plugins {
+    id("convention.kmp.library")
+    id("convention.compose")
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            api(libs.androidx.navigation3.ui)  // Exposes Navigation 3 types
+        }
+    }
+}
+```
+
+### Feature :wiring Dependencies
+
+```kotlin
+plugins {
+    id("convention.feature.wiring")
+}
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.core.navigation)
+            implementation(projects.features.pokemonlist.api)
+            implementation(projects.features.pokemonlist.data)
+            implementation(projects.features.pokemonlist.presentation)
+        }
+        
+        androidMain.dependencies {
+            implementation(projects.features.pokemonlist.ui)
+        }
+        
+        jvmMain.dependencies {
+            implementation(projects.features.pokemonlist.ui)
+        }
+    }
+}
+```
+
+**Key points**:
+- :api, :data, :presentation in commonMain (all platforms)
+- :ui only in androidMain/jvmMain (Compose-specific)
+- :core:navigation in commonMain (Navigator type needed everywhere)
+
+## iOS Considerations
+
+### What's Exported
+
+Via `:shared` umbrella module:
+- ✅ Route objects from :api modules (for reference in shared code)
+- ✅ ViewModels from :presentation modules
+- ✅ Repositories from :data modules
+
+### What's NOT Exported
+
+- ❌ :core:navigation module (Compose-specific)
+- ❌ :ui modules (Compose screens)
+- ❌ :wiring modules (Compose navigation registration)
+- ❌ EntryProviderInstaller (Compose-specific type)
+
+**iOS navigation**: SwiftUI app implements own navigation, calls shared ViewModels
+
+## Testing Strategy
+
+### Navigator Tests
+
+```kotlin
+// core/navigation/src/androidUnitTest/kotlin/.../NavigatorTest.kt
+class NavigatorTest : StringSpec({
+    
+    "goTo adds destination to back stack" {
+        val navigator = Navigator(startDestination = "start")
+        
+        navigator.goTo("screen1")
+        
+        navigator.backStack shouldContainExactly listOf("start", "screen1")
+    }
+    
+    "goBack removes last destination" {
+        val navigator = Navigator(startDestination = "start")
+        navigator.goTo("screen1")
+        
+        navigator.goBack()
+        
+        navigator.backStack shouldContainExactly listOf("start")
+    }
+    
+    "goBack preserves start destination" {
+        val navigator = Navigator(startDestination = "start")
+        
+        navigator.goBack()  // Should not remove start
+        
+        navigator.backStack shouldContainExactly listOf("start")
+    }
+})
+```
+
+### Navigation Integration Tests
+
+```kotlin
+// features/pokemonlist/ui/src/androidUnitTest/kotlin/.../PokemonListNavigationTest.kt
+@RunWith(AndroidJUnit4::class)
+class PokemonListNavigationTest {
+    
+    @Test
+    fun clicking_pokemon_navigates_to_detail() {
+        val navigator = Navigator(startDestination = PokemonList)
+        val mockViewModel = mockk<PokemonListViewModel>(relaxed = true)
+        
+        val composeRule = createComposeRule()
+        composeRule.setContent {
+            PokemonListScreen(
+                viewModel = mockViewModel,
+                onPokemonClick = { navigator.goTo(PokemonDetail(it.id)) }
+            )
+        }
+        
+        composeRule.onNodeWithText("Pikachu").performClick()
+        
+        navigator.backStack.last() shouldBe PokemonDetail(25)
+    }
+}
+```
+
+## Troubleshooting
+
+### EntryProviderInstaller Not Found
+
+**Symptom**: Empty screen, no routes registered
+
+**Causes**:
+1. Missing `@IntoSet` on provider function
+2. Missing platform-specific source set (androidMain/jvmMain)
+3. Wiring module not included in :core:di dependencies
+
+**Fix**:
+```kotlin
+// Verify in AppGraph
+println(graph.entryProviderInstallers.size)  // Should be > 0
+
+// Verify in wiring module
+@Provides
+@IntoSet  // ← Must have this
+fun provideNavigation(...): EntryProviderInstaller
+```
+
+### Navigator Not Navigating
+
+**Symptom**: Navigator.goTo() called but screen doesn't change
+
+**Causes**:
+1. Back stack not observed by NavDisplay
+2. Route not registered in any EntryProviderInstaller
+3. Wrong route type passed to goTo()
+
+**Fix**:
+```kotlin
+// Verify NavDisplay observes backStack
+NavDisplay(
+    backStack = graph.navigator.backStack,  // ← Must be from navigator
+    ...
+)
+
+// Verify route registered
+entry<PokemonDetail> { ... }  // ← Route type must match exactly
+navigator.goTo(PokemonDetail(1))  // ← Type must match entry<T>
+```
+
+### iOS Build Errors
+
+**Symptom**: iOS framework export fails with navigation types
+
+**Cause**: Trying to export Compose-specific modules (:core:navigation, :ui, :wiring)
+
+**Fix**:
+```kotlin
+// shared/build.gradle.kts - DO NOT export these
+export(projects.core.navigation)  // ❌ Compose-only
+export(projects.features.pokemonlist.ui)  // ❌ Compose-only
+export(projects.features.pokemonlist.wiring)  // ❌ Compose-only
+
+// Only export these
+export(projects.features.pokemonlist.api)  // ✅ Route objects
+export(projects.features.pokemonlist.presentation)  // ✅ ViewModels
+```
+
+## Examples from Codebase
+
+### Simple Navigation (List to Detail)
+
+```kotlin
+// Route objects
+object PokemonList  // No parameters
+data class PokemonDetail(val id: Int)  // With parameter
+
+// Wiring (androidMain)
+@Provides @IntoSet
+fun provideListNavigation(
+    navigator: Navigator,
+    viewModel: PokemonListViewModel
+): EntryProviderInstaller = {
+    entry<PokemonList> {
+        PokemonListScreen(
+            viewModel = viewModel,
+            onPokemonClick = { pokemon ->
+                navigator.goTo(PokemonDetail(pokemon.id))
+            }
+        )
+    }
+}
+
+@Provides @IntoSet
+fun provideDetailNavigation(navigator: Navigator): EntryProviderInstaller = {
+    entry<PokemonDetail> { key ->
+        PokemonDetailScreen(
+            pokemonId = key.id,
+            onBackClick = { navigator.goBack() }
+        )
+    }
+}
+```
+
+## Best Practices
+
+1. **Route objects are keys**: Keep them simple, no business logic
+2. **Platform-specific UI**: androidMain/jvmMain for EntryProviderInstallers
+3. **Navigator is singleton**: One instance per app, injected everywhere
+4. **@IntoSet for discovery**: Let Metro DI collect all navigation entries
+5. **No iOS exports**: Navigation is Compose-specific, iOS uses SwiftUI
+6. **Test navigation**: Use Kotest for Navigator logic, Compose Test for UI navigation
+7. **Explicit back stack**: Navigator.backStack is observable state, debug-friendly
 }
 ```
 
