@@ -20,9 +20,10 @@ Currently in **early POC stage** with skeleton modules only.
   - `:shared` — iOS umbrella framework (exports other KMP modules to iOS)
   - `:server` — Ktor backend (BFF for all clients)
   - `:iosApp` — Native SwiftUI app (imports shared.framework to access KMP modules)
+  - `:features:pokemonlist` — FULLY IMPLEMENTED with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring)
 - **What's documented**: Comprehensive architecture in `.junie/guides/`
-- **Gap**: Feature modules, DI wiring, navigation—all planned but NOT implemented
-- **Your job**: Implement patterns following documented conventions, or work within the existing skeleton
+- **Reference implementation**: Use `pokemonlist` feature as reference for new features
+- **Your job**: Implement new features following pokemonlist pattern, or extend existing modules
 
 **Platform UI Strategy**:
 - Android/Desktop: Shared Compose Multiplatform UI
@@ -108,33 +109,36 @@ Research → Plan → Implement → Test → Validate
 
 ## 📋 Architecture Patterns (CRITICAL)
 
-### True Vertical Slicing
+### Split-by-Layer Pattern
 
-**Each feature is a complete vertical slice owning ALL its layers internally:**
+**Each feature is split into focused layer modules:**
 
 ```
-:features:pokemonlist:api     → Public contracts only
-:features:pokemonlist:impl    → Network + Data + Domain + Presentation + UI
-:features:pokemonlist:wiring  → DI assembly
+:features:pokemonlist:api           → Public contracts only
+:features:pokemonlist:data          → Network + Data layer (all KMP targets)
+:features:pokemonlist:presentation  → ViewModels, UI state (all KMP targets, exported to iOS)
+:features:pokemonlist:ui            → Compose UI screens (Android + JVM only)
+:features:pokemonlist:wiring        → DI assembly (platform-specific source sets)
 ```
 
 **Key Rules:**
-1. Each feature has its own network layer (API service, DTOs)
-2. Each feature has its own data layer (repositories, mappers)
-3. Each feature has its own domain logic (use cases, validators)
-4. Each feature has its own presentation (ViewModels, UI)
+1. Each feature has its own network layer (API service, DTOs) in `:data` module
+2. Each feature has its own data layer (repositories, mappers) in `:data` module
+3. Each feature has its own presentation (ViewModels, UI state) in `:presentation` module - **shared with iOS**
+4. Each feature has its own Compose UI in `:ui` module - **Android + JVM only, NOT exported to iOS**
+5. Wiring uses platform-specific source sets: `commonMain` provides repos/ViewModels, `androidMain`/`jvmMain` provide UI
 
 **DO NOT create generic :core:network or :core:data modules**
 - ❌ `:core:network:api` (generic network layer)
-- ✅ `:features:pokemonlist:impl/data/PokemonListApiService.kt`
+- ✅ `:features:pokemonlist:data/PokemonListApiService.kt`
 
 **Shared infrastructure ONLY for:**
 - Design system (UI components, theme)
 - Generic utilities (3+ features use it)
 - Platform abstractions (expect/actual)
 
-### Dependency Injection: Metro (Not Implemented Yet)
-**Classes are DI-agnostic. Wire via `@Provides` in wiring modules.**
+### Dependency Injection: Metro (Implemented in pokemonlist)
+**Classes are DI-agnostic. Wire via `@Provides` in wiring modules with platform-specific source sets.**
 
 ```kotlin
 // :features:jobs:api - Public contract
@@ -142,7 +146,7 @@ interface JobRepository {
   suspend fun getJobs(): Either<RepoError, List<Job>>
 }
 
-// :features:jobs:impl - Internal implementation
+// :features:jobs:data - Internal implementation
 internal class JobRepositoryImpl(
   private val api: JobApiService
 ) : JobRepository {
@@ -156,13 +160,17 @@ internal class JobRepositoryImpl(
 fun JobRepository(api: JobApiService): JobRepository = 
   JobRepositoryImpl(api)
 
-// :features:jobs:wiring - DI assembly
+// :features:jobs:wiring/commonMain - DI assembly for all platforms
 @Provides
 fun provideJobRepository(api: JobApiService): JobRepository = 
   JobRepository(api)
+
+// :features:jobs:wiring/androidMain - DI assembly for Android UI
+@Provides
+fun provideJobsScreen(): @Composable () -> Unit = { JobsScreen() }
 ```
 
-**Why**: Gradle compilation avoidance, hides implementations, simplifies testing
+**Why**: Gradle compilation avoidance, hides implementations, simplifies testing, enables platform-specific wiring
 
 ### Error Handling: Arrow Either (Required)
 **Repositories MUST return `Either<RepoError, T>`. NEVER throw, return null, or use `Result`.**
@@ -831,7 +839,7 @@ class MyViewModel(...) : ViewModel(...) {
 
 :shared      → iOS umbrella framework (exports other modules)
   └── build.gradle.kts     ← Configures which modules to export to iOS
-              Purpose: Aggregates :features:*:api, :core:* modules
+              Purpose: Aggregates :features:*:api, :features:*:presentation, :core:* modules
               Note: Contains minimal/no business logic itself
 
 :iosApp      → Native SwiftUI iOS app
@@ -842,17 +850,19 @@ class MyViewModel(...) : ViewModel(...) {
   └── src/main/kotlin      ← REST API for all clients
 ```
 
-### Planned Feature Modules (Not Yet Created)
+### Feature Module Pattern
 ```
-:features:jobs:api     → Public contracts (exported to iOS via :shared)
-:features:jobs:impl    → Internal implementations (NOT exported to iOS)
-:features:jobs:wiring  → DI assembly (NOT exported to iOS)
+:features:<feature>:api     → Public contracts (exported to iOS via :shared)
+:features:<feature>:data    → Network + Data layer (NOT exported to iOS)
+:features:<feature>:presentation → ViewModels, UI state (exported to iOS via :shared)
+:features:<feature>:ui      → Compose UI screens (NOT exported to iOS)
+:features:<feature>:wiring  → DI assembly (NOT exported to iOS)
 
 :core:domain           → Shared domain models (exported to iOS via :shared)
 :core:util             → Shared utilities (exported to iOS via :shared)
 
 # When creating: consult .junie/guides/tech/conventions.md first
-# iOS export rule: Only :api and :core:* modules in :shared umbrella
+# iOS export rule: Only :api, :presentation, and :core:* modules in :shared umbrella
 ```
 
 ---
@@ -862,7 +872,9 @@ class MyViewModel(...) : ViewModel(...) {
 ### When to Create a New Module?
 ```
 IF defining cross-feature contracts → :features:<name>:api (export to iOS via :shared)
-IF implementing feature logic      → :features:<name>:impl (do NOT export to iOS)
+IF implementing data layer         → :features:<name>:data (do NOT export to iOS)
+IF implementing ViewModels         → :features:<name>:presentation (export to iOS via :shared)
+IF implementing Compose UI         → :features:<name>:ui (do NOT export to iOS)
 IF wiring dependencies             → :features:<name>:wiring (do NOT export to iOS)
 IF shared utilities                → :core:util (export to iOS via :shared)
 IF common domain models            → :core:domain (export to iOS via :shared)

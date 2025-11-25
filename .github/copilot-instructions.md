@@ -12,32 +12,40 @@ This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for A
               └── jvmMain: Desktop-specific implementations
 
 :shared       → iOS umbrella framework
-              └── Exports: Other KMP modules (:features:*:api, :core:*) to iOS
+              └── Exports: :features:*:api, :features:*:presentation, :core:* to iOS
               Note: Does NOT contain business logic itself
 
 :iosApp       → Native SwiftUI iOS app
               └── Consumes: shared.framework to access KMP modules
 
 :server       → Ktor backend (Netty on port 8080) - Backend-for-Frontend (BFF)
+
+:features:pokemonlist:api    → Public contracts - IMPLEMENTED ✅
+:features:pokemonlist:data   → Network + Data layer - IMPLEMENTED ✅
+:features:pokemonlist:presentation → ViewModels, UI state - IMPLEMENTED ✅
+:features:pokemonlist:ui     → Compose UI screens - IMPLEMENTED ✅
+:features:pokemonlist:wiring → Metro DI assembly - IMPLEMENTED ✅
 ```
 
 ### Required Architecture
-Vertical-slice modularization with api/impl/wiring pattern:
+Split-by-layer modularization with api/data/presentation/ui/wiring pattern:
 - `:features:<feature>:api` → Public contracts (interfaces, navigation, models) - exported to iOS
-- `:features:<feature>:impl` → ALL layers (network, data, domain, presentation, UI) - NOT exported
-- `:features:<feature>:wiring` → Metro DI assembly (NOT exported)
+- `:features:<feature>:data` → Network + Data layer (API services, DTOs, repositories, mappers) - KMP all targets, NOT exported
+- `:features:<feature>:presentation` → ViewModels, UI state - **KMP all targets, shared with iOS**, exported to iOS
+- `:features:<feature>:ui` → Compose UI screens - **Android + JVM only**, NOT exported to iOS
+- `:features:<feature>:wiring` → Metro DI assembly - KMP with platform-specific source sets, NOT exported
 
-**Critical**: True vertical slicing means each feature owns ALL its layers:
-- Network layer (API services, DTOs) lives in the feature's :impl module
-- Data layer (repositories, mappers) lives in the feature's :impl module  
-- Domain logic (use cases, validators) lives in the feature's :impl module
-- Presentation (ViewModels, UI) lives in the feature's :impl module
+**Critical**: Split-by-layer architecture with platform-specific UI:
+- Data layer (network, repositories) in `:data` module - all KMP targets
+- ViewModels and UI state in `:presentation` module - **shared across all platforms including iOS**
+- Compose UI in `:ui` module - Android + JVM only (iOS uses native SwiftUI)
+- Wiring provides repos and ViewModels in `commonMain`, UI bindings in platform-specific source sets
 
-**DO NOT create generic :core:network or :core:data modules**. Each feature is self-contained.
+**DO NOT mix Compose UI with platform-agnostic presentation code**. Keep them in separate modules.
 
 **⚠️ CRITICAL**: Feature modules must follow this pattern. Always consult `.junie/guides/tech/conventions.md` before creating new modules or implementing patterns.
 
-**Current State**: Only skeleton modules exist (composeApp, shared, server, build-logic). Create feature modules following the required architecture as needed.
+**Current State**: `pokemonlist` feature fully implemented with split-by-layer pattern. Use it as reference when creating new features.
 
 ## Build & Validation Workflow
 
@@ -170,7 +178,7 @@ class HomeViewModel(
 - For one-time events: implement `OneTimeEventEmitter<E>` via delegation
 
 ### Navigation (Navigation 3)
-**Pattern**: Contracts in `:api`, implementations in `:impl`, wired in `:wiring`
+**Pattern**: Contracts in `:api`, implementations in feature module, wired in `:wiring`
 ```kotlin
 // :features:profile:api
 interface ProfileEntry {
@@ -178,7 +186,7 @@ interface ProfileEntry {
   fun build(userId: String): String
 }
 
-// :features:profile:impl
+// :features:profile:data or :features:profile:presentation
 internal class ProfileEntryImpl : ProfileEntry {
   override val route = "profile/{userId}"
   override fun build(userId: String) = "profile/$userId"
@@ -224,7 +232,7 @@ class ProfileViewModel(private val repo: UserRepository, ...) {
 ### Code Organization
 - **Compose UI (Android/Desktop)**: `composeApp/src/commonMain/` for shared UI
 - **Platform-specific UI**: `androidMain/`, `jvmMain/` (iOS uses SwiftUI separately)
-- **Business logic**: In feature modules (`:features:<feature>:api`, `:features:<feature>:impl`) and core modules
+- **Business logic**: In feature modules (`:features:<feature>:api`, `:features:<feature>:data`, `:features:<feature>:presentation`) and core modules
 - **iOS umbrella**: `shared/` module exports other KMP modules to iOS (minimal code, mostly Gradle config)
 - **expect/actual pattern**: In feature/core modules, e.g., `shared/src/.../Platform.kt` for platform abstractions
 
@@ -259,8 +267,8 @@ actual fun getPlatform(): Platform = IOSPlatform()
   - Purpose: Backend-for-Frontend, aggregation, business logic
 
 - **:shared Umbrella ↔ iOS SwiftUI**: 
-  - `:shared` exports: Only `:features:<feature>:api` and `:core:*` modules to iOS
-  - Never export: `:impl`, `:wiring`, or UI modules (`:composeApp`)
+  - `:shared` exports: Only `:features:<feature>:api`, `:features:<feature>:presentation`, and `:core:*` modules to iOS
+  - Never export: `:data`, `:ui`, `:wiring`, or UI modules (`:composeApp`)
   - iOS accesses: KMP business logic via shared.framework
   - iOS implements: Native SwiftUI views, calls exported KMP APIs
   
@@ -281,7 +289,7 @@ actual fun getPlatform(): Platform = IOSPlatform()
 1. **Start with Android validation**: `./gradlew :composeApp:assembleDebug test --continue` (fastest feedback)
 2. **Test incrementally**: Run unit tests after each logical change
 3. **Avoid premature optimization**: Implement working code first, optimize if needed
-4. **Don't create feature modules prematurely**: Only 3 modules exist (composeApp, server, shared)
+4. **Follow split-by-layer pattern**: Create :api, :data, :presentation, :ui, :wiring modules for each feature
 
 ### When Adding Dependencies
 1. **Use version catalog**: Add to `gradle/libs.versions.toml`

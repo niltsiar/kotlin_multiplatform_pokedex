@@ -1,11 +1,9 @@
 plugins {
     id("convention.feature.impl")
-    id("convention.compose.multiplatform")
     alias(libs.plugins.kotlinx.serialization)
 }
 
 kotlin {
-    
     sourceSets {
         commonMain.dependencies {
             implementation(projects.features.pokemonlist.api)
@@ -21,19 +19,6 @@ kotlin {
             
             // Arrow
             implementation(libs.arrow.core)
-            
-            // Lifecycle & ViewModel
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            
-            // Collections
-            implementation(libs.kotlinx.collections.immutable)
-            
-            // Image Loading
-            implementation(libs.coil3.core)
-            implementation(libs.coil3.compose)
-            implementation(libs.coil3.network)
         }
         
         commonTest.dependencies {
@@ -54,5 +39,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.impl"
+    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.data"
 }

@@ -15,12 +15,16 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 - **Presentation/UI** for that feature's screens
 - **Navigation contracts** for that feature's routes
 
-### Module Structure (Recommended Pattern)
+### Module Structure (Primary Pattern: Split-by-Layer)
+
+**All features use split-by-layer architecture** for clear separation of concerns and platform-specific UI:
 
 ```
-:features:<feature>:api       → Public contracts ONLY (interfaces, domain models shared with other features)
-:features:<feature>:impl      → ALL implementation layers (network, data, domain logic, UI, ViewModels)
-:features:<feature>:wiring    → DI assembly
+:features:<feature>:api          → Public contracts (interfaces, domain models, navigation)
+:features:<feature>:data         → Network, DTOs, repositories (KMP - all targets)
+:features:<feature>:presentation → ViewModels, UI state (KMP - all targets, shared with iOS)
+:features:<feature>:ui           → Compose UI screens (Android + JVM only, NOT iOS)
+:features:<feature>:wiring       → DI assembly (KMP with platform-specific source sets)
 ```
 
 **Example for Pokemon List feature:**
@@ -29,24 +33,29 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
   └── src/commonMain/kotlin/
       ├── PokemonListRepository.kt        (interface - public)
       ├── domain/Pokemon.kt               (domain model - public if shared)
-      └── navigation/PokemonListEntry.kt  (navigation contract)
+      └── navigation/PokemonListEntry.kt  (navigation contract - plain data class)
 
-:features:pokemonlist:impl/
+:features:pokemonlist:data/
   └── src/commonMain/kotlin/
-      ├── data/
-      │   ├── PokemonListApiService.kt       (Ktor HTTP client for this feature)
-      │   ├── dto/PokemonListDto.kt          (DTOs for this feature's API)
-      │   ├── mappers/PokemonMappers.kt      (DTO → Domain mappers)
-      │   └── PokemonListRepositoryImpl.kt   (Repository implementation)
-      ├── domain/
-      │   └── PokemonListValidator.kt        (Business rules if needed)
-      └── presentation/
-          ├── PokemonListViewModel.kt        (ViewModel)
-          └── PokemonListScreen.kt           (Compose UI)
+      ├── PokemonListApiService.kt        (Ktor HTTP client - all targets)
+      ├── dto/PokemonListDto.kt           (DTOs for this feature's API)
+      ├── mappers/PokemonMappers.kt       (DTO → Domain mappers)
+      └── PokemonListRepositoryImpl.kt    (Repository implementation)
+
+:features:pokemonlist:presentation/
+  └── src/commonMain/kotlin/
+      ├── PokemonListViewModel.kt         (ViewModel - shared across all platforms)
+      └── PokemonListUiState.kt           (UI state - immutable collections)
+
+:features:pokemonlist:ui/
+  └── src/commonMain/kotlin/            (Android + JVM only - no iOS targets)
+      └── PokemonListScreen.kt            (Compose UI - NOT exported to iOS)
 
 :features:pokemonlist:wiring/
-  └── src/commonMain/kotlin/
-      └── PokemonListModule.kt               (@Provides functions)
+  ├── src/commonMain/kotlin/
+  │   └── PokemonListModule.kt          (Provides repos, ViewModels - Metro DI)
+  ├── src/androidMain/kotlin/           (Android-specific UI wiring)
+  └── src/jvmMain/kotlin/               (JVM Desktop-specific UI wiring)
 ```
 
 ### When to Share Infrastructure (:core modules)
@@ -71,12 +80,12 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 
 2. **Each feature owns its network layer**
    ```kotlin
-   // :features:pokemonlist:impl - Pokemon List's API service
+   // :features:pokemonlist:data - Pokemon List's API service
    internal class PokemonListApiService(private val httpClient: HttpClient) {
        suspend fun getPokemons(limit: Int, offset: Int): PokemonListDto { ... }
    }
    
-   // :features:pokemondetail:impl - Pokemon Detail's API service  
+   // :features:pokemondetail:data - Pokemon Detail's API service  
    internal class PokemonDetailApiService(private val httpClient: HttpClient) {
        suspend fun getPokemonById(id: Int): PokemonDetailDto { ... }
    }
@@ -88,21 +97,24 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 
 4. **Domain models in :api only if shared**
    - If `Pokemon` model is needed by multiple features → `features:pokemonlist:api`
-   - If `PokemonDetail` model is only used internally → `features:pokemondetail:impl/domain/`
+   - If `PokemonDetail` model is only used internally → `features:pokemondetail:data/domain/`
 
-### Alternative: Split-by-Layer (Use sparingly)
+### Optional: Domain Module
 
-If a feature grows very large, split implementation by layer:
+For features with complex business logic orchestrating multiple repositories:
 
 ```
-:features:<feature>:api          → Public contracts
-:features:<feature>:data         → Network, DTOs, repositories (internal)
-:features:<feature>:domain       → Business logic, use cases (internal)
-:features:<feature>:presentation → ViewModels, UI (internal)
-:features:<feature>:wiring       → DI assembly
+:features:<feature>:domain       → Use cases, validators, business rules (KMP - all targets)
 ```
 
-**When to use**: Feature has 10+ screens or complex domain logic.
+**When to create**: Feature has use cases that orchestrate 2+ repositories or enforce complex business rules. Most features won't need this—call repositories directly from ViewModels.
+
+### Platform-Specific UI
+
+**:ui modules target Android + JVM Desktop only** (no iOS targets):
+- Android and Desktop share Compose Multiplatform UI
+- iOS uses native SwiftUI, accessing ViewModels via `:shared` framework
+- :ui modules are **NEVER exported** to iOS
 
 ### HttpClient Configuration
 
@@ -177,13 +189,49 @@ fun JobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepos
 - Graph extensions: use `@ContributesGraphExtension` for contextual/lifecycle scopes (e.g., logged-in).
 
 ### Wiring modules and Gradle Compilation Avoidance
-- Wiring modules are created specifically to improve build speed by leveraging Gradle’s Compilation Avoidance. See:
+- Wiring modules are created specifically to improve build speed by leveraging Gradle's Compilation Avoidance. See:
   - Gradle blog: https://blog.gradle.org/our-approach-to-faster-compilation
   - Aggregation Module pattern: https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611
 - Dependency edges:
   - App modules depend on wiring modules.
-  - Wiring depends on feature `impl` and `api`.
-  - Other features depend only on feature `api` (not `impl`), minimizing recompilation when `impl` changes.
+  - Wiring depends on feature layer modules (`:data`, `:presentation`, `:ui`) and `:api`.
+  - Other features depend only on feature `:api` (not layer modules), minimizing recompilation when implementations change.
+
+### Wiring Platform-Specific Source Sets
+
+Wiring modules support all KMP targets but use **platform-specific source sets** for UI dependencies:
+
+```kotlin
+// :features:pokemonlist:wiring/build.gradle.kts
+kotlin {
+    sourceSets {
+        // Common: Repos, ViewModels, domain logic
+        commonMain.dependencies {
+            implementation(projects.features.pokemonlist.api)
+            implementation(projects.features.pokemonlist.data)
+            implementation(projects.features.pokemonlist.presentation)
+        }
+        
+        // Android + JVM: Can depend on :ui module
+        val androidMain by getting {
+            dependencies {
+                implementation(projects.features.pokemonlist.ui)
+            }
+        }
+        
+        val jvmMain by getting {
+            dependencies {
+                implementation(projects.features.pokemonlist.ui)
+            }
+        }
+        
+        // iOS: Uses only commonMain (no :ui dependency)
+        // iOS accesses ViewModels from :presentation via :shared framework
+    }
+}
+```
+
+**Key principle**: iOS can consume wiring modules via `:shared` export because iOS targets only use `commonMain` dependencies (repos + ViewModels), never `:ui` module.
 
 ## Repository Boundary and Error Handling
 - Repositories return Arrow `Either<RepoError, T>` and use `Either.catch { ... }.mapLeft { it.toRepoError() }` to map failures.
@@ -198,11 +246,41 @@ fun JobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepos
 - Consume `Either` from repositories and map to UI state (e.g., sealed `UiState` with Loading/Error/Content).
 - Do not create pass-through/empty use cases. Call repositories directly from viewmodels when no domain orchestration is needed. Introduce use cases only when they add value.
 - Define `UiStateHolder<S, E>` as an interface; have viewmodels implement it. One-time events should be emitted via a `OneTimeEventEmitter<E>` backed by a Channel and include `suspend fun emit(event: E)` so ViewModels can delegate to a reusable `EventChannel<E>`.
-- Keep navigation contracts in feature `api`; implementations in feature modules; aggregate via wiring where needed.
- - ViewModels: all ViewModels must extend `androidx.lifecycle.ViewModel` (KMP). Do not perform work in `init`. Be lifecycle-aware (load on lifecycle callbacks). Do NOT store a `CoroutineScope` field; instead pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally. Use `SavedStateHandle` when needed to restore state/inputs. Do not expose mutable collections; prefer `kotlinx.collections.immutable` types. Implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>` located in `:core:util`.
+- Keep navigation contracts in feature `api` (plain data classes/objects for Navigation 3); implementations in feature modules; aggregate via wiring where needed.
+- **ViewModels are KMP and shared across all platforms** (Android, Desktop, iOS): defined in `:features:<feature>:presentation` modules, exported to iOS via `:shared` framework.
+- ViewModels: all ViewModels must extend `androidx.lifecycle.ViewModel` (KMP). Do not perform work in `init`. Be lifecycle-aware (load on lifecycle callbacks). Do NOT store a `CoroutineScope` field; instead pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally. Use `SavedStateHandle` when needed to restore state/inputs. Do not expose mutable collections; prefer `kotlinx.collections.immutable` types. Implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>` located in `:core:util`.
+- **Compose UI is platform-specific**: Lives in `:features:<feature>:ui` modules (Android + JVM only). iOS uses native SwiftUI consuming shared ViewModels.
 
 ## iOS Shared Umbrella
-- The `shared` module produces a single umbrella framework for iOS. Export only required `api` modules and shared contracts. Keep `impl`, layer-specific modules, and `wiring` internal.
+- The `shared` module produces a single umbrella framework for iOS.
+- **Export to iOS**:
+  - `:features:<feature>:api` → Repository interfaces, domain models, navigation contracts
+  - `:features:<feature>:presentation` → ViewModels, UI state (shared ViewModels across platforms)
+  - `:core:*` modules → Shared utilities, domain types
+- **NEVER export to iOS**:
+  - `:features:<feature>:data` → Internal data layer
+  - `:features:<feature>:ui` → Compose UI (Android/JVM only)
+  - `:features:<feature>:wiring` → DI assembly (though iOS can consume via commonMain)
+  - `:composeApp` → Compose application module
+
+**Example shared/build.gradle.kts:**
+```kotlin
+iosTarget.binaries.framework {
+    baseName = "Shared"
+    isStatic = true
+    export(projects.features.pokemonlist.api)
+    export(projects.features.pokemonlist.presentation)  // ViewModels shared with iOS
+}
+
+sourceSets {
+    commonMain.dependencies {
+        api(projects.features.pokemonlist.api)
+        api(projects.features.pokemonlist.presentation)
+    }
+}
+```
+
+**iOS Strategy**: iOS SwiftUI views consume shared KMP ViewModels from `:presentation` modules, not Compose UI from `:ui` modules.
 
 ## Testing Stack (Mobile-First)
 
@@ -227,7 +305,10 @@ Every production file requires a test file. This is not optional.
 ### Primary: androidTest/ for Business Logic
 - **Kotest** - Full framework (StringSpec, BehaviorSpec, FunSpec) with property-based testing
 - **MockK** - Powerful mocking (JVM/Android only, not available for Native)
-- **Location**: Place ALL business logic tests in `androidTest/` source sets
+- **Location**: Place ALL business logic tests in module-specific `androidTest/` source sets:
+  - Repository tests → `:features:<feature>:data/src/androidTest`
+  - ViewModel tests → `:features:<feature>:presentation/src/androidTest`
+  - Mapper tests → `:features:<feature>:data/src/androidTest`
 - **Rationale**: Android is primary mobile target; iOS shares same Kotlin code (type safety guarantees)
 
 ### Minimal: commonTest/ for Simple Utilities

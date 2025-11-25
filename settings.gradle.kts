@@ -42,5 +42,7 @@ include(":core:httpclient")
 
 // Pokemon List feature
 include(":features:pokemonlist:api")
-include(":features:pokemonlist:impl")
+include(":features:pokemonlist:data")
+include(":features:pokemonlist:presentation")
+include(":features:pokemonlist:ui")
 include(":features:pokemonlist:wiring")

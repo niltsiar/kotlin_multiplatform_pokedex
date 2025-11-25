@@ -8,7 +8,8 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.features.pokemonlist.impl)
+            implementation(projects.features.pokemonlist.presentation)
+            implementation(projects.features.pokemonlist.ui)
             implementation(projects.features.pokemonlist.wiring)
         }
         commonTest.dependencies {

@@ -81,28 +81,38 @@ fun provideLoggers(
 In :features:<name>:api
 - Expose only the contracts needed cross-feature (e.g., `UserRepository`, navigation contracts, and any domain/use case interfaces that other features must call). Avoid leaking implementation details.
 
-In :features:<name>:impl
-- Implement the contracts. Keep classes DI-agnostic. Implementations should be private/internal and named `<InterfaceName>Impl`.
+In :features:<name>:data
+- Implement repository contracts, API services, DTOs, mappers. Keep classes DI-agnostic. Implementations should be private/internal and named `<InterfaceName>Impl`.
+
+In :features:<name>:presentation
+- Implement ViewModels and UI state. **Shared across all platforms** (Android, Desktop, iOS). ViewModels extend `androidx.lifecycle.ViewModel` (KMP). Keep DI-agnostic.
+
+In :features:<name>:ui
+- Implement Compose UI screens (@Composable functions). **Android + JVM only** (no iOS targets). Keep DI-agnostic.
 
 In :features:<name>:wiring
 - Provide bindings via `@Provides` that return the interface type by invoking the top‑level factory function named after the interface (Impl + Factory pattern).
+- Use **platform-specific source sets** for UI dependencies:
+  - `commonMain` → Provides repositories, ViewModels (all platforms)
+  - `androidMain`/`jvmMain` → Provides UI entry points, navigation (Android/JVM only)
+  - iOS targets use only `commonMain` (no UI dependencies)
 - Provide feature-scoped factories when needed using Metro graph extensions.
 
 ```kotlin
 // features/profile/api/src/commonMain/.../ProfileRepository.kt
 interface ProfileRepository { suspend fun load(): Either<RepoError, Profile> }
 
-// features/profile/impl/src/commonMain/.../ProfileRepositoryImpl.kt
+// features/profile/data/src/commonMain/.../ProfileRepositoryImpl.kt
 internal class ProfileRepositoryImpl(
   private val api: ProfileApiService
 ) : ProfileRepository
 
+// features/profile/data/src/commonMain/.../ProfileRepositoryFactory.kt
+fun ProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepositoryImpl(api)
+
 // features/profile/wiring/src/commonMain/.../ProfileWiring.kt
 @Provides
 fun provideProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepository(api) // calls factory
-
-// features/profile/impl/src/commonMain/.../ProfileRepositoryFactory.kt
-fun ProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepositoryImpl(api)
 ```
 
 ### Wiring/Aggregation Modules
@@ -112,6 +122,47 @@ fun ProfileRepository(api: ProfileApiService): ProfileRepository = ProfileReposi
   - Provide `@Provides` functions that wire implementations to interfaces
   - Aggregate multibindings (e.g., sets of `FeatureEntry` for navigation)
   - Optionally expose graph extensions/factories for contextual scopes
+
+### Platform-Specific Source Sets in Wiring Modules
+
+Wiring modules support all KMP targets but use platform-specific source sets for UI dependencies:
+
+```kotlin
+// :features:profile:wiring/build.gradle.kts
+kotlin {
+    sourceSets {
+        // Common: Repos, ViewModels, domain - all platforms
+        commonMain.dependencies {
+            implementation(projects.features.profile.api)
+            implementation(projects.features.profile.data)
+            implementation(projects.features.profile.presentation)
+        }
+        
+        // Android: UI dependencies
+        val androidMain by getting {
+            dependencies {
+                implementation(projects.features.profile.ui)
+            }
+        }
+        
+        // JVM Desktop: UI dependencies
+        val jvmMain by getting {
+            dependencies {
+                implementation(projects.features.profile.ui)
+            }
+        }
+        
+        // iOS: Uses only commonMain (no :ui module)
+        // iOS gets ViewModels from :presentation via :shared framework
+    }
+}
+```
+
+**Why this works**:
+- Metro DI is multiplatform-compatible
+- Wiring modules can be consumed by iOS via `:shared` export
+- iOS targets only compile `commonMain` dependencies (repos + ViewModels)
+- Android/JVM targets compile `commonMain` + platform-specific (repos + ViewModels + UI)
 
 ## Graph Extensions for Subgraphs
 Use graph extensions for lifecycle or contextual scopes (e.g., logged-in user):
@@ -166,7 +217,36 @@ Tip: The exact invocation depends on the generated API for your graph (see Metro
 - Wiring modules exist to improve build speed by leveraging Gradle Compilation Avoidance. App modules depend on wiring; wiring depends on `api` + `impl`; other features depend only on `api`. See Gradle’s write‑up: https://blog.gradle.org/our-approach-to-faster-compilation and the Aggregation Module pattern: https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611
 
 ## iOS Umbrella (shared module)
-- The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and any public-facing contracts while keeping implementations internal. Ensure Gradle `export` entries include only the `api` modules that the iOS wrapper must see. Do not export `impl` or `wiring` modules.
+- The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and `presentation` modules (ViewModels) while keeping data layer and UI implementations internal.
+- Ensure Gradle `export` entries include:
+  - `:features:<feature>:api` modules (repository interfaces, domain models, navigation)
+  - `:features:<feature>:presentation` modules (ViewModels, UI state - shared with iOS)
+  - `:core:*` modules (shared utilities, domain types)
+- **Do NOT export**:
+  - `:features:<feature>:data` modules (internal data layer)
+  - `:features:<feature>:ui` modules (Compose UI - Android/JVM only)
+  - `:features:<feature>:wiring` modules (though iOS can consume via commonMain)
+  - `:composeApp` (Compose application)
+
+**Example:**
+```kotlin
+// shared/build.gradle.kts
+iosTarget.binaries.framework {
+    baseName = "Shared"
+    isStatic = true
+    export(projects.features.profile.api)
+    export(projects.features.profile.presentation)  // ViewModels shared with iOS SwiftUI
+}
+
+sourceSets {
+    commonMain.dependencies {
+        api(projects.features.profile.api)
+        api(projects.features.profile.presentation)
+    }
+}
+```
+
+**iOS SwiftUI Integration**: iOS views consume KMP ViewModels from `:presentation` modules, call repositories from `:api` modules, all accessed via `shared.framework`.
 
 ## Testing Considerations
 - For tests, construct small test graphs or directly instantiate classes with fakes/mocks. Metro validates graphs at compile time; prefer unit tests with explicit constructors over heavy DI bootstrapping in tests.

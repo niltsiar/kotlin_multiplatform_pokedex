@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.features.pokemonlist.presentation
+package com.minddistrict.multiplatformpoc.features.pokemonlist.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
+import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListUiState
+import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
 
 @Composable
 fun PokemonListScreen(
