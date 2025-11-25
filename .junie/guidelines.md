@@ -232,7 +232,7 @@ See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical 
 - **First run**: May download Compose and JetBrains JDK; builds can take longer
 - **Android build failures**: Verify `local.properties` contains `sdk.dir` and JDK 17+ is used
 - **iOS builds**: Extremely slow (5-10 min); NEVER run iOS build/app during routine checks unless explicitly required
-- **Metro DI issues**: Ensure KSP is configured correctly; check generated code in `build/generated/ksp`
+- **Metro DI issues**: Metro uses K2 compiler plugin (NOT KSP). See [metro_di_quick_ref.md](.junie/guides/tech/metro_di_quick_ref.md) for troubleshooting
 - **Arrow Either**: Never catch and swallow `CancellationException`; use `Either.catch` which respects cancellation
 
 ## Product Requirements (PRD & User Flows & UI/UX)

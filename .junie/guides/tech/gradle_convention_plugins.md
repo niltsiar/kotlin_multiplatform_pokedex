@@ -70,9 +70,9 @@ pluginManagement {
 - `convention.feature.base` — **Base plugin for all feature modules** (provides KMP targets, tests, common deps)
 - `convention.feature.api` — Feature API modules (composes base)
 - `convention.feature.impl` — Feature data/presentation modules (composes base)
-- `convention.feature.ui` — Feature UI modules (Android + JVM only, does NOT compose base)
-- `convention.feature.wiring` — Feature DI wiring (composes base)
-- `convention.core.library` — Core library modules (uses shared functions, not base)
+- `convention.feature.ui` — Feature UI Layer (MPP Android+JVM; Compose Multiplatform)
+- `convention.feature.wiring` — Feature Wiring/Aggregation (MPP, Metro DI with K2 compiler plugin)
+- `convention.core.library` — Core/Shared libraries (MPP, all targets)
 - `convention.feature.api` — Feature API (MPP/KMP, no Android plugin by default)
 - `convention.feature.data` — Feature Data (MPP/KMP, Ktor/SQL settings optional)
 - `convention.feature.presentation` — Feature Presentation (Compose MPP)
@@ -163,19 +163,19 @@ class ConventionFeaturePresentationPlugin : Plugin<Project> {
 }
 ```
 
-Feature wiring (Metro/KSP):
+Feature wiring (Metro DI):
 ```kotlin
 class ConventionFeatureWiringPlugin : Plugin<Project> {
   override fun apply(target: Project) = with(target) {
     pluginManager.apply("convention.kmp.library")
-    // If Metro requires KSP, you can apply it here for JVM/Android
-    pluginManager.apply("com.google.devtools.ksp")
-    // Add metro processors/annotations via catalog
-    dependencies.add("kspJvm", libs.metro.ksp)
-    dependencies.add("implementation", libs.metro.annotations)
+    // Metro uses Kotlin compiler plugin (NOT KSP)
+    pluginManager.apply("dev.zacsweers.metro")
+    // Metro runtime is added automatically by the plugin
   }
 }
 ```
+
+**Note**: Metro uses the K2 compiler plugin for code generation, NOT KSP. See [metro_di_quick_ref.md](metro_di_quick_ref.md) for patterns.
 
 Code quality (detekt + ktlint):
 ```kotlin

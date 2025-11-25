@@ -66,7 +66,10 @@ plugins {
 ```
 **For:** Metro DI @Provides functions, dependency graphs  
 **Exports to iOS:** ❌ No  
-**Targets:** Android, JVM, iOS
+**Targets:** Android, JVM, iOS  
+**Configures:** Metro K2 compiler plugin (NOT KSP)  
+**Pattern:** `@BindingContainer` + `@ContributesTo(AppScope::class)`  
+**See:** [metro_di_quick_ref.md](metro_di_quick_ref.md) for complete DI patterns
 
 ---
 

@@ -257,6 +257,34 @@ kotlin {
   - `:features:<feature>:api` → Repository interfaces, domain models, navigation contracts
   - `:features:<feature>:presentation` → ViewModels, UI state (shared ViewModels across platforms)
   - `:core:*` modules → Shared utilities, domain types
+
+### Metro DI Contribution Pattern
+
+Feature wiring modules contribute bindings using `@ContributesTo`:
+
+```kotlin
+@BindingContainer
+@ContributesTo(AppScope::class)
+interface FeatureProviders {
+    companion object {
+        @Provides
+        fun provideRepository(...): Repository = createRepository(...)
+        
+        @Provides
+        fun provideViewModel(...): ViewModel = ViewModel(...)
+    }
+}
+```
+
+**Requirements**:
+- Use Metro's built-in `dev.zacsweers.metro.AppScope`
+- `@BindingContainer` + `@ContributesTo(AppScope::class)` pattern
+- `@Provides` functions in `companion object`
+- Wiring module added as `api` dependency to `core:di`
+- **Wiring MUST NOT depend on `core:di`** (circular dependency)
+
+**See**: [metro_di_quick_ref.md](../tech/metro_di_quick_ref.md) for complete patterns
+
 - **NEVER export to iOS**:
   - `:features:<feature>:data` → Internal data layer
   - `:features:<feature>:ui` → Compose UI (Android/JVM only)
