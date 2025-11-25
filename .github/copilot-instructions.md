@@ -21,13 +21,15 @@ This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for A
 :server       → Ktor backend (Netty on port 8080) - Backend-for-Frontend (BFF)
 ```
 
-### Planned Architecture (NOT Implemented)
+### Required Architecture
 Vertical-slice modularization with api/impl/wiring pattern:
-- `:features:<feature>:api` → Public contracts (interfaces, navigation, models)
-- `:features:<feature>:impl` → Internal implementations
-- `:features:<feature>:wiring` → Metro DI assembly
+- `:features:<feature>:api` → Public contracts (interfaces, navigation, models) - exported to iOS
+- `:features:<feature>:impl` → Internal implementations (NOT exported)
+- `:features:<feature>:wiring` → Metro DI assembly (NOT exported)
 
-**⚠️ CRITICAL**: No feature modules exist yet. Always consult `.junie/guides/tech/conventions.md` before creating new modules or implementing patterns.
+**⚠️ CRITICAL**: Feature modules must follow this pattern. Always consult `.junie/guides/tech/conventions.md` before creating new modules or implementing patterns.
+
+**Current State**: Only skeleton modules exist (composeApp, shared, server, build-logic). Create feature modules following the required architecture as needed.
 
 ## Build & Validation Workflow
 
