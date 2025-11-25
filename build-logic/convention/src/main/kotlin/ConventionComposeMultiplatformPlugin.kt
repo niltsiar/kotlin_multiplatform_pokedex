@@ -21,21 +21,20 @@ class ConventionComposeMultiplatformPlugin : Plugin<Project> {
             sourceSets.apply {
                 commonMain.dependencies {
                     // Compose runtime and foundation
-                    implementation(compose.runtime)
-                    implementation(compose.foundation)
-                    implementation(compose.material3)
-                    implementation(compose.ui)
-                    implementation(compose.components.resources)
-                    implementation(compose.components.uiToolingPreview)
+                    implementation(libs.getLibrary("compose-runtime"))
+                    implementation(libs.getLibrary("compose-foundation"))
+                    implementation(libs.getLibrary("compose-material3"))
+                    implementation(libs.getLibrary("compose-ui"))
+                    implementation(libs.getLibrary("compose-components-resources"))
+                    implementation(libs.getLibrary("compose-ui-tooling-preview"))
                     
                     // Lifecycle
-                    implementation(libs.findLibrary("androidx-lifecycle-viewmodelCompose").get())
-                    implementation(libs.findLibrary("androidx-lifecycle-runtimeCompose").get())
+                    implementation(libs.getLibrary("androidx-lifecycle-viewmodelCompose"))
+                    implementation(libs.getLibrary("androidx-lifecycle-runtimeCompose"))
                 }
 
                 androidMain.dependencies {
-                    implementation(compose.preview)
-                    implementation(libs.findLibrary("androidx-activity-compose").get())
+                    implementation(libs.getLibrary("androidx-activity-compose"))
                 }
 
                 jvmMain.dependencies {
@@ -45,7 +44,7 @@ class ConventionComposeMultiplatformPlugin : Plugin<Project> {
         }
 
         dependencies {
-            add("debugImplementation", compose.uiTooling)
+            add("debugImplementation", libs.getLibrary("compose-ui-tooling"))
         }
     }
 }
