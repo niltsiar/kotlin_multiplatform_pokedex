@@ -21,7 +21,6 @@ You must:
     - **Core Features** →
         - List only the features essential for the first release (MVP).
         - For each, specify **Purpose**, **Key Elements**, and **Expected User Actions**.
-    - **Monetization** → Specify free vs paid features, payment models, and pricing suggestions.
     - **Competitors** → Brief list of 3–5 competitors with their key strengths/weaknesses.
     - **Unique Selling Points (USPs)** → What makes this app worth choosing over alternatives.
     - **Technical Notes** → Mention platform targets (iOS, Android, Web), API needs, integrations, storage type, and performance expectations.
