@@ -6,8 +6,11 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListReposit
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.mappers.toDomain
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.PokemonPage
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.RepoError
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.ClientRequestException
-import io.ktor.http.isSuccess
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.ServerResponseException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -32,15 +35,12 @@ fun PokemonListRepository(
     apiService: PokemonListApiService
 ): PokemonListRepository = PokemonListRepositoryImpl(apiService)
 
-// Error mapping
+// Error mapping using Ktor's multiplatform exceptions
 private fun Throwable.toRepoError(): RepoError = when (this) {
-    is ClientRequestException -> {
-        if (response.status.isSuccess()) {
-            RepoError.Unknown(this)
-        } else {
-            RepoError.Http(response.status.value, message)
-        }
-    }
-    is java.io.IOException -> RepoError.Network
+    is ClientRequestException -> RepoError.Http(response.status.value, message)
+    is ServerResponseException -> RepoError.Http(response.status.value, message)
+    is HttpRequestTimeoutException,
+    is ConnectTimeoutException,
+    is SocketTimeoutException -> RepoError.Network
     else -> RepoError.Unknown(this)
 }
