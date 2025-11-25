@@ -331,7 +331,7 @@ Every production file requires a test file. This is not optional.
 ### Smart Casting in Tests
 **Never manually cast after type-checking matchers** - Kotest matchers provide smart casting through Kotlin compiler contracts.
 
-See [kotest-smart-casting-quick-ref.md](./kotest-smart-casting-quick-ref.md) for complete guide.
+See [kotest_smart_casting_quick_ref.md](./kotest_smart_casting_quick_ref.md) for complete guide.
 
 ### Screenshot Testing
 - **Roborazzi** - Android/JVM Compose UI screenshot tests (Robolectric-based)

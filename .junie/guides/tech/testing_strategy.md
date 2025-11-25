@@ -333,7 +333,7 @@ AbstractTestTask (org.gradle.api.tasks.testing.AbstractTestTask)
 
 Kotest matchers provide smart casting through Kotlin compiler contracts. Never manually cast after type-checking assertions.
 
-See [kotest-smart-casting-quick-ref.md](./kotest-smart-casting-quick-ref.md) for complete documentation.
+See [kotest_smart_casting_quick_ref.md](./kotest_smart_casting_quick_ref.md) for complete documentation.
 
 ## Complete Testing Examples
 

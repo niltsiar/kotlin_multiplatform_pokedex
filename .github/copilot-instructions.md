@@ -47,6 +47,9 @@ Split-by-layer modularization with api/data/presentation/ui/wiring pattern:
 
 **Current State**: `pokemonlist` feature fully implemented with split-by-layer pattern. Use it as reference when creating new features.
 
+### Convention Plugin Architecture
+Following [Now in Android](https://github.com/android/nowinandroid) patterns with shared configuration utilities and base plugin composition. See `.junie/guides/tech/convention_plugins_quick_ref.md` for usage guide.
+
 ## Build & Validation Workflow
 
 ### Primary Validation Command
@@ -359,7 +362,7 @@ Before marking any code complete:
 - ✅ Minimum coverage achieved (success + error paths)
 - ✅ @Composable functions have @Preview
 - ✅ All tests pass
-- ✅ No manual casts after type-checking matchers (see kotest-smart-casting-quick-ref.md)
+- ✅ No manual casts after type-checking matchers (see kotest_smart_casting_quick_ref.md)
 
 **Automatic Rejection Criteria:**
 - ❌ Repository without tests
@@ -377,7 +380,7 @@ Before marking any code complete:
 - **Screenshot tests**: Use Roborazzi (Robolectric-based, Android unit tests)
 - **Test Location**: Use `androidUnitTest/` for business logic tests (repository, mappers, use cases)
 - **Common tests**: Only for platform-agnostic utilities that need no mocking
-- **Smart casting**: Use Kotest matcher smart casting, never manually cast after type assertions (see kotest-smart-casting-quick-ref.md)
+- **Smart casting**: Use Kotest matcher smart casting, never manually cast after type assertions (see kotest_smart_casting_quick_ref.md)
 
 **Why Android Unit Tests for Business Logic:**
 - ✅ Full Kotest support (assertions, property testing, framework)

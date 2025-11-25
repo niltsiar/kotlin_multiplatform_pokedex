@@ -1,4 +1,5 @@
 import com.android.build.gradle.LibraryExtension
+import com.minddistrict.multiplatformpoc.getVersion
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project

@@ -41,6 +41,10 @@ gradlePlugin {
             id = "convention.compose.multiplatform"
             implementationClass = "ConventionComposeMultiplatformPlugin"
         }
+        register("featureBase") {
+            id = "convention.feature.base"
+            implementationClass = "ConventionFeatureBasePlugin"
+        }
         register("featureApi") {
             id = "convention.feature.api"
             implementationClass = "ConventionFeatureApiPlugin"

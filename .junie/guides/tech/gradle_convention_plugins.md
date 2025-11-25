@@ -7,6 +7,15 @@ Purpose: Standardize and centralize Gradle configuration across modules using Co
 - Reduce copy/paste and drift; make new modules trivial to add.
 - Enforce module roles (feature api/data/presentation/wiring) with tailored defaults.
 
+## Architecture (Updated November 2025)
+
+Following patterns from [Now in Android](https://github.com/android/nowinandroid), we use:
+1. **Shared configuration utilities** in `com.minddistrict.multiplatformpoc` package
+2. **Base plugin composition** to eliminate duplication
+3. **Extension functions** for version catalog access
+
+See `convention_plugins_quick_ref.md` and `convention_plugins_improvements.md` for details.
+
 ## Dependency Management vs Convention Plugins
 
 **Convention plugins** are for module-level build configuration (targets, source sets, testing frameworks).
@@ -19,22 +28,31 @@ Purpose: Standardize and centralize Gradle configuration across modules using Co
 
 Convention plugins consume the version catalog but do NOT manage version updates themselves.
 
-## Repository Layout (example)
+## Repository Layout (current)
 ```text
 build-logic/
   settings.gradle.kts
   build.gradle.kts          # publishes convention plugins to included build
-  gradle/libs.versions.toml # version catalog for build-logic
   convention/
     build.gradle.kts
     src/main/kotlin/
+      # Plugin files
       ConventionKmpLibraryPlugin.kt
       ConventionAndroidAppPlugin.kt
       ConventionAndroidLibraryPlugin.kt
+      ConventionFeatureBasePlugin.kt     # ← Base plugin for features
       ConventionFeatureApiPlugin.kt
-      ConventionFeatureDataPlugin.kt
-      ConventionFeaturePresentationPlugin.kt
+      ConventionFeatureImplPlugin.kt     # ← Used by data & presentation
+      ConventionFeatureUiPlugin.kt
       ConventionFeatureWiringPlugin.kt
+      ConventionCoreLibraryPlugin.kt
+      
+      # Shared configuration utilities
+      com/minddistrict/multiplatformpoc/
+        KotlinMultiplatform.kt           # ← configureKmpTargets()
+        TestConfiguration.kt             # ← configureTests()
+        ComposeConfiguration.kt          # ← configureComposeMultiplatform()
+        ProjectExtensions.kt             # ← libs property, getVersion(), getLibrary()
 ```
 
 Include build-logic in the root `settings.gradle.kts`:
@@ -44,10 +62,17 @@ pluginManagement {
 }
 ```
 
-## Suggested Plugin IDs
+## Current Plugin IDs
 - `convention.kmp.library` — Generic Kotlin Multiplatform library
 - `convention.android.app` — Android application (Compose enabled)
 - `convention.android.library` — Android library (Compose enabled)
+- `convention.compose.multiplatform` — Compose Multiplatform dependencies
+- `convention.feature.base` — **Base plugin for all feature modules** (provides KMP targets, tests, common deps)
+- `convention.feature.api` — Feature API modules (composes base)
+- `convention.feature.impl` — Feature data/presentation modules (composes base)
+- `convention.feature.ui` — Feature UI modules (Android + JVM only, does NOT compose base)
+- `convention.feature.wiring` — Feature DI wiring (composes base)
+- `convention.core.library` — Core library modules (uses shared functions, not base)
 - `convention.feature.api` — Feature API (MPP/KMP, no Android plugin by default)
 - `convention.feature.data` — Feature Data (MPP/KMP, Ktor/SQL settings optional)
 - `convention.feature.presentation` — Feature Presentation (Compose MPP)
