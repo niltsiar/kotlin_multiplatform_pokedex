@@ -252,10 +252,54 @@ Tests must:
 - Write tests that always pass
 - Copy-paste tests without understanding
 
-## Validation Commands
+## Test Execution & Caching
+
+### Forced Test Execution: KMP Architecture
+
+**Convention plugins automatically disable test caching for ALL test types** (JVM, KMP, Android, iOS):
+
+```kotlin
+// Applied in ALL KMP convention plugins
+// 1. Configure AbstractTestTask - covers ALL test types
+tasks.withType<AbstractTestTask>().configureEach {
+    outputs.upToDateWhen { false }  // Force test re-execution
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = false
+    }
+}
+
+// 2. Configure Test - JUnit Platform for standard JVM/Android tests
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()              // Enable Kotest runner
+}
+```
+
+**Why Dual Configuration?**
+- **AbstractTestTask**: Base class for ALL Gradle test tasks (standard JVM `Test`, KMP-generated `jvmTest`, `iosX64Test`, Android `testDebugUnitTest`)
+- **Test**: Specific subclass for standard JVM test tasks that need JUnit Platform configuration
+- KMP projects generate test tasks extending `AbstractTestTask` (not `Test`), so must configure both
+
+**Task Type Hierarchy**:
+```
+AbstractTestTask (org.gradle.api.tasks.testing.AbstractTestTask)
+├── Test (org.gradle.api.tasks.testing.Test)
+│   └── Standard JVM test tasks
+└── KotlinTest (KMP-generated, not public API)
+    └── jvmTest, iosX64Test, etc.
+```
+
+**Why**: Tests should run on every invocation to catch regressions, even when source files haven't changed. Environmental factors, flaky tests, or external dependencies may cause failures that caching would hide.
+
+**Additional Safety Net**: `gradle.properties` includes `org.gradle.caching.tests=false` as a global safeguard.
+
+### Validation Commands
 
 ```bash
-# Run all Android tests (PRIMARY)
+# PRIMARY: Build + ALL tests (always run together)
+./gradlew :composeApp:assembleDebug test --continue
+
+# Run all Android tests for a feature module
 ./gradlew :features:pokemonlist:impl:testDebugUnitTest
 
 # Run common tests (utilities)
@@ -272,13 +316,25 @@ Tests must:
 
 # Verify screenshots
 ./gradlew verifyRoborazziDebug
+
+# Force re-run with Gradle flag (redundant with our config, but available)
+./gradlew test --rerun-tasks
 ```
+
+**Note**: With `outputs.upToDateWhen { false }` configured on `AbstractTestTask`, tests will NEVER show "UP-TO-DATE" status. They execute on every invocation across all platforms (JVM, Android, iOS).
 
 ## Conventions
 - Name test classes with `Test` or `Spec` suffix
 - Use package structure mirroring production code
 - Use Kotest specs in androidTest: `StringSpec`, `BehaviorSpec`, `FunSpec`
 - Use Given/When/Then comments or Kotest contexts for structure
+
+## Smart Casting with Kotest Matchers
+
+Kotest matchers provide smart casting through Kotlin compiler contracts. Never manually cast after type-checking assertions.
+
+See [kotest-smart-casting-quick-ref.md](./kotest-smart-casting-quick-ref.md) for complete documentation.
+
 ## Complete Testing Examples
 
 ### Repository Test (androidTest/)
@@ -694,7 +750,7 @@ Note: For feature presentation modules, place UI tests under `:features:<feature
 
 ## CI Hints
 - Prefer the fastest relevant test tasks (module-scoped) for PRs.
-- If no tests exist for changed modules, at minimum run `./gradlew :composeApp:assembleDebug` as a compilation check.
+- If no tests exist for changed modules, at minimum run `./gradlew :composeApp:assembleDebug test --continue` as a compilation + test check.
 
 ## Alignment with Architecture
 - Tests should reflect vertical-slice boundaries: unit-test feature `impl` against `api` contracts.
@@ -772,7 +828,7 @@ Test Files Created:
 
 Verification:
 ✅ All tests pass: ./gradlew :features:pokemonlist:impl:testDebugUnitTest
-✅ Build succeeds: ./gradlew :composeApp:assembleDebug
+✅ Build + ALL tests succeed: ./gradlew :composeApp:assembleDebug test --continue
 ✅ Test coverage: 100% of production files have tests
 
 STATUS: ✅ COMPLETE - ALL TESTS PRESENT AND PASSING

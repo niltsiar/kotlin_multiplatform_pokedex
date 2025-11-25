@@ -1,11 +1,10 @@
 plugins {
-    alias(libs.plugins.kotlinJvm)
-    alias(libs.plugins.ktor)
-    application
+    id("convention.server")
 }
 
 group = "com.minddistrict.multiplatformpoc"
 version = "1.0.0"
+
 application {
     mainClass.set("com.minddistrict.multiplatformpoc.ApplicationKt")
     
@@ -14,9 +13,12 @@ application {
 }
 
 dependencies {
-    implementation(libs.logback)
-    implementation(libs.ktor.serverCore)
+    // Ktor engine choice (architectural decision)
     implementation(libs.ktor.serverNetty)
-    testImplementation(libs.ktor.serverTestHost)
-    testImplementation(libs.kotlin.testJunit)
+    
+    // Future feature-specific dependencies go here
+    // implementation(libs.ktor.serverContentNegotiation)
+    // implementation(libs.ktor.serializationJson)
+    // implementation(libs.exposed)
 }
+

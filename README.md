@@ -21,15 +21,17 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM), Se
 ### Build and Run Android Application
 
 To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
+in your IDE's toolbar or build it directly from the terminal:
 - on macOS/Linux
   ```shell
-  ./gradlew :composeApp:assembleDebug
+  ./gradlew :composeApp:assembleDebug test --continue
   ```
 - on Windows
   ```shell
-  .\gradlew.bat :composeApp:assembleDebug
+  .\gradlew.bat :composeApp:assembleDebug test --continue
   ```
+
+This command builds the Android app and runs all tests across all modules to ensure code quality.
 
 ### Build and Run Desktop (JVM) Application
 
@@ -60,7 +62,14 @@ in your IDE’s toolbar or run it directly from the terminal:
 ### Build and Run iOS Application
 
 To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+in your IDE's toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+
+---
+
+## Quick References
+
+### Testing
+- **[Kotest Smart Casting](.junie/guides/tech/kotest-smart-casting-quick-ref.md)** - Avoid unnecessary manual casts in tests
 
 ---
 

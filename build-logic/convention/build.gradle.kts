@@ -61,5 +61,9 @@ gradlePlugin {
             id = "convention.core.library"
             implementationClass = "ConventionCoreLibraryPlugin"
         }
+        register("server") {
+            id = "convention.server"
+            implementationClass = "ConventionServerPlugin"
+        }
     }
 }

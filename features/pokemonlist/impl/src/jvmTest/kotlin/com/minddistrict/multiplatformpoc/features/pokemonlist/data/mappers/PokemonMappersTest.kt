@@ -29,7 +29,11 @@ class PokemonMappersTest : StringSpec({
     }
     
     "property: extractIdFromUrl throws for invalid URLs" {
-        checkAll(Arb.string(1..20).filter { !it.contains('/') }) { invalidSegment ->
+        checkAll(
+            Arb.string(1..20)
+                .filter { !it.contains('/') }
+                .filter { it.toIntOrNull() == null }  // Exclude pure numbers which are valid IDs
+        ) { invalidSegment ->
             shouldThrow<IllegalArgumentException> {
                 extractIdFromUrl(invalidSegment)
             }
@@ -79,7 +83,11 @@ class PokemonMappersTest : StringSpec({
     // Property-based tests for toDomain mapping
     
     "property: toDomain always capitalizes first letter of name" {
-        checkAll(Arb.string(1..50)) { name ->
+        checkAll(
+            Arb.string(1..50)
+                .filter { it.isNotEmpty() }
+                .filter { it.first().isLetter() }  // Only test with letters (digits can't be uppercase)
+        ) { name ->
             val dto = PokemonSummaryDto(
                 name = name.lowercase(),
                 url = "https://pokeapi.co/api/v2/pokemon/1/"

@@ -247,6 +247,11 @@ Every production file requires a test file. This is not optional.
 4. Fast feedback: JVM tests run in seconds vs iOS builds in minutes
 5. Mobile-first: Android primary target, Desktop convenience feature
 
+### Smart Casting in Tests
+**Never manually cast after type-checking matchers** - Kotest matchers provide smart casting through Kotlin compiler contracts.
+
+See [kotest-smart-casting-quick-ref.md](./kotest-smart-casting-quick-ref.md) for complete guide.
+
 ### Screenshot Testing
 - **Roborazzi** - Android/JVM Compose UI screenshot tests (Robolectric-based)
 - Store baselines under `composeApp/src/test/snapshots`
