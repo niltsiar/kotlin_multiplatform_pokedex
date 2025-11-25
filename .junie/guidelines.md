@@ -13,25 +13,27 @@ This repository is a Kotlin Multiplatform project using:
   - **iOS app**: Native SwiftUI in `:iosApp` consuming `:shared` framework (business logic only)
   - **Server**: Ktor-based BFF in `:server`
 - **Module Structure**:
-  - `composeApp` — Compose Multiplatform UI for Android + Desktop (commonMain for shared UI, androidMain/jvmMain for platform-specific)
-  - `shared` — iOS umbrella framework that exports other KMP modules (minimal code, mostly Gradle config)
-  - `iosApp` — Native SwiftUI iOS app that imports shared.framework to access KMP modules
-  - `server` — Ktor Backend-for-Frontend providing REST APIs for all clients
-  - `:features:<feature>:api` — public contracts (exported to iOS via :shared umbrella)
-  - `:features:<feature>:impl` — private implementations (NOT exported to iOS)
-  - `:features:<feature>:wiring` — DI assembly (NOT exported to iOS)
-  - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
-  - `:core:util` — shared utilities (exported to iOS via :shared)
-  - `:core:domain` — shared domain types (exported to iOS via :shared)
+  - `:composeApp` — Compose Multiplatform UI for Android + Desktop (commonMain for shared UI, androidMain/jvmMain for platform-specific)
+  - `:shared` — iOS umbrella framework that exports other KMP modules (minimal code, mostly Gradle config)
+  - `:iosApp` — Native SwiftUI iOS app that imports shared.framework to access KMP modules
+  - `:server` — Ktor Backend-for-Frontend providing REST APIs for all clients
+  - `:build-logic/convention` — Custom Gradle convention plugins
+  - **Required module structure** (create as needed):
+    - `:features:<feature>:api` — public contracts (exported to iOS via :shared umbrella)
+    - `:features:<feature>:impl` — private implementations (NOT exported to iOS)
+    - `:features:<feature>:wiring` — DI assembly (NOT exported to iOS)
+    - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
+    - `:core:util` — shared utilities (exported to iOS via :shared)
+    - `:core:domain` — shared domain types (exported to iOS via :shared)
 
-## Architecture
-- **Clean Architecture with vertical slices** — each feature owns its code end-to-end
-- **Vertical-slice feature modules** following api/impl/wiring pattern (see `.junie/guides/tech/conventions.md`)
-- **Key patterns**:
-  - Impl + Factory: interfaces implemented by internal `*Impl` classes, exposed via public factory functions
-  - Only `api` modules exposed cross-feature; `impl` and `wiring` remain internal
-  - Metro DI: production classes stay DI-agnostic; wire via `@Provides` functions in wiring modules
-  - Arrow Either: repositories return `Either<RepoError, T>` at boundaries
+## Architecture Requirements
+- **Clean Architecture with vertical slices** — each feature must own its code end-to-end
+- **Vertical-slice feature modules** must follow api/impl/wiring pattern (see `.junie/guides/tech/conventions.md`)
+- **Required patterns**:
+  - Impl + Factory: interfaces must be implemented by internal `*Impl` classes, exposed via public factory functions
+  - Only `api` modules exposed cross-feature; `impl` and `wiring` must remain internal
+  - Metro DI: production classes must stay DI-agnostic; wire via `@Provides` functions in wiring modules
+  - Arrow Either: repositories must return `Either<RepoError, T>` at boundaries
 
 ## Directory Structure
 - `composeApp/` — **Compose Multiplatform UI (Android + Desktop ONLY)**
@@ -62,16 +64,21 @@ This repository is a Kotlin Multiplatform project using:
 
 ## Build and Run
 ### Android
-- Build debug APK: `./gradlew :composeApp:assembleDebug`
+- **Primary validation** (fastest feedback): `./gradlew :composeApp:assembleDebug`
 - APK output: `composeApp/build/outputs/apk/debug/composeApp-debug.apk`
 - Run from IDE: Open in Android Studio and run the Android configuration
 - Useful tasks:
   - SHA1 (Firebase, etc.): `./gradlew :composeApp:signingReport`
 
 ### iOS
-- Note: iOS builds are slow. Junie must NOT run the iOS app or trigger iOS builds during routine validation or checks.
-- Only run iOS-specific build/run tasks if the issue explicitly requires iOS behavior or the User asks for it.
-- Entry point: iosApp Xcode workspace wraps shared code. Run from Xcode when explicitly needed.
+- **⚠️ CRITICAL**: iOS builds are extremely slow (5-10 minutes). NEVER run iOS builds during routine validation.
+- Only execute iOS builds when:
+  1. Explicitly requested by user
+  2. Testing iOS framework exports (verifying which modules are exposed)
+  3. Validating iOS-specific expect/actual implementations in KMP modules
+  4. Working on SwiftUI integration with shared.framework
+- **Note**: iOS uses native SwiftUI for UI (not Compose). The `:shared` module is an umbrella that exports KMP modules.
+- Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
 
 ### Desktop (JVM)
 - Run: `./gradlew :composeApp:run` or use IDE run configuration
@@ -82,26 +89,31 @@ This repository is a Kotlin Multiplatform project using:
 - Run: `./gradlew :server:run` or use IDE run configuration
 
 ## Testing
-- **Framework**: Kotest (primary), MockK (mocking), Roborazzi (screenshot testing)
+- **Framework**: Kotest (assertions, property-based testing)
+- **Mocking**: MockK (JVM/Android only—use fakes for Native)
+- **Screenshot**: Roborazzi (Robolectric-based, JVM tests)
+- **Location**: Tests live in `commonTest/` unless platform-specific
 - **Shared unit tests**: `./gradlew :composeApp:testDebugUnitTest` (or relevant target-specific tasks)
 - **Android UI tests** on device (if any under `composeApp/src/commonTest/screentest`): `./gradlew :composeApp:connectedDebugAndroidTest`
-- **Screenshot tests** (Roborazzi): `./gradlew recordRoborazziDebug`, `./gradlew verifyRoborazziDebug`
-- **iOS tests/builds**: Do NOT run by default. Only execute iOS-specific tests/builds if the issue explicitly requires iOS behavior or when the User requests it.
+- **Screenshot tests** (Roborazzi): 
+  - Record baselines: `./gradlew recordRoborazziDebug`
+  - Verify against baselines: `./gradlew verifyRoborazziDebug`
+- **iOS tests/builds**: Do NOT run by default. Only execute iOS-specific tests/builds if explicitly required or requested.
 - See `.junie/guides/tech/testing_strategy.md` for comprehensive testing guidelines
 
 ## How to Validate Changes
-1. **Run relevant tests for changed modules**:
-   - Non-UI changes: `./gradlew :composeApp:testDebugUnitTest` or `./gradlew :features:<feature>:impl:jvmTest`
-   - Android UI/logic (device required): `./gradlew :composeApp:connectedDebugAndroidTest`
+1. **Primary validation command** (must run first): `./gradlew :composeApp:assembleDebug`
+2. **Run relevant tests for changed modules**:
+   - Unit tests: `./gradlew :composeApp:testDebugUnitTest`
    - Screenshot tests: `./gradlew verifyRoborazziDebug`
-2. **iOS policy**: Do NOT run iOS app, builds, or tests during routine validation. Only run iOS-specific tasks if explicitly required or requested.
-3. **If tests are absent**: Run `./gradlew :composeApp:assembleDebug` as minimum compilation check
+   - Android UI tests (device required): `./gradlew :composeApp:connectedDebugAndroidTest`
+3. **iOS policy**: NEVER run iOS builds during routine validation (5-10 min builds). Only execute iOS-specific tasks when explicitly required or requested.
 
 ## Key Technical Decisions
 
 See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical patterns:
 
-- **ViewModels**: Extend `androidx.lifecycle.ViewModel`; pass `viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` parameter; do NOT perform work in `init`; load on lifecycle callbacks
+- **ViewModels**: Must extend `androidx.lifecycle.ViewModel`; pass `viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` as constructor parameter to superclass; NEVER store `CoroutineScope` as field; do NOT perform work in `init`; load data in lifecycle-aware callbacks (not `init`); use `kotlinx.collections.immutable` types in UI state; implement `OneTimeEventEmitter<E>` via delegation for one-time events
 - **Repositories**: Return `Either<RepoError, T>`; use `Either.catch { ... }.mapLeft { it.toRepoError() }`; map DTOs to domain at boundary
 - **Navigation**: Use Navigation 3 (`org.jetbrains.androidx.navigation3:navigation3-ui`); define contracts in `api`, implementations in `impl`
 - **DI**: Metro with no annotations on classes; wire via `@Provides` in wiring modules
@@ -114,12 +126,12 @@ See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical 
 ## Troubleshooting
 - **First run**: May download Compose and JetBrains JDK; builds can take longer
 - **Android build failures**: Verify `local.properties` contains `sdk.dir` and JDK 17+ is used
-- **iOS builds**: Significantly slower; avoid running iOS build/app during routine checks unless explicitly required
+- **iOS builds**: Extremely slow (5-10 min); NEVER run iOS build/app during routine checks unless explicitly required
 - **Metro DI issues**: Ensure KSP is configured correctly; check generated code in `build/generated/ksp`
 - **Arrow Either**: Never catch and swallow `CancellationException`; use `Either.catch` which respects cancellation
 
-## Product Knowledge (PRD & User Flows & UI/UX)
-When asked about product behavior, UX, feature scope, acceptance criteria, copy, or edge cases, leverage the project's product documentation located at `.junie/guides/project` folder:
+## Product Requirements (PRD & User Flows & UI/UX)
+When implementing product features, behavior, UX, or addressing acceptance criteria, you must consult the project's product documentation located at `.junie/guides/project` folder:
 - **PRIMARY REFERENCE - Always consult first:**
   - `.junie/guides/project/prd.md` — **canonical product requirements, scope, constraints, and acceptance criteria. This is the definitive source for implementation decisions.**
 - Supporting documentation:
@@ -128,34 +140,34 @@ When asked about product behavior, UX, feature scope, acceptance criteria, copy,
   - `.junie/guides/project/ui_ux.md` — UI/UX guidelines, animations
   - `.junie/guides/project/easter_eggs_and_mini_games_for_clipugc.md` — interactive features and gamification elements
 
-How to use these documents when answering:
-- **ALWAYS start with PRD first** — it defines the core product scope and requirements for any implementation work.
-- Prefer facts from PRD/user flows over assumptions. Tailor answers to the specified feature/flow and cite the document and section heading when helpful.
+How to use these documents when implementing:
+- **MUST start with PRD first** — it defines the core product scope and requirements for any implementation work.
+- Implementation must follow facts from PRD/user flows, not assumptions. Cite the document and section heading when helpful.
 - If there is a conflict:
   - PRD defines scope, data rules, and acceptance criteria.
   - User flows define the sequence, screen states, and UX details.
-  - Call out any discrepancies explicitly and propose a resolution or ask for clarification.
+  - Call out any discrepancies explicitly and ask for clarification.
 - If a detail is missing or ambiguous:
-  - Ask concise clarifying questions.
-  - If an immediate answer is required, state assumptions clearly and mark them as assumptions.
-- If needed you can update the documents with new information.
+  - Ask concise clarifying questions before implementing.
+  - If an immediate decision is required, state assumptions clearly and mark them as assumptions.
+- Update the documents with new information as needed.
 
-Implementation alignment tips:
+Implementation requirements:
 - Map requirements to modules:
-  - `:features:<feature>:impl` — feature logic/screens derived from PRD and user flows
-  - `:core:designsystem` — reusable UI components; keep them generic and parameterized
+  - `:features:<feature>:impl` — feature logic/screens must be derived from PRD and user flows
+  - `:core:designsystem` — reusable UI components must be generic and parameterized
   - `iosApp` — platform wrapper and integrations
   - `server` — backend APIs and business logic
-- Derive UI states, empty/loading/error cases, and copy from PRD/user_flow where specified. Avoid inventing behavior not grounded in docs.
-- For reusable components: keep them generic and parameterized; document with KDoc
+- UI states, empty/loading/error cases, and copy must be derived from PRD/user_flow where specified. Do not invent behavior not grounded in docs.
+- Reusable components must be generic and parameterized; document with KDoc
 
-Validation & testing from docs:
-- Derive acceptance criteria and test scenarios from PRD sections. Reference them in test method names or comments when practical.
-- For UI flows, mirror the steps from `.junie/guides/project/user_flow.md` in UI tests.
+Validation & testing requirements:
+- Acceptance criteria and test scenarios must be derived from PRD sections. Reference them in test method names or comments when practical.
+- UI tests must mirror the steps from `.junie/guides/project/user_flow.md`.
 
-Notes:
-- Keep sensitive or internal doc content out of public-facing code comments unless strictly necessary.
-- If the documents appear outdated relative to the code, flag this in the PR description and ask for an update.
+Important notes:
+- Must keep sensitive or internal doc content out of public-facing code comments unless strictly necessary.
+- If the documents appear outdated relative to the code, flag this immediately and ask for an update.
 
 ## Detailed Technical Guidelines (Index)
 
