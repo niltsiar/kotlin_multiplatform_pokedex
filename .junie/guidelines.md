@@ -159,20 +159,20 @@ Each feature contains ALL layers it needs internally:
 
 | Production Code | Test Required | Test Location |
 |----------------|---------------|---------------|
-| Repository | ✅ MANDATORY | androidTest/ |
-| ViewModel | ✅ MANDATORY | androidTest/ |
-| Mapper | ✅ MANDATORY | androidTest/ |
-| Use Case | ✅ MANDATORY | androidTest/ |
-| API Service | ✅ MANDATORY | androidTest/ |
+| Repository | ✅ MANDATORY | androidUnitTest/ |
+| ViewModel | ✅ MANDATORY | androidUnitTest/ |
+| Mapper | ✅ MANDATORY | androidUnitTest/ |
+| Use Case | ✅ MANDATORY | androidUnitTest/ |
+| API Service | ✅ MANDATORY | androidUnitTest/ |
 | @Composable | ✅ MANDATORY | @Preview + Screenshot |
 | Simple Utility | ✅ MANDATORY | commonTest/ |
 
 ### Test Frameworks
-- **Framework**: Kotest (assertions, property-based testing) - androidTest/ only
-- **Mocking**: MockK (JVM/Android only) - androidTest/ only
+- **Framework**: Kotest (assertions, property-based testing) - androidUnitTest/ only
+- **Mocking**: MockK (JVM-based, runs via Robolectric) - androidUnitTest/ only
 - **Screenshot**: Roborazzi (Robolectric-based, JVM tests)
 - **Location**: 
-  - **PRIMARY**: `androidTest/` for ALL business logic (repositories, ViewModels, mappers, use cases)
+  - **PRIMARY**: `androidUnitTest/` for ALL business logic (repositories, ViewModels, mappers, use cases)
   - **MINIMAL**: `commonTest/` for simple utilities with NO dependencies
   - **RARE**: `iosTest/` for platform-specific expect/actual implementations
 
@@ -335,26 +335,26 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 
 - [ ] Every production file has a corresponding test file
 - [ ] Tests are in correct location:
-  - [ ] Repositories → androidTest/
-  - [ ] ViewModels → androidTest/
-  - [ ] Mappers → androidTest/ with property-based tests
-  - [ ] Use Cases → androidTest/
-  - [ ] API Services → androidTest/
+  - [ ] Repositories → androidUnitTest/
+  - [ ] ViewModels → androidUnitTest/
+  - [ ] Mappers → androidUnitTest/ with property-based tests
+  - [ ] Use Cases → androidUnitTest/
+  - [ ] API Services → androidUnitTest/
   - [ ] Simple utilities → commonTest/
   - [ ] @Composable → @Preview in same file + screenshot test
 - [ ] Minimum coverage per file type:
   - [ ] Repositories: success + all error paths
   - [ ] ViewModels: initial, loading, success, error states
   - [ ] Mappers: property-based data preservation tests
-- [ ] Kotest as primary framework (androidTest/)
-- [ ] MockK for JVM/Android mocking (androidTest/)
+- [ ] Kotest as primary framework (androidUnitTest/)
+- [ ] MockK for Android mocking (androidUnitTest/)
 - [ ] Property-based tests for parsers, mappers, invariants (use `checkAll`/`forAll`)
 - [ ] JSON modules have round-trip tests (json→object→json, object→json→object)
 - [ ] Roborazzi screenshot tests with baselines in `composeApp/src/test/snapshots`
 - [ ] All tests pass before PR: `./gradlew testDebugUnitTest`
 
 #### 7. Testing Strategy (Mobile-First)
-- [ ] Primary tests in `androidTest/` to leverage Kotest and MockK
+- [ ] Primary tests in `androidUnitTest/` to leverage Kotest and MockK
 - [ ] Android tests validate ALL shared business logic
 - [ ] `commonTest/` only for platform-agnostic utilities (no dependencies)
 - [ ] Property-based testing with Kotest's `checkAll`/`forAll`

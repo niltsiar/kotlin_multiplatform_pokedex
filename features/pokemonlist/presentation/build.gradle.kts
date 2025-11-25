@@ -26,7 +26,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         
-        jvmTest.dependencies {
+        androidUnitTest.dependencies {
             implementation(libs.kotest.assertions)
             implementation(libs.kotest.framework)
             implementation(libs.kotest.property)
