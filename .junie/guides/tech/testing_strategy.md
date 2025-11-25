@@ -2,6 +2,42 @@
 
 **Purpose**: Define a mobile-first testing strategy that maximizes testing capabilities within Kotlin Multiplatform framework limitations.
 
+## ⚠️ CRITICAL: Test Enforcement
+
+**NO CODE WITHOUT TESTS**
+
+See `.junie/test-enforcement-agent.md` for complete enforcement rules.
+
+### Core Rule
+
+Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
+
+**Enforcement Table:**
+
+| Production Code Type | Test Required | Test Location | Framework |
+|---------------------|---------------|---------------|-----------|
+| Repository | ✅ MANDATORY | androidTest/ | Kotest + MockK |
+| ViewModel | ✅ MANDATORY | androidTest/ | Kotest + MockK |
+| Mapper (DTO ↔ Domain) | ✅ MANDATORY | androidTest/ | Kotest properties |
+| Use Case | ✅ MANDATORY | androidTest/ | Kotest + MockK |
+| API Service | ✅ MANDATORY | androidTest/ | Kotest + MockK |
+| @Composable UI | ✅ MANDATORY | @Preview + Screenshot | Roborazzi |
+| Simple Utility | ✅ MANDATORY | commonTest/ | kotlin-test |
+| Platform-specific | ✅ MANDATORY | iosTest/androidTest | kotlin-test |
+
+**Minimum Coverage Requirements:**
+- Repositories: Success + all error types (Network, Http, Unknown)
+- ViewModels: Initial, Loading, Success, Error states + Events
+- Mappers: Property-based tests proving data preservation
+- @Composable: At least one realistic @Preview
+
+**Automatic Rejection:**
+- ❌ Repository without tests
+- ❌ ViewModel without tests
+- ❌ Mapper without property-based tests
+- ❌ @Composable without @Preview
+- ❌ Modified code without updated tests
+
 ## Strategic Decision: Android-First Testing
 
 **Primary Testing Location: `androidTest/` source sets**
@@ -168,6 +204,75 @@ features/pokemonlist/impl/src/iosTest/kotlin/
 - ✅ kotlin-test only
 - ❌ No Kotest
 - ❌ No MockK (use fakes)
+
+## Enforcement Workflow
+
+### When Creating New Code
+
+1. **Before starting**: Plan both production and test files
+2. **During development**: Write test alongside production code (TDD encouraged)
+3. **Before PR**: Verify all production files have tests
+4. **PR Review**: Tests are reviewed with same scrutiny as production code
+
+### When Modifying Existing Code
+
+1. **Check for tests**: Verify test file exists
+2. **Update tests**: Modify tests to reflect changes
+3. **Add missing tests**: If tests don't exist, add them NOW
+4. **Run tests**: Ensure all tests pass before committing
+
+### Exceptions to Test Requirement
+
+**Only the following do NOT require tests:**
+
+1. **Data classes** (no logic, just structure)
+2. **Constants** (no behavior to test)
+3. **Simple enums** (unless complex logic)
+4. **Sealed interfaces** (contracts only)
+
+**Everything else REQUIRES tests.**
+
+### Test Quality Standards
+
+Tests must:
+- ✅ Be clear and readable (Given/When/Then or descriptive names)
+- ✅ Test one thing per test case
+- ✅ Use realistic test data (not empty/null unless testing that case)
+- ✅ Verify actual behavior, not implementation details
+- ✅ Be independent (no test order dependencies)
+- ✅ Clean up resources (use beforeTest/afterTest)
+
+**Forbidden Test Practices:**
+
+❌ **DO NOT**:
+- Skip tests with @Ignore without issue reference
+- Use Thread.sleep() (use test dispatchers)
+- Test private methods directly
+- Mock everything (prefer fakes for simple cases)
+- Write tests that always pass
+- Copy-paste tests without understanding
+
+## Validation Commands
+
+```bash
+# Run all Android tests (PRIMARY)
+./gradlew :features:pokemonlist:impl:testDebugUnitTest
+
+# Run common tests (utilities)
+./gradlew :features:pokemonlist:impl:allTests
+
+# Run specific test class
+./gradlew :features:pokemonlist:impl:testDebugUnitTest --tests "PokemonListRepositoryTest"
+
+# Verify test coverage
+./gradlew :features:pokemonlist:impl:testDebugUnitTest --info | grep "tests completed"
+
+# Record screenshots
+./gradlew recordRoborazziDebug
+
+# Verify screenshots
+./gradlew verifyRoborazziDebug
+```
 
 ## Conventions
 - Name test classes with `Test` or `Spec` suffix
@@ -607,3 +712,66 @@ class UserJsonRoundTripSpec : StringSpec({
   }
 })
 ```
+
+## AI Agent Enforcement
+
+### For Copilot
+
+When generating code, Copilot MUST:
+
+1. ✅ Generate test file alongside production code
+2. ✅ Place tests in correct source set (androidTest/ for business logic)
+3. ✅ Use appropriate testing framework (Kotest + MockK)
+4. ✅ Add @Preview to all @Composable functions
+5. ✅ Include minimum test coverage (success + error paths)
+6. ✅ Run tests before marking code complete
+
+### For Junie
+
+When implementing features, Junie MUST:
+
+1. ✅ Create test files before marking feature complete
+2. ✅ Verify test files exist for all production files
+3. ✅ Run tests and ensure they pass
+4. ✅ Include test file paths in completion summary
+5. ✅ Report any missing tests as BLOCKERS
+6. ✅ Refuse to complete without tests
+
+### Example: Complete Feature with Tests
+
+```
+Feature: Pokemon List - COMPLETION CHECKLIST
+
+Production Files Created:
+✅ features/pokemonlist/api/src/commonMain/.../PokemonListRepository.kt
+✅ features/pokemonlist/impl/src/commonMain/.../data/PokemonListRepositoryImpl.kt
+✅ features/pokemonlist/impl/src/commonMain/.../data/PokemonMappers.kt
+✅ features/pokemonlist/impl/src/commonMain/.../presentation/PokemonListViewModel.kt
+✅ features/pokemonlist/impl/src/commonMain/.../presentation/PokemonListScreen.kt
+
+Test Files Created:
+✅ features/pokemonlist/impl/src/androidTest/.../data/PokemonListRepositoryTest.kt
+✅ features/pokemonlist/impl/src/androidTest/.../data/PokemonMappersTest.kt
+✅ features/pokemonlist/impl/src/androidTest/.../presentation/PokemonListViewModelTest.kt
+✅ PokemonListScreen.kt includes @Preview functions
+
+Verification:
+✅ All tests pass: ./gradlew :features:pokemonlist:impl:testDebugUnitTest
+✅ Build succeeds: ./gradlew :composeApp:assembleDebug
+✅ Test coverage: 100% of production files have tests
+
+STATUS: ✅ COMPLETE - ALL TESTS PRESENT AND PASSING
+```
+
+## Summary
+
+**NO CODE IS COMPLETE WITHOUT TESTS**
+
+- ✅ Every production file has a test file
+- ✅ Tests are in correct location (androidTest/ for business logic)
+- ✅ Tests use appropriate frameworks (Kotest + MockK)
+- ✅ Tests cover minimum scenarios (success + errors)
+- ✅ @Composable functions have @Preview
+- ✅ Tests pass before PR
+
+**This is not optional. Tests are part of the feature.**

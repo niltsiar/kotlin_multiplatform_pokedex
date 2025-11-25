@@ -317,6 +317,24 @@ struct PokemonCard: View {
 }
 ```
 
+### Test Enforcement (MANDATORY)
+
+**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+
+Before marking any code complete:
+- ✅ Every production file has a test file
+- ✅ Tests are in correct location (androidTest/ for business logic)
+- ✅ Minimum coverage achieved (success + error paths)
+- ✅ @Composable functions have @Preview
+- ✅ All tests pass
+
+**Automatic Rejection Criteria:**
+- ❌ Repository without tests
+- ❌ ViewModel without tests
+- ❌ Mapper without property-based tests
+- ❌ @Composable without @Preview
+- ❌ Modified code without updated tests
+
 ### Testing Strategy
 - **Unit tests first**: Write tests in `androidTest/` to leverage Kotest and MockK
 - **Mobile-first approach**: Android is the primary mobile target, tests cover shared logic

@@ -206,6 +206,24 @@ fun JobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepos
 
 ## Testing Stack (Mobile-First)
 
+### ⚠️ MANDATORY: Test Enforcement
+
+**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+
+Every production file requires a test file. This is not optional.
+
+**Quick Reference:**
+- Repository → androidTest/ (Kotest + MockK) ✅ MANDATORY
+- ViewModel → androidTest/ (Kotest + MockK) ✅ MANDATORY
+- Mapper → androidTest/ (Property tests) ✅ MANDATORY
+- @Composable → @Preview in same file ✅ MANDATORY
+- Utility → commonTest/ (kotlin-test) ✅ MANDATORY
+
+**Minimum Coverage:**
+- Success path + All error paths
+- Initial state + All state transitions
+- Data preservation (property-based)
+
 ### Primary: androidTest/ for Business Logic
 - **Kotest** - Full framework (StringSpec, BehaviorSpec, FunSpec) with property-based testing
 - **MockK** - Powerful mocking (JVM/Android only, not available for Native)

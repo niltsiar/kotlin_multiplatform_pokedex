@@ -144,16 +144,60 @@ Each feature contains ALL layers it needs internally:
 - Run: `./gradlew :server:run` or use IDE run configuration
 
 ## Testing
-- **Framework**: Kotest (assertions, property-based testing)
-- **Mocking**: MockK (JVM/Android only—use fakes for Native)
+
+**MANDATORY**: All production code MUST have tests. See `.junie/test-enforcement-agent.md` for complete enforcement rules.
+
+### Test Enforcement Summary
+
+**Core Rule**: NO CODE WITHOUT TESTS
+
+| Production Code | Test Required | Test Location |
+|----------------|---------------|---------------|
+| Repository | ✅ MANDATORY | androidTest/ |
+| ViewModel | ✅ MANDATORY | androidTest/ |
+| Mapper | ✅ MANDATORY | androidTest/ |
+| Use Case | ✅ MANDATORY | androidTest/ |
+| API Service | ✅ MANDATORY | androidTest/ |
+| @Composable | ✅ MANDATORY | @Preview + Screenshot |
+| Simple Utility | ✅ MANDATORY | commonTest/ |
+
+### Test Frameworks
+- **Framework**: Kotest (assertions, property-based testing) - androidTest/ only
+- **Mocking**: MockK (JVM/Android only) - androidTest/ only
 - **Screenshot**: Roborazzi (Robolectric-based, JVM tests)
-- **Location**: Tests live in `commonTest/` unless platform-specific
+- **Location**: 
+  - **PRIMARY**: `androidTest/` for ALL business logic (repositories, ViewModels, mappers, use cases)
+  - **MINIMAL**: `commonTest/` for simple utilities with NO dependencies
+  - **RARE**: `iosTest/` for platform-specific expect/actual implementations
+
+### Test Commands
 - **Shared unit tests**: `./gradlew :composeApp:testDebugUnitTest` (or relevant target-specific tasks)
 - **Android UI tests** on device (if any under `composeApp/src/commonTest/screentest`): `./gradlew :composeApp:connectedDebugAndroidTest`
 - **Screenshot tests** (Roborazzi): 
   - Record baselines: `./gradlew recordRoborazziDebug`
   - Verify against baselines: `./gradlew verifyRoborazziDebug`
 - **iOS tests/builds**: Do NOT run by default. Only execute iOS-specific tests/builds if explicitly required or requested.
+
+### Minimum Test Coverage (Per File)
+
+**Repositories:**
+- ✅ Success path (returns Right)
+- ✅ Error paths (Network, Http, Unknown)
+- ✅ All error types tested
+
+**ViewModels:**
+- ✅ Initial state
+- ✅ Loading → Success flow
+- ✅ Loading → Error flow
+- ✅ Event handling
+
+**Mappers:**
+- ✅ Property-based tests (data preservation)
+- ✅ Edge cases (empty, null, boundaries)
+
+**@Composable:**
+- ✅ At least one @Preview with realistic data
+- ✅ Recommended: Multiple previews for different states
 - See `.junie/guides/tech/testing_strategy.md` for comprehensive testing guidelines
 
 ## How to Validate Changes
@@ -279,12 +323,29 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 - [ ] Expose immutable collections only (`kotlinx.collections.immutable`)
 - [ ] NO empty/pass-through use cases - call repositories directly unless orchestration is needed
 
-#### 6. Testing Requirements
-- [ ] Kotest as primary framework
-- [ ] MockK for JVM/Android mocking (fakes for Native)
+#### 6. Testing Requirements (MANDATORY)
+
+**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+
+- [ ] Every production file has a corresponding test file
+- [ ] Tests are in correct location:
+  - [ ] Repositories → androidTest/
+  - [ ] ViewModels → androidTest/
+  - [ ] Mappers → androidTest/ with property-based tests
+  - [ ] Use Cases → androidTest/
+  - [ ] API Services → androidTest/
+  - [ ] Simple utilities → commonTest/
+  - [ ] @Composable → @Preview in same file + screenshot test
+- [ ] Minimum coverage per file type:
+  - [ ] Repositories: success + all error paths
+  - [ ] ViewModels: initial, loading, success, error states
+  - [ ] Mappers: property-based data preservation tests
+- [ ] Kotest as primary framework (androidTest/)
+- [ ] MockK for JVM/Android mocking (androidTest/)
 - [ ] Property-based tests for parsers, mappers, invariants (use `checkAll`/`forAll`)
 - [ ] JSON modules have round-trip tests (json→object→json, object→json→object)
 - [ ] Roborazzi screenshot tests with baselines in `composeApp/src/test/snapshots`
+- [ ] All tests pass before PR: `./gradlew testDebugUnitTest`
 
 #### 7. Testing Strategy (Mobile-First)
 - [ ] Primary tests in `androidTest/` to leverage Kotest and MockK
@@ -373,6 +434,7 @@ After implementing code, provide:
 - **Coroutines & Concurrency** — `.junie/guides/tech/coroutines.md` — Scopes, dispatchers, cancellation, Arrow patterns
 - **Utility Organization** — `.junie/guides/tech/utility_organization.md` — Utilities, extensions, platform abstractions
 - **Testing Strategy** — `.junie/guides/tech/testing_strategy.md` — Kotest, MockK, Roborazzi, property-based testing
+- **Test Enforcement** — `.junie/test-enforcement-agent.md` — ⚠️ MANDATORY: All code requires tests
 - **Gradle Convention Plugins** — `.junie/guides/tech/gradle_convention_plugins.md` — Build configuration, convention plugins
 
 ### UI/UX Development Guidelines
