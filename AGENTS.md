@@ -81,6 +81,31 @@ Research → Plan → Implement → Test → Validate
 
 ## 📋 Architecture Patterns (CRITICAL)
 
+### True Vertical Slicing
+
+**Each feature is a complete vertical slice owning ALL its layers internally:**
+
+```
+:features:pokemonlist:api     → Public contracts only
+:features:pokemonlist:impl    → Network + Data + Domain + Presentation + UI
+:features:pokemonlist:wiring  → DI assembly
+```
+
+**Key Rules:**
+1. Each feature has its own network layer (API service, DTOs)
+2. Each feature has its own data layer (repositories, mappers)
+3. Each feature has its own domain logic (use cases, validators)
+4. Each feature has its own presentation (ViewModels, UI)
+
+**DO NOT create generic :core:network or :core:data modules**
+- ❌ `:core:network:api` (generic network layer)
+- ✅ `:features:pokemonlist:impl/data/PokemonListApiService.kt`
+
+**Shared infrastructure ONLY for:**
+- Design system (UI components, theme)
+- Generic utilities (3+ features use it)
+- Platform abstractions (expect/actual)
+
 ### Dependency Injection: Metro (Not Implemented Yet)
 **Classes are DI-agnostic. Wire via `@Provides` in wiring modules.**
 
@@ -249,34 +274,76 @@ class SubmitOrderUseCase(
 
 ---
 
-## 🧪 Testing Strategy
+## 🧪 Testing Strategy: Mobile-First Approach
 
-### Kotest + MockK Pattern
+### Primary Testing: Android Test Sources
+
+**Why Android Tests for Business Logic:**
+- ❌ Kotest doesn't support iOS/Native targets
+- ❌ MockK doesn't support iOS/Native targets  
+- ✅ Both fully support Android (JVM-based tests)
+- ✅ Android is primary mobile target
+- ✅ iOS shares same Kotlin code (type safety guarantees)
+- ✅ Fast feedback (seconds vs iOS minutes)
+
+**Testing Location Strategy:**
 ```kotlin
-// commonTest/kotlin/.../JobRepositorySpec.kt
-class JobRepositorySpec : StringSpec({
-  val api = mockk<JobApiService>()
-  val repo = JobRepositoryImpl(api)
-  
-  "getJobs returns Right on success" {
-    coEvery { api.getJobs() } returns JobsResponse(
-      jobs = listOf(JobDto(id = "1", title = "Engineer"))
-    )
+// ✅ PRIMARY: androidTest/ for business logic
+features/pokemonlist/impl/src/androidTest/kotlin/
+├── data/
+│   ├── PokemonRepositoryTest.kt      // Full Kotest + MockK
+│   ├── PokemonMappersTest.kt         // Property tests
+│   └── PokemonApiServiceTest.kt      // Mocked HTTP
+└── presentation/
+    └── PokemonViewModelTest.kt       // ViewModel tests
+
+// ⚠️ MINIMAL: commonTest/ for simple utilities only
+features/pokemonlist/impl/src/commonTest/kotlin/
+└── utils/
+    └── UrlUtilsTest.kt               // kotlin-test only, no deps
+```
+
+### Kotest + MockK Pattern (Android Tests)
+
+```kotlin
+// androidTest/kotlin/.../PokemonRepositoryTest.kt
+class PokemonRepositoryTest : StringSpec({
+    lateinit var mockApi: PokemonListApiService
+    lateinit var repository: PokemonListRepository
     
-    val result = repo.getJobs()
+    beforeTest {
+        mockApi = mockk()
+        repository = PokemonListRepository(mockApi)
+    }
     
-    result.shouldBeRight()
-    result.getOrNull()!!.size shouldBe 1
-  }
-  
-  "getJobs returns Network error on IOException" {
-    coEvery { api.getJobs() } throws IOException("Connection failed")
+    "should return Right on success" {
+        coEvery { mockApi.getPokemonList(20, 0) } returns PokemonListDto(
+            count = 1292,
+            next = "https://...",
+            previous = null,
+            results = listOf(
+                PokemonSummaryDto("bulbasaur", "https://.../1/")
+            )
+        )
+        
+        val result = repository.loadPage()
+        
+        result.shouldBeRight { page ->
+            page.pokemons shouldHaveSize 1
+            page.pokemons.first().name shouldBe "Bulbasaur"
+        }
+    }
     
-    val result = repo.getJobs()
-    
-    result.shouldBeLeft()
-    result.swap().getOrNull() shouldBe RepoError.Network
-  }
+    "should return Network error on timeout" {
+        coEvery { mockApi.getPokemonList(any(), any()) } throws 
+            ConnectTimeoutException("Timeout")
+        
+        val result = repository.loadPage()
+        
+        result.shouldBeLeft { error ->
+            error shouldBe RepoError.Network
+        }
+    }
 })
 
 // Helper extensions
@@ -757,6 +824,8 @@ class HomeViewModel : ViewModel() {
 - [ ] Type-safe project accessors used (`projects.shared`, `libs.arrow.core`)
 - [ ] ktlint formatting (configured via convention plugins)
 - [ ] detekt static analysis (configured via convention plugins)
+- [ ] All @Composable functions have @Preview annotations
+- [ ] All SwiftUI Views have #Preview macros
 
 #### 10. Build Validation
 - [ ] Android build passes: `./gradlew :composeApp:assembleDebug`
@@ -848,6 +917,182 @@ After implementing code, provide:
 | `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` |
 | Empty use case | Call repository directly from ViewModel |
 | `:impl` exported to iOS | Only `:api` and `:core:*` in `:shared` |
+| @Composable without @Preview | Add `@Preview` with realistic data |
+| SwiftUI View without #Preview | Add `#Preview` with realistic data |
+
+---
+
+## UI Development Standards (MANDATORY)
+
+### Compose Multiplatform Previews
+
+**Rule**: Every @Composable function MUST have a corresponding @Preview.
+
+**Requirements:**
+1. Use `@Preview` from `org.jetbrains.compose.ui.tooling.preview.Preview`
+2. Preview function should be private
+3. Named `<ComponentName>Preview`
+4. Show realistic data (not empty/null)
+5. Wrap in MaterialTheme or your theme
+6. Multiple previews for complex components (different states)
+
+**Example:**
+```kotlin
+@Composable
+fun PokemonCard(
+    pokemon: Pokemon,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Column {
+            AsyncImage(model = pokemon.imageUrl, contentDescription = pokemon.name)
+            Text(text = pokemon.name)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PokemonCardPreview() {
+    MaterialTheme {
+        PokemonCard(
+            pokemon = Pokemon(
+                id = 25,
+                name = "Pikachu",
+                imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+            )
+        )
+    }
+}
+
+@Preview
+@Composable  
+private fun PokemonCardLongNamePreview() {
+    MaterialTheme {
+        PokemonCard(
+            pokemon = Pokemon(
+                id = 1,
+                name = "Bulbasaur with very long name",
+                imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+            )
+        )
+    }
+}
+```
+
+### SwiftUI Previews
+
+**Rule**: Every SwiftUI View MUST have a #Preview.
+
+**Requirements:**
+1. Use Swift's `#Preview` macro
+2. Show realistic data
+3. Can have multiple previews for different states
+
+**Example:**
+```swift
+struct PokemonCard: View {
+    let pokemon: Pokemon
+    
+    var body: some View {
+        VStack {
+            AsyncImage(url: URL(string: pokemon.imageUrl))
+                .frame(width: 96, height: 96)
+            Text("#\(pokemon.id)")
+                .font(.caption)
+            Text(pokemon.name)
+                .font(.headline)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+#Preview {
+    PokemonCard(pokemon: Pokemon(
+        id: 25,
+        name: "Pikachu",
+        imageUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+    ))
+}
+
+#Preview("Long Name") {
+    PokemonCard(pokemon: Pokemon(
+        id: 1,
+        name: "Bulbasaur with very long name",
+        imageUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+    ))
+}
+```
+
+### Screen-Level Previews
+
+For screens with ViewModels, create preview-specific versions:
+
+```kotlin
+@Preview
+@Composable
+private fun PokemonListScreenLoadingPreview() {
+    MaterialTheme {
+        PokemonListContent(
+            uiState = PokemonListUiState.Loading,
+            onLoadMore = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PokemonListScreenContentPreview() {
+    MaterialTheme {
+        PokemonListContent(
+            uiState = PokemonListUiState.Content(
+                pokemons = persistentListOf(
+                    Pokemon(1, "Bulbasaur", "..."),
+                    Pokemon(2, "Ivysaur", "..."),
+                    Pokemon(3, "Venusaur", "...")
+                ),
+                isLoadingMore = false,
+                hasMore = true
+            ),
+            onLoadMore = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PokemonListScreenErrorPreview() {
+    MaterialTheme {
+        PokemonListContent(
+            uiState = PokemonListUiState.Error("Network error"),
+            onLoadMore = {}
+        )
+    }
+}
+```
+
+### Why Previews are Mandatory
+
+1. **Fast Development**: See changes instantly without running the app
+2. **Design Validation**: Verify UI matches specs
+3. **Edge Cases**: Test different states (loading, error, empty, long text)
+4. **Documentation**: Previews serve as live documentation
+5. **Team Collaboration**: Designers/PMs can review UI without building
+
+### Preview Validation
+
+Before committing code, verify:
+- [ ] Every @Composable has at least one @Preview
+- [ ] Every SwiftUI View has at least one #Preview
+- [ ] Previews show realistic data
+- [ ] Complex components have previews for different states
+- [ ] Previews compile and render correctly
 
 ---
 

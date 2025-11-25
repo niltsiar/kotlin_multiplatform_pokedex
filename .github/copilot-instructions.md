@@ -24,8 +24,16 @@ This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for A
 ### Required Architecture
 Vertical-slice modularization with api/impl/wiring pattern:
 - `:features:<feature>:api` → Public contracts (interfaces, navigation, models) - exported to iOS
-- `:features:<feature>:impl` → Internal implementations (NOT exported)
+- `:features:<feature>:impl` → ALL layers (network, data, domain, presentation, UI) - NOT exported
 - `:features:<feature>:wiring` → Metro DI assembly (NOT exported)
+
+**Critical**: True vertical slicing means each feature owns ALL its layers:
+- Network layer (API services, DTOs) lives in the feature's :impl module
+- Data layer (repositories, mappers) lives in the feature's :impl module  
+- Domain logic (use cases, validators) lives in the feature's :impl module
+- Presentation (ViewModels, UI) lives in the feature's :impl module
+
+**DO NOT create generic :core:network or :core:data modules**. Each feature is self-contained.
 
 **⚠️ CRITICAL**: Feature modules must follow this pattern. Always consult `.junie/guides/tech/conventions.md` before creating new modules or implementing patterns.
 
@@ -257,11 +265,81 @@ actual fun getPlatform(): Platform = IOSPlatform()
 2. **Check compatibility**: Ensure KMP support for multiplatform modules
 3. **Prefer common dependencies**: Add to `commonMain` unless platform-specific
 
+### UI Development Requirements (MANDATORY)
+
+#### Compose Multiplatform
+- **Every @Composable must have a @Preview**
+- Use `@Preview` from `org.jetbrains.compose.ui.tooling.preview.Preview`
+- Preview function should be private and named `<ComponentName>Preview`
+- Show realistic data in previews (not empty states)
+- Complex screens need multiple previews for different states
+
+**Example:**
+```kotlin
+@Composable
+fun PokemonCard(pokemon: Pokemon, modifier: Modifier = Modifier) {
+    Card { /* ... */ }
+}
+
+@Preview
+@Composable
+private fun PokemonCardPreview() {
+    MaterialTheme {
+        PokemonCard(
+            pokemon = Pokemon(
+                id = 25,
+                name = "Pikachu",
+                imageUrl = "https://example.com/pikachu.png"
+            )
+        )
+    }
+}
+```
+
+#### SwiftUI
+- **Every View must have a #Preview**
+- Use Swift's `#Preview` macro
+- Show realistic data in previews
+
+**Example:**
+```swift
+struct PokemonCard: View {
+    let pokemon: Pokemon
+    var body: some View { /* ... */ }
+}
+
+#Preview {
+    PokemonCard(pokemon: Pokemon(
+        id: 25,
+        name: "Pikachu",
+        imageUrl: "https://example.com/pikachu.png"
+    ))
+}
+```
+
 ### Testing Strategy
-- **Unit tests first**: Write Kotest tests in `commonTest/`
-- **Property-based testing**: Use `checkAll`/`forAll` for invariants (parsers, mappers)
-- **Screenshot tests**: Use Roborazzi for UI regression testing (JVM only)
-- **Mock judiciously**: Use MockK for JVM/Android, fakes for Native
+- **Unit tests first**: Write tests in `androidTest/` to leverage Kotest and MockK
+- **Mobile-first approach**: Android is the primary mobile target, tests cover shared logic
+- **Property-based testing**: Use Kotest's `checkAll`/`forAll` for invariants
+- **MockK for dependencies**: Available in Android tests for powerful mocking
+- **Screenshot tests**: Use Roborazzi (Robolectric-based, Android tests)
+- **Test Location**: Use `androidTest/` for business logic tests (repository, mappers, use cases)
+- **Common tests**: Only for platform-agnostic utilities that need no mocking
+
+**Why Android Tests for Business Logic:**
+- ✅ Full Kotest support (assertions, property testing, framework)
+- ✅ MockK available for powerful mocking
+- ✅ Faster than iOS builds (seconds vs minutes)
+- ✅ Tests cover shared KMP code (runs on JVM, validates all logic)
+- ✅ Mobile is the primary target (Android + iOS share code)
+- ✅ JVM desktop is convenience, not primary target
+
+**Trade-off Rationale:**
+- Android tests validate ALL shared business logic
+- iOS compiles the same Kotlin code (type safety guarantees)
+- Native-specific code uses expect/actual (minimal, well-isolated)
+- Testing on Android JVM validates multiplatform Kotlin behavior
+- Focus testing effort on mobile scenarios (primary use case)
 
 ### Error Handling Checklist
 - ✅ Repositories return `Either<RepoError, T>`
@@ -324,6 +402,18 @@ Run through this after implementing code:
 - [ ] Convention plugins applied appropriately
 - [ ] Code passes ktlint/detekt (configured via convention plugins)
 - [ ] Android build validates: `./gradlew :composeApp:assembleDebug`
+- [ ] All @Composable functions have @Preview
+
+### UI Preview Requirements (MANDATORY)
+
+**Compose Multiplatform:**
+- Every @Composable MUST have a @Preview
+- Preview shows realistic data
+- Named `<ComponentName>Preview` and private
+
+**SwiftUI:**
+- Every View MUST have a #Preview
+- Preview shows realistic data
 
 ### Quick Validation
 
