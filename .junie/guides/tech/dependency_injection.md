@@ -21,7 +21,7 @@ References
 - Only `api` modules are visible to other features; all other modules remain internal
 
 ## Location and Structure
-- App-wide DI configuration lives in `:core:di/src/commonMain/.../AppGraph.kt`
+- Core DI modules live in `:core:di/src/commonMain/.../AppModules.kt` as top-level functions
 - Feature-specific Koin modules live in `:features:<feature>:wiring/src/commonMain/...`
 - Platform-specific DI (navigation, UI) uses platform source sets (`androidMain`, `jvmMain`)
 - iOS uses only `commonMain` (no UI dependencies)
@@ -29,40 +29,57 @@ References
 ## Defining App Modules
 
 ```kotlin
-// core/di/src/commonMain/.../AppGraph.kt
-import org.koin.core.module.Module
+// core/di/src/commonMain/.../AppModules.kt
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import com.minddistrict.multiplatformpoc.core.navigation.Navigator
-import com.minddistrict.multiplatformpoc.features.pokemonlist.api.PokemonList
+import com.minddistrict.multiplatformpoc.navigation.Navigator
+import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 
-object AppGraph {
-    /**
-     * Creates the complete list of Koin modules for the application.
-     * 
-     * @param baseUrl Base URL for API services (runtime parameter)
-     * @param featureModules List of feature-specific Koin modules
-     * @return Complete list of modules to initialize Koin
-     */
-    fun create(baseUrl: String, featureModules: List<Module>): List<Module> {
-        val coreModule = module {
-            // Provide Navigator singleton with start destination
-            single { Navigator(startDestination = PokemonList) }
-            
-            // Provide runtime base URL as named dependency
-            single(qualifier = named("baseUrl")) { baseUrl }
-        }
+/**
+ * Core application module providing base dependencies.
+ * 
+ * Idiomatic Koin pattern: modules are defined as top-level functions/properties.
+ */
+fun coreModule(baseUrl: String) = module {
+    // Provide baseUrl as a named dependency (runtime parameter)
+    single(qualifier = named("baseUrl")) { baseUrl }
+    
+    // Provide Navigator singleton with start destination
+    single { Navigator(PokemonList) }
+}
+
+/**
+ * Navigation aggregation module that collects all EntryProviderInstallers.
+ * Must be loaded AFTER all feature navigation modules.
+ * 
+ * Provides: Set<EntryProviderInstaller> with qualifier "allNavigationInstallers"
+ */
+val navigationAggregationModule = module {
+    single<Set<EntryProviderInstaller>>(qualifier = named("allNavigationInstallers")) {
+        val allInstallers = mutableSetOf<EntryProviderInstaller>()
         
-        return listOf(coreModule) + featureModules
+        // Collect named installer sets from features
+        runCatching {
+            getOrNull<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers"))
+        }.getOrNull()?.let { allInstallers.addAll(it) }
+        
+        runCatching {
+            getOrNull<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers"))
+        }.getOrNull()?.let { allInstallers.addAll(it) }
+        
+        allInstallers
     }
 }
 ```
 
 **Key Points**:
-- `AppGraph` is a simple object with a `create()` function returning a list of Koin modules
-- Runtime parameters (like `baseUrl`) are provided as named dependencies: `single(qualifier = named("key")) { value }`
-- Feature modules are passed in and aggregated with core modules
-- No code generation required - plain Kotlin code
+- `coreModule()` is a **function** that takes runtime parameters and returns a Koin module
+- `navigationAggregationModule` is a **property** (val) since it has no parameters
+- Aggregated set uses qualifier `"allNavigationInstallers"` for clarity
+- No wrapper object needed - this is idiomatic Koin
+- Runtime parameters (like `baseUrl`) are provided as named dependencies or constructor params
+- Modules are composed with `+` operator in `KoinApplication`
 
 ## Providing and Binding Dependencies (no annotations on classes)
 
@@ -319,30 +336,32 @@ Initialize Koin at app startup using `KoinApplication`:
 import androidx.compose.runtime.Composable
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import com.minddistrict.multiplatformpoc.core.di.AppGraph
+import org.koin.core.module.Module
+import org.koin.core.qualifier.named
+import com.minddistrict.multiplatformpoc.core.di.coreModule
+import com.minddistrict.multiplatformpoc.core.di.navigationAggregationModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
-import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListNavigationModule
-import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailNavigationModule
+
+// Platform-specific navigation modules (defined in androidMain/jvmMain)
+expect fun getPlatformNavigationModules(): List<Module>
 
 @Composable
 fun App() {
+    // Initialize Koin with direct module composition (idiomatic Koin)
     KoinApplication(
         application = {
             modules(
-                AppGraph.create(
-                    baseUrl = "https://pokeapi.co/api/v2",
-                    featureModules = listOf(
-                        pokemonListModule,
-                        pokemonListNavigationModule,
-                        pokemonDetailNavigationModule
-                    )
-                )
+                coreModule(baseUrl = "https://pokeapi.co/api/v2") +  // Function with params
+                pokemonListModule +                                    // Feature module
+                getPlatformNavigationModules() +                       // Platform modules
+                navigationAggregationModule                            // Aggregation module
             )
         }
     ) {
-        // Access dependencies using koinInject()
+        // Access dependencies using koinInject() with explicit qualifier for aggregated set
         val navigator: Navigator = koinInject()
-        val entryProviderInstallers: Set<EntryProviderInstaller> = koinInject()
+        val entryProviderInstallers: Set<EntryProviderInstaller> = 
+            koinInject(qualifier = named("allNavigationInstallers"))
         
         // Use in UI
         NavDisplay(
@@ -357,10 +376,22 @@ fun App() {
 ```
 
 **Key Points**:
+- Modules composed directly with `+` operator - no wrapper needed
+- Runtime parameters passed via function calls: `coreModule(baseUrl = "...")`
+- Platform-specific modules loaded via expect/actual pattern
+- Navigation aggregation module loaded last to collect all installers
+- Aggregated set injected with explicit qualifier: `named("allNavigationInstallers")`
+```
+
+**Key Points**:
 - `KoinApplication { }` - Initialize Koin with modules
 - `modules(...)` - Pass list of Koin modules
 - `koinInject<T>()` - Resolve dependencies in composable context
-- Runtime parameters passed via `AppGraph.create()`
+**Key Points**:
+- Modules are composed directly using the `+` operator (idiomatic Koin)
+- Runtime parameters passed via function calls: `coreModule(baseUrl = "...")`
+- No wrapper object - just plain module composition
+- `getPlatformNavigationModules()` provides platform-specific modules via expect/actual
 - No code generation, pure Kotlin
 
 **See**: Working example in `composeApp/src/commonMain/kotlin/.../App.kt`
