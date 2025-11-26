@@ -19,12 +19,13 @@ import Shared
  */
 struct PokemonDetailView: View {
     let pokemonId: Int
-    @StateObject private var wrapper: PokemonDetailViewModelWrapper
+    private var wrapper: PokemonDetailViewModel
+    @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
     @Environment(\.dismiss) private var dismiss
     
     init(pokemonId: Int) {
         self.pokemonId = pokemonId
-        _wrapper = StateObject(wrappedValue: PokemonDetailViewModelWrapper(pokemonId: pokemonId))
+        wrapper = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
     }
     
     var body: some View {
@@ -32,13 +33,15 @@ struct PokemonDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 // Observe StateFlow - automatically cancels when view disappears
-                await wrapper.observeState()
+                for await state in wrapper.uiState {
+                    uiState = state
+                }
             }
     }
     
     @ViewBuilder
     private var content: some View {
-        switch wrapper.uiState {
+        switch uiState {
         case is PokemonDetailUiStateLoading:
             loadingView
             
