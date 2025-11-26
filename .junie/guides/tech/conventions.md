@@ -87,7 +87,7 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
    - Navigation: Parameterized route (`data class PokemonDetail(val id: Int)`)
    - Animations: Navigation 3 metadata-based transitions (slideInHorizontally + fadeIn)
    - Data: Detail endpoint with nested structures (`/pokemon/{id}`)
-   - iOS: Parametric wrapper with `StateObject(wrappedValue:)` init
+   - iOS: Direct Integration with parameter passed in init
    - SKIE: Type→Type_ rename handled in SwiftUI
    - See: Complete implementation in `features/pokemondetail/`
 
@@ -138,9 +138,9 @@ For features with complex business logic orchestrating multiple repositories:
 - Android, Desktop, and iOS Compose share Compose Multiplatform UI
 - iOS has TWO app options:
   - **iosAppCompose** (experimental): Uses shared Compose UI from :ui modules
-  - **iosApp** (production): Uses native SwiftUI, accessing ViewModels via `:shared` framework
+  - **iosApp** (production): Uses native SwiftUI with Direct Integration pattern (see `ios_integration.md`)
 - :ui modules are exported to iOS Compose app via ComposeApp.framework
-- :ui modules are **NOT exported** to native SwiftUI app (iosApp uses :shared framework)
+- :ui modules are **NOT exported** to native SwiftUI app (iosApp uses :shared framework for ViewModels)
 
 ### HttpClient Configuration
 
@@ -283,7 +283,7 @@ kotlin {
 - Keep navigation contracts in feature `api` (plain data classes/objects for Navigation 3); implementations in feature modules; aggregate via wiring where needed.
 - **ViewModels are KMP and shared across all platforms** (Android, Desktop, iOS): defined in `:features:<feature>:presentation` modules, exported to iOS via `:shared` framework.
 - ViewModels: all ViewModels must extend `androidx.lifecycle.ViewModel` (KMP). Do not perform work in `init`. Be lifecycle-aware (load on lifecycle callbacks). Do NOT store a `CoroutineScope` field; instead pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally. Use `SavedStateHandle` when needed to restore state/inputs. Do not expose mutable collections; prefer `kotlinx.collections.immutable` types. Implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>` located in `:core:util`.
-- **Compose UI is cross-platform**: Lives in `:features:<feature>:ui` modules (Android + JVM + iOS Compose). Native SwiftUI app (iosApp) consumes shared ViewModels via :shared framework. iOS Compose app (iosAppCompose) uses shared Compose UI from :ui modules.
+- **Compose UI is cross-platform**: Lives in `:features:<feature>:ui` modules (Android + JVM + iOS Compose). Native SwiftUI app (iosApp) consumes shared ViewModels via :shared framework using Direct Integration pattern (see `ios_integration.md`). iOS Compose app (iosAppCompose) uses shared Compose UI from :ui modules.
 
 ## iOS Shared Umbrella
 - The `shared` module produces a single umbrella framework for iOS.
@@ -345,13 +345,13 @@ sourceSets {
 }
 ```
 
-**iOS Strategy**: iOS SwiftUI views consume shared KMP ViewModels from `:presentation` modules, not Compose UI from `:ui` modules.
+**iOS Strategy**: iOS SwiftUI views consume shared KMP ViewModels from `:presentation` modules using Direct Integration pattern (private var ViewModel + @State for UI state). Alternative Wrapper pattern available for complex apps. See `.junie/guides/tech/ios_integration.md` for complete guide.
 
 ## Testing Stack (Mobile-First)
 
 ### ⚠️ MANDATORY: Test Enforcement
 
-**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+**NO CODE WITHOUT TESTS** - See `.junie/guides/tech/testing_strategy.md`
 
 Every production file requires a test file. This is not optional.
 
@@ -501,3 +501,68 @@ kotlin {
 - Lint/formatting: ktlint.
 - Static analysis: detekt.
 - Configure both via convention plugins in `build-logic` and run them in CI.
+
+---
+
+## 📚 Reference Implementations
+
+**Use these as concrete examples when implementing new features:**
+
+### Standard Feature Pattern: `pokemonlist`
+
+**Location**: `features/pokemonlist/`
+
+**What it demonstrates**:
+- ✅ Complete split-by-layer structure (api/data/presentation/ui/wiring)
+- ✅ Repository with `Either<RepoError, T>` error handling
+- ✅ DTO to domain mapping with property-based tests
+- ✅ ViewModel with immutable UI state
+- ✅ Pagination and infinite scroll implementation
+- ✅ Koin DI wiring with platform-specific source sets
+- ✅ Navigation 3 integration
+- ✅ iOS SwiftUI integration (Direct Integration pattern)
+- ✅ Comprehensive test coverage (18/18 passing)
+
+**Key files to reference**:
+- `features/pokemonlist/api/src/commonMain/.../PokemonListRepository.kt` — Interface pattern
+- `features/pokemonlist/data/src/commonMain/.../PokemonListRepositoryImpl.kt` — Impl + Factory
+- `features/pokemonlist/data/src/commonMain/.../PokemonMappers.kt` — DTO mapping
+- `features/pokemonlist/presentation/src/commonMain/.../PokemonListViewModel.kt` — ViewModel lifecycle
+- `features/pokemonlist/ui/src/commonMain/.../PokemonListScreen.kt` — Compose UI with @Preview
+- `features/pokemonlist/wiring/src/commonMain/kotlin/...Module.kt` — Koin wiring
+- `features/pokemonlist/data/src/androidUnitTest/.../PokemonListRepositoryTest.kt` — Repository tests
+- `iosApp/iosApp/Views/PokemonListView.swift` — iOS SwiftUI integration
+
+### Parametric ViewModel Pattern: `pokemondetail`
+
+**Location**: `features/pokemondetail/`
+
+**What it demonstrates**:
+- ✅ Parametric ViewModel (accepts `pokemonId` parameter)
+- ✅ Koin `parametersOf` usage in wiring
+- ✅ Navigation 3 with route parameters
+- ✅ Nested DTO structures with complex mapping
+- ✅ Navigation animations (slideInHorizontally + fadeIn)
+- ✅ Error state handling with retry logic
+- ✅ iOS SKIE Type rename handling for nested sealed interfaces
+- ✅ @Preview with multiple states (loading, content, error)
+
+**Key files to reference**:
+- `features/pokemondetail/api/src/commonMain/.../PokemonDetail.kt` — Route with parameter
+- `features/pokemondetail/presentation/src/commonMain/.../PokemonDetailViewModel.kt` — Parametric ViewModel
+- `features/pokemondetail/wiring/src/androidMain/.../PokemonDetailNavigationProvider.kt` — Navigation with animations
+- `features/pokemondetail/wiring/src/commonMain/kotlin/...Module.kt` — Koin with `parametersOf`
+- `features/pokemondetail/ui/src/commonMain/.../PokemonDetailScreen.kt` — Stateful UI with @Preview variations
+- `iosApp/iosApp/Views/PokemonDetailView.swift` — iOS parametric ViewModel usage
+
+### When to Use Which Pattern
+
+| Scenario | Use Pattern | Reference |
+|----------|-------------|-----------|
+| Simple list/feed screen | Standard Pattern | `pokemonlist` |
+| Detail screen with ID parameter | Parametric ViewModel | `pokemondetail` |
+| Master-detail navigation | Both patterns | `pokemonlist` → `pokemondetail` |
+| Pagination/infinite scroll | Standard Pattern | `pokemonlist` |
+| Complex nested data | Parametric Pattern | `pokemondetail` (nested DTOs) |
+| iOS SwiftUI integration | Direct Integration | Both features |
+| Navigation animations | Navigation 3 metadata | `pokemondetail` |

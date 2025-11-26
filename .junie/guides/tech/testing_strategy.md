@@ -6,8 +6,6 @@
 
 **NO CODE WITHOUT TESTS**
 
-See `.junie/test-enforcement-agent.md` for complete enforcement rules.
-
 ### Core Rule
 
 Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
@@ -303,13 +301,15 @@ AbstractTestTask (org.gradle.api.tasks.testing.AbstractTestTask)
 ./gradlew :features:pokemonlist:impl:testDebugUnitTest
 
 # Run common tests (utilities)
-./gradlew :features:pokemonlist:impl:allTests
+# Run all tests (if module has multiplatform test targets)
+./gradlew :features:pokemonlist:data:allTests
 
 # Run specific test class
-./gradlew :features:pokemonlist:impl:testDebugUnitTest --tests "PokemonListRepositoryTest"
+./gradlew :features:pokemonlist:data:testDebugUnitTest --tests "PokemonListRepositoryTest"
 
 # Verify test coverage
-./gradlew :features:pokemonlist:impl:testDebugUnitTest --info | grep "tests completed"
+# Run with info logging
+./gradlew :features:pokemonlist:data:testDebugUnitTest --info | grep "tests completed"
 
 # Record screenshots
 ./gradlew recordRoborazziDebug
@@ -738,7 +738,7 @@ Scope and CI
 - In CI, run `verifyRoborazziDebug` on PRs; allow updating baselines only behind an explicit flag (e.g., `-Proborazzi.test.record=true`).
 
 ## Running Tests (project guidelines)
-- Shared unit tests: run the most relevant module task, e.g. `./gradlew :features:<feature>:presentation:jvmTest` or `:features:<feature>:impl:allTests` as applicable.
+- Shared unit tests: run the most relevant module task, e.g. `./gradlew :features:<feature>:presentation:testDebugUnitTest` or `:features:<feature>:data:testDebugUnitTest` as applicable.
 - Android UI tests on device (if any under `:features:<feature>:presentation/src/androidTest`): `./gradlew :features:<feature>:presentation:connectedDebugAndroidTest`
 - Do not run iOS tests by default; only if explicitly required for an issue.
 
@@ -754,7 +754,7 @@ Note: For feature presentation modules, place UI tests under `:features:<feature
 
 ## Alignment with Architecture
 - Tests should reflect vertical-slice boundaries: unit-test feature `impl` against `api` contracts.
-- Use Metro DI sparingly in tests; prefer constructor injection and explicit fakes/mocks.
+- Use Koin DI sparingly in tests; prefer constructor injection and explicit fakes/mocks.
 
 ## JSON round‑trip tests (recommended)
 Purpose: Validate that JSON adapters are symmetric and stable over time.

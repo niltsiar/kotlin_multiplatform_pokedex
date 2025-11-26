@@ -7,7 +7,7 @@ Key decisions
 - Use Arrow `Either` at repository boundaries.
 - Wrap throwing code with `Either.catch { ... }` and map exceptions to a sealed error type.
 - Keep mapping between DTO/entity and domain close to repositories.
-- Prefer vertical-slice ownership: repositories live in feature `impl` modules and implement contracts declared in feature `api` modules when cross-feature usage is needed.
+- Prefer vertical-slice ownership: repositories live in feature `:data` modules and implement contracts declared in feature `:api` modules when cross-feature usage is needed.
 
 Interfaces, implementations, and factories
 - Implement interfaces with a private/internal class named `<InterfaceName>Impl` and expose a top-level factory function named exactly like the interface that returns the interface type. Wiring modules call the factory.
@@ -15,7 +15,7 @@ Interfaces, implementations, and factories
 ## Interfaces vs Concrete
 
 - Define repository interfaces in `:features:<feature>:api` when other features consume them or when you need substitution in tests at the module boundary.
-- Use concrete classes in `:features:<feature>:impl` for the actual implementation and keep them internal to the feature when possible.
+- Use concrete classes in `:features:<feature>:data` for the actual implementation and keep them internal to the feature when possible.
 
 ## Error Modeling with Arrow
 

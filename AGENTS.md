@@ -30,7 +30,7 @@ Currently in **early POC stage** with skeleton modules only.
 - **What's documented**: Comprehensive architecture in `.junie/guides/`
 - **Reference implementations**: 
   - Use `pokemonlist` for simple list patterns (pagination, infinite scroll)
-  - Use `pokemondetail` for parametric ViewModels, nested DTOs, Navigation 3 animations, iOS parametric wrappers
+  - Use `pokemondetail` for parametric ViewModels, nested DTOs, Navigation 3 animations, iOS Direct Integration pattern
 - **Your job**: Implement new features following established patterns, or extend existing modules
 
 **Platform UI Strategy**:
@@ -417,7 +417,7 @@ class SubmitOrderUseCase(
 
 ### ⚠️ TEST ENFORCEMENT: MANDATORY
 
-**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+**NO CODE WITHOUT TESTS** - See `.junie/guides/tech/testing_strategy.md`
 
 Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
 
@@ -895,7 +895,7 @@ let port = ConstantsKt.SERVER_PORT  // Accessed via shared.framework
 4. **Return `Result` or nullable** from repositories (use `Either<RepoError, T>`)
 5. **Swallow `CancellationException`** (use `Either.catch` which handles it)
 6. **Create empty pass-through** use cases (call repos directly)
-7. **Export `:impl` or `:wiring`** to iOS via `:shared` (only export `:api` and `:core:*` modules)
+7. **Export `:data`, `:ui`, or `:wiring`** to iOS via `:shared` (only export `:api`, `:presentation`, and `:core:*` modules)
 8. **Export `:composeApp`** to iOS via `:shared` (Note: Native SwiftUI iosApp doesn't use Compose UI, but iosAppCompose does)
 9. **Add DI annotations** to production classes (wire in wiring modules)
 10. **Put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
@@ -1300,8 +1300,8 @@ private fun ScreenVariation2Preview() { }
 
 #### 1. Architecture Compliance
 - [ ] **Vertical slices**: Features properly modularized (api/impl/wiring)
-- [ ] **Module visibility**: Only `api` modules exposed; `impl`/`wiring` internal
-- [ ] **iOS exports**: Only `:api` and `:core:*` in `:shared` umbrella (never `:impl` or `:wiring`)
+- [ ] **Module visibility**: Only `api` modules exposed; `data`, `presentation`, `ui`, and `wiring` internal
+- [ ] **iOS exports**: Only `:api`, `:presentation`, and `:core:*` in `:shared` umbrella (never `:data`, `:ui`, or `:wiring`)
 - [ ] **No cross-impl dependencies**: Features depend only on other features' `api` modules
 
 #### 2. Interface Pattern (CRITICAL - Always Validate)
@@ -1502,7 +1502,7 @@ After implementing code, provide:
 | `init { loadData() }` | `fun start(lifecycle: Lifecycle) { ... }` |
 | `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` |
 | Empty use case | Call repository directly from ViewModel |
-| `:impl` exported to iOS | Only `:api` and `:core:*` in `:shared` |
+| `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, and `:core:*` in `:shared` |
 | @Composable without @Preview | Add `@Preview` with realistic data |
 | SwiftUI View without #Preview | Add `#Preview` with realistic data |
 | Manual cast after `shouldBeInstanceOf` | Use smart cast directly (see kotest_smart_casting_quick_ref.md) |

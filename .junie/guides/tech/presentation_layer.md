@@ -252,6 +252,9 @@ internal fun pokemonDetailNavigationProvider(
 
 #### iOS Integration
 
+> **Current Pattern**: Direct Integration (see `.junie/guides/tech/ios_integration.md` for complete guide)
+> **Alternative**: Wrapper Pattern available for complex apps with state preservation needs
+
 **Kotlin helper function** (`shared/src/iosMain/kotlin/KoinIos.kt`):
 ```kotlin
 fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel {
@@ -259,44 +262,32 @@ fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel {
 }
 ```
 
-**Swift wrapper** (`iosApp/ViewModels/PokemonDetailViewModelWrapper.swift`):
-```swift
-@MainActor
-class PokemonDetailViewModelWrapper: ObservableObject {
-    @Published var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
-    
-    private let viewModel: PokemonDetailViewModel
-    
-    init(pokemonId: Int) {
-        // Cast Swift Int to Kotlin Int32
-        self.viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
-    }
-    
-    func observeState() async {
-        for await state in viewModel.uiState {
-            self.uiState = state
-        }
-    }
-    
-    func retry() {
-        viewModel.retry()
-    }
-}
-```
-
-**SwiftUI view** (`iosApp/Views/PokemonDetailView.swift`):
+**SwiftUI view - Direct Integration** (`iosApp/Views/PokemonDetailView.swift`):
 ```swift
 struct PokemonDetailView: View {
     let pokemonId: Int
-    @StateObject private var wrapper: PokemonDetailViewModelWrapper
+    private var viewModel: PokemonDetailViewModel
+    @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
     
     init(pokemonId: Int) {
         self.pokemonId = pokemonId
-        _wrapper = StateObject(wrappedValue: PokemonDetailViewModelWrapper(pokemonId: pokemonId))
+        // Get ViewModel directly from Koin with parameter
+        viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
     }
     
     var body: some View {
-        switch wrapper.uiState {
+        content
+            .task {
+                // Observe StateFlow via SKIE AsyncSequence
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        switch uiState {
         case is PokemonDetailUiStateLoading:
             ProgressView("Loading...")
         case let content as PokemonDetailUiStateContent:
@@ -331,16 +322,17 @@ struct PokemonDetailView: View {
 2. Provide `retry()` method for error recovery
 3. Use `parametersOf` in Koin for type-safe injection
 4. Extract parameters from route objects in navigation
-5. Cast Swift `Int` to Kotlin `Int32` in iOS wrappers
-6. Use `StateObject(wrappedValue:)` in SwiftUI init
+5. Cast Swift `Int` to Kotlin `Int32` in iOS views
+6. iOS: Direct Integration (private var + @State) for simple apps, Wrapper pattern for complex apps
 
 **See Working Examples**:
 - `features/pokemondetail/presentation/PokemonDetailViewModel.kt`
 - `features/pokemondetail/wiring/src/commonMain/.../PokemonDetailModule.kt`
 - `features/pokemondetail/wiring/src/androidMain/.../PokemonDetailNavigationProviders.kt`
 - `shared/src/iosMain/kotlin/KoinIos.kt` (iOS helper)
-- `iosApp/ViewModels/PokemonDetailViewModelWrapper.swift`
-- `iosApp/Views/PokemonDetailView.swift`
+- `iosApp/Views/PokemonDetailView.swift` (iOS Direct Integration)
+
+**iOS Integration**: See `.junie/guides/tech/ios_integration.md` for complete patterns
 
 ---
 
