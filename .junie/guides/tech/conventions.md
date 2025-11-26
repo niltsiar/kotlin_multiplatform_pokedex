@@ -53,7 +53,7 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 
 :features:pokemonlist:wiring/
   ├── src/commonMain/kotlin/
-  │   └── PokemonListModule.kt          (Provides repos, ViewModels - Metro DI)
+  │   └── PokemonListModule.kt          (Koin module: repos, ViewModels)
   ├── src/androidMain/kotlin/           (Android-specific UI wiring)
   └── src/jvmMain/kotlin/               (JVM Desktop-specific UI wiring)
 ```
@@ -128,14 +128,18 @@ fun createHttpClient(): HttpClient = HttpClient {
 }
 
 // :features:pokemonlist:wiring
-@Provides
-fun providePokemonListApiService(httpClient: HttpClient): PokemonListApiService =
-    PokemonListApiService(httpClient)
+val pokemonListModule = module {
+    factory<PokemonListApiService> {
+        PokemonListApiService(httpClient = get())
+    }
+}
 
 // :features:pokemondetail:wiring
-@Provides  
-fun providePokemonDetailApiService(httpClient: HttpClient): PokemonDetailApiService =
-    PokemonDetailApiService(httpClient)
+val pokemonDetailModule = module {
+    factory<PokemonDetailApiService> {
+        PokemonDetailApiService(httpClient = get())
+    }
+}
 ```
 
 ### Benefits of True Vertical Slicing
@@ -177,16 +181,20 @@ internal class JobRepositoryImpl(
 // Public factory (same module as Impl or in api if you want discoverability)
 fun JobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepositoryImpl(api, cache)
 
-// :features:jobs:wiring/... calls the factory
-@Provides fun provideJobRepository(api: JobApiService, cache: JobCache): JobRepository = JobRepository(api, cache)
+// :features:jobs:wiring/... calls the factory in Koin module
+val jobsModule = module {
+    factory<JobRepository> {
+        JobRepository(api = get(), cache = get())
+    }
+}
 ```
 
-## Dependency Injection (Metro)
-- Use Metro for DI across all platforms.
-- Keep production classes free of DI annotations. Prefer wiring modules with `@Provides` functions that return interface types.
-- Root graph: define an `AppGraph` with `@DependencyGraph` in commonMain and a marker scope `AppScope`.
-- Use wiring/aggregation modules to bind implementations of `api` contracts into the graph (multibinding supported).
-- Graph extensions: use `@ContributesGraphExtension` for contextual/lifecycle scopes (e.g., logged-in).
+## Dependency Injection (Koin)
+- Use Koin 4.0.1 for DI across all platforms.
+- Keep production classes free of DI annotations. Use Koin's `module { }` DSL in wiring modules.
+- Root configuration: `AppGraph.create()` function returns list of Koin modules.
+- Use wiring/aggregation modules to define Koin modules for feature dependencies.
+- Platform-specific modules in source sets (androidMain/jvmMain) for UI dependencies.
 
 ### Wiring modules and Gradle Compilation Avoidance
 - Wiring modules are created specifically to improve build speed by leveraging Gradle's Compilation Avoidance. See:
@@ -258,32 +266,33 @@ kotlin {
   - `:features:<feature>:presentation` → ViewModels, UI state (shared ViewModels across platforms)
   - `:core:*` modules → Shared utilities, domain types
 
-### Metro DI Contribution Pattern
+### Koin DI Module Pattern
 
-Feature wiring modules contribute bindings using `@ContributesTo`:
+Feature wiring modules define Koin modules:
 
 ```kotlin
-@BindingContainer
-@ContributesTo(AppScope::class)
-interface FeatureProviders {
-    companion object {
-        @Provides
-        fun provideRepository(...): Repository = createRepository(...)
-        
-        @Provides
-        fun provideViewModel(...): ViewModel = ViewModel(...)
+val featureModule = module {
+    // Repositories
+    factory<Repository> {
+        Repository(api = get())
+    }
+    
+    // ViewModels
+    factory<ViewModel> {
+        ViewModel(repository = get())
     }
 }
 ```
 
 **Requirements**:
-- Use Metro's built-in `dev.zacsweers.metro.AppScope`
-- `@BindingContainer` + `@ContributesTo(AppScope::class)` pattern
-- `@Provides` functions in `companion object`
-- Wiring module added as `api` dependency to `core:di`
+- Define modules as `val moduleName = module { }`
+- Use `factory<Interface>` for stateless services and ViewModels
+- Use `single<Type>` for shared resources (HttpClient, Navigator)
+- Call factory functions, not constructors (Impl + Factory pattern)
+- Platform-specific navigation in `androidMain`/`jvmMain` source sets
 - **Wiring MUST NOT depend on `core:di`** (circular dependency)
 
-**See**: [metro_di_quick_ref.md](../tech/metro_di_quick_ref.md) for complete patterns
+**See**: [koin_di_quick_ref.md](../tech/koin_di_quick_ref.md) for complete patterns
 
 - **NEVER export to iOS**:
   - `:features:<feature>:data` → Internal data layer
@@ -423,7 +432,7 @@ kotlin {
 ## Aggregation/Wiring Modules
 - Use wiring modules alongside feature `api` and implementation modules to assemble dependencies and registries without leaking implementation details.
 - Naming: `:features:<feature>:wiring` (feature-local) or `:wiring:<area>` (cross-feature).
-- Responsibilities: provide `@Provides` bindings, aggregate multibindings (e.g., `Set<FeatureEntry>`), and keep the app module thin.
+- Responsibilities: define Koin modules for feature dependencies, aggregate navigation entries, and keep the app module thin.
 
 ## Gradle Convention Plugins
 - Standardize build configuration using Convention Plugins in a `build-logic` module.

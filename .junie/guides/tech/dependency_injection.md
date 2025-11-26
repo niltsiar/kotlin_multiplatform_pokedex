@@ -1,174 +1,230 @@
 # Dependency Injection Guidelines
 
-Purpose: Establish consistent DI patterns using Metro for Kotlin Multiplatform with compile-time graph validation and vertical-slice feature modules.
+Purpose: Establish consistent DI patterns using Koin for Kotlin Multiplatform with runtime injection, type-safe DSL, and vertical-slice feature modules.
 
 References
-- Metro docs and API: [zacsweers.github.io/metro](https://zacsweers.github.io/metro) (compile-time DI using K2 compiler plugin, NOT KSP, multiplatform)
-- Examples in this guide are adapted from Metro reference docs such as dependency-graphs and aggregation pages.
+- Koin docs: [insert-koin.io](https://insert-koin.io) (runtime DI with type-safe DSL, multiplatform)
+- Koin KMP: [insert-koin.io/docs/reference/koin-mp](https://insert-koin.io/docs/reference/koin-mp/kmp/) (multiplatform support)
 
 ## Framework Choice
-- We use Metro across all platforms. It’s Kotlin Multiplatform-ready and performs full binding graph validation at compile time.
-- Keep production classes free of DI annotations where possible. Prefer explicit `@Provides` functions in DI/wiring modules to assemble dependencies.
-- Use Metro’s scopes, graph factories, and contribution annotations to wire feature modules cleanly.
+- We use Koin 4.0.1 across all platforms (Android, JVM Desktop, iOS). It's Kotlin Multiplatform-ready with a clean DSL for defining modules.
+- Keep production classes free of DI annotations. Use Koin's `module {}` DSL in separate wiring modules to assemble dependencies.
+- Use Koin's scopes and module system to wire feature modules cleanly.
 
-## Architecture: Vertical Slices with api/impl
+## Architecture: Vertical Slices with api/data/presentation/ui/wiring
 - Each feature lives in its own set of modules using the pattern:
-  - :features:<feature-name>:api — public contracts (interfaces, models that need to be shared), navigation contracts, and DI entry points to be consumed by other features.
-  - :features:<feature-name>:impl — private implementations, internal mappers, data sources, and DI contributions using Metro annotations.
-- Only the `api` modules are visible to other features; `impl` remains private. `impl` contributes bindings to the application graph.
+  - `:features:<feature>:api` — public contracts (interfaces, models), navigation contracts
+  - `:features:<feature>:data` — network layer, data layer (API services, DTOs, repositories, mappers)
+  - `:features:<feature>:presentation` — ViewModels and UI state (shared with iOS)
+  - `:features:<feature>:ui` — Compose UI screens (Android + JVM only, NOT exported to iOS)
+  - `:features:<feature>:wiring` — Koin module definitions for the feature
+- Only `api` modules are visible to other features; all other modules remain internal
 
 ## Location and Structure
-- DI code that declares the app/root graph lives in the app composition module’s `src/commonMain/.../di`.
-- Feature-specific DI contributions live in each feature’s `wiring` module under `:features:<feature>:wiring/src/commonMain/.../di` (providers/aggregators), while implementations remain in `:features:<feature>:impl`.
-- Platform-specific DI (if needed) is placed in platform source sets. Prefer commonMain where possible.
+- App-wide DI configuration lives in `:core:di/src/commonMain/.../AppGraph.kt`
+- Feature-specific Koin modules live in `:features:<feature>:wiring/src/commonMain/...`
+- Platform-specific DI (navigation, UI) uses platform source sets (`androidMain`, `jvmMain`)
+- iOS uses only `commonMain` (no UI dependencies)
 
-## Defining the App Graph
-
-```kotlin
-// Import Metro's built-in AppScope (abstract class from Metro runtime)
-import dev.zacsweers.metro.AppScope
-
-// Root graph defines app-wide dependencies
-@DependencyGraph(AppScope::class)  // Explicit scope parameter REQUIRED
-interface AppGraph {
-  val loggerSet: Set<Logger> // example multibinding
-
-  @DependencyGraph.Factory
-  fun interface Factory {
-    // Factory can accept runtime inputs using @Provides
-    fun create(@Provides baseUrl: String): AppGraph
-  }
-}
-```
-
-Notes
-- Use `@DependencyGraph` for the root. Metro generates an `$$MetroGraph` implementation.
-- Use a `Factory` to pass runtime parameters (e.g., base URL, configs) using `@Provides`.
-
-## Providing and Binding Dependencies (no annotations on classes)
+## Defining App Modules
 
 ```kotlin
-// Prefer explicit provider functions in a wiring/DI module.
-// Classes remain DI-agnostic (no @Inject on constructors).
+// core/di/src/commonMain/.../AppGraph.kt
+import org.koin.core.module.Module
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+import com.minddistrict.multiplatformpoc.core.navigation.Navigator
+import com.minddistrict.multiplatformpoc.features.pokemonlist.api.PokemonList
 
-// Example provider for a client
-@Provides
-fun provideHttpClient(json: Json, engine: HttpClientEngine): HttpClient = buildHttpClient(json, engine)
-
-// Impl + Factory: bind interface to implementation by calling a public factory function
-@Provides
-fun provideUserRepository(
-```
-
-## Contributing Bindings from Feature Modules
-
-Feature modules contribute bindings to the central AppGraph using `@ContributesTo`:
-
-```kotlin
-// features/pokemonlist/wiring/src/commonMain/.../PokemonListModule.kt
-package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring
-
-import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.BindingContainer
-import dev.zacsweers.metro.ContributesTo
-import dev.zacsweers.metro.Provides
-import dev.zacsweers.metro.SingleIn
-import io.ktor.client.HttpClient
-
-@BindingContainer
-@ContributesTo(AppScope::class)  // Contributes to AppGraph
-interface PokemonListProviders {
-    companion object {
-        @Provides
-        @SingleIn(AppScope::class)
-        fun provideHttpClient(): HttpClient = createHttpClient()
-        
-        @Provides
-        fun providePokemonListRepository(
-            apiService: PokemonListApiService
-        ): PokemonListRepository {
-            // Call factory function (Impl + Factory pattern)
-            return createPokemonListRepository(apiService)
+object AppGraph {
+    /**
+     * Creates the complete list of Koin modules for the application.
+     * 
+     * @param baseUrl Base URL for API services (runtime parameter)
+     * @param featureModules List of feature-specific Koin modules
+     * @return Complete list of modules to initialize Koin
+     */
+    fun create(baseUrl: String, featureModules: List<Module>): List<Module> {
+        val coreModule = module {
+            // Provide Navigator singleton with start destination
+            single { Navigator(startDestination = PokemonList) }
+            
+            // Provide runtime base URL as named dependency
+            single(qualifier = named("baseUrl")) { baseUrl }
         }
         
-        @Provides
-        fun providePokemonListViewModel(
-            repository: PokemonListRepository
-        ): PokemonListViewModel = PokemonListViewModel(repository)
+        return listOf(coreModule) + featureModules
     }
 }
 ```
 
 **Key Points**:
-- Use `@BindingContainer` + `@ContributesTo(AppScope::class)` to make bindings discoverable
-- Put `@Provides` functions in `companion object` (Metro requirement)
-- Use `@SingleIn(AppScope::class)` for singletons
-- Call factory functions, not constructors
-- Wiring module MUST be added as `api` dependency to `core:di` for Metro discovery
-- **Critical**: Wiring modules MUST NOT depend on `core:di` (would create circular dependency)
+- `AppGraph` is a simple object with a `create()` function returning a list of Koin modules
+- Runtime parameters (like `baseUrl`) are provided as named dependencies: `single(qualifier = named("key")) { value }`
+- Feature modules are passed in and aggregated with core modules
+- No code generation required - plain Kotlin code
+
+## Providing and Binding Dependencies (no annotations on classes)
+
+Use Koin's DSL in wiring modules. Classes remain DI-agnostic (no annotations).
+
+```kotlin
+// Example: Providing dependencies in a wiring module
+val featureModule = module {
+    // Singleton: Same instance shared across app
+    single<HttpClient> {
+        createHttpClient()
+    }
+    
+    // Factory: New instance each time
+    factory<ApiService> {
+        ApiService(client = get(), baseUrl = get(named("baseUrl")))
+    }
+    
+    // Impl + Factory pattern: Call factory function
+    factory<UserRepository> {
+        UserRepository(
+            api = get()
+        )
+    }
+    
+    // ViewModel with dependencies
+    factory<ProfileViewModel> {
+        ProfileViewModel(
+            repository = get()
+        )
+    }
+}
+```
+
+**Koin DSL Basics**:
+- `single { }` - Singleton (one instance shared)
+- `factory { }` - New instance on each request
+- `get()` - Resolve dependency
+- `get(named("key"))` - Resolve named dependency
+- `get<Type>()` - Resolve by explicit type
+
+## Contributing Bindings from Feature Modules
+
+Feature modules define Koin modules in their wiring layer:
+
+```kotlin
+// features/pokemonlist/wiring/src/commonMain/.../PokemonListModule.kt
+package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring
+
+import io.ktor.client.HttpClient
+import org.koin.core.module.Module
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+import com.minddistrict.multiplatformpoc.features.pokemonlist.api.PokemonListRepository
+import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListApiService
+import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListRepository
+import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+
+val pokemonListModule: Module = module {
+    // HttpClient singleton for this feature
+    single<HttpClient> {
+        createHttpClient()
+    }
+    
+    // API service factory
+    factory<PokemonListApiService> {
+        PokemonListApiService(
+            client = get(),
+            baseUrl = get(named("baseUrl"))
+        )
+    }
+    
+    // Repository factory (calls factory function - Impl + Factory pattern)
+    factory<PokemonListRepository> {
+        PokemonListRepository(
+            apiService = get()
+        )
+    }
+    
+    // ViewModel factory
+    factory<PokemonListViewModel> {
+        PokemonListViewModel(
+            repository = get()
+        )
+    }
+}
+```
+
+**Key Points**:
+- Define module as `val moduleName: Module = module { }`
+- Use `factory<Interface>` for repositories and ViewModels (new instance per request)
+- Use `single<Type>` for shared resources (HttpClient, Navigator)
+- Call factory functions, not constructors (Impl + Factory pattern)
+- **Critical**: No circular dependencies - wiring modules MUST NOT depend on `:core:di`
 
 **See**: Working example in `features/pokemonlist/wiring/src/commonMain/kotlin/.../PokemonListModule.kt`
-```
-
-Multibinding (sets/maps)
-```kotlin
-// If you want to avoid class annotations, provide sets directly
-@Provides
-fun provideLoggers(
-  console: ConsoleLogger,
-  crash: CrashLogger,
-): Set<Logger> = setOf(console, crash)
-
-// Or if convenient, you may still use Metro multibinding annotations in wiring modules only,
-// keeping production classes clean.
-```
 
 ## Feature Modules and DI
 
-In :features:<name>:api
-- Expose only the contracts needed cross-feature (e.g., `UserRepository`, navigation contracts, and any domain/use case interfaces that other features must call). Avoid leaking implementation details.
+### In `:features:<name>:api`
+- Expose only contracts needed cross-feature (e.g., `UserRepository`, navigation routes, domain interfaces)
+- Avoid leaking implementation details
 
-In :features:<name>:data
-- Implement repository contracts, API services, DTOs, mappers. Keep classes DI-agnostic. Implementations should be private/internal and named `<InterfaceName>Impl`.
+### In `:features:<name>:data`
+- Implement network layer: API services, DTOs, HTTP clients
+- Implement data layer: repository contracts, mappers
+- Keep classes DI-agnostic
+- Implementations should be private/internal and named `<InterfaceName>Impl`
 
-In :features:<name>:presentation
-- Implement ViewModels and UI state. **Shared across all platforms** (Android, Desktop, iOS). ViewModels extend `androidx.lifecycle.ViewModel` (KMP). Keep DI-agnostic.
+### In `:features:<name>:presentation`
+- Implement ViewModels and UI state
+- **Shared across all platforms** (Android, Desktop, iOS)
+- ViewModels extend `androidx.lifecycle.ViewModel` (KMP)
+- Keep DI-agnostic
 
-In :features:<name>:ui
-- Implement Compose UI screens (@Composable functions). **Android + JVM only** (no iOS targets). Keep DI-agnostic.
+### In `:features:<name>:ui`
+- Implement Compose UI screens (@Composable functions)
+- **Android + JVM only** (no iOS targets)
+- Keep DI-agnostic
 
-In :features:<name>:wiring
-- Provide bindings via `@Provides` that return the interface type by invoking the top‑level factory function named after the interface (Impl + Factory pattern).
+### In `:features:<name>:wiring`
+- Define Koin modules that bind implementations to interfaces
 - Use **platform-specific source sets** for UI dependencies:
   - `commonMain` → Provides repositories, ViewModels (all platforms)
   - `androidMain`/`jvmMain` → Provides UI entry points, navigation (Android/JVM only)
   - iOS targets use only `commonMain` (no UI dependencies)
-- Provide feature-scoped factories when needed using Metro graph extensions.
 
 ```kotlin
 // features/profile/api/src/commonMain/.../ProfileRepository.kt
-interface ProfileRepository { suspend fun load(): Either<RepoError, Profile> }
+interface ProfileRepository { 
+    suspend fun load(): Either<RepoError, Profile> 
+}
 
 // features/profile/data/src/commonMain/.../ProfileRepositoryImpl.kt
 internal class ProfileRepositoryImpl(
-  private val api: ProfileApiService
+    private val api: ProfileApiService
 ) : ProfileRepository
 
 // features/profile/data/src/commonMain/.../ProfileRepositoryFactory.kt
-fun ProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepositoryImpl(api)
+fun ProfileRepository(api: ProfileApiService): ProfileRepository = 
+    ProfileRepositoryImpl(api)
 
-// features/profile/wiring/src/commonMain/.../ProfileWiring.kt
-@Provides
-fun provideProfileRepository(api: ProfileApiService): ProfileRepository = ProfileRepository(api) // calls factory
+// features/profile/wiring/src/commonMain/.../ProfileModule.kt
+val profileModule = module {
+    factory<ProfileRepository> {
+        ProfileRepository(api = get())  // Calls factory function
+    }
+    
+    factory<ProfileViewModel> {
+        ProfileViewModel(repository = get())
+    }
+}
 ```
 
 ### Wiring/Aggregation Modules
-- We use wiring modules to assemble and aggregate dependencies for a feature or a group of features, keeping implementation classes free of DI annotations and private to their modules.
-- Naming: `:features:<feature>:wiring` (feature-local) or `:wiring:<area>` (cross-feature aggregation).
+- Wiring modules assemble and aggregate dependencies for a feature
+- Keep implementation classes free of DI annotations and private to their modules
+- Naming: `:features:<feature>:wiring` (feature-local)
 - Responsibilities:
-  - Provide `@Provides` functions that wire implementations to interfaces
-  - Aggregate multibindings (e.g., sets of `FeatureEntry` for navigation)
-  - Optionally expose graph extensions/factories for contextual scopes
+  - Define Koin modules that wire implementations to interfaces
+  - Aggregate multibindings (e.g., sets of navigation entries)
+  - Provide feature-scoped dependencies
 
 ### Platform-Specific Source Sets in Wiring Modules
 
@@ -183,12 +239,14 @@ kotlin {
             implementation(projects.features.profile.api)
             implementation(projects.features.profile.data)
             implementation(projects.features.profile.presentation)
+            implementation(libs.koin.core)
         }
         
         // Android: UI dependencies
         val androidMain by getting {
             dependencies {
                 implementation(projects.features.profile.ui)
+                implementation(libs.koin.compose)
             }
         }
         
@@ -196,6 +254,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(projects.features.profile.ui)
+                implementation(libs.koin.compose)
             }
         }
         
@@ -206,120 +265,196 @@ kotlin {
 ```
 
 **Why this works**:
-- Metro DI is multiplatform-compatible
+- Koin is multiplatform-compatible
 - Wiring modules can be consumed by iOS via `:shared` export
 - iOS targets only compile `commonMain` dependencies (repos + ViewModels)
 - Android/JVM targets compile `commonMain` + platform-specific (repos + ViewModels + UI)
 
-## Graph Extensions for Subgraphs
-Use graph extensions for lifecycle or contextual scopes (e.g., logged-in user):
+## Platform-Specific Navigation Modules
+
+For UI navigation (Android/Desktop only), use platform-specific source sets:
 
 ```kotlin
-@ContributesGraphExtension(LoggedInScope::class)
-interface LoggedInGraph {
-  val sessionUser: SessionUser
+// features/pokemonlist/wiring/src/androidMain/.../PokemonListNavigationProviders.kt
+package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring
 
-  @ContributesGraphExtension.Factory(AppScope::class)
-  interface Factory {
-    fun createLoggedInGraph(@Provides userId: String): LoggedInGraph
-  }
-}
-```
-
-## Initialization
-- Construct the app graph at startup via the generated factory. Provide runtime parameters via `@Provides` args.
-
-```kotlin
-// Metro generates createGraphFactory() extension function
-import dev.zacsweers.metro.createGraphFactory
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import org.koin.compose.koinInject
+import org.koin.core.module.Module
+import org.koin.dsl.module
+import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.features.pokemonlist.api.PokemonList
+import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.PokemonListScreen
 
-@Composable
-fun App() {
-    val graph: AppGraph = remember {
-        createGraphFactory<AppGraph.Factory>().create(
-            baseUrl = "https://pokeapi.co/api/v2"
+val pokemonListNavigationModule: Module = module {
+    single<Set<EntryProviderInstaller>> {
+        setOf(
+            {
+                entry<PokemonList> {
+                    PokemonListScreen(
+                        viewModel = koinInject(),
+                        onPokemonClick = koinInject<Navigator>().goTo(PokemonDetail(it.id))
+                    )
+                }
+            }
         )
     }
-    
-    val viewModel = graph.pokemonListViewModel
-    // Use viewModel in UI...
 }
 ```
 
 **Key Points**:
-- `createGraphFactory<AppGraph.Factory>()` - Type-safe factory creation
-- `.create(...)` - Pass runtime parameters marked with `@Provides`
-- `remember { }` - Cache graph instance in Compose to avoid recreation
-- Access dependencies via graph properties
+- Navigation modules live in `androidMain`/`jvmMain` (platform-specific)
+- Provide `Set<EntryProviderInstaller>` for navigation system
+- Use `koinInject<T>()` to resolve dependencies in composable context
+- Each feature provides its own navigation module
+
+**See**: Working examples in `features/pokemonlist/wiring/src/androidMain/.../PokemonListNavigationProviders.kt`
+
+## Initialization
+
+Initialize Koin at app startup using `KoinApplication`:
+
+```kotlin
+// composeApp/src/commonMain/.../App.kt
+import androidx.compose.runtime.Composable
+import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
+import com.minddistrict.multiplatformpoc.core.di.AppGraph
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListNavigationModule
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailNavigationModule
+
+@Composable
+fun App() {
+    KoinApplication(
+        application = {
+            modules(
+                AppGraph.create(
+                    baseUrl = "https://pokeapi.co/api/v2",
+                    featureModules = listOf(
+                        pokemonListModule,
+                        pokemonListNavigationModule,
+                        pokemonDetailNavigationModule
+                    )
+                )
+            )
+        }
+    ) {
+        // Access dependencies using koinInject()
+        val navigator: Navigator = koinInject()
+        val entryProviderInstallers: Set<EntryProviderInstaller> = koinInject()
+        
+        // Use in UI
+        NavDisplay(
+            backStack = navigator.backStack,
+            onBack = { navigator.goBack() },
+            entryProvider = entryProvider {
+                entryProviderInstallers.forEach { this.it() }
+            }
+        )
+    }
+}
+```
+
+**Key Points**:
+- `KoinApplication { }` - Initialize Koin with modules
+- `modules(...)` - Pass list of Koin modules
+- `koinInject<T>()` - Resolve dependencies in composable context
+- Runtime parameters passed via `AppGraph.create()`
+- No code generation, pure Kotlin
 
 **See**: Working example in `composeApp/src/commonMain/kotlin/.../App.kt`
 
-### Dual Metro Plugin Requirement
+## Dependency Resolution Patterns
 
-Metro plugin must be applied to **both** graph definition and consumption modules:
-
-**1. Graph Definition Module** (`core:di`):
+### In Composables (koinInject)
 ```kotlin
-plugins {
-    alias(libs.plugins.metro)  // Generates $$MetroGraph implementation
+@Composable
+fun ProfileScreen() {
+    val viewModel: ProfileViewModel = koinInject()
+    val navigator: Navigator = koinInject()
+    
+    // Use dependencies...
+}
+```
+
+### In ViewModels (constructor injection)
+```kotlin
+class ProfileViewModel(
+    private val repository: ProfileRepository,
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob())
+) : ViewModel(viewModelScope) {
+    // ViewModel implementation
 }
 
-kotlin {
-    sourceSets {
-        commonMain.dependencies {
-            // Wiring modules as api for Metro discovery
-            api(projects.features.pokemonlist.wiring)
-        }
+// Koin module
+val module = module {
+    factory<ProfileViewModel> {
+        ProfileViewModel(repository = get())
     }
 }
 ```
 
-**2. Consumption Module** (`composeApp`):
+### Named Dependencies
 ```kotlin
-plugins {
-    alias(libs.plugins.metro)  // Provides createGraphFactory() extension
-}
+// Define named dependency
+single(qualifier = named("apiKey")) { "secret-key" }
 
-kotlin {
-    sourceSets {
-        commonMain.dependencies {
-            implementation(projects.core.di)
-        }
-    }
+// Resolve named dependency
+factory<ApiService> {
+    ApiService(apiKey = get(named("apiKey")))
 }
 ```
-
-**Why Both?**
-- `core:di`: Processes `@DependencyGraph` and discovers `@ContributesTo` annotations
-- `composeApp`: Generates `createGraphFactory<T>()` extension function for graph instantiation
-
-**Reference**: See `core/di/build.gradle.kts` and `composeApp/build.gradle.kts`
 
 ## Platform-Specific Dependencies
-- Use expect/actual when you must bind platform-specific services. Contribute the actuals in platform source sets and expose their contracts in commonMain.
+- Use expect/actual when you must bind platform-specific services
+- Contribute the actuals in platform source sets and expose their contracts in commonMain
+
+```kotlin
+// commonMain
+expect fun platformHttpClient(): HttpClient
+
+val module = module {
+    single { platformHttpClient() }
+}
+
+// androidMain
+actual fun platformHttpClient(): HttpClient = HttpClient(OkHttp)
+
+// iosMain
+actual fun platformHttpClient(): HttpClient = HttpClient(Darwin)
+```
 
 ## Best Practices
-- Keep DI setup in commonMain where feasible; isolate platform specifics.
-- Prefer small graphs and wiring modules over large monoliths.
-- Use scoping as needed for repositories, network clients, and stateful services; use unscoped/`factory`-like patterns for ephemeral objects.
-- Validate module visibility: only `api` modules are visible to other features; `impl` and `wiring` should not be exported.
+- Keep DI setup in commonMain where feasible; isolate platform specifics to source sets
+- Use `single` for shared resources (HttpClient, Navigator, repositories with caching)
+- Use `factory` for stateless services and ViewModels (new instance per request)
+- Validate module visibility: only `api` modules are visible to other features
+- Keep wiring modules simple - just module definitions, no business logic
+- Use named qualifiers for multiple instances of same type
+- Avoid circular dependencies between modules
 
-### Build performance: Compilation Avoidance
-- Wiring modules exist to improve build speed by leveraging Gradle Compilation Avoidance. App modules depend on wiring; wiring depends on `api` + `impl`; other features depend only on `api`. See Gradle’s write‑up: https://blog.gradle.org/our-approach-to-faster-compilation and the Aggregation Module pattern: https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611
+### Build Performance: Compilation Avoidance
+- Wiring modules improve build speed by leveraging Gradle Compilation Avoidance
+- App modules depend on wiring; wiring depends on `api` + `data` + `presentation`
+- Other features depend only on `api`
+- See: [Pragmatic Modularization](https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611)
 
 ## iOS Umbrella (shared module)
-- The `shared` module is an umbrella framework for the iOS app. It exports all required feature `api` modules and `presentation` modules (ViewModels) while keeping data layer and UI implementations internal.
-- Ensure Gradle `export` entries include:
-  - `:features:<feature>:api` modules (repository interfaces, domain models, navigation)
-  - `:features:<feature>:presentation` modules (ViewModels, UI state - shared with iOS)
-  - `:core:*` modules (shared utilities, domain types)
-- **Do NOT export**:
-  - `:features:<feature>:data` modules (internal data layer)
-  - `:features:<feature>:ui` modules (Compose UI - Android/JVM only)
-  - `:features:<feature>:wiring` modules (though iOS can consume via commonMain)
-  - `:composeApp` (Compose application)
+- The `:shared` module is an umbrella framework for the iOS app
+- It exports all required feature `api` modules and `presentation` modules (ViewModels)
+- Keeps data layer and UI implementations internal
+
+Ensure Gradle `export` entries include:
+- `:features:<feature>:api` modules (repository interfaces, domain models, navigation)
+- `:features:<feature>:presentation` modules (ViewModels, UI state - shared with iOS)
+- `:core:*` modules (shared utilities, domain types)
+
+**Do NOT export**:
+- `:features:<feature>:data` modules (internal data layer)
+- `:features:<feature>:ui` modules (Compose UI - Android/JVM only)
+- `:features:<feature>:wiring` modules (can be exported if needed for iOS Koin setup)
+- `:composeApp` (Compose application)
 
 **Example:**
 ```kotlin
@@ -345,84 +480,130 @@ sourceSets {
 
 ### Common Errors and Solutions
 
-#### 1. "Unresolved reference: createGraphFactory"
-**Cause**: Metro plugin not applied to consumption module
+#### 1. "No definition found for type 'X'"
+**Cause**: Dependency not defined in any Koin module
 
-**Fix**: Add Metro plugin to module using `createGraphFactory()`
+**Fix**: Add definition to appropriate module
 ```kotlin
-plugins {
-    alias(libs.plugins.metro)
+val module = module {
+    factory<MyService> { MyServiceImpl() }
 }
 ```
 
-#### 2. "@DependencyGraph requires a scope parameter"
-**Cause**: Missing explicit scope in @DependencyGraph annotation
+#### 2. "Cyclic dependency detected"
+**Cause**: Two dependencies depend on each other
 
-**Fix**: Add scope parameter
+**Fix**: Refactor to break cycle, use lazy injection, or rethink architecture
 ```kotlin
-@DependencyGraph(AppScope::class)  // Explicit scope required
-interface AppGraph { ... }
+// Before: A → B, B → A (cyclic)
+// After: A → B, B → C, A → C (no cycle)
 ```
 
-#### 3. "Circular dependency detected"
-**Symptom**: Build fails with circular dependency involving `core:di` and wiring modules
+#### 3. "Cannot resolve parameter 'baseUrl' in XApiService"
+**Cause**: Named dependency not provided
 
-**Cause**: Wiring module depends on `core:di` (usually for custom scope marker)
-
-**Fix**: 
-- Use Metro's built-in `dev.zacsweers.metro.AppScope` instead of custom scope
-- Remove any `implementation(project(":core:di"))` from wiring modules
-- Verify convention plugin doesn't add `core:di` dependency
-
-**Correct Architecture**:
-```
-core:di → (api) → wiring modules
-wiring ✗ core:di  // MUST NOT depend back
-```
-
-#### 4. "No binding found for parameter 'baseUrl'"
-**Cause**: Runtime parameter not annotated with `@Provides`
-
-**Fix**: Add `@Provides` to parameter in both factory and provider functions
+**Fix**: Provide named dependency and resolve with qualifier
 ```kotlin
-// AppGraph.Factory
-fun create(@Provides baseUrl: String): AppGraph
+// Provide
+single(qualifier = named("baseUrl")) { "https://api.example.com" }
 
-// Provider function
-@Provides
-fun provideApiService(@Provides baseUrl: String): ApiService
-```
-
-#### 5. KSP configuration errors
-**Cause**: Attempting to use KSP with Metro
-
-**Fix**: Remove KSP configuration - Metro uses Kotlin compiler plugin, NOT KSP
-```kotlin
-// ❌ WRONG - Don't add KSP
-plugins {
-    id("com.google.devtools.ksp")  // Not needed!
+// Resolve
+factory<ApiService> {
+    ApiService(baseUrl = get(named("baseUrl")))
 }
 ```
 
-Metro's Gradle plugin automatically configures the Kotlin compiler plugin.
+#### 4. "Definition for 'Set<EntryProviderInstaller>' not found"
+**Cause**: Navigation module not included in initialization
 
-#### 6. "Cannot access 'ViewModel' which is a supertype"
-**Symptom**: Warning about accessing ViewModel supertype in wiring module
-
-**Cause**: Missing lifecycle dependency in wiring module
-
-**Fix**: Convention plugin should add this automatically. If manual, add:
+**Fix**: Add navigation module to `KoinApplication`
 ```kotlin
-commonMain.dependencies {
-    implementation(libs.androidx.lifecycle.viewmodel)
+KoinApplication(
+    application = {
+        modules(
+            AppGraph.create(
+                baseUrl = "...",
+                featureModules = listOf(
+                    pokemonListNavigationModule  // Add this
+                )
+            )
+        )
+    }
+)
+```
+
+#### 5. "koinInject() can only be called from a @Composable function"
+**Cause**: Trying to use `koinInject()` outside composable context
+
+**Fix**: Use constructor injection in ViewModels, or get Koin instance directly
+```kotlin
+// In ViewModel (constructor injection)
+class MyViewModel(private val repo: MyRepository) : ViewModel()
+
+// In non-composable Kotlin code
+val koin = GlobalContext.get()
+val myService: MyService = koin.get()
+```
+
+#### 6. "More than one dependency found for type 'HttpClient'"
+**Cause**: Multiple definitions for same type without qualifiers
+
+**Fix**: Use named qualifiers to distinguish
+```kotlin
+single(qualifier = named("pokemonClient")) { createHttpClient() }
+single(qualifier = named("userClient")) { createHttpClient() }
+
+factory<PokemonService> {
+    PokemonService(client = get(named("pokemonClient")))
 }
 ```
 
-**Quick Reference**: See [metro_di_quick_ref.md](metro_di_quick_ref.md) for more patterns and solutions.
+**Quick Reference**: See [koin_di_quick_ref.md](koin_di_quick_ref.md) for more patterns and solutions.
 
 ## Testing Considerations
-- For tests, construct small test graphs or directly instantiate classes with fakes/mocks. Metro validates graphs at compile time; prefer unit tests with explicit constructors over heavy DI bootstrapping in tests.
+- For tests, use `koinApplication { }` to create isolated Koin instances
+- Override modules in tests with test doubles
+- Use `checkModules()` to validate module definitions at compile time
 
-Notes from Metro docs
-- Metro performs full binding graph validation using the K2 compiler plugin (NOT KSP). See the official docs for `@DependencyGraph`, `@Provides`, `@Binds`, `@ContributesBinding`, `@ContributesIntoSet`, and graph extension patterns.
-- Quick Reference: [metro_di_quick_ref.md](metro_di_quick_ref.md)
+```kotlin
+// Unit test with Koin
+class MyRepositoryTest : StringSpec({
+    "should fetch data" {
+        val koin = koinApplication {
+            modules(module {
+                single<ApiService> { mockk() }
+                factory<MyRepository> { MyRepositoryImpl(get()) }
+            })
+        }
+        
+        val repository = koin.koin.get<MyRepository>()
+        // Test repository...
+    }
+})
+
+// Module validation (runs at test time)
+class ModuleCheckTest : StringSpec({
+    "verify Koin configuration" {
+        koinApplication {
+            modules(
+                AppGraph.create(
+                    baseUrl = "https://test.com",
+                    featureModules = listOf(pokemonListModule)
+                )
+            )
+        }.checkModules()  // Validates all definitions can be resolved
+    }
+})
+```
+
+## Migration from Metro
+
+If you're migrating from Metro to Koin, refer to:
+- Migration Guide: [.junie/metro_to_koin_migration.md](../../metro_to_koin_migration.md)
+- Pattern comparison and step-by-step migration instructions included
+
+## Notes
+- Koin performs dependency resolution at runtime (unlike Metro's compile-time validation)
+- Use `checkModules()` in tests to validate modules before runtime
+- Koin is lighter-weight and more flexible than Metro, with excellent multiplatform support
+- Quick Reference: [koin_di_quick_ref.md](koin_di_quick_ref.md)

@@ -3,17 +3,20 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     id("convention.kmp.android.app")
     id("convention.compose.multiplatform")
-    alias(libs.plugins.metro)  // Needed for createGraphFactory() extension
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            // Core DI module contains AppGraph with Metro plugin applied
+            // Core DI module contains AppGraph
             implementation(projects.core.di)
             implementation(projects.core.designsystem)
             implementation(projects.features.pokemonlist.ui)
             implementation(projects.features.pokemonlist.wiring)
+            
+            // Koin
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
             
             // Navigation 3
             implementation(libs.androidx.navigation3.ui)
@@ -26,6 +29,9 @@ kotlin {
             
             // Window Size Classes
             implementation(libs.androidx.window.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.koin.android)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -1,49 +1,58 @@
 package com.minddistrict.multiplatformpoc.core.di
 
-import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
 import com.minddistrict.multiplatformpoc.navigation.Navigator
-import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.DependencyGraph
-import dev.zacsweers.metro.Provides
+import org.koin.core.module.Module
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 /**
- * Root dependency injection graph for the application.
+ * Root dependency injection configuration for the application.
  * 
- * Metro will generate an implementation of this interface at compile time
- * with all @Provides functions from modules annotated with @ContributesTo(AppScope::class).
+ * Koin modules are collected from feature wiring modules and combined
+ * into the complete application graph.
  */
-@DependencyGraph(AppScope::class)
-interface AppGraph {
+object AppGraph {
     /**
-     * Provides access to the PokemonList ViewModel.
+     * Creates the complete Koin module configuration for the application.
+     * 
+     * @param baseUrl The base URL for API calls (e.g., "https://pokeapi.co/api/v2")
+     * @param featureModules All feature wiring modules to include
+     * @return List of Koin modules to load
      */
-    val pokemonListViewModel: PokemonListViewModel
-    
-    /**
-     * The Navigator manages the navigation back stack.
-     * Follows Android nav3-recipes modular architecture pattern.
-     */
-    val navigator: Navigator
-    
-    /**
-     * All navigation entry provider installers contributed via @IntoSet
-     * from feature wiring modules. Each installer registers a route and its
-     * corresponding composable screen.
-     */
-    val entryProviderInstallers: Set<EntryProviderInstaller>
-    
-    /**
-     * Factory for creating the AppGraph with runtime dependencies.
-     */
-    @DependencyGraph.Factory
-    fun interface Factory {
-        /**
-         * Creates the AppGraph instance.
-         * 
-         * @param baseUrl The base URL for API calls (e.g., "https://pokeapi.co/api/v2")
-         */
-        fun create(@Provides baseUrl: String): AppGraph
+    fun create(
+        baseUrl: String,
+        featureModules: List<Module>
+    ): List<Module> {
+        val coreModule = module {
+            // Provide baseUrl as a named dependency
+            single(qualifier = named("baseUrl")) { baseUrl }
+            
+            // Provide Navigator singleton with PokemonList as start destination
+            single { Navigator(PokemonList) }
+        }
+        
+        // Aggregation module to collect all navigation installers from feature modules
+        val navigationAggregationModule = module {
+            single<Set<EntryProviderInstaller>> {
+                // Collect all named navigation installer sets and merge them
+                val allInstallers = mutableSetOf<EntryProviderInstaller>()
+                
+                // Try to get each feature's navigation installers (may not exist on all platforms)
+                runCatching {
+                    getOrNull<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers"))
+                }.getOrNull()?.let { allInstallers.addAll(it) }
+                
+                runCatching {
+                    getOrNull<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers"))
+                }.getOrNull()?.let { allInstallers.addAll(it) }
+                
+                allInstallers
+            }
+        }
+        
+        return listOf(coreModule) + featureModules + navigationAggregationModule
     }
 }
 

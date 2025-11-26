@@ -8,11 +8,12 @@ kotlin {
         commonMain.dependencies {
             api(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.data)
-            api(projects.features.pokemonlist.presentation)  // API: types exposed in @Provides functions
+            api(projects.features.pokemonlist.presentation)  // API: types exposed in providers
             implementation(projects.features.pokemondetail.api)  // For PokemonDetail route
             implementation(projects.core.navigation)          // For Navigator and EntryProviderInstaller
             implementation(projects.core.httpclient)
             implementation(libs.ktor.client.core)
+            implementation(libs.koin.core)
         }
         
         // Platform-specific source sets for UI dependencies
@@ -20,11 +21,13 @@ kotlin {
         androidMain.dependencies {
             implementation(projects.features.pokemonlist.ui)
             implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
+            implementation(libs.koin.compose)
         }
         
         jvmMain.dependencies {
             implementation(projects.features.pokemonlist.ui)
             implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
+            implementation(libs.koin.compose)
         }
         
         // iOS targets use only commonMain (no UI module dependency)
