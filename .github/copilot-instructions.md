@@ -1,5 +1,7 @@
 # Copilot Instructions for Kotlin Multiplatform POC
 
+> **Related Documentation**: See also [`.junie/guidelines.md`](../.junie/guidelines.md) for high-level project guidelines and [`AGENTS.md`](../AGENTS.md) for autonomous agent workflows. These documents are kept in sync.
+
 ## Project Overview
 
 This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for Android and Desktop (JVM)**, and a **native SwiftUI app for iOS** that consumes shared business logic. The project has **pokemonlist and pokemondetail features fully implemented** with design system, Navigation 3, and iOS integration operational. Additional architecture patterns are documented in `.junie/guides/` for future features.

@@ -12,7 +12,7 @@ A **Kotlin Multiplatform** project with:
 - **Native SwiftUI** for iOS UI (production - consuming shared Kotlin business logic)
 - **Ktor server** as Backend-for-Frontend (BFF)
 
-Currently in **early POC stage** with skeleton modules only.
+**Current Status**: Production-ready architecture with **pokemonlist and pokemondetail features fully implemented and tested**. Design system, Navigation 3, and dual iOS integration (SwiftUI + Compose) operational.
 
 ### Current Reality vs. Documentation
 - **What exists**: 
@@ -22,7 +22,7 @@ Currently in **early POC stage** with skeleton modules only.
   - `:iosApp` — Native SwiftUI app (production - imports shared.framework to access KMP modules)
   - `:iosAppCompose` — Compose Multiplatform iOS app (experimental - uses Compose UI on iOS)
   - `:features:pokemonlist` — ✅ **FULLY IMPLEMENTED** with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring) + iOS SwiftUI integration + iOS Compose support
-  - `:features:pokemondetail` — ✅ **FULLY IMPLEMENTED** with parametric ViewModel, Navigation 3 animations, iOS SwiftUI + SKIE Type rename handling + iOS Compose support
+  - `:features:pokemondetail` — ✅ **IMPLEMENTED** (tests pending) with parametric ViewModel, Navigation 3 animations, iOS SwiftUI + SKIE Type rename handling + iOS Compose support
   - `:core:designsystem` — Material 3 Expressive theme system
   - `:core:navigation` — Navigation 3 modular architecture with metadata-based animations
   - `:core:di` — Koin DI core module
@@ -50,6 +50,13 @@ Currently in **early POC stage** with skeleton modules only.
 gradle/libs.versions.toml                 ← All dependency versions
 settings.gradle.kts                        ← Module structure
 ```
+
+### Related Documentation
+- **`.junie/guidelines.md`** — High-level project guidelines for all contributors
+- **`.github/copilot-instructions.md`** — GitHub Copilot-specific instructions and conventions
+- **This file (AGENTS.md)** — Comprehensive autonomous agent workflow guide
+
+> **Note**: These three documents are kept in sync. If you find inconsistencies, report them immediately.
 
 ---
 
