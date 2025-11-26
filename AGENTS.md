@@ -177,73 +177,42 @@ Following patterns from [Now in Android](https://github.com/android/nowinandroid
 ### Dependency Injection: Koin (Implemented in pokemonlist)
 **Classes are DI-agnostic. Wire via Koin `module { }` DSL in wiring modules with platform-specific source sets.**
 
-```kotlin
-// :features:jobs:api - Public contract
-interface JobRepository {
-  suspend fun getJobs(): Either<RepoError, List<Job>>
-}
-
-// :features:jobs:data - Internal implementation
-internal class JobRepositoryImpl(
-  private val api: JobApiService
-) : JobRepository {
-  override suspend fun getJobs(): Either<RepoError, List<Job>> =
-    Either.catch {
-      api.getJobs().jobs.map { it.asDomain() }
-    }.mapLeft { it.toRepoError() }
-}
-
-// Public factory function (Impl + Factory pattern)
-fun JobRepository(api: JobApiService): JobRepository = 
-  JobRepositoryImpl(api)
-
-// :features:jobs:wiring/commonMain - Koin module for all platforms
-val jobsModule = module {
-    factory<JobRepository> {
-        JobRepository(api = get())
-    }
-}
-
-// :features:jobs:wiring/androidMain - Koin module for Android UI
-val jobsNavigationModule = module {
-    single<Set<EntryProviderInstaller>> {
-        setOf({ entry<JobsRoute> { JobsScreen() } })
-    }
-}
-```
-```
+**Pattern**: Impl + Factory + Koin wiring
+- Internal `*Impl` classes
+- Public factory functions returning interface types
+- Koin modules in wiring (commonMain for data, androidMain/jvmMain for UI)
+- Platform-specific source sets for UI registration
 
 **Why**: Gradle compilation avoidance, hides implementations, simplifies testing, enables platform-specific wiring
+
+**See**: `patterns/di_patterns.md` for complete examples and testing patterns
 
 ### Error Handling: Arrow Either (Required)
 **Repositories MUST return `Either<RepoError, T>`. NEVER throw, return null, or use `Result`.**
 
-```kotlin
-// Define sealed errors per feature
-sealed interface RepoError {
-  data object Network : RepoError
-  data class Http(val code: Int, val message: String?) : RepoError
-  data object Unauthorized : RepoError
-  data class Unknown(val cause: Throwable) : RepoError
-}
+**Pattern**: Sealed errors + Either.catch + mapLeft
+- Define sealed `RepoError` hierarchy per feature
+- Use `Either.catch { }` to wrap throwing code
+- Map exceptions with `.mapLeft { it.toRepoError() }`
+- Never swallow `CancellationException`
 
-// Map exceptions at repository boundary
-fun Throwable.toRepoError(): RepoError = when (this) {
-  is ClientRequestException -> RepoError.Http(response.status.value, message)
-  is IOException -> RepoError.Network
-  else -> RepoError.Unknown(this)
-}
-
-// Repository implementation
-override suspend fun getJobs(): Either<RepoError, List<Job>> =
-  Either.catch {
-    val response = api.getJobs()
-    response.jobs.map { it.asDomain() }
-  }.mapLeft { it.toRepoError() }
-```
+**See**: `patterns/error_handling_patterns.md` for complete examples and ViewModel integration
 
 ### ViewModels: androidx.lifecycle (Required Rules)
 **ALL ViewModels MUST follow this pattern exactly:**
+
+**Pattern**: Lifecycle-aware + viewModelScope injection
+- Extend `androidx.lifecycle.ViewModel`
+- Pass `viewModelScope` as constructor parameter (with default value)
+- Implement `UiStateHolder<S, E>`
+- Load data in lifecycle callbacks, NOT `init`
+- Use `kotlinx.collections.immutable` types
+- NEVER store `CoroutineScope` as field
+
+**See**: `patterns/viewmodel_patterns.md` for complete examples (basic, parametric, pagination, SavedStateHandle)
+
+### ViewModels: Critical Requirements
+**Basic ViewModel structure:**
 
 ```kotlin
 class HomeViewModel(
@@ -295,60 +264,14 @@ class HomeViewModel(
 ### Navigation: Navigation 3 Modular Architecture (Implemented)
 **Route objects in `:api`, UI in `:ui`, wiring in platform-specific source sets**
 
-```kotlin
-// :features:pokemonlist:api - Route object
-object PokemonList
+**Pattern**: Route objects + Navigator + EntryProviderInstaller
+- Route objects are plain Kotlin objects/data classes (no @Serializable)
+- Navigator manages explicit back stack (SnapshotStateList)
+- EntryProviderInstaller = typealias for `EntryProviderScope<Any>.() -> Unit`
+- Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers via Koin
+- Metadata-based animations with `NavDisplay.transitionSpec()`
 
-// :features:pokemondetail:api - Parameterized route
-data class PokemonDetail(val id: Int)
-
-// :core:navigation - Navigator class
-class Navigator(startDestination: Any) {
-  private val _backStack = mutableStateListOf(startDestination)
-  val backStack: List<Any> = _backStack
-  
-  fun goTo(destination: Any) { _backStack.add(destination) }
-  fun goBack() { if (_backStack.size > 1) _backStack.removeAt(_backStack.lastIndex) }
-}
-
-// :features:pokemonlist:wiring/androidMain - UI registration
-val pokemonListNavigationModule = module {
-    single<Set<EntryProviderInstaller>> {
-        setOf(
-            {
-                entry<PokemonList> {
-                    PokemonListScreen(
-                        viewModel = koinInject(),
-                        onPokemonClick = { koinInject<Navigator>().goTo(PokemonDetail(it.id)) }
-                    )
-                }
-            }
-        )
-    }
-}
-
-// App.kt - NavDisplay integration
-NavDisplay(
-  backStack = navigator.backStack,
-  onBack = { navigator.goBack() },
-  entryProvider = entryProvider {
-    entryProviderInstallers.forEach { this.it() }
-  }
-)
-```
-
-**Key Points**:
-- ✅ Route objects are plain Kotlin objects/data classes (no @Serializable)
-- ✅ Navigator manages explicit back stack (SnapshotStateList)
-- ✅ EntryProviderInstaller = typealias for `EntryProviderScope<Any>.() -> Unit`
-- ✅ Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers via Koin modules
-- ✅ Koin modules provide `Set<EntryProviderInstaller>` for navigation collection
-- ❌ NOT exported to iOS (Compose-specific navigation)
-
-**Navigation 3 Animations** (metadata-based):
-
-```kotlin
-// :features:pokemondetail:wiring/androidMain - With animations
+**See**: `patterns/navigation_patterns.md` for complete animation patterns and deep linking
 internal fun pokemonDetailNavigationProvider(
     navigator: Navigator
 ): EntryProviderInstaller = {
@@ -472,73 +395,11 @@ Every production code file MUST have a corresponding test file. Tests are not op
 - ✅ Android unit tests run on JVM (fast, same speed as jvmTest)
 - ✅ Type safety guarantees iOS compatibility
 
-**Testing Location Strategy:**
-```kotlin
-// ✅ PRIMARY: androidUnitTest/ for business logic (Android target unit tests)
-features/pokemonlist/data/src/androidUnitTest/kotlin/
-├── data/
-│   ├── PokemonRepositoryTest.kt      // Full Kotest + MockK
-│   ├── PokemonMappersTest.kt         // Property tests
-│   └── PokemonApiServiceTest.kt      // Mocked HTTP
-└── presentation/
-    └── PokemonViewModelTest.kt       // ViewModel tests
+**Testing Location:**
+- **PRIMARY**: `androidUnitTest/` for ALL business logic (repositories, ViewModels, mappers, use cases)
+- **MINIMAL**: `commonTest/` for simple utilities with NO dependencies
 
-// ⚠️ MINIMAL: commonTest/ for simple utilities only
-features/pokemonlist/data/src/commonTest/kotlin/
-└── utils/
-    └── UrlUtilsTest.kt               // kotlin-test only, no deps
-```
-
-### Kotest + MockK Pattern (Android Unit Tests)
-
-```kotlin
-// androidUnitTest/kotlin/.../PokemonRepositoryTest.kt
-class PokemonRepositoryTest : StringSpec({
-    lateinit var mockApi: PokemonListApiService
-    lateinit var repository: PokemonListRepository
-    
-    beforeTest {
-        mockApi = mockk()
-        repository = PokemonListRepository(mockApi)
-    }
-    
-    "should return Right on success" {
-        coEvery { mockApi.getPokemonList(20, 0) } returns PokemonListDto(
-            count = 1292,
-            next = "https://...",
-            previous = null,
-            results = listOf(
-                PokemonSummaryDto("bulbasaur", "https://.../1/")
-            )
-        )
-        
-        val result = repository.loadPage()
-        
-        result.shouldBeRight { page ->
-            page.pokemons shouldHaveSize 1
-            page.pokemons.first().name shouldBe "Bulbasaur"
-        }
-    }
-    
-    "should return Network error on timeout" {
-        coEvery { mockApi.getPokemonList(any(), any()) } throws 
-            ConnectTimeoutException("Timeout")
-        
-        val result = repository.loadPage()
-        
-        result.shouldBeLeft { error ->
-            error shouldBe RepoError.Network
-        }
-    }
-})
-
-// Helper extensions
-fun <L, R> Either<L, R>.shouldBeRight(): R = 
-  this.getOrNull() ?: fail("Expected Right but was $this")
-
-fun <L, R> Either<L, R>.shouldBeLeft(): L = 
-  this.swap().getOrNull() ?: fail("Expected Left but was $this")
-```
+**See**: `patterns/testing_patterns.md` for complete Kotest+MockK examples
 
 ### Property-Based Testing (PRIMARY STRATEGY)
 
@@ -549,99 +410,15 @@ fun <L, R> Either<L, R>.shouldBeLeft(): L =
 - ✅ Target: 30-40% of tests should be property-based
 - ✅ Proven results: 40% property coverage, 47% faster execution
 
-**Property Testing with Kotest:**
-```kotlin
-// MANDATORY for mappers - data preservation invariants
-"dto to domain preserves all fields correctly" {
-  checkAll(Arb.int(1..1000), Arb.string(1..50)) { id, name ->
-    val dto = PokemonDto(id = id, name = name, imageUrl = "https://...")
-    val domain = dto.toDomain()
-    
-    domain.id shouldBe dto.id
-    domain.name shouldBe dto.name.replaceFirstChar { it.uppercase() }
-  }
-}
+**Coverage Targets:**
+| Code Type | Coverage Target | Pattern |
+|-----------|----------------|----------|
+| Mappers | 100% | Data preservation, round-trip |
+| Repositories | 40-50% | HTTP error ranges, ID extraction |
+| ViewModels | 30-40% | State transitions with random data |
+| Validators | 60-80% | Input validation, boundaries |
 
-// MANDATORY for repositories - HTTP error code ranges
-"should map 4xx codes to Http error" {
-  checkAll(Arb.int(400..499)) { code ->
-    coEvery { mockApi.getPokemon(any()) } throws 
-      ClientRequestException(mockk { every { status.value } returns code })
-    
-    val result = repository.getById(1)
-    
-    result.shouldBeLeft { error ->
-      error.shouldBeInstanceOf<RepoError.Http>()
-      error.code shouldBe code
-    }
-  }
-}
-
-// MANDATORY for ViewModels - state transitions with random data
-"should transition Loading -> Content with any valid page" {
-  checkAll(Arb.int(1..100), Arb.list(Arb.pokemon(), 1..50)) { count, pokemons ->
-    val testScope = TestScope()
-    val mockRepo = mockk<PokemonRepository>()
-    val viewModel = PokemonViewModel(mockRepo, testScope)
-    
-    coEvery { mockRepo.loadPage() } returns Either.Right(
-      PokemonPage(pokemons = pokemons.toImmutableList(), hasMore = true)
-    )
-    
-    viewModel.uiState.test {
-      awaitItem() shouldBe PokemonUiState.Loading
-      viewModel.start(mockk(relaxed = true))
-      testScope.advanceUntilIdle()
-      
-      awaitItem().shouldBeInstanceOf<PokemonUiState.Content>().let { state ->
-        state.pokemons shouldHaveSize pokemons.size
-      }
-    }
-  }
-}
-```
-
-**When to Use Property Tests:**
-| Code Type | Property Test Pattern | Coverage Target |
-|-----------|----------------------|-----------------|
-| Mappers | ALL mappers need property tests | 100% of mappers |
-| Repositories | HTTP error ranges, ID preservation | 40-50% of repo tests |
-| ViewModels | State transitions, random data flows | 30-40% of VM tests |
-| Validators | Input validation rules, boundary conditions | 60-80% of validator tests |
-
-**Redundant Test Elimination:**
-Property tests often make concrete tests obsolete. **Remove concrete tests that are fully covered by property tests.**
-
-**Example - Redundant Tests:**
-```kotlin
-// ❌ REDUNDANT - Property test covers all 4xx codes
-"should return Http error for 400" { /* specific 400 test */ }
-"should return Http error for 404" { /* specific 404 test */ }
-"should return Http error for 429" { /* specific 429 test */ }
-
-// ✅ KEEP - One property test replaces all three
-"should map 4xx codes to Http error" {
-  checkAll(Arb.int(400..499)) { code -> /* tests ALL 4xx codes */ }
-}
-
-// ❌ REDUNDANT - Property test covers all valid IDs
-"should extract ID 1 from URL" { /* specific ID test */ }
-"should extract ID 25 from URL" { /* specific ID test */ }
-"should extract ID 151 from URL" { /* specific ID test */ }
-
-// ✅ KEEP - One property test replaces all three
-"should extract any valid ID from URL" {
-  checkAll(Arb.int(1..1000)) { id -> /* tests ALL IDs */ }
-}
-```
-
-**Decision Matrix for Removing Tests:**
-1. Does a property test cover this scenario? → **Remove concrete test**
-2. Is this an edge case not covered by properties? → **Keep concrete test**
-3. Does this test document important behavior? → **Keep but add comment**
-4. Is this test redundant with another concrete test? → **Merge or remove**
-
-**See**: `.junie/guides/tech/testing_strategy.md` for comprehensive property testing guide
+**See**: `patterns/testing_patterns.md` for complete property test examples and Arb generators
 
 ### Flow Testing with Turbine (MANDATORY for ViewModels)
 
@@ -651,106 +428,6 @@ Property tests often make concrete tests obsolete. **Remove concrete tests that 
 - ✅ Clean API: awaitItem(), skipItems(), expectNoEvents()
 - ✅ Fast: All ViewModel tests run in ~10 seconds (vs 3+ minutes with delays)
 - ❌ NEVER use Thread.sleep() or delay() in tests
-
-**Turbine Setup (MANDATORY):**
-```kotlin
-// gradle/libs.versions.toml
-[versions]
-turbine = "1.2.0"
-
-[libraries]
-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
-
-// features/<feature>/presentation/build.gradle.kts
-kotlin {
-    sourceSets {
-        androidUnitTest.dependencies {
-            implementation(libs.kotest.runner.junit5)
-            implementation(libs.kotest.assertions.core)
-            implementation(libs.kotest.property)
-            implementation(libs.turbine)  // ← Add this
-            implementation(libs.mockk)
-            implementation(libs.kotlinx.coroutines.test)
-        }
-    }
-}
-```
-
-**ViewModel Testing Pattern with Turbine:**
-```kotlin
-class PokemonListViewModelTest : StringSpec({
-    lateinit var mockRepository: PokemonListRepository
-    lateinit var testScope: TestScope
-    lateinit var viewModel: PokemonListViewModel
-    
-    beforeTest {
-        mockRepository = mockk()
-        testScope = TestScope()  // ✅ Inject testScope (no Dispatchers.setMain)
-        viewModel = PokemonListViewModel(mockRepository, testScope)
-    }
-    
-    "should transition from Loading to Content on success" {
-        val pokemons = listOf(Pokemon(1, "Bulbasaur", "..."))
-        coEvery { mockRepository.loadPage() } returns Either.Right(
-            PokemonPage(pokemons.toImmutableList(), hasMore = true)
-        )
-        
-        viewModel.uiState.test {  // ✅ Turbine's .test {} block
-            awaitItem() shouldBe PokemonListUiState.Loading  // Initial state
-            
-            viewModel.start(mockk(relaxed = true))
-            testScope.advanceUntilIdle()  // ✅ Advance virtual time
-            
-            awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>().let { state ->
-                state.pokemons shouldHaveSize 1
-                state.pokemons.first().name shouldBe "Bulbasaur"
-                state.isLoadingMore shouldBe false
-                state.hasMore shouldBe true
-            }
-            
-            cancelAndIgnoreRemainingEvents()  // ✅ Clean teardown
-        }
-    }
-    
-    "should handle loadMore correctly" {
-        // Setup initial state
-        coEvery { mockRepository.loadPage() } returns Either.Right(
-            PokemonPage(listOf(Pokemon(1, "Bulbasaur", "...")).toImmutableList(), hasMore = true)
-        )
-        viewModel.start(mockk(relaxed = true))
-        testScope.advanceUntilIdle()
-        
-        // Setup loadMore response
-        coEvery { mockRepository.loadPage(offset = 1) } returns Either.Right(
-            PokemonPage(listOf(Pokemon(2, "Ivysaur", "...")).toImmutableList(), hasMore = false)
-        )
-        
-        viewModel.uiState.test {
-            skipItems(2)  // ✅ Skip Loading and initial Content
-            
-            viewModel.onUiEvent(PokemonListUiEvent.LoadMore)
-            
-            // First update: isLoadingMore = true
-            awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>().let { state ->
-                state.isLoadingMore shouldBe true
-                state.pokemons shouldHaveSize 1
-            }
-            
-            testScope.advanceUntilIdle()
-            
-            // Second update: new pokemon added, isLoadingMore = false
-            awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>().let { state ->
-                state.pokemons shouldHaveSize 2
-                state.pokemons[1].name shouldBe "Ivysaur"
-                state.isLoadingMore shouldBe false
-                state.hasMore shouldBe false
-            }
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-})
-```
 
 **Turbine API Quick Reference:**
 | Method | Use Case |
@@ -768,13 +445,11 @@ beforeTest {
     testScope = TestScope()
     viewModel = MyViewModel(repository, testScope)  // Pass to constructor
 }
+```
 
-// ❌ WRONG - Don't use Dispatchers.setMain when injecting scope
-beforeTest {
-    Dispatchers.setMain(StandardTestDispatcher())  // Unnecessary
-    viewModel = MyViewModel(repository)
-}
-afterTest {
+**See**: `patterns/testing_patterns.md` for complete Turbine patterns and ViewModel flow testing examples
+
+### Screenshot Tests (Roborazzi)
     Dispatchers.resetMain()  // Unnecessary
 }
 ```
@@ -1377,10 +1052,25 @@ cat gradle/libs.versions.toml
 
 ## 🎭 Specialized Agent Modes
 
-When working on specific types of tasks, agents should adopt specialized modes by consulting the relevant system prompts:
+When working on specific types of tasks, agents should adopt specialized modes by consulting the relevant system prompts.
+
+**How to Switch Modes**: Use explicit commands in your request:
+- `SWITCH_TO: Product Design Mode` — Product requirements and feature definition
+- `SWITCH_TO: UI/UX Design Mode` — Screen layouts and visual design
+- `SWITCH_TO: Onboarding Design Mode` — Onboarding flows and copy
+- `SWITCH_TO: User Flow Planning Mode` — Navigation paths and journeys
+- `SWITCH_TO: Screen Implementation Mode` — Building UI from specs
+- `SWITCH_TO: Standard Development Mode` — Technical implementation (default)
+
+**Response Format**: When in specialized mode, start responses with:
+```
+CURRENT_MODE: [Mode Name]
+```
 
 ### Product Design Mode
 **When to use**: Creating or refining product requirements, defining features, analyzing competitors
+
+**Activation**: `SWITCH_TO: Product Design Mode`
 
 **Prompt**: `.junie/guides/prompts/product_designer_agent_system_prompt.md`
 
@@ -1390,8 +1080,17 @@ When working on specific types of tasks, agents should adopt specialized modes b
 - Identify USPs and competitive positioning
 - Specify technical and design constraints
 
+**Response Template**:
+```
+CURRENT_MODE: Product Design Mode
+
+[Product design analysis and recommendations]
+```
+
 ### UI/UX Design Mode
 **When to use**: Planning screen layouts, designing user flows, creating visual directions
+
+**Activation**: `SWITCH_TO: UI/UX Design Mode`
 
 **Prompt**: `.junie/guides/prompts/uiux_agent_system_prompt.md`
 
@@ -1406,8 +1105,17 @@ When working on specific types of tasks, agents should adopt specialized modes b
 - `.junie/guides/prompts/animation_example_guides.md` — Screen transitions, button animations, list effects, gestures
 - `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md` — Device interactions (tilt, shake), hidden patterns, mini-games
 
+**Response Template**:
+```
+CURRENT_MODE: UI/UX Design Mode
+
+[Screen designs, animations, interaction patterns]
+```
+
 ### Onboarding Design Mode
 **When to use**: Creating onboarding flows, writing copy, designing welcome screens
+
+**Activation**: `SWITCH_TO: Onboarding Design Mode`
 
 **Prompt**: `.junie/guides/prompts/onboarding_agent_system_prompt.md`
 
@@ -1418,8 +1126,17 @@ When working on specific types of tasks, agents should adopt specialized modes b
 - Design soft paywall hybrid screens
 - Provide detailed illustration descriptions
 
+**Response Template**:
+```
+CURRENT_MODE: Onboarding Design Mode
+
+[Onboarding flow with copy and screen descriptions]
+```
+
 ### User Flow Planning Mode
 **When to use**: Mapping navigation paths, defining screen sequences, planning user journeys
+
+**Activation**: `SWITCH_TO: User Flow Planning Mode`
 
 **Prompt**: `.junie/guides/prompts/user_flow_agent_system_prompt.md`
 
@@ -1429,8 +1146,23 @@ When working on specific types of tasks, agents should adopt specialized modes b
 - Specify primary and secondary navigation
 - Cover edge cases and error states
 
+**Key responsibilities**:
+- Map complete user journeys from launch to goal
+- Define all screens with purposes and actions
+- Specify primary and secondary navigation
+- Cover edge cases and error states
+
+**Response Template**:
+```
+CURRENT_MODE: User Flow Planning Mode
+
+[User journey maps and screen sequences]
+```
+
 ### Screen Implementation Mode
 **When to use**: Building UI screens in Compose Multiplatform from markdown specifications
+
+**Activation**: `SWITCH_TO: Screen Implementation Mode`
 
 **Prompt**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md`
 
@@ -1458,6 +1190,13 @@ private fun ScreenVariation1Preview() { }
 @Preview
 @Composable
 private fun ScreenVariation2Preview() { }
+```
+
+**Response Template**:
+```
+CURRENT_MODE: Screen Implementation Mode
+
+[Production-ready Compose code with variations]
 ```
 
 ### Mode Selection Guidelines
