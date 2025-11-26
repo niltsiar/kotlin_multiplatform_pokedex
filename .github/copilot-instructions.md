@@ -120,93 +120,38 @@ Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
 
 ### Dependency Injection (Koin)
 **Pattern**: Classes stay DI-agnostic; wiring happens in separate modules
-```kotlin
-// :features:jobs:api
-interface JobRepository {
-  suspend fun getJobs(): Either<RepoError, List<Job>>
-}
+- Internal `*Impl` classes
+- Public factory functions returning interface types
+- Koin modules in wiring (commonMain for data, androidMain/jvmMain for UI)
 
-// :features:jobs:data (internal)
-internal class JobRepositoryImpl(...) : JobRepository { ... }
-fun JobRepository(...): JobRepository = JobRepositoryImpl(...)  // Factory
-
-// :features:jobs:wiring
-val jobsModule = module {
-    factory<JobRepository> {
-        JobRepository(...)
-    }
-}
-```
-**Why**: Enables Gradle compilation avoidance, keeps implementations hidden, simplifies testing
+**See**: `.junie/guides/patterns/di_patterns.md` for complete examples
 
 ### Error Handling (Arrow Either)
 **Pattern**: Repositories return `Either<RepoError, T>`, never throw or return null
-```kotlin
-override suspend fun getJobs(): Either<RepoError, List<Job>> =
-  Either.catch {
-    api.getJobs().jobs.map { it.asDomain() }
-  }.mapLeft { it.toRepoError() }
-```
-**Define sealed errors per feature**:
-```kotlin
-sealed interface RepoError {
-  data object Network : RepoError
-  data class Http(val code: Int, val message: String?) : RepoError
-  data object Unauthorized : RepoError
-  data class Unknown(val cause: Throwable) : RepoError
-}
-```
+- Define sealed `RepoError` hierarchy per feature
+- Use `Either.catch { }` to wrap throwing code
+- Map exceptions with `.mapLeft { it.toRepoError() }`
+
+**See**: `.junie/guides/patterns/error_handling_patterns.md` for complete examples
 
 ### ViewModels (androidx.lifecycle)
 **Pattern**: Must extend `ViewModel`, pass `viewModelScope` as constructor parameter
-```kotlin
-class HomeViewModel(
-  private val repo: JobRepository,
-  viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-) : ViewModel(viewModelScope),
-    UiStateHolder<HomeUiState, HomeUiEvent> {
-  
-  private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-  override val uiState: StateFlow<HomeUiState> = _uiState
-  
-  // ⚠️ Do NOT perform work in init
-  fun start(lifecycle: Lifecycle) {
-    viewModelScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        repo.getJobs().fold(
-          ifLeft = { _uiState.value = HomeUiState.Error(it.toUiMessage()) },
-          ifRight = { jobs -> _uiState.value = HomeUiState.Content(jobs.toImmutableList()) }
-        )
-      }
-    }
-  }
-}
-```
-**Requirements**:
-- Use `kotlinx.collections.immutable` types in UI state
-- Never store `CoroutineScope` as field—pass to superclass constructor
-- For one-time events: implement `OneTimeEventEmitter<E>` via delegation
+- Extend `androidx.lifecycle.ViewModel`
+- Pass `viewModelScope` as constructor parameter (with default value)
+- Implement `UiStateHolder<S, E>`
+- Load data in lifecycle callbacks, NOT `init`
+- Use `kotlinx.collections.immutable` types
+- NEVER store `CoroutineScope` as field
+
+**See**: `.junie/guides/patterns/viewmodel_patterns.md` for complete examples
 
 ### Navigation (Navigation 3)
-**Pattern**: Contracts in `:api`, implementations in feature module, wired in `:wiring`
-```kotlin
-// :features:profile:api
-interface ProfileEntry {
-  val route: String
-  fun build(userId: String): String
-}
+**Pattern**: Route objects in `:api`, UI in `:ui`, wiring in platform-specific source sets
+- Route objects are plain Kotlin objects/data classes (no @Serializable)
+- Navigator manages explicit back stack
+- Platform-specific wiring provides EntryProviderInstallers via Koin
 
-// :features:profile:presentation (internal)
-internal class ProfileEntryImpl : ProfileEntry {
-  override val route = "profile/{userId}"
-  override fun build(userId: String) = "profile/$userId"
-}
-
-// :features:profile:wiring
-val profileModule = module {
-    single<ProfileEntry> { ProfileEntryImpl() }
-}
-```
+**See**: `.junie/guides/patterns/navigation_patterns.md` for complete examples
 
 ### No Empty Use Cases
 **Rule**: Call repositories directly from ViewModels unless orchestrating multiple repos or applying business rules
@@ -226,7 +171,18 @@ class ProfileViewModel(private val repo: UserRepository, ...) {
 
 ## Key Technical Documentation
 
-**Start here for implementation guidance** (`.junie/guides/tech/`):
+**Pattern Library** (`.junie/guides/patterns/`):
+- **`architecture_patterns.md`** — Split-by-layer, module structure, convention plugins, iOS exports
+- **`di_patterns.md`** — Koin DI, Impl+Factory, wiring modules, testing
+- **`error_handling_patterns.md`** — Either boundaries, sealed errors, exception mapping
+- **`viewmodel_patterns.md`** — Lifecycle-aware, parametric, pagination, SavedStateHandle
+- **`navigation_patterns.md`** — Navigation 3, route objects, animations
+- **`testing_patterns.md`** — Kotest+MockK, property tests, Turbine, Roborazzi
+
+**Quick Reference**:
+- **`QUICK_REFERENCE.md`** — Commands, tables, API references, decision matrices
+
+**Detailed Tech Guides** (`.junie/guides/tech/`):
 1. **`conventions.md`** — Master reference: architecture, modules, DI, testing rules
 2. **`dependency_injection.md`** — Koin setup, module DSL patterns, platform-specific wiring
 3. **`repository.md`** — Either boundaries, DTO→domain mapping, error handling

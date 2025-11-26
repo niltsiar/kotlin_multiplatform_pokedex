@@ -1,209 +1,231 @@
-# Project Guidelines — Kotlin Multiplatform + Compose Multiplatform
+# Kotlin Multiplatform Guidelines for Junie
 
-This repository is a Kotlin Multiplatform project using:
-- **Compose Multiplatform** for Android + Desktop (JVM) UI
-- **Native SwiftUI** for iOS UI (consuming shared Kotlin business logic)
-- **Ktor** for Backend-for-Frontend (BFF) server
+> **Related**: [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) (Copilot), [`AGENTS.md`](../AGENTS.md) (Agents) — kept in sync
 
-> **Related Documentation**: See also [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) for GitHub Copilot-specific guidance and [`AGENTS.md`](../AGENTS.md) for autonomous agent workflows. These documents are kept in sync.
+## Tech Stack
 
-## Project Overview
-- **Languages/Tech**: Kotlin, Compose Multiplatform, SwiftUI, Gradle (Kotlin DSL), Koin DI, Arrow (Either), Kotest, MockK, Roborazzi, Navigation 3
-- **Targets**:
-  - **Android app**: Compose Multiplatform UI in `:composeApp`
-  - **Desktop (JVM) app**: Compose Multiplatform UI in `:composeApp`
-  - **iOS app (production)**: Native SwiftUI in `:iosApp` consuming `:shared` framework (business logic only)
-  - **iOS app (experimental)**: Compose Multiplatform UI in `:iosAppCompose` sharing Compose code with Android/Desktop
-  - **Server**: Ktor-based BFF in `:server`
-- **Module Structure**:
-  - `:composeApp` — Compose Multiplatform UI for Android + Desktop + iOS (commonMain for shared UI, androidMain/jvmMain/iosMain for platform-specific)
-  - `:shared` — iOS umbrella framework that exports other KMP modules (minimal code, mostly Gradle config)
-  - `:iosApp` — Native SwiftUI iOS app (production) that imports shared.framework to access KMP modules
-  - `:iosAppCompose` — Experimental Compose Multiplatform iOS app that uses Compose UI from `:composeApp`
-  - `:server` — Ktor Backend-for-Frontend providing REST APIs for all clients
-  - `:build-logic/convention` — Custom Gradle convention plugins
-  - **Required feature structure** (split-by-layer for all features):
-    - `:features:<feature>:api` — public contracts (interfaces, navigation, shared domain models) - exported to iOS via :shared umbrella
-    - `:features:<feature>:data` — network layer (API services, DTOs), data layer (repositories, mappers) - KMP all targets, NOT exported to iOS
-    - `:features:<feature>:presentation` — ViewModels, UI state - **KMP all targets, shared with iOS**, exported to iOS via :shared umbrella
-    - `:features:<feature>:ui` — Compose UI (@Composable screens) - **Android + JVM only**, NOT exported to iOS
-    - `:features:<feature>:wiring` — DI assembly (Koin) - KMP with platform-specific source sets, NOT exported to iOS
-    - `:features:<feature>:domain` (optional) — Use cases, validators - only if orchestrating 2+ repositories
-  - **Optional shared infrastructure** (use sparingly):
-    - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
-    - `:core:util` — generic utilities used by 3+ features (exported to iOS via :shared)
-    - `:core:httpclient` — ONLY HttpClient instance configuration (NOT generic API services)
+- **Kotlin Multiplatform** — Shared business logic across platforms
+- **Compose Multiplatform** — UI for Android + Desktop (JVM) + iOS (experimental)
+- **SwiftUI** — Native iOS UI (production) consuming KMP via shared.framework
+- **Ktor** — Backend-for-Frontend server (port 8080)
+- **Koin** — Dependency injection with Impl+Factory pattern
+- **Arrow Either** — Functional error handling at boundaries
+- **Navigation 3** — Modular navigation architecture
+- **Kotest + MockK + Turbine** — Testing framework (androidUnitTest/)
 
-## Architecture Requirements
+## Module Structure (Vertical Slicing)
 
-**Core Principle**: True vertical slicing - each feature is a complete vertical slice owning ALL its layers end-to-end.
-
-### Vertical Slicing Defined
-
-Each feature contains ALL layers it needs internally:
-- Domain models specific to that feature
-- Network/API services for that feature's endpoints  
-- Data/Repository layer for that feature
-- Presentation/UI for that feature's screens
-- Navigation contracts for that feature
-
-### Required Module Structure
-
+**Feature pattern** (split-by-layer, REQUIRED):
 ```
-:features:<feature>:api          → Public contracts (interfaces, domain models, navigation)
-:features:<feature>:data         → Network + Data layer (API services, repos, DTOs, mappers)
-:features:<feature>:presentation → ViewModels, UI state (shared with iOS)
-:features:<feature>:ui           → Compose UI (Android + JVM only)
-:features:<feature>:wiring       → DI assembly (Koin)
+:features:<feature>:api          → Contracts (exported to iOS)
+:features:<feature>:data         → Network + Data (NOT exported)
+:features:<feature>:presentation → ViewModels (exported to iOS)
+:features:<feature>:ui           → Compose UI (NOT exported)
+:features:<feature>:wiring       → DI assembly (NOT exported)
 ```
 
-**Example:**
+**Core modules** (use sparingly):
+- `:core:designsystem` — Reusable Compose components
+- `:core:navigation` — Navigation 3 architecture
+- `:core:di` — Koin DI core
+- `:core:httpclient` — HttpClient config only
+
+**✅ DO**: Each feature owns its complete vertical slice (API services, DTOs, repos, ViewModels, UI)
+**❌ DON'T**: Create generic `:core:network` or `:core:data` modules
+
+**✅ DO**: Each feature owns its complete vertical slice (API services, DTOs, repos, ViewModels, UI)
+**❌ DON'T**: Create generic `:core:network` or `:core:data` modules
+
+## iOS Export Rules
+
+**Exported via `:shared` umbrella**:
+- ✅ `:features:*:api` — Public contracts
+- ✅ `:features:*:presentation` — ViewModels (shared with SwiftUI)
+- ✅ `:core:*` — Shared infrastructure
+
+**NOT exported**:
+- ❌ `:features:*:data` — Internal data layer
+- ❌ `:features:*:ui` — Compose UI (platform-specific)
+- ❌ `:features:*:wiring` — DI assembly
+- ❌ `:composeApp` — Compose framework (Note: iosAppCompose uses this, but native SwiftUI doesn't)
+
+## Essential Commands
+
+**Primary validation** (ALWAYS run first):
+```bash
+./gradlew :composeApp:assembleDebug test --continue  # ~45 seconds
 ```
-:features:pokemonlist:data/
-  ├── PokemonListApiService.kt      (feature's network layer)
-  ├── dto/                        (feature's DTOs)
-  └── PokemonListRepositoryImpl.kt
 
-:features:pokemonlist:presentation/
-  ├── PokemonListViewModel.kt      (shared across all platforms)
-  └── PokemonListUiState.kt        (immutable collections)
-
-:features:pokemonlist:ui/
-  └── PokemonListScreen.kt         (Compose UI - Android/JVM only)
+**Dependency updates**:
+```bash
+./gradlew dependencyUpdates
+open build/dependencyUpdates/report.html
 ```
 
-### Core Modules (Use Sparingly)
+**iOS builds** (⚠️ 5-10min — avoid unless required):
+- Only run when explicitly requested or testing iOS-specific features
+- Native SwiftUI: `open iosApp/iosApp.xcodeproj`
+- Compose iOS: `open iosAppCompose/iosAppCompose.xcodeproj`
 
-**ONLY create :core modules for:**
-- ✅ Design system (reusable UI components)
-- ✅ Generic utilities used by 3+ features
-- ✅ Cross-cutting domain types (User, Error)
-- ✅ Platform abstractions (expect/actual)
+**See**: `.junie/guides/QUICK_REFERENCE.md` for complete command reference
 
-**DO NOT create :core modules for:**
-- ❌ Generic network layer (each feature has its own)
-- ❌ Generic repository patterns (each feature implements its own)
-- ❌ Generic API services (each feature defines its own)
+## Critical Patterns
 
-### Feature Independence
+### 1. Dependency Injection (Koin)
 
-- Features MUST NOT depend on other features' `:data` or `:presentation` modules
-- Each feature owns its network layer (API service, DTOs, mappers)
-- Each feature defines its own DTOs (even for same backend endpoint)
-- Domain models in :api only if shared across features
+**Pattern**: Impl + Factory + Koin wiring
+```kotlin
+// ✅ DO: Internal impl, public factory
+internal class JobRepositoryImpl(...) : JobRepository
+fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 
-**Clean Architecture with vertical slices** — each feature must own its code end-to-end
-- **Vertical-slice feature modules** must follow api/data/presentation/ui/wiring pattern (see `.junie/guides/tech/conventions.md`)
-- **Required patterns**:
-  - Impl + Factory: interfaces must be implemented by internal `*Impl` classes, exposed via public factory functions
-  - Only `api` modules exposed cross-feature; `data`, `presentation`, `ui`, and `wiring` must remain internal
-  - Koin DI: production classes must stay DI-agnostic; wire via Koin `module { }` DSL in wiring modules
-  - Arrow Either: repositories must return `Either<RepoError, T>` at boundaries
+// Wiring
+val jobsModule = module {
+    factory<JobRepository> { JobRepository(...) }
+}
 
-## Directory Structure
-- `composeApp/` — **Compose Multiplatform UI (Android + Desktop ONLY)**
-  - `src/commonMain` — Shared Compose UI logic
-  - `src/androidMain` — Android-specific UI code and resources
-  - `src/jvmMain` — Desktop (JVM) specific UI code
-  - `src/commonTest` — Shared UI tests (place Compose tests in `screentest` package)
-- `shared/` — **iOS umbrella framework (exports other KMP modules)**
-  - `build.gradle.kts` — Configures which modules to export to iOS
-  - Exports: `:features:*:api`, `:core:*` modules only
-  - Does NOT contain business logic itself (that lives in feature/core modules)
-- `features/` — **Feature modules (when created)**
-  - `:features:<name>:api` — Public contracts (exported to iOS)
-  - `:features:<name>:data` — Network + Data layer (NOT exported)
-  - `:features:<name>:presentation` — ViewModels, UI state (exported to iOS)
-  - `:features:<name>:ui` — Compose UI (NOT exported)
-  - `:features:<name>:wiring` — DI assembly (NOT exported)
-  - Business logic, domain models, repositories live here
-- `iosApp/` — **Native SwiftUI iOS app (production)**
-  - SwiftUI views and iOS-specific UI code
-  - Imports `shared.framework` to access KMP modules
-- `iosAppCompose/` — **Experimental Compose Multiplatform iOS app**
-  - Uses Compose UI shared with Android/Desktop from `:composeApp`
-  - Wraps MainViewController from ComposeApp framework
-  - Alternative to native SwiftUI approach
-- `server/` — **Ktor Backend-for-Frontend**
-  - REST API endpoints for all clients
-  - Port 8080 (configurable in project constants)
+// ❌ DON'T: Public impl
+class JobRepositoryImpl : JobRepository  // Wrong: public
 
-## Prerequisites
-- JDK 17+
-- Android SDK path configured in local.properties (sdk.dir=/path/to/sdk)
-- For iOS: Xcode installed and, optionally, KMM plugin for Android Studio
-- Optional: Run KDoctor to verify environment
+// ❌ DON'T: DI annotations on classes
+@Singleton class JobRepository  // Wrong: keep classes DI-agnostic
+```
 
-## Build and Run
-### Android
-- **Primary validation** (fastest feedback): `./gradlew :composeApp:assembleDebug`
-- APK output: `composeApp/build/outputs/apk/debug/composeApp-debug.apk`
-- Run from IDE: Open in Android Studio and run the Android configuration
-- Useful tasks:
-  - SHA1 (Firebase, etc.): `./gradlew :composeApp:signingReport`
+**See**: `.junie/guides/patterns/di_patterns.md`
 
-### iOS
-- **⚠️ CRITICAL**: iOS builds are extremely slow (5-10 minutes). NEVER run iOS builds during routine validation.
-- Only execute iOS builds when:
-  1. Explicitly requested by user
-  2. Testing iOS framework exports (verifying which modules are exposed)
-  3. Validating iOS-specific expect/actual implementations in KMP modules
-  4. Working on SwiftUI integration with shared.framework
-- **Note**: iOS uses native SwiftUI for UI (not Compose). The `:shared` module is an umbrella that exports KMP modules.
-- **Integration Pattern**: Direct Integration (private var ViewModel + @State for UI state) is current. See `.junie/guides/tech/ios_integration.md` for complete guide.
-- Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
+### 2. Error Handling (Arrow Either)
 
-### iOS Compose (Experimental)
-- **Alternative approach**: Uses Compose Multiplatform UI instead of native SwiftUI
-- **Shares UI code**: Same Compose screens as Android/Desktop from `:composeApp`
-- **Build**: `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode` (5-10 min)
-- **Entry point**: `iosAppCompose/iosAppCompose.xcodeproj` (Xcode only)
-- **Use case**: When you want 100% UI code sharing across all platforms
-- **Trade-off**: Less native iOS feel, experimental Compose iOS support
-- **See**: `iosAppCompose/README.md` for detailed setup and comparison with native SwiftUI approach
+**Pattern**: `Either<RepoError, T>` at boundaries
+```kotlin
+// ✅ DO: Return Either
+override suspend fun getJobs(): Either<RepoError, List<Job>> =
+  Either.catch {
+    api.getJobs().map { it.toDomain() }
+  }.mapLeft { it.toRepoError() }
 
-### Desktop (JVM)
-- Run: `./gradlew :composeApp:run` or use IDE run configuration
-- Desktop-specific code lives in `composeApp/src/jvmMain`
+// ❌ DON'T: Nullable, Result, or throws
+suspend fun getJobs(): List<Job>?  // Wrong: nullable
+suspend fun getJobs(): Result<List<Job>>  // Wrong: Result type
+suspend fun getJobs(): List<Job>  // Wrong: throws exceptions
+```
 
-### Server
-- Ktor-based backend application
-- Run: `./gradlew :server:run` or use IDE run configuration
+**See**: `.junie/guides/patterns/error_handling_patterns.md`
 
-## Testing
+### 3. ViewModels (androidx.lifecycle)
 
-**MANDATORY**: All production code MUST have tests. See `.junie/guides/tech/testing_strategy.md` for complete enforcement rules.
+**Pattern**: Inject `viewModelScope`, lifecycle-aware loading
+```kotlin
+// ✅ DO: Pass scope to superclass, load in lifecycle callback
+class HomeViewModel(
+  private val repo: JobRepository,
+  viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob())
+) : ViewModel(viewModelScope), UiStateHolder<HomeUiState, HomeUiEvent> {
+  
+  fun start(lifecycle: Lifecycle) {  // Load here
+    viewModelScope.launch {
+      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        repo.getJobs().fold(...)
+      }
+    }
+  }
+}
 
-### Test Enforcement Summary
+// ❌ DON'T: Store scope as field or work in init
+class HomeViewModel : ViewModel() {
+  private val scope = CoroutineScope(...)  // Wrong: field
+  init { loadData() }  // Wrong: work in init
+}
+```
 
-**Core Rule**: NO CODE WITHOUT TESTS
+**See**: `.junie/guides/patterns/viewmodel_patterns.md`
 
-| Production Code | Test Required | Test Location |
-|----------------|---------------|---------------|
-| Repository | ✅ MANDATORY | androidUnitTest/ |
-| ViewModel | ✅ MANDATORY | androidUnitTest/ |
-| Mapper | ✅ MANDATORY | androidUnitTest/ |
-| Use Case | ✅ MANDATORY | androidUnitTest/ |
-| API Service | ✅ MANDATORY | androidUnitTest/ |
-| @Composable | ✅ MANDATORY | @Preview + Screenshot |
-| Simple Utility | ✅ MANDATORY | commonTest/ |
+### 4. Navigation (Navigation 3)
 
-### Test Frameworks
-- **Framework**: Kotest (assertions, property-based testing) - androidUnitTest/ only
-- **Mocking**: MockK (JVM-based, runs via Robolectric) - androidUnitTest/ only
-- **Screenshot**: Roborazzi (Robolectric-based, JVM tests)
-- **Location**: 
-  - **PRIMARY**: `androidUnitTest/` for ALL business logic (repositories, ViewModels, mappers, use cases)
-  - **MINIMAL**: `commonTest/` for simple utilities with NO dependencies
-  - **RARE**: `iosTest/` for platform-specific expect/actual implementations
+**Pattern**: Route objects + Navigator + EntryProviderInstaller
+```kotlin
+// ✅ DO: Plain route objects, EntryProviderInstaller in wiring
+data class PokemonDetail(val id: Int)  // No @Serializable needed
 
-### Test Commands
-- **Shared unit tests**: `./gradlew :composeApp:testDebugUnitTest` (or relevant target-specific tasks)
-- **Android UI tests** on device (if any under `composeApp/src/commonTest/screentest`): `./gradlew :composeApp:connectedDebugAndroidTest`
-- **Screenshot tests** (Roborazzi): 
-  - Record baselines: `./gradlew recordRoborazziDebug`
-  - Verify against baselines: `./gradlew verifyRoborazziDebug`
-- **iOS tests/builds**: Do NOT run by default. Only execute iOS-specific tests/builds if explicitly required or requested.
+// ❌ DON'T: Export navigation to iOS
+// Navigation is Compose-specific, NOT exported via :shared
+```
+
+**See**: `.junie/guides/patterns/navigation_patterns.md`
+
+### 5. Testing (Kotest + MockK + Turbine)
+
+**Mandatory**: Every production file needs tests
+
+**Test location strategy**:
+- `androidUnitTest/` — ALL business logic (repos, ViewModels, mappers)
+- `commonTest/` — Only simple utilities with NO dependencies
+
+**Property test targets**:
+- Mappers: 100% property tests
+- Repositories: 40-50% property tests
+- ViewModels: 30-40% property tests
+
+```kotlin
+// ✅ DO: Use Turbine for flow testing
+viewModel.uiState.test {
+    awaitItem() shouldBe Loading
+    viewModel.start(mockk(relaxed = true))
+    testScope.advanceUntilIdle()
+    awaitItem().shouldBeInstanceOf<Content>()
+    cancelAndIgnoreRemainingEvents()
+}
+
+// ❌ DON'T: Use Thread.sleep or delay
+Thread.sleep(100)  // Wrong: flaky, slow
+delay(100)  // Wrong: flaky
+```
+
+**See**: `.junie/guides/patterns/testing_patterns.md`
+
+## Critical DON'Ts (Top 10)
+## Critical DON'Ts (Top 10)
+1. ❌ **NEVER run iOS builds** unless explicitly required (5-10min builds)
+2. ❌ **NEVER store `CoroutineScope` as field** in ViewModels (pass to constructor)
+3. ❌ **NEVER perform work in `init`** blocks in ViewModels (use lifecycle callbacks)
+4. ❌ **NEVER return `Result` or nullable** from repositories (use `Either<RepoError, T>`)
+5. ❌ **NEVER swallow `CancellationException`** (use `Either.catch` which handles it)
+6. ❌ **NEVER create empty pass-through** use cases (call repos directly)
+7. ❌ **NEVER export `:data`, `:ui`, or `:wiring`** to iOS (only `:api`, `:presentation`, `:core:*`)
+8. ❌ **NEVER put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
+9. ❌ **NEVER add DI annotations** to production classes (wire in wiring modules)
+10. ❌ **NEVER omit @Preview** for @Composable functions (MANDATORY)
+
+## Detailed Technical Guidelines (Index)
+
+**This main guidelines.md provides a high-level overview. For detailed, authoritative guidance, consult the topic-specific files below. The tech guides are the source of truth.**
+
+### Architecture & Patterns
+- **Conventions** (START HERE) — `.junie/guides/tech/conventions.md` — Cross-cutting rules for architecture, modules, DI, errors, testing
+- **Domain Layer** — `.junie/guides/tech/domain.md` — Domain models, use cases, business logic patterns
+- **Data Layer & Repositories** — `.junie/guides/tech/repository.md` — Repository patterns, Arrow Either, error handling
+- **API Services** — `.junie/guides/tech/api_services.md` — Ktor client, DTOs, request/response patterns
+- **Presentation Layer** — `.junie/guides/tech/presentation_layer.md` — ViewModels, UI state, screen architecture
+- **Navigation** — `.junie/guides/tech/navigation.md` — Navigation 3, feature routing, deep links
+- **iOS Integration** — `.junie/guides/tech/ios_integration.md` — SwiftUI + KMP ViewModels, Direct Integration vs Wrapper patterns
+
+### Infrastructure & Tools
+- **Dependency Injection** — `.junie/guides/tech/dependency_injection.md` — Koin DI, wiring modules, platform-specific patterns
+- **Coroutines & Concurrency** — `.junie/guides/tech/coroutines.md` — Scopes, dispatchers, cancellation, Arrow patterns
+- **Utility Organization** — `.junie/guides/tech/utility_organization.md` — Utilities, extensions, platform abstractions
+- **Testing Strategy** — `.junie/guides/tech/testing_strategy.md` — Kotest, MockK, Roborazzi, property-based testing
+- **Test Enforcement** — `.junie/guides/tech/testing_strategy.md` — ⚠️ MANDATORY: All code requires tests
+- **Gradle Convention Plugins** — `.junie/guides/tech/gradle_convention_plugins.md` — Build configuration, convention plugins
+
+### UI/UX Development Guidelines
+When implementing UI screens and user experiences:
+- **Onboarding screens**: Use `.junie/guides/project/onboarding.md` for content and flow guidance
+- **Generic/Other screens** (profile, settings, main features, etc.): Reference `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md` for implementation patterns and creative UI development guidance
+- **Overall UI/UX strategy**: Use `.junie/guides/prompts/uiux_agent_system_prompt.md` for high-level design direction and screen planning
+
+Extending:
+- Add a new .md file under .junie/guides/ for each new topic (e.g., state_management.md, persistence.md, navigation.md).
+- Keep each file scoped, actionable, and aligned with Product Knowledge docs located in `.junie/guides/project`.
+- Optionally add a bullet entry here, but Junie should proactively search .junie/guides/ for relevant topics.
 
 ### Minimum Test Coverage (Per File)
 
