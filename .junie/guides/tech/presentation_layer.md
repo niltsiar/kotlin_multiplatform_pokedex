@@ -121,6 +121,229 @@ class ProfileViewModel(
 }
 ```
 
+### Parametric ViewModels
+
+**Pattern**: ViewModels that need constructor parameters (e.g., `pokemonId`, `userId`) for initialization.
+
+#### Why Parametric ViewModels?
+
+Some screens require context to load data:
+- **Detail screens** need an ID to fetch specific item
+- **Edit screens** need initial data to populate form
+- **Filtered lists** need filter criteria
+
+**Anti-pattern**: Loading data from navigation state in Compose
+```kotlin
+// ❌ DON'T: Passing data through navigation and loading in Composable
+@Composable
+fun PokemonDetailScreen(pokemonId: Int) {
+    val viewModel: PokemonDetailViewModel = koinInject()
+    LaunchedEffect(pokemonId) {
+        viewModel.loadPokemon(pokemonId)  // Loads on every recomposition
+    }
+}
+```
+
+**Correct pattern**: Pass parameter to ViewModel constructor
+```kotlin
+// ✅ DO: ViewModel initialized with parameter
+class PokemonDetailViewModel(
+    private val pokemonId: Int,
+    private val repository: PokemonDetailRepository,
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+) : ViewModel(viewModelScope), UiStateHolder<PokemonDetailUiState, PokemonDetailUiEvent> {
+    
+    private val _uiState = MutableStateFlow<PokemonDetailUiState>(PokemonDetailUiState.Loading)
+    override val uiState: StateFlow<PokemonDetailUiState> = _uiState
+    
+    // Load on first collection (lifecycle-aware)
+    init {
+        loadPokemon()
+    }
+    
+    private fun loadPokemon() {
+        viewModelScope.launch {
+            _uiState.value = PokemonDetailUiState.Loading
+            repository.getPokemonById(pokemonId).fold(
+                ifLeft = { error -> 
+                    _uiState.value = PokemonDetailUiState.Error(error.message)
+                },
+                ifRight = { pokemon -> 
+                    _uiState.value = PokemonDetailUiState.Content(pokemon)
+                }
+            )
+        }
+    }
+    
+    fun retry() {
+        loadPokemon()
+    }
+    
+    override fun onUiEvent(event: PokemonDetailUiEvent) {
+        when (event) {
+            is PokemonDetailUiEvent.Retry -> retry()
+        }
+    }
+}
+```
+
+#### Koin DI with parametersOf
+
+**Wiring module** (`:features:pokemondetail:wiring`):
+```kotlin
+val pokemonDetailModule = module {
+    factory { params ->
+        PokemonDetailViewModel(
+            pokemonId = params.get(),  // Extract Int parameter
+            repository = get()         // Resolve from Koin
+        )
+    }
+}
+```
+
+**Injection in Compose** (`:features:pokemondetail:ui`):
+```kotlin
+@Composable
+fun PokemonDetailScreen(
+    pokemonId: Int,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Inject with parametersOf
+    val viewModel: PokemonDetailViewModel = koinInject { parametersOf(pokemonId) }
+    
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
+    PokemonDetailContent(
+        uiState = uiState,
+        onEvent = viewModel::onUiEvent,
+        onBack = onBack,
+        modifier = modifier
+    )
+}
+```
+
+**Navigation registration** (`:features:pokemondetail:wiring/androidMain`):
+```kotlin
+internal fun pokemonDetailNavigationProvider(
+    navigator: Navigator
+): EntryProviderInstaller = {
+    entry<PokemonDetail>(
+        metadata = NavDisplay.transitionSpec(
+            slideInHorizontally() + fadeIn()
+        )
+    ) { key ->
+        PokemonDetailScreen(
+            pokemonId = key.id,  // Extract from route
+            onBack = { navigator.goBack() }
+        )
+    }
+}
+```
+
+**Complete Flow**:
+1. Navigation passes route: `PokemonDetail(id = 25)`
+2. `entry<PokemonDetail> { key -> }` extracts `key.id`
+3. Screen receives `pokemonId` parameter
+4. `koinInject { parametersOf(pokemonId) }` passes to Koin
+5. Koin factory receives: `params.get()` extracts Int
+6. ViewModel initialized with `pokemonId` and `repository`
+7. ViewModel loads data automatically in `init`
+
+#### iOS Integration
+
+**Kotlin helper function** (`shared/src/iosMain/kotlin/KoinIos.kt`):
+```kotlin
+fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel {
+    return KoinPlatform.getKoin().get { parametersOf(pokemonId) }
+}
+```
+
+**Swift wrapper** (`iosApp/ViewModels/PokemonDetailViewModelWrapper.swift`):
+```swift
+@MainActor
+class PokemonDetailViewModelWrapper: ObservableObject {
+    @Published var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
+    
+    private let viewModel: PokemonDetailViewModel
+    
+    init(pokemonId: Int) {
+        // Cast Swift Int to Kotlin Int32
+        self.viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
+    }
+    
+    func observeState() async {
+        for await state in viewModel.uiState {
+            self.uiState = state
+        }
+    }
+    
+    func retry() {
+        viewModel.retry()
+    }
+}
+```
+
+**SwiftUI view** (`iosApp/Views/PokemonDetailView.swift`):
+```swift
+struct PokemonDetailView: View {
+    let pokemonId: Int
+    @StateObject private var wrapper: PokemonDetailViewModelWrapper
+    
+    init(pokemonId: Int) {
+        self.pokemonId = pokemonId
+        _wrapper = StateObject(wrappedValue: PokemonDetailViewModelWrapper(pokemonId: pokemonId))
+    }
+    
+    var body: some View {
+        switch wrapper.uiState {
+        case is PokemonDetailUiStateLoading:
+            ProgressView("Loading...")
+        case let content as PokemonDetailUiStateContent:
+            DetailContent(pokemon: content.pokemon)
+        case let error as PokemonDetailUiStateError:
+            ErrorView(message: error.message, onRetry: { wrapper.retry() })
+        default:
+            EmptyView()
+        }
+    }
+    .task {
+        await wrapper.observeState()
+    }
+}
+```
+
+#### Key Patterns
+
+**When to use parametric ViewModels**:
+- ✅ Detail screens (ID parameter)
+- ✅ Edit screens (initial data)
+- ✅ Search/filter screens (query parameter)
+- ✅ Parameterized lists (category, user ID)
+
+**When NOT to use**:
+- ❌ List screens with no filter (use simple ViewModel)
+- ❌ Static content screens (no ViewModel needed)
+- ❌ Settings screens (load on demand)
+
+**Best Practices**:
+1. Load data in `init` for immediate feedback
+2. Provide `retry()` method for error recovery
+3. Use `parametersOf` in Koin for type-safe injection
+4. Extract parameters from route objects in navigation
+5. Cast Swift `Int` to Kotlin `Int32` in iOS wrappers
+6. Use `StateObject(wrappedValue:)` in SwiftUI init
+
+**See Working Examples**:
+- `features/pokemondetail/presentation/PokemonDetailViewModel.kt`
+- `features/pokemondetail/wiring/src/commonMain/.../PokemonDetailModule.kt`
+- `features/pokemondetail/wiring/src/androidMain/.../PokemonDetailNavigationProviders.kt`
+- `shared/src/iosMain/kotlin/KoinIos.kt` (iOS helper)
+- `iosApp/ViewModels/PokemonDetailViewModelWrapper.swift`
+- `iosApp/Views/PokemonDetailView.swift`
+
+---
+
 ### Screen Composables
 Follow function overloading pattern for flexibility and collect one‑time events:
 

@@ -121,6 +121,101 @@ val featureModule = module {
 - `get(named("key"))` - Resolve named dependency
 - `get<Type>()` - Resolve by explicit type
 
+### Parametric Dependencies with parametersOf
+
+When a dependency needs runtime parameters (e.g., ViewModel with `pokemonId`), use Koin's `parametersOf`:
+
+**Pattern**: Factory with parameters
+
+```kotlin
+// ViewModel with constructor parameter
+class PokemonDetailViewModel(
+    private val pokemonId: Int,
+    private val repository: PokemonDetailRepository,
+    viewModelScope: CoroutineScope = ...
+) : ViewModel(viewModelScope) { ... }
+
+// Koin module with parametersOf
+val pokemonDetailModule = module {
+    factory { params ->
+        PokemonDetailViewModel(
+            pokemonId = params.get(),  // Extract parameter by type
+            repository = get()         // Resolve from Koin graph
+        )
+    }
+}
+
+// Injection with parameters in Compose
+@Composable
+fun PokemonDetailScreen(pokemonId: Int) {
+    val viewModel: PokemonDetailViewModel = koinInject { parametersOf(pokemonId) }
+    // Use viewModel...
+}
+```
+
+**Key Points**:
+- `factory { params -> }` receives parameters lambda
+- `params.get()` extracts parameter by type (Int, String, etc.)
+- Multiple parameters: `params.get<Int>(0)`, `params.get<String>(1)`
+- Named parameters: `params.get<Int>("pokemonId")`
+- `koinInject { parametersOf(value) }` passes parameters at injection site
+
+**iOS Integration** (helper function pattern):
+
+```kotlin
+// shared/src/iosMain/kotlin/KoinIos.kt
+fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel {
+    return KoinPlatform.getKoin().get { parametersOf(pokemonId) }
+}
+```
+
+**Swift Wrapper**:
+```swift
+@MainActor
+class PokemonDetailViewModelWrapper: ObservableObject {
+    private let viewModel: PokemonDetailViewModel
+    
+    init(pokemonId: Int) {
+        // Swift Int → Kotlin Int32 cast
+        self.viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
+    }
+}
+```
+
+**When to Use parametersOf**:
+- ✅ ViewModels that need IDs or navigation parameters
+- ✅ Repositories that need configuration (not recommended - prefer factory function)
+- ✅ Use cases orchestrating operations with runtime data
+- ❌ Don't use for static configuration (use named dependencies instead)
+
+**Alternative Pattern** (factory function with parameters):
+
+```kotlin
+// Instead of parametersOf in Koin, you can use factory functions
+fun PokemonDetailViewModel(
+    pokemonId: Int,
+    repository: PokemonDetailRepository
+): PokemonDetailViewModel = PokemonDetailViewModel(pokemonId, repository)
+
+// Then inject repository normally, construct ViewModel manually
+val repository: PokemonDetailRepository = koinInject()
+val viewModel = remember(pokemonId) {
+    PokemonDetailViewModel(pokemonId, repository)
+}
+```
+
+**Trade-offs**:
+- `parametersOf` keeps DI centralized, simpler injection
+- Factory function gives more control, easier testing
+- For ViewModels with parameters, `parametersOf` is recommended
+
+**See**: Working examples in:
+- `features/pokemondetail/wiring/src/commonMain/.../PokemonDetailModule.kt`
+- `shared/src/iosMain/kotlin/KoinIos.kt` (iOS helper functions)
+- `features/pokemondetail/wiring/src/androidMain/.../PokemonDetailNavigationProviders.kt`
+
+---
+
 ## Contributing Bindings from Feature Modules
 
 Feature modules define Koin modules in their wiring layer:

@@ -80,6 +80,249 @@ plugins {
 
 **Version**: `0.10.8` (compatible with Kotlin 2.2.21)
 
+#### SKIE Automatic Renames for Swift Keywords
+
+**Problem**: Kotlin classes named after Swift keywords get automatically renamed by SKIE.
+
+**Example**: `Type` class (Pokemon type) conflicts with Swift's `Type` protocol.
+
+**SKIE Solution**: Automatically renames to `Type_` (appends underscore).
+
+**Impact in Code**:
+
+```swift
+// Kotlin side (unchanged)
+data class Type(val name: String, val url: String)
+
+// Swift side (SKIE-renamed)
+struct PokemonDetail {
+    let types: [Type_]  // Note: Type_ not Type
+}
+
+// Using in SwiftUI
+ForEach(pokemon.types, id: \.name) { type in
+    TypeBadge(type: type)  // type is Type_ instance
+}
+
+private func typeGradient(types: [Type_]) -> LinearGradient {
+    let type = types.first?.name.lowercased() ?? "normal"
+    // Use type.name to access properties
+}
+```
+
+**Other Common Keyword Collisions**:
+- `Type` → `Type_`
+- `Error` → `Error_`
+- `Result` → `Result_`
+- `Self` → `Self_`
+- `Protocol` → `Protocol_`
+
+**Debugging Renamed Types**:
+```swift
+// Check in Swift compiler or Xcode autocomplete
+// If a Kotlin class doesn't show up, try appending _
+import Shared
+let type: Type_ = pokemonDetail.types.first!
+```
+
+**Best Practice**: 
+- ✅ Check SKIE-generated Swift interfaces when Kotlin types don't compile
+- ✅ Search for `_` suffix on missing types
+- ✅ Use Xcode autocomplete to discover renamed types
+- ❌ Don't manually rename Kotlin classes to avoid Swift keywords (SKIE handles it)
+
+---
+
+### 2. Parametric ViewModels with Koin
+
+**Pattern**: ViewModels with constructor parameters (e.g., `pokemonId`, `userId`)
+
+#### Kotlin Side: Factory with parametersOf
+
+```kotlin
+// :features:pokemondetail:presentation - ViewModel with parameter
+class PokemonDetailViewModel(
+    private val pokemonId: Int,
+    private val repository: PokemonDetailRepository,
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+) : ViewModel(viewModelScope), UiStateHolder<PokemonDetailUiState, PokemonDetailUiEvent> {
+    
+    fun loadPokemon() {
+        viewModelScope.launch {
+            _uiState.value = PokemonDetailUiState.Loading
+            repository.getPokemonById(pokemonId).fold(
+                ifLeft = { error -> _uiState.value = PokemonDetailUiState.Error(error.message) },
+                ifRight = { pokemon -> _uiState.value = PokemonDetailUiState.Content(pokemon) }
+            )
+        }
+    }
+}
+
+// :features:pokemondetail:wiring - Koin module with parametersOf
+val pokemonDetailModule = module {
+    factory { params ->
+        PokemonDetailViewModel(
+            pokemonId = params.get(),
+            repository = get()
+        )
+    }
+}
+```
+
+**Key Points**:
+- ViewModel takes `pokemonId` as constructor parameter
+- Koin `factory` uses `params ->` to receive parameters
+- `params.get()` extracts parameter by type (Int in this case)
+- Repository injected normally with `get()`
+
+#### iOS Side: Helper Function with parametersOf
+
+```kotlin
+// shared/src/iosMain/kotlin/KoinIos.kt
+fun getPokemonDetailViewModel(pokemonId: Int): com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel {
+    return KoinPlatform.getKoin().get { parametersOf(pokemonId) }
+}
+```
+
+**Key Points**:
+- Helper function accepts parameter (pokemonId)
+- `get { parametersOf(pokemonId) }` passes parameter to Koin factory
+- Return type is fully qualified (avoids Swift name collisions)
+
+#### Swift Side: Wrapper with init Parameter
+
+```swift
+// iosApp/ViewModels/PokemonDetailViewModelWrapper.swift
+import Foundation
+import Shared
+
+@MainActor
+class PokemonDetailViewModelWrapper: ObservableObject {
+    @Published var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
+    
+    private let viewModel: PokemonDetailViewModel
+    
+    init(pokemonId: Int) {
+        // Get ViewModel from Koin with parameter
+        self.viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
+    }
+    
+    func observeState() async {
+        for await state in viewModel.uiState {
+            self.uiState = state
+        }
+    }
+    
+    func retry() {
+        viewModel.retry()
+    }
+}
+```
+
+**Key Points**:
+- Wrapper `init` accepts pokemonId parameter
+- Cast Swift `Int` to Kotlin `Int32`: `Int32(pokemonId)`
+- Call helper function with parameter
+- Store ViewModel instance for lifecycle
+
+#### SwiftUI View with Parametric Wrapper
+
+```swift
+// iosApp/Views/PokemonDetailView.swift
+struct PokemonDetailView: View {
+    let pokemonId: Int
+    @StateObject private var wrapper: PokemonDetailViewModelWrapper
+    
+    init(pokemonId: Int) {
+        self.pokemonId = pokemonId
+        _wrapper = StateObject(wrappedValue: PokemonDetailViewModelWrapper(pokemonId: pokemonId))
+    }
+    
+    var body: some View {
+        switch wrapper.uiState {
+        case is PokemonDetailUiStateLoading:
+            ProgressView("Loading...")
+        case let content as PokemonDetailUiStateContent:
+            DetailContentView(pokemon: content.pokemon)
+        case let error as PokemonDetailUiStateError:
+            ErrorView(message: error.message, onRetry: { wrapper.retry() })
+        default:
+            EmptyView()
+        }
+    }
+    .task {
+        await wrapper.observeState()
+    }
+}
+```
+
+**Key Points**:
+- View takes pokemonId as init parameter
+- `@StateObject` initialized with `StateObject(wrappedValue: ...)` in init
+- `_wrapper` (with underscore) accesses property wrapper initializer
+- Pass pokemonId to wrapper initializer
+- Rest of pattern identical to non-parametric ViewModels
+
+**Complete Flow**:
+1. SwiftUI view receives `pokemonId` parameter
+2. View creates `@StateObject` wrapper with `pokemonId`
+3. Wrapper calls Kotlin helper: `getPokemonDetailViewModel(pokemonId: Int32)`
+4. Helper calls Koin: `get { parametersOf(pokemonId) }`
+5. Koin factory receives parameter: `params.get()`
+6. ViewModel initialized with `pokemonId` and `repository`
+
+---
+
+### 3. Swift String Formatting
+
+**Problem**: Swift string interpolation doesn't support format specifiers like Kotlin.
+
+```swift
+// ❌ Swift compile error
+let height = "Height: \(pokemon.height/10.0:.1f) m"
+// Error: Cannot use specifier with string interpolation
+```
+
+**Solution**: Use `String(format:_:)` for formatted output.
+
+```swift
+// ✅ Correct Swift syntax
+let height = String(format: "%.1f m", Double(pokemon.height) / 10.0)
+let weight = String(format: "%.1f kg", Double(pokemon.weight) / 10.0)
+let id = String(format: "#%03d", Int(pokemon.id))
+```
+
+**Common Format Specifiers**:
+- `%.1f` - Float with 1 decimal place
+- `%.2f` - Float with 2 decimal places
+- `%03d` - Integer with leading zeros (3 digits)
+- `%d` - Integer
+- `%@` - String (for Swift objects)
+
+**Type Conversions for Formatting**:
+```swift
+// Kotlin Int32 → Swift Int
+String(format: "#%03d", Int(pokemon.id))
+
+// Kotlin Int32 → Swift Double for division
+String(format: "%.1f m", Double(pokemon.height) / 10.0)
+
+// Explicit Double wrapper
+let heightInMeters = Double(pokemon.height) / 10.0
+let heightString = String(format: "%.1f m", heightInMeters)
+```
+
+**Why Not Interpolation?**: Swift doesn't support inline format specifiers in string interpolation. For simple concatenation without formatting, interpolation works:
+
+```swift
+// ✅ Simple interpolation (no formatting)
+let name = "Name: \(pokemon.name)"
+let count = "Total: \(pokemon.stats.count)"
+
+// ❌ Formatted interpolation (use String(format:) instead)
+let height = "Height: \(pokemon.height/10.0:.1f) m"  // Compile error
+```
+
 ---
 
 ### 2. Koin DI from Swift

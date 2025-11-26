@@ -72,6 +72,29 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 - ❌ Generic database layer (each feature manages its own data)
 - ❌ Generic API service interfaces (each feature defines its own)
 
+### Reference Implementations
+
+**Completed Features** (use as reference when creating new features):
+
+1. **Pokemon List** (`:features:pokemonlist`)
+   - Pattern: Simple list with pagination (offset-based)
+   - Navigation: Simple route (`object PokemonList`)
+   - Data: List endpoint (`/pokemon?limit=20&offset=0`)
+   - See: Complete implementation in `features/pokemonlist/`
+
+2. **Pokemon Detail** (`:features:pokemondetail`)
+   - Pattern: Parametric ViewModel with ID parameter
+   - Navigation: Parameterized route (`data class PokemonDetail(val id: Int)`)
+   - Animations: Navigation 3 metadata-based transitions (slideInHorizontally + fadeIn)
+   - Data: Detail endpoint with nested structures (`/pokemon/{id}`)
+   - iOS: Parametric wrapper with `StateObject(wrappedValue:)` init
+   - SKIE: Type→Type_ rename handled in SwiftUI
+   - See: Complete implementation in `features/pokemondetail/`
+
+**Key Differences**:
+- pokemonlist: No parameters, simple list state, infinite scroll
+- pokemondetail: Parametric ViewModel, nested DTOs, retry mechanism, Navigation 3 animations
+
 ### Feature Independence Rules
 
 1. **Features MUST NOT depend on other features' `:impl` modules**
