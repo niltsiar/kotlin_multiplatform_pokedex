@@ -8,13 +8,13 @@ data class PokemonDetail(
     val height: Int,
     val weight: Int,
     val baseExperience: Int,
-    val types: ImmutableList<Type>,
+    val types: ImmutableList<TypeOfPokemon>,
     val stats: ImmutableList<Stat>,
     val abilities: ImmutableList<Ability>,
     val imageUrl: String
 )
 
-data class Type(
+data class TypeOfPokemon(
     val name: String,
     val slot: Int
 )

@@ -34,10 +34,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -51,7 +49,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTypeColo
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Ability
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Stat
-import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Type
+import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.TypeOfPokemon
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailUiState
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -275,7 +273,7 @@ private fun HeroSection(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TypeBadgesSection(
-    types: ImmutableList<Type>,
+    types: ImmutableList<TypeOfPokemon>,
     isDark: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -571,7 +569,7 @@ private fun PokemonDetailScreenContentPreview() {
                         weight = 60,
                         baseExperience = 112,
                         types = persistentListOf(
-                            Type(name = "electric", slot = 1)
+                            TypeOfPokemon(name = "electric", slot = 1)
                         ),
                         stats = persistentListOf(
                             Stat(name = "hp", baseStat = 35, effort = 0),

@@ -7,7 +7,7 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.TypeSlo
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Ability
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Stat
-import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Type
+import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.TypeOfPokemon
 import kotlinx.collections.immutable.toImmutableList
 
 /**
@@ -30,8 +30,8 @@ fun PokemonDetailDto.asDomain(): PokemonDetail {
 /**
  * Maps TypeSlotDto to Type domain model.
  */
-fun TypeSlotDto.asDomain(): Type {
-    return Type(
+fun TypeSlotDto.asDomain(): TypeOfPokemon {
+    return TypeOfPokemon(
         name = type.name,
         slot = slot
     )
