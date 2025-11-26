@@ -525,11 +525,51 @@ class HomeScreenScreenshotTest {
 
 ## 🎨 Creative UI/UX Implementation Guide
 
+### Platform-Specific Implementation
+
+**CRITICAL**: This project has **TWO UI implementations** for iOS:
+- **Native SwiftUI** (`:iosApp`) — Production iOS app, uses SwiftUI APIs
+- **Compose Multiplatform** (`:iosAppCompose`) — Experimental iOS app, shares Compose UI with Android/Desktop
+
+**Choose the correct guide**:
+
+| Target App | Platform | Animation Guide | Screen Agent |
+|-----------|----------|----------------|-------------|
+| `:iosApp` (production) | SwiftUI | `animation_example_guides_swiftui.md` | `ui_ux_system_agent_for_swiftui_screen.md` |
+| `:iosAppCompose` (experimental) | Compose | `animation_example_guides.md` | `ui_ux_system_agent_for_generic_screen.md` |
+| `:composeApp` (Android/Desktop) | Compose | `animation_example_guides.md` | `ui_ux_system_agent_for_generic_screen.md` |
+
+**API Mapping: Compose ↔ SwiftUI**
+
+| Compose API | SwiftUI Equivalent | Use Case |
+|-------------|-------------------|----------|
+| `AnimatedContent` | `.transition()` + conditional rendering | Screen transitions |
+| `slideInHorizontally` | `.move(edge: .trailing)` | Slide animations |
+| `fadeIn()` | `.opacity` transition | Fade effects |
+| `scaleIn()` | `.scale` transition | Scale effects |
+| `Modifier.graphicsLayer` | `.scaleEffect()`, `.rotationEffect()` | Transform animations |
+| `AnimatedVisibility` | Conditional with `.transition()` | Show/hide |
+| `LazyColumn` | `List` or `LazyVStack` | Scrolling lists |
+| `Modifier.pointerInput` | `.gesture()` | Gesture handling |
+| `spring()` | `.spring(response:dampingFraction:)` | Spring physics |
+| `tween()` | `.easeInOut(duration:)` | Easing curves |
+| `LocalContext.current` | N/A (use native iOS APIs) | Platform context |
+| `SensorManager` | `CoreMotion` framework | Device sensors |
+
 ### When Building Delightful UIs
 
-**Always consult these guides before implementing UI:**
-- `.junie/guides/prompts/animation_example_guides.md` — Motion patterns and transitions
-- `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md` — Interactive surprises
+**Always consult the platform-appropriate guides before implementing UI:**
+
+**For Compose (Android/Desktop/iosAppCompose)**:
+- `.junie/guides/prompts/animation_example_guides.md` — Compose motion patterns
+- `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md` — Compose screen agent
+
+**For SwiftUI (iosApp production)**:
+- `.junie/guides/prompts/animation_example_guides_swiftui.md` — SwiftUI motion patterns
+- `.junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md` — SwiftUI screen agent
+
+**For all platforms**:
+- `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md` — Interactive surprises (conceptual)
 
 ### Animation Categories & Examples
 
@@ -926,6 +966,17 @@ class MyViewModel(...) : ViewModel(...) {
   └── src/main/kotlin      ← REST API for all clients
 ```
 
+### Platform-Specific UI Implementation Matrix
+
+| Target App | UI Framework | ViewModels Source | UI Screens Location | Animation Guide |
+|-----------|-------------|-------------------|--------------------|--------------------|
+| `:iosApp` | **Native SwiftUI** | `:features:*:presentation` (KMP via SKIE) | `iosApp/Views/*.swift` | `animation_example_guides_swiftui.md` |
+| `:iosAppCompose` | **Compose Multiplatform** | `:features:*:presentation` (KMP via Koin) | `:features:*:ui` (shared with Android) | `animation_example_guides.md` |
+| Android | **Compose Multiplatform** | `:features:*:presentation` (KMP via Koin) | `:features:*:ui` (shared with Desktop) | `animation_example_guides.md` |
+| Desktop (JVM) | **Compose Multiplatform** | `:features:*:presentation` (KMP via Koin) | `:features:*:ui` (shared with Android) | `animation_example_guides.md` |
+
+**Key Insight**: ViewModels and business logic are **100% shared** across all platforms. Only UI layer differs (SwiftUI vs Compose).
+
 ### Feature Module Pattern
 ```
 :features:<feature>:api     → Public contracts (exported to iOS via :shared)
@@ -1044,8 +1095,10 @@ cat gradle/libs.versions.toml
 - **UI/UX Agent**: `.junie/guides/prompts/uiux_agent_system_prompt.md`
 - **Onboarding Agent**: `.junie/guides/prompts/onboarding_agent_system_prompt.md`
 - **User Flow Agent**: `.junie/guides/prompts/user_flow_agent_system_prompt.md`
-- **Generic Screen UI Agent**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md`
-- **Animation Guides**: `.junie/guides/prompts/animation_example_guides.md`
+- **Compose Screen Agent**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md` (Android/Desktop/iosAppCompose)
+- **SwiftUI Screen Agent**: `.junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md` (iosApp production) **← NEW**
+- **Compose Animation Guide**: `.junie/guides/prompts/animation_example_guides.md`
+- **SwiftUI Animation Guide**: `.junie/guides/prompts/animation_example_guides_swiftui.md` **← NEW**
 - **Easter Eggs & Mini-Games**: `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md`
 
 ---
@@ -1159,10 +1212,10 @@ CURRENT_MODE: User Flow Planning Mode
 [User journey maps and screen sequences]
 ```
 
-### Screen Implementation Mode
-**When to use**: Building UI screens in Compose Multiplatform from markdown specifications
+### Screen Implementation Mode (Compose)
+**When to use**: Building Compose Multiplatform UI screens for Android/Desktop/iosAppCompose from markdown specifications
 
-**Activation**: `SWITCH_TO: Screen Implementation Mode`
+**Activation**: `SWITCH_TO: Compose Screen Implementation Mode`
 
 **Prompt**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md`
 
@@ -1172,7 +1225,7 @@ CURRENT_MODE: User Flow Planning Mode
 - Add animations, transitions, micro-interactions
 - Include @Preview annotations for all variations
 - Extract content from markdown specs
-- Reference animation and easter egg guides for creative implementations
+- Reference `animation_example_guides.md` for Compose patterns
 
 **Implementation Pattern**:
 ```kotlin
@@ -1194,9 +1247,84 @@ private fun ScreenVariation2Preview() { }
 
 **Response Template**:
 ```
-CURRENT_MODE: Screen Implementation Mode
+CURRENT_MODE: Compose Screen Implementation Mode
 
 [Production-ready Compose code with variations]
+```
+
+### Screen Implementation Mode (SwiftUI)
+**When to use**: Building native SwiftUI UI screens for iosApp (production) from markdown specifications
+
+**Activation**: `SWITCH_TO: SwiftUI Screen Implementation Mode`
+
+**Prompt**: `.junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md`
+
+**Key responsibilities**:
+- Create production-ready native SwiftUI code
+- Integrate KMP ViewModels via SKIE (`for await` in `.task`)
+- Implement multiple UI variations in single file
+- Add animations using SwiftUI APIs (`.spring()`, `.transition()`)
+- Include `#Preview` for all variations
+- Extract content from markdown specs
+- Reference `animation_example_guides_swiftui.md` for SwiftUI patterns
+
+**Implementation Pattern**:
+```swift
+import SwiftUI
+import Shared
+
+// MARK: - Data Model
+struct ScreenData {
+    let title: String
+    let subtitle: String
+}
+
+// MARK: - Variation 1: Minimal
+struct ScreenVariation1: View {
+    let data: ScreenData
+    var body: some View { /* ... */ }
+}
+
+// MARK: - Variation 2: Playful  
+struct ScreenVariation2: View {
+    let data: ScreenData
+    var body: some View { /* ... */ }
+}
+
+// MARK: - Previews
+#Preview("Minimal") {
+    ScreenVariation1(data: ScreenData(title: "Test", subtitle: "Test"))
+}
+
+#Preview("Playful") {
+    ScreenVariation2(data: ScreenData(title: "Test", subtitle: "Test"))
+}
+```
+
+**KMP Integration Pattern**:
+```swift
+struct PokemonListView: View {
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .task {
+                for await state in viewModel.uiState {
+                    withAnimation(.spring()) {
+                        self.uiState = state
+                    }
+                }
+            }
+    }
+}
+```
+
+**Response Template**:
+```
+CURRENT_MODE: SwiftUI Screen Implementation Mode
+
+[Production-ready SwiftUI code with variations and KMP integration]
 ```
 
 ### Mode Selection Guidelines
@@ -1221,10 +1349,20 @@ CURRENT_MODE: Screen Implementation Mode
 - "Plan screen sequences"
 - "Define navigation structure"
 
-**Implementation questions** → Screen Implementation Mode
-- "Implement the onboarding screen"
-- "Create UI from onboarding.md"
-- "Build the paywall interface"
+**Implementation questions** → Choose platform-appropriate mode:
+
+**For `:iosApp` (SwiftUI production)**:
+- "Implement the onboarding screen for iOS" → SwiftUI Screen Implementation Mode
+- "Create native iOS UI from onboarding.md" → SwiftUI Screen Implementation Mode  
+- "Build iOS paywall interface" → SwiftUI Screen Implementation Mode
+
+**For `:iosAppCompose` / Android / Desktop (Compose)**:
+- "Implement the onboarding screen for Android" → Compose Screen Implementation Mode
+- "Create Compose UI from onboarding.md" → Compose Screen Implementation Mode
+- "Build Compose paywall interface" → Compose Screen Implementation Mode
+
+**If platform is ambiguous, ASK**:
+- "Which target? `:iosApp` (SwiftUI) or `:iosAppCompose` (Compose)?"
 
 **Technical questions** → Standard Development Mode (this document)
 - "Implement repository"
