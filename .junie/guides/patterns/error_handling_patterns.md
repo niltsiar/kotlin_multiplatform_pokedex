@@ -1,6 +1,6 @@
 # Error Handling Patterns (Arrow Either)
 
-Last Updated: November 26, 2025
+**Last Updated:** November 26, 2025
 
 > **Canonical Reference**: See [Either Boundary Pattern](../tech/critical_patterns_quick_ref.md#either-boundary-pattern) for core rules.
 

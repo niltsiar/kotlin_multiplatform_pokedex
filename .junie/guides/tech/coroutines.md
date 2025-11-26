@@ -1,5 +1,7 @@
 # Coroutines & Concurrency Guidelines
 
+**Last Updated:** November 26, 2025
+
 Purpose: Ensure coroutine usage is testable, predictable, and aligned with platform lifecycles.
 
 - Scopes

@@ -1,7 +1,5 @@
 # Project Conventions (Architecture, Modules, DI, Errors, Testing)
 
-# Project Conventions
-
 **Last Updated:** November 26, 2025
 
 > **Purpose**: Master reference for cross-cutting rules covering architecture, modules, dependency injection, error handling, and testing conventions.

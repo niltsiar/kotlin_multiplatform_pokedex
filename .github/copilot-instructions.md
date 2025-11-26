@@ -339,37 +339,22 @@ Before marking any code complete:
 - ❌ Manual cast after `shouldBeInstanceOf`, `shouldBeLeft`, or other smart-casting matchers
 
 ### Testing Strategy
-- **Unit tests first**: Write tests in `androidUnitTest/` to leverage Kotest and MockK
-- **Mobile-first approach**: Android/iOS are primary targets, tests validate shared KMP logic
-- **Property-based testing**: Use Kotest's `checkAll`/`forAll` for invariants
-- **MockK for dependencies**: Available in Android unit tests for powerful mocking
-- **Screenshot tests**: Use Roborazzi (Robolectric-based, Android unit tests)
-- **Test Location**: Use `androidUnitTest/` for business logic tests (repository, mappers, use cases)
-- **Common tests**: Only for platform-agnostic utilities that need no mocking
-- **Smart casting**: Use Kotest matcher smart casting, never manually cast after type assertions (see kotest_smart_casting_quick_ref.md)
 
-**Why Android Unit Tests for Business Logic:**
-- ✅ Full Kotest support (assertions, property testing, framework)
-- ✅ MockK available for powerful mocking
+See [Testing Pattern](../.junie/guides/tech/critical_patterns_quick_ref.md#testing-pattern) for complete canonical rules.
+
+**Quick summary**: Use Kotest + MockK in `androidUnitTest/` for business logic, 30-40% property-based test coverage, Turbine for flows (NEVER Thread.sleep), smart casting with Kotest matchers.
+
+**Detailed guide**: See `.junie/guides/tech/testing_strategy.md`
+
+**Why Android Unit Tests:**
+- ✅ Full Kotest + MockK support (assertions, property testing, powerful mocking)
 - ✅ Fast execution on JVM (Robolectric-based, seconds not minutes)
-- ✅ Tests cover shared KMP code (validates logic for all platforms)
-- ✅ Android/iOS are primary mobile targets for this project
-- ✅ Android unit tests run on JVM (same speed as jvmTest)
-
-**Trade-off Rationale:**
-- Android unit tests validate ALL shared business logic
-- iOS compiles the same Kotlin code (type safety guarantees)
-- Native-specific code uses expect/actual (minimal, well-isolated)
-- Testing on Android JVM validates multiplatform Kotlin behavior
-- Fast feedback loop enables rapid development
+- ✅ Tests validate ALL shared KMP business logic
+- ✅ Type safety guarantees iOS compatibility
 
 ### Error Handling Checklist
-- ✅ Repositories return `Either<RepoError, T>`
-- ✅ Use `Either.catch { }` to wrap throwing code
-- ✅ Map exceptions with `.mapLeft { it.toRepoError() }`
-- ✅ Define sealed error hierarchies per feature
-- ❌ Never swallow `CancellationException`
-- ❌ Don't use `Result` or nullable returns at boundaries
+
+See [Either Boundary Pattern](../.junie/guides/tech/critical_patterns_quick_ref.md#either-boundary-pattern) for complete rules on repositories, Either.catch, error mapping, and sealed hierarchies.
 
 ### ViewModel Checklist
 - ✅ Extend `androidx.lifecycle.ViewModel`
