@@ -54,7 +54,7 @@ Split-by-layer modularization with api/data/presentation/ui/wiring pattern:
 **Current State**: `pokemonlist` feature fully implemented with split-by-layer pattern. Use it as reference when creating new features.
 
 ### Convention Plugin Architecture
-Following [Now in Android](https://github.com/android/nowinandroid) patterns with shared configuration utilities and base plugin composition. See `.junie/guides/tech/convention_plugins_quick_ref.md` for usage guide.
+Following [Now in Android](https://github.com/android/nowinandroid) patterns with shared configuration utilities and base plugin composition. See `.junie/guides/tech/convention_plugins_guide.md` for complete guide (consolidated November 26, 2025).
 
 ## Build & Validation Workflow
 
