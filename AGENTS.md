@@ -156,8 +156,8 @@ Following patterns from [Now in Android](https://github.com/android/nowinandroid
 
 **See**: `.junie/guides/tech/convention_plugins_quick_ref.md` for complete usage guide
 
-### Dependency Injection: Metro (Implemented in pokemonlist)
-**Classes are DI-agnostic. Wire via `@Provides` in wiring modules with platform-specific source sets.**
+### Dependency Injection: Koin (Implemented in pokemonlist)
+**Classes are DI-agnostic. Wire via Koin `module { }` DSL in wiring modules with platform-specific source sets.**
 
 ```kotlin
 // :features:jobs:api - Public contract
@@ -179,14 +179,20 @@ internal class JobRepositoryImpl(
 fun JobRepository(api: JobApiService): JobRepository = 
   JobRepositoryImpl(api)
 
-// :features:jobs:wiring/commonMain - DI assembly for all platforms
-@Provides
-fun provideJobRepository(api: JobApiService): JobRepository = 
-  JobRepository(api)
+// :features:jobs:wiring/commonMain - Koin module for all platforms
+val jobsModule = module {
+    factory<JobRepository> {
+        JobRepository(api = get())
+    }
+}
 
-// :features:jobs:wiring/androidMain - DI assembly for Android UI
-@Provides
-fun provideJobsScreen(): @Composable () -> Unit = { JobsScreen() }
+// :features:jobs:wiring/androidMain - Koin module for Android UI
+val jobsNavigationModule = module {
+    single<Set<EntryProviderInstaller>> {
+        setOf({ entry<JobsRoute> { JobsScreen() } })
+    }
+}
+```
 ```
 
 **Why**: Gradle compilation avoidance, hides implementations, simplifies testing, enables platform-specific wiring
@@ -288,25 +294,27 @@ class Navigator(startDestination: Any) {
 }
 
 // :features:pokemonlist:wiring/androidMain - UI registration
-@Provides @IntoSet
-fun provideNavigation(
-  navigator: Navigator,
-  viewModel: PokemonListViewModel
-): EntryProviderInstaller = {
-  entry<PokemonList> {
-    PokemonListScreen(
-      viewModel = viewModel,
-      onPokemonClick = { navigator.goTo(PokemonDetail(it.id)) }
-    )
-  }
+val pokemonListNavigationModule = module {
+    single<Set<EntryProviderInstaller>> {
+        setOf(
+            {
+                entry<PokemonList> {
+                    PokemonListScreen(
+                        viewModel = koinInject(),
+                        onPokemonClick = { koinInject<Navigator>().goTo(PokemonDetail(it.id)) }
+                    )
+                }
+            }
+        )
+    }
 }
 
 // App.kt - NavDisplay integration
 NavDisplay(
-  backStack = graph.navigator.backStack,
-  onBack = { graph.navigator.goBack() },
+  backStack = navigator.backStack,
+  onBack = { navigator.goBack() },
   entryProvider = entryProvider {
-    graph.entryProviderInstallers.forEach { this.it() }
+    entryProviderInstallers.forEach { this.it() }
   }
 )
 ```
@@ -315,8 +323,8 @@ NavDisplay(
 - ✅ Route objects are plain Kotlin objects/data classes (no @Serializable)
 - ✅ Navigator manages explicit back stack (SnapshotStateList)
 - ✅ EntryProviderInstaller = typealias for `EntryProviderScope<Any>.() -> Unit`
-- ✅ Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers
-- ✅ Metro DI @IntoSet collects all navigation entries
+- ✅ Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers via Koin modules
+- ✅ Koin modules provide `Set<EntryProviderInstaller>` for navigation collection
 - ❌ NOT exported to iOS (Compose-specific navigation)
 
 ### No Empty Use Cases
@@ -366,7 +374,7 @@ class SubmitOrderUseCase(
 
 Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
 
-**Metro DI Patterns**: See [metro_di_quick_ref.md](.junie/guides/tech/metro_di_quick_ref.md) for DI setup and troubleshooting.
+**Koin DI Patterns**: See [koin_di_quick_ref.md](.junie/guides/tech/koin_di_quick_ref.md) for DI setup and troubleshooting.
 
 **Quick Enforcement Rules:**
 | Production Code | Test Location | Framework |
@@ -1196,7 +1204,7 @@ private fun ScreenVariation2Preview() { }
 
 **You're ready for complex tasks when you can**:
 - [ ] Create new feature modules (api/data/presentation/ui/wiring)
-- [ ] Implement Metro DI patterns with platform-specific wiring
+- [ ] Implement Koin DI patterns with platform-specific wiring
 - [ ] Write property-based tests
 - [ ] Create Roborazzi screenshot tests
 - [ ] Implement Navigation 3 modular architecture (route objects, EntryProviderInstaller)
@@ -1315,12 +1323,12 @@ class HomeViewModel : ViewModel() {
 }
 ```
 
-#### 5. Dependency Injection (Metro)
+#### 5. Dependency Injection (Koin)
 - [ ] Production classes free of DI annotations
-- [ ] Wiring modules use `@Provides` functions
-- [ ] `@Provides` functions return interface types
+- [ ] Wiring modules use Koin `module { }` DSL
+- [ ] `single { }` or `factory { }` provides interface types
 - [ ] Factory functions used in wiring modules
-- [ ] Graph structure correct (`AppGraph`, scopes)
+- [ ] Graph structure correct (`AppGraph.create()`, modules)
 
 #### 6. Testing Requirements
 - [ ] Kotest tests written in `commonTest/` (or platform-specific)
@@ -1335,7 +1343,7 @@ class HomeViewModel : ViewModel() {
 - [ ] UI screens in `:ui` module (Android + JVM only)
 - [ ] EntryProviderInstallers in `:wiring` platform-specific source sets (androidMain/jvmMain)
 - [ ] Navigator injected for cross-feature navigation
-- [ ] Metro DI @IntoSet for EntryProviderInstaller collection
+- [ ] Koin modules provide `Set<EntryProviderInstaller>` for collection
 - [ ] No @Serializable on route objects (not needed for Navigation 3)
 
 #### 8. Module Structure

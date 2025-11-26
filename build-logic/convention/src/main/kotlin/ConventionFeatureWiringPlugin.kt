@@ -8,16 +8,10 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * Convention plugin for feature wiring/DI modules.
  * 
  * These modules contain:
- * - @Provides functions for Metro DI
+ * - Koin module definitions
  * - Dependency graph aggregation
- * - Multi-binding contributions
  * 
  * NOT exported to iOS.
- * 
- * Metro's Gradle plugin automatically:
- * - Adds runtime dependency
- * - Configures Kotlin compiler plugin for code generation (not KSP)
- * - Works with all KMP targets
  * 
  * Composes: convention.feature.base
  * - KMP targets (Android, JVM, iOS)
@@ -28,13 +22,12 @@ class ConventionFeatureWiringPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
             apply("convention.feature.base")
-            apply("dev.zacsweers.metro")  // Metro plugin handles everything automatically
+            // No additional plugins needed - Koin is just a library
         }
         
         extensions.configure<KotlinMultiplatformExtension> {
             sourceSets.apply {
-                // No dependencies needed - Metro provides AppScope and other DI utilities
-                // Feature-specific dependencies added in individual wiring module build files
+                // Koin dependencies added in individual wiring module build files
             }
         }
     }

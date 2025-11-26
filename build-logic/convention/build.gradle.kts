@@ -22,7 +22,6 @@ dependencies {
     implementation(libs.kotlin.gradlePlugin)
     implementation(libs.compose.gradlePlugin)
     implementation(libs.ksp.gradlePlugin)
-    implementation(libs.metro.gradlePlugin)
 }
 
 gradlePlugin {

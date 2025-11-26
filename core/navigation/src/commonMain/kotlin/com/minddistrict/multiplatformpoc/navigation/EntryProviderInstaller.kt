@@ -9,15 +9,14 @@ import androidx.navigation3.runtime.EntryProviderScope
  *
  * Pattern from Android nav3-recipes modular architecture.
  *
- * Example usage:
+ * Example usage (Koin):
  * ```
- * @Provides
- * @IntoSet
- * fun providePokemonListNavigation(
- *     navigator: Navigator,
- *     viewModel: PokemonListViewModel
- * ): EntryProviderInstaller = {
- *     entry<PokemonList> {
+ * // In :features:feature:wiring/androidMain
+ * val featureNavigationModule = module {
+ *     single<Set<EntryProviderInstaller>>(named("featureNavigationInstallers")) {
+ *         setOf(
+ *             {
+ *                 entry<FeatureRoute> {
  *         PokemonListScreen(
  *             viewModel = viewModel,
  *             onPokemonClick = { id -> navigator.goTo(PokemonDetail(id)) }

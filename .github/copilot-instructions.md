@@ -24,7 +24,7 @@ This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for A
 :features:pokemonlist:data   → Network + Data layer - IMPLEMENTED ✅
 :features:pokemonlist:presentation → ViewModels, UI state - IMPLEMENTED ✅
 :features:pokemonlist:ui     → Compose UI screens - IMPLEMENTED ✅
-:features:pokemonlist:wiring → Metro DI assembly - IMPLEMENTED ✅
+:features:pokemonlist:wiring → Koin DI assembly - IMPLEMENTED ✅
 ```
 
 ### Required Architecture
@@ -33,7 +33,7 @@ Split-by-layer modularization with api/data/presentation/ui/wiring pattern:
 - `:features:<feature>:data` → Network + Data layer (API services, DTOs, repositories, mappers) - KMP all targets, NOT exported
 - `:features:<feature>:presentation` → ViewModels, UI state - **KMP all targets, shared with iOS**, exported to iOS
 - `:features:<feature>:ui` → Compose UI screens - **Android + JVM only**, NOT exported to iOS
-- `:features:<feature>:wiring` → Metro DI assembly - KMP with platform-specific source sets, NOT exported
+- `:features:<feature>:wiring` → Koin DI assembly - KMP with platform-specific source sets, NOT exported
 
 **Critical**: Split-by-layer architecture with platform-specific UI:
 - Data layer (network, repositories) in `:data` module - all KMP targets
@@ -114,7 +114,7 @@ Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
 
 ## Critical Project Conventions
 
-### Dependency Injection (Metro)
+### Dependency Injection (Koin)
 **Pattern**: Classes stay DI-agnostic; wiring happens in separate modules
 ```kotlin
 // :features:jobs:api
@@ -127,8 +127,11 @@ internal class JobRepositoryImpl(...) : JobRepository { ... }
 fun JobRepository(...): JobRepository = JobRepositoryImpl(...)  // Factory
 
 // :features:jobs:wiring
-@Provides
-fun provideJobRepository(...): JobRepository = JobRepository(...)
+val jobsModule = module {
+    factory<JobRepository> {
+        JobRepository(...)
+    }
+}
 ```
 **Why**: Enables Gradle compilation avoidance, keeps implementations hidden, simplifies testing
 
@@ -196,8 +199,9 @@ internal class ProfileEntryImpl : ProfileEntry {
 }
 
 // :features:profile:wiring
-@Provides
-fun provideProfileEntry(): ProfileEntry = ProfileEntryImpl()
+val profileModule = module {
+    single<ProfileEntry> { ProfileEntryImpl() }
+}
 ```
 
 ### No Empty Use Cases
@@ -220,7 +224,7 @@ class ProfileViewModel(private val repo: UserRepository, ...) {
 
 **Start here for implementation guidance** (`.junie/guides/tech/`):
 1. **`conventions.md`** — Master reference: architecture, modules, DI, testing rules
-2. **`dependency_injection.md`** — Metro setup, @Provides patterns, graph extensions
+2. **`dependency_injection.md`** — Koin setup, module DSL patterns, platform-specific wiring
 3. **`repository.md`** — Either boundaries, DTO→domain mapping, error handling
 4. **`presentation_layer.md`** — ViewModel lifecycle, UiStateHolder pattern, event handling
 5. **`navigation.md`** — Navigation 3 contracts, routing, deep links
@@ -444,8 +448,8 @@ Run through this after implementing code:
 
 #### Dependency Injection
 - [ ] Production classes free of DI annotations
-- [ ] Wiring modules use `@Provides` functions returning interfaces
-- [ ] Metro DI conventions followed
+- [ ] Wiring modules use `module { }` DSL
+- [ ] Koin DI conventions followed
 
 #### Testing
 - [ ] Kotest tests written in `commonTest/`

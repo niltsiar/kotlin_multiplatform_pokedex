@@ -4,40 +4,33 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.Pokem
 import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.PokemonDetailScreen
 import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
 import com.minddistrict.multiplatformpoc.navigation.Navigator
-import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.BindingContainer
-import dev.zacsweers.metro.ContributesTo
-import dev.zacsweers.metro.IntoSet
-import dev.zacsweers.metro.Provides
+import org.koin.compose.koinInject
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 /**
- * Android-specific Metro DI module for Pokemon Detail navigation.
+ * Android-specific Koin DI module for Pokemon Detail navigation.
  * 
  * Provides the EntryProviderInstaller that registers the PokemonDetailScreen composable
- * with the navigation graph using non-inline syntax.
+ * with the navigation graph.
  */
-@BindingContainer
-@ContributesTo(AppScope::class)
-interface PokemonDetailNavigationProviders {
-    
-    companion object {
-        /**
-         * Contributes the Pokemon Detail navigation entry to the app's navigation graph.
-         * Using explicit NavEntry instead of inline entry<T> function.
-         * 
-         * @param navigator The navigation controller for navigating between screens
-         */
-        @Provides
-        @IntoSet
-        fun providePokemonDetailNavigation(
-            navigator: Navigator
-        ): EntryProviderInstaller = {
-            entry<PokemonDetail> { key ->
-                PokemonDetailScreen(
-                    pokemonId = key.id,
-                    onBackClick = { navigator.goBack() }
-                )
+val pokemonDetailNavigationModule = module {
+    /**
+     * Contributes the Pokemon Detail navigation entry to the app's navigation graph.
+     * Returns a Set containing a single EntryProviderInstaller.
+     */
+    single<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers")) {
+        setOf(
+            {
+                entry<PokemonDetail> { key ->
+                    val navigator: Navigator = koinInject()
+                    
+                    PokemonDetailScreen(
+                        pokemonId = key.id,
+                        onBackClick = { navigator.goBack() }
+                    )
+                }
             }
-        }
+        )
     }
 }
