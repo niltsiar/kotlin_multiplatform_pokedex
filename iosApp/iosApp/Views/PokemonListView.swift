@@ -15,10 +15,12 @@ import Shared
  * This view integrates with the KMP PokemonListViewModel via PokemonListViewModelWrapper,
  * observing StateFlow updates and triggering data loads.
  */
+
 struct PokemonListView: View {
-    @StateObject private var wrapper = PokemonListViewModelWrapper()
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
     @State private var navigationPath: [Int] = []
     @State private var scrollPosition: Int?
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -30,19 +32,21 @@ struct PokemonListView: View {
         }
         .onAppear {
             // Load initial page when view appears for the first time
-            if case is PokemonListUiStateLoading = wrapper.uiState {
-                wrapper.loadInitialPage()
+            if case is PokemonListUiStateLoading = uiState {
+                viewModel.loadInitialPage()
             }
         }
         .task {
             // Observe StateFlow - automatically cancels when view disappears
-            await wrapper.observeState()
+            for await state in viewModel.uiState {
+                self.uiState = state
+            }
         }
     }
     
     @ViewBuilder
     private var content: some View {
-        switch wrapper.uiState {
+        switch uiState {
         case is PokemonListUiStateLoading:
             loadingView
             
@@ -99,7 +103,7 @@ struct PokemonListView: View {
                             if index >= pokemonCount - 4 &&
                                !content.isLoadingMore &&
                                content.hasMore {
-                                wrapper.loadNextPage()
+                                viewModel.loadNextPage()
                             }
                         }
                     }
@@ -149,7 +153,7 @@ struct PokemonListView: View {
                 .padding(.horizontal)
             
             Button(action: {
-                wrapper.loadInitialPage()
+                viewModel.loadInitialPage()
             }) {
                 Text("Retry")
                     .font(.headline)
