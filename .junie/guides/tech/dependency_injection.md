@@ -1,5 +1,7 @@
 # Dependency Injection Guidelines
 
+**Last Updated:** November 26, 2025
+
 Purpose: Establish consistent DI patterns using Koin for Kotlin Multiplatform with runtime injection, type-safe DSL, and vertical-slice feature modules.
 
 References

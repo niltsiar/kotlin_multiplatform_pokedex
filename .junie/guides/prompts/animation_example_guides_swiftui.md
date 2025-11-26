@@ -1,5 +1,7 @@
 # 🎨 Delightful SwiftUI Animation & Motion Guide
 
+Last Updated: November 26, 2025
+
 > **Platform**: Native iOS (SwiftUI)  
 > **Companion Guide**: See `animation_example_guides.md` for Compose Multiplatform equivalents  
 > **Project Context**: This guide supports the native SwiftUI iOS app (`:iosApp`) which integrates with KMP ViewModels via SKIE

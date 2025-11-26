@@ -1,5 +1,7 @@
 # Pokédex App - UI/UX Design Document
 
+Last Updated: November 26, 2025
+
 ## Brand Essence & Personality
 
 **Core Vibe**: Playful yet professional, nostalgic yet modern, accessible to all ages while honoring Pokémon's legacy.

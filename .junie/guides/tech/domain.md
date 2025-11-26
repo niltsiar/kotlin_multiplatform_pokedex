@@ -1,5 +1,7 @@
 # Domain Layer Guidelines
 
+Last Updated: November 26, 2025
+
 Purpose: Make domain models and logic stable, pure, platform-agnostic, and easy to test. Align domain with vertical-slice Clean Architecture and feature `api/impl` modules.
 
 - Location

@@ -1,5 +1,7 @@
 # Utility Organization Guidelines
 
+Last Updated: November 26, 2025
+
 Purpose: Establish consistent patterns for organizing utility classes, extensions, and cross-cutting concerns in Compose Multiplatform projects.
 
 ## Location and Structure

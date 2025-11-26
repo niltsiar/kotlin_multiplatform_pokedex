@@ -1,6 +1,10 @@
 # AI Agent Instructions for Kotlin Multiplatform POC
 
+**Last Updated:** November 26, 2025
+
 > **Purpose**: This document provides autonomous AI agents with the essential context, patterns, and workflows needed to work effectively on this Kotlin Multiplatform project.
+
+> **⚠️ Sync Maintenance**: This file must stay synchronized with `.github/copilot-instructions.md` and `.junie/guidelines.md`. When updating architectural patterns, ensure all three documents are updated consistently. Run Documentation Management Mode monthly to verify sync.
 
 ---
 
@@ -166,152 +170,51 @@ Research → Plan → Implement → Test → Validate
 
 ### Convention Plugin Architecture (Updated November 2025)
 
-Following patterns from [Now in Android](https://github.com/android/nowinandroid):
+See [Convention Plugins Pattern](.junie/guides/tech/critical_patterns_quick_ref.md#convention-plugins-pattern) for complete canonical rules.
 
-**Shared Configuration Utilities** in `build-logic/convention/src/main/kotlin/com/minddistrict/multiplatformpoc/`:
-- `KotlinMultiplatform.kt` - `configureKmpTargets()` centralizes target configuration
-- `TestConfiguration.kt` - `configureTests()` standardizes test setup
-- `ComposeConfiguration.kt` - `configureComposeMultiplatform()` for Compose dependencies
-- `ProjectExtensions.kt` - `libs` property and `getVersion()`/`getLibrary()` extensions
+**Quick summary**: Shared config utilities, base plugin composition following [Now in Android](https://github.com/android/nowinandroid) patterns, 38% code reduction.
 
-**Base Plugin Composition**:
-- `convention.feature.base` provides KMP targets, tests, common dependencies (Arrow, Coroutines, Collections)
-- Feature layer plugins (api/impl/wiring) compose the base plugin
-- UI plugin maintains explicit target configuration (Android + JVM + iOS)
+**Usage guide**: See `.junie/guides/tech/convention_plugins_quick_ref.md` for detailed usage examples.
+**Implementation**: See `.junie/guides/tech/convention_plugins_improvements.md` for architecture details.
 
-**Benefits**: 38% code reduction, single source of truth, automatic dependencies
-
-**See**: `.junie/guides/tech/convention_plugins_quick_ref.md` for complete usage guide
+> **📋 TODO**: Consolidate 4 convention plugin files (quick_ref, improvements, gradle_convention_plugins, gradle_convention_plugins_implementation) - tracked for future documentation audit.
 
 ### Dependency Injection: Koin (Implemented in pokemonlist)
 **Classes are DI-agnostic. Wire via Koin `module { }` DSL in wiring modules with platform-specific source sets.**
 
-**Pattern**: Impl + Factory + Koin wiring
-- Internal `*Impl` classes
-- Public factory functions returning interface types
-- Koin modules in wiring (commonMain for data, androidMain/jvmMain for UI)
-- Platform-specific source sets for UI registration
+See [Impl+Factory Pattern](.junie/guides/tech/critical_patterns_quick_ref.md#implfactory-pattern) for complete canonical rules.
 
-**Why**: Gradle compilation avoidance, hides implementations, simplifies testing, enables platform-specific wiring
+**Quick summary**: Internal `*Impl` classes, public factory functions, Koin wiring uses factories, enables platform-specific wiring and Gradle compilation avoidance.
 
-**See**: `patterns/di_patterns.md` for complete examples and testing patterns
+**Extended examples**: See `patterns/di_patterns.md` for detailed examples and testing patterns.
 
 ### Error Handling: Arrow Either (Required)
 **Repositories MUST return `Either<RepoError, T>`. NEVER throw, return null, or use `Result`.**
 
-**Pattern**: Sealed errors + Either.catch + mapLeft
-- Define sealed `RepoError` hierarchy per feature
-- Use `Either.catch { }` to wrap throwing code
-- Map exceptions with `.mapLeft { it.toRepoError() }`
-- Never swallow `CancellationException`
+See [Either Boundary Pattern](.junie/guides/tech/critical_patterns_quick_ref.md#either-boundary-pattern) for complete canonical rules.
 
-**See**: `patterns/error_handling_patterns.md` for complete examples and ViewModel integration
+**Quick summary**: Return `Either<RepoError, T>`, use `Either.catch { }.mapLeft { it.toRepoError() }`, sealed error hierarchies per feature.
+
+**Extended examples**: See `patterns/error_handling_patterns.md` for complete examples and ViewModel integration.
 
 ### ViewModels: androidx.lifecycle (Required Rules)
 **ALL ViewModels MUST follow this pattern exactly:**
 
-**Pattern**: Lifecycle-aware + viewModelScope injection
-- Extend `androidx.lifecycle.ViewModel`
-- Pass `viewModelScope` as constructor parameter (with default value)
-- Implement `UiStateHolder<S, E>`
-- Load data in lifecycle callbacks, NOT `init`
-- Use `kotlinx.collections.immutable` types
-- NEVER store `CoroutineScope` as field
+See [ViewModel Pattern](.junie/guides/tech/critical_patterns_quick_ref.md#viewmodel-pattern) for complete canonical rules including required elements, code examples, and common violations.
 
-**See**: `patterns/viewmodel_patterns.md` for complete examples (basic, parametric, pagination, SavedStateHandle)
+**Quick summary**: Extend `ViewModel`, pass `viewModelScope` to constructor with default, implement `UiStateHolder<S, E>`, no init work, lifecycle-aware loading via `repeatOnLifecycle`, use immutable collections.
 
-### ViewModels: Critical Requirements
-**Basic ViewModel structure:**
-
-```kotlin
-class HomeViewModel(
-  private val repository: JobRepository,
-  viewModelScope: CoroutineScope = CoroutineScope(
-    SupervisorJob() + Dispatchers.Main.immediate
-  )
-) : ViewModel(viewModelScope),  // ← Pass to superclass constructor
-    UiStateHolder<HomeUiState, HomeUiEvent> {
-  
-  private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-  override val uiState: StateFlow<HomeUiState> = _uiState
-  
-  // ⚠️ NEVER perform work in init {}
-  
-  // Load data in lifecycle-aware callbacks
-  fun start(lifecycle: Lifecycle) {
-    viewModelScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        repository.getJobs().fold(
-          ifLeft = { error -> 
-            _uiState.value = HomeUiState.Error(error.toUiMessage()) 
-          },
-          ifRight = { jobs -> 
-            _uiState.value = HomeUiState.Content(jobs.toImmutableList())
-          }
-        )
-      }
-    }
-  }
-  
-  override fun onUiEvent(event: HomeUiEvent) {
-    when (event) {
-      is HomeUiEvent.Refresh -> refresh()
-      is HomeUiEvent.ItemClicked -> handleClick(event.id)
-    }
-  }
-}
-```
-
-**Critical Requirements**:
-- ✅ Extend `androidx.lifecycle.ViewModel`
-- ✅ Pass `viewModelScope` as constructor parameter
-- ✅ Use `kotlinx.collections.immutable` types in UI state
-- ✅ Load data in lifecycle callbacks, NOT `init`
-- ❌ NEVER store `CoroutineScope` as a field
-- ❌ NEVER perform work in constructor or `init`
+**Extended examples**: See `patterns/viewmodel_patterns.md` for complete examples (basic, parametric, pagination, SavedStateHandle).
 
 ### Navigation: Navigation 3 Modular Architecture (Implemented)
 **Route objects in `:api`, UI in `:ui`, wiring in platform-specific source sets**
 
-**Pattern**: Route objects + Navigator + EntryProviderInstaller
-- Route objects are plain Kotlin objects/data classes (no @Serializable)
-- Navigator manages explicit back stack (SnapshotStateList)
-- EntryProviderInstaller = typealias for `EntryProviderScope<Any>.() -> Unit`
-- Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers via Koin
-- Metadata-based animations with `NavDisplay.transitionSpec()`
+See [Navigation 3 Pattern](.junie/guides/tech/critical_patterns_quick_ref.md#navigation-3-pattern) for complete canonical rules including route objects, EntryProviderInstaller, and metadata-based animations.
 
-**See**: `patterns/navigation_patterns.md` for complete animation patterns and deep linking
-internal fun pokemonDetailNavigationProvider(
-    navigator: Navigator
-): EntryProviderInstaller = {
-    entry<PokemonDetail>(
-        metadata = NavDisplay.transitionSpec(
-            slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) +
-            fadeIn(animationSpec = tween(durationMillis = 300))
-        ) + NavDisplay.popTransitionSpec(
-            slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth }) +
-            fadeOut(animationSpec = tween(durationMillis = 300))
-        )
-    ) { key ->
-        PokemonDetailScreen(
-            pokemonId = key.id,
-            viewModel = koinInject { parametersOf(key.id) },
-            onBack = { navigator.goBack() }
-        )
-    }
-}
-```
+**Reference implementation**: `pokemondetail` feature demonstrates parametric navigation with slide + fade animations (300ms Material Design standard).
 
-**Animation Pattern**:
-- ✅ Use `metadata = NavDisplay.transitionSpec(...)` for enter animations
-- ✅ Use `+ NavDisplay.popTransitionSpec(...)` for exit animations
-- ✅ Combine animations with `+` operator (togetherWith internally)
-- ✅ `slideInHorizontally + fadeIn` for smooth combined transitions
-- ✅ Standard duration: 300ms (Material Design guideline)
-- ❌ `entry<T>()` does NOT accept direct transition parameters
-- 📖 Official docs: https://developer.android.com/guide/navigation/navigation-3/animate-destinations
-
-**See**: `.junie/guides/tech/navigation.md` for complete animation patterns
+**Extended guide**: See `.junie/guides/tech/navigation.md` for complete animation patterns and deep linking.
+**Pattern examples**: See `patterns/navigation_patterns.md` for additional animation examples.
 
 ### No Empty Use Cases
 **Call repositories directly from ViewModels unless orchestrating multiple repos.**
@@ -356,9 +259,13 @@ class SubmitOrderUseCase(
 
 ### ⚠️ TEST ENFORCEMENT: MANDATORY
 
-**NO CODE WITHOUT TESTS** - See `.junie/guides/tech/testing_strategy.md`
+**NO CODE WITHOUT TESTS**
 
-Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
+See [Testing Pattern](.junie/guides/tech/critical_patterns_quick_ref.md#testing-pattern) for complete canonical rules including Kotest, MockK, property-based testing (30-40% coverage), and Turbine for flows.
+
+**Critical**: Every production code file MUST have a corresponding test file. Tests are not optional—they are part of the feature implementation.
+
+**Detailed strategy**: See `.junie/guides/tech/testing_strategy.md` for comprehensive testing guidelines.
 
 **Koin DI Patterns**: See [koin_di_quick_ref.md](.junie/guides/tech/koin_di_quick_ref.md) for DI setup and troubleshooting.
 
@@ -1427,7 +1334,28 @@ CURRENT_MODE: Testing Strategy Mode
 - Propose restructuring for better LLM context efficiency
 - Detail sync actions across `.junie/guides/`, `AGENTS.md`, `copilot-instructions.md`
 - Surface follow-up work requiring confirmation
-- Treat `.junie/guides/tech/conventions.md` as source of truth
+- Treat `.junie/guides/tech/critical_patterns_quick_ref.md` as canonical source for 6 core patterns (ViewModel, Either Boundary, Impl+Factory, Navigation 3, Testing, Convention Plugins)
+- Treat `.junie/guides/tech/conventions.md` as source of truth for all other rules
+- Perform deep semantic verification: extract key rules from patterns, compare across documents, report mismatches
+- Propose consolidation edits replacing detailed explanations with anchored links (NEVER auto-execute)
+- Audit freshness: scan all `.junie/guides/**/*.md` files for "Last Updated" timestamps, recommend additions
+- Verify all anchored links resolve and content matches semantically
+
+**Invocation Scenarios**:
+- **After architectural changes** affecting core patterns or conventions
+- **Before major releases** to ensure sync across all documentation
+- **Monthly audits** for proactive consistency checks
+- **When new specialized agents are added** to update routing and references
+- **After creating/updating `critical_patterns_quick_ref.md`** to verify all references align
+
+**First Audit Workflow** (after `critical_patterns_quick_ref.md` creation):
+1. Extract semantic rules from all 6 patterns in canonical file
+2. Scan `AGENTS.md`, `copilot-instructions.md`, `guidelines.md` for pattern definitions
+3. Compare semantically against canonical source
+4. Propose consolidation edits replacing detailed explanations with anchored links
+5. Audit freshness timestamps across all `.junie/guides/**/*.md` files
+6. Verify all existing anchored links resolve and match semantically
+7. Output complete Pattern Consistency Matrix, Consolidation Proposals, Freshness Audit, and Link Verification
 
 **Response Template**:
 ```
@@ -1435,6 +1363,19 @@ CURRENT_MODE: Documentation Management Mode
 
 ## Findings
 [Bullet points]
+
+## Pattern Consistency Matrix
+[Table comparing 6 core patterns with semantic rule extraction]
+[Detailed semantic mismatches with line numbers]
+
+## Consolidation Proposals
+[Detailed edit recommendations with verification - PROPOSALS ONLY]
+
+## Freshness Audit
+[Table of files with timestamp status]
+
+## Link Verification
+[Table of anchored links with semantic validation]
 
 ## Recommended Changes
 | File | Action | Rationale |
@@ -2039,3 +1980,25 @@ Before committing code, verify:
 **Remember**: This is a POC. Patterns are documented but not fully implemented. Your job is to implement them correctly following the guides, or work within the existing structure. When in doubt, consult `.junie/guides/tech/conventions.md` first.
 
 **Enforcement is mandatory**: After any code change, run through the validation checklist. This ensures consistency and prevents technical debt.
+
+---
+
+## 📋 Future Documentation Tasks
+
+### Convention Plugins Consolidation (Tracked for Later)
+
+**Issue**: 4 overlapping files about convention plugins exist:
+- `.junie/guides/tech/convention_plugins_quick_ref.md` (usage guide)
+- `.junie/guides/tech/convention_plugins_improvements.md` (architecture details)
+- `.junie/guides/tech/gradle_convention_plugins.md` (comprehensive guidelines)
+- `.junie/guides/tech/gradle_convention_plugins_implementation.md` (implementation guide)
+
+**Action Needed**: Run Documentation Management Mode audit specifically focused on convention plugins documentation to:
+1. Identify overlapping content across the 4 files
+2. Propose consolidation strategy (merge vs clarify distinct purposes)
+3. Update cross-references in AGENTS.md, copilot-instructions.md, guidelines.md
+4. Ensure single clear entry point for convention plugin documentation
+
+**Priority**: Medium (not blocking current work, address during next documentation sync sprint)
+
+**Added**: November 26, 2025

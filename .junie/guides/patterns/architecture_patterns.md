@@ -1,5 +1,7 @@
 # Architecture Patterns
 
+Last Updated: November 26, 2025
+
 > Comprehensive code examples for split-by-layer architecture, module structure, and vertical slicing patterns.
 
 ## Split-by-Layer Feature Structure

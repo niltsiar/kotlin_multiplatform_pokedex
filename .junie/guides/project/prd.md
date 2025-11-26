@@ -1,5 +1,7 @@
 # Pokédex App - Product Requirements Document
 
+Last Updated: November 26, 2025
+
 ## Goal
 Provide users with a fast, intuitive mobile-first Pokédex that enables browsing all Pokémon and viewing detailed stats, abilities, and attributes using the official PokéAPI.
 

@@ -1,5 +1,7 @@
 # Presentation Layer Guidelines
 
+**Last Updated:** November 26, 2025
+
 Purpose: Establish consistent patterns for UI architecture, state management, and component design in Compose Multiplatform projects.
 
 ## Location and Structure

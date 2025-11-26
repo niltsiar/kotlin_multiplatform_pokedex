@@ -1,5 +1,7 @@
 # Pokédex App - Onboarding Screens
 
+Last Updated: November 26, 2025
+
 ## Context & Strategy
 
 **Target User Pain Points**:

@@ -1,5 +1,7 @@
 # Quick Reference Guide
 
+Last Updated: November 26, 2025
+
 > Fast lookup for commands, tables, API references, and common patterns.
 
 ## Essential Commands

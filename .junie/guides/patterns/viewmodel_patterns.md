@@ -1,5 +1,9 @@
 # ViewModel Patterns (androidx.lifecycle)
 
+Last Updated: November 26, 2025
+
+> **Canonical Reference**: See [ViewModel Pattern](../tech/critical_patterns_quick_ref.md#viewmodel-pattern) for core rules.
+
 > Comprehensive code examples for lifecycle-aware ViewModels, viewModelScope injection, UiStateHolder, and immutable state.
 
 ## Core Principle

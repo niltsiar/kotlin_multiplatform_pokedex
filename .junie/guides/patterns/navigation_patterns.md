@@ -1,5 +1,9 @@
 # Navigation Patterns (Navigation 3)
 
+Last Updated: November 26, 2025
+
+> **Canonical Reference**: See [Navigation 3 Pattern](../tech/critical_patterns_quick_ref.md#navigation-3-pattern) for core rules.
+
 > Comprehensive code examples for Navigation 3 route objects, EntryProviderInstaller, metadata-based animations, and NavDisplay integration.
 
 ## Core Principle

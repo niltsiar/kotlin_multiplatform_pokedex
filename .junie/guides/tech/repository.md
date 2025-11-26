@@ -1,4 +1,6 @@
-# Repository Guidelines
+# Repository Layer Guidelines
+
+**Last Updated:** November 26, 2025
 
 ## Overview
 Repositories coordinate data from remote APIs, local storage, and caches, and expose domain models to the rest of the app. In this project, repositories are the boundary where transport/storage failures are mapped into Arrow `Either` results.
