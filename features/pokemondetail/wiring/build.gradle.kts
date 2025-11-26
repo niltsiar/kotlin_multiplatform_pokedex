@@ -27,6 +27,13 @@ kotlin {
             implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
             implementation(libs.koin.compose)
         }
+        
+        // iOS targets for Compose Multiplatform iOS
+        iosMain.dependencies {
+            implementation(projects.features.pokemondetail.ui)
+            implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
+            implementation(libs.koin.compose)
+        }
     }
 }
 

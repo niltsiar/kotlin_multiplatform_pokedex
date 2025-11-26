@@ -1,0 +1,10 @@
+package com.minddistrict.multiplatformpoc
+
+import androidx.compose.ui.window.ComposeUIViewController
+import platform.UIKit.UIViewController
+
+fun MainViewController(): UIViewController {
+    return ComposeUIViewController(configure = { enforceStrictPlistSanityCheck = false }) {
+        App()
+    }
+}
