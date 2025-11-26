@@ -1,5 +1,7 @@
 # Gradle Convention Plugins Guidelines
 
+Last Updated: November 26, 2025
+
 Purpose: Standardize and centralize Gradle configuration across modules using Convention Plugins. Keep module build scripts minimal and consistent, enable easy adoption of Compose Multiplatform, Metro DI, Kotest/MockK, Roborazzi, Navigation 3, and code quality tools (detekt/ktlint).
 
 ## Why Convention Plugins

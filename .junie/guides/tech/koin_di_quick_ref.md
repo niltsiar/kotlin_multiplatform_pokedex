@@ -1,5 +1,7 @@
 # Koin DI Quick Reference
 
+Last Updated: November 26, 2025
+
 **Purpose**: Quick reference for Koin dependency injection patterns in Kotlin Multiplatform projects.
 
 **Official Docs**: [insert-koin.io](https://insert-koin.io)  

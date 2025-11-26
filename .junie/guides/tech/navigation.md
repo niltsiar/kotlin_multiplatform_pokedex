@@ -1,5 +1,7 @@
 # Navigation Guidelines
 
+**Last Updated:** November 26, 2025
+
 ## Overview
 
 This guide covers Navigation 3 modular architecture for Kotlin Multiplatform with Compose. Navigation follows split-by-layer pattern: route contracts in `:api`, UI in `:ui`, and wiring in platform-specific source sets (androidMain/jvmMain).

@@ -1,5 +1,7 @@
 # Pokédex App - User Flow Document
 
+Last Updated: November 26, 2025
+
 ## Screens
 
 ### 1. **Pokémon List Screen**

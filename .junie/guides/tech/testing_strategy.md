@@ -1,5 +1,7 @@
 # Testing Strategy Guidelines: Mobile-First Approach
 
+**Last Updated:** November 26, 2025
+
 **Purpose**: Define a mobile-first testing strategy that maximizes testing capabilities within Kotlin Multiplatform framework limitations.
 
 ## ⚠️ CRITICAL: Test Enforcement

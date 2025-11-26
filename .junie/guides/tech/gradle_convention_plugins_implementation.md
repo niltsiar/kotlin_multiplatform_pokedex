@@ -1,5 +1,7 @@
 # Gradle Convention Plugins - Implementation Guide
 
+Last Updated: November 26, 2025
+
 This document describes the **implemented** convention plugins in this project and how to use them.
 
 ## ✅ Implemented Plugins

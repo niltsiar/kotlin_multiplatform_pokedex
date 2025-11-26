@@ -1,5 +1,7 @@
 # Convention Plugin Improvements - Summary
 
+Last Updated: November 26, 2025
+
 ## Overview
 
 Improved the convention plugin architecture by adopting patterns from Google's [Now in Android](https://github.com/android/nowinandroid) project, specifically around shared configuration utilities and plugin composition.

@@ -1,5 +1,7 @@
 # 🎨 Delightful Mobile UI Animation & Motion Guide (Advanced Edition)
 
+Last Updated: November 26, 2025
+
 A **next-level collection of creative, playful, and surprising UI animations (including easter eggs)** for mobile apps.  
 Designed for **developers, designers, and AI prompt engineers** to inspire highly engaging motion.
 

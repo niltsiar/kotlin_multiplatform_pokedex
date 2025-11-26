@@ -1,5 +1,9 @@
 # Testing Patterns
 
+Last Updated: November 26, 2025
+
+> **Canonical Reference**: See [Testing Pattern](../tech/critical_patterns_quick_ref.md#testing-pattern) for core rules.
+
 > Comprehensive code examples for Kotest+MockK, property-based testing, Turbine flows, and Roborazzi screenshots.
 
 ## Core Principle

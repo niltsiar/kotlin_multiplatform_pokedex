@@ -1,6 +1,10 @@
 # Project Conventions (Architecture, Modules, DI, Errors, Testing)
 
-Purpose: Encode the cross-cutting rules we follow across modules and features. These conventions complement topic-specific guides in `.junie/guides/tech`.
+# Project Conventions
+
+**Last Updated:** November 26, 2025
+
+> **Purpose**: Master reference for cross-cutting rules covering architecture, modules, dependency injection, error handling, and testing conventions.
 
 ## Architecture: True Vertical Slicing
 

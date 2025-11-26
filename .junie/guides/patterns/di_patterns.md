@@ -1,5 +1,9 @@
 # Dependency Injection Patterns (Koin)
 
+Last Updated: November 26, 2025
+
+> **Canonical Reference**: See [Impl+Factory Pattern](../tech/critical_patterns_quick_ref.md#implfactory-pattern) for core rules.
+
 > Comprehensive code examples for Koin DI with Impl+Factory pattern, wiring modules, and platform-specific source sets.
 
 ## Core Principle

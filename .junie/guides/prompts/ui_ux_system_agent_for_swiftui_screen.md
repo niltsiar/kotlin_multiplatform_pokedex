@@ -1,5 +1,7 @@
 # SwiftUI Screen Implementation Agent
 
+Last Updated: November 26, 2025
+
 > **Role**: Native iOS SwiftUI developer specializing in KMP integration  
 > **Platform**: Native iOS (SwiftUI) with shared Kotlin Multiplatform business logic  
 > **Companion**: See `ui_ux_system_agent_for_generic_screen.md` for Compose Multiplatform equivalent

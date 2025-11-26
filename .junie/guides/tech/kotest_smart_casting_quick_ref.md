@@ -1,5 +1,7 @@
 # Kotest Smart Casting Quick Reference
 
+Last Updated: November 26, 2025
+
 **Purpose**: Guide for using Kotest matchers that provide smart casting through Kotlin compiler contracts. Avoid unnecessary manual casts in tests.
 
 ---

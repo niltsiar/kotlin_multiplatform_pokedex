@@ -1,6 +1,10 @@
 # Kotlin Multiplatform Guidelines for Junie
 
+**Last Updated:** November 26, 2025
+
 > **Related**: [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) (Copilot), [`AGENTS.md`](../AGENTS.md) (Agents) — kept in sync
+
+> **⚠️ Sync Maintenance**: When updating architectural patterns, ensure AGENTS.md, copilot-instructions.md, and this file stay synchronized. Run Documentation Management Mode monthly to verify.
 
 ## Tech Stack
 
@@ -73,71 +77,40 @@ open build/dependencyUpdates/report.html
 
 ### 1. Dependency Injection (Koin)
 
+See [Impl+Factory Pattern](guides/tech/critical_patterns_quick_ref.md#implfactory-pattern) for complete canonical rules.
+
 **Pattern**: Impl + Factory + Koin wiring
-```kotlin
-// ✅ DO: Internal impl, public factory
-internal class JobRepositoryImpl(...) : JobRepository
-fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
+- `internal class XImpl`, `fun X(...): X = XImpl(...)`
+- Koin modules use factory functions
+- Keep classes DI-agnostic
 
-// Wiring
-val jobsModule = module {
-    factory<JobRepository> { JobRepository(...) }
-}
-
-// ❌ DON'T: Public impl
-class JobRepositoryImpl : JobRepository  // Wrong: public
-
-// ❌ DON'T: DI annotations on classes
-@Singleton class JobRepository  // Wrong: keep classes DI-agnostic
-```
-
-**See**: `.junie/guides/patterns/di_patterns.md`
+**Extended examples**: See `.junie/guides/patterns/di_patterns.md`
 
 ### 2. Error Handling (Arrow Either)
 
+See [Either Boundary Pattern](guides/tech/critical_patterns_quick_ref.md#either-boundary-pattern) for complete canonical rules.
+
 **Pattern**: `Either<RepoError, T>` at boundaries
-```kotlin
-// ✅ DO: Return Either
-override suspend fun getJobs(): Either<RepoError, List<Job>> =
-  Either.catch {
-    api.getJobs().map { it.toDomain() }
-  }.mapLeft { it.toRepoError() }
+- Return `Either<RepoError, T>`, never `Result` or nullable
+- Use `Either.catch { }.mapLeft { it.toRepoError() }`
+- Sealed error hierarchies per feature
+- DTO→domain mapping at boundary
 
-// ❌ DON'T: Nullable, Result, or throws
-suspend fun getJobs(): List<Job>?  // Wrong: nullable
-suspend fun getJobs(): Result<List<Job>>  // Wrong: Result type
-suspend fun getJobs(): List<Job>  // Wrong: throws exceptions
-```
-
-**See**: `.junie/guides/patterns/error_handling_patterns.md`
+**Extended examples**: See `.junie/guides/patterns/error_handling_patterns.md`
 
 ### 3. ViewModels (androidx.lifecycle)
 
+See [ViewModel Pattern](guides/tech/critical_patterns_quick_ref.md#viewmodel-pattern) for complete canonical rules.
+
 **Pattern**: Inject `viewModelScope`, lifecycle-aware loading
-```kotlin
-// ✅ DO: Pass scope to superclass, load in lifecycle callback
-class HomeViewModel(
-  private val repo: JobRepository,
-  viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob())
-) : ViewModel(viewModelScope), UiStateHolder<HomeUiState, HomeUiEvent> {
-  
-  fun start(lifecycle: Lifecycle) {  // Load here
-    viewModelScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        repo.getJobs().fold(...)
-      }
-    }
-  }
-}
+- Extend `androidx.lifecycle.ViewModel`
+- Pass `viewModelScope` to constructor with default
+- Implement `UiStateHolder<S, E>`
+- Load in lifecycle callbacks, NOT `init`
+- Use `kotlinx.collections.immutable` types
+- NEVER store `CoroutineScope` as field
 
-// ❌ DON'T: Store scope as field or work in init
-class HomeViewModel : ViewModel() {
-  private val scope = CoroutineScope(...)  // Wrong: field
-  init { loadData() }  // Wrong: work in init
-}
-```
-
-**See**: `.junie/guides/patterns/viewmodel_patterns.md`
+**Extended examples**: See `.junie/guides/patterns/viewmodel_patterns.md`
 
 ### 4. Navigation (Navigation 3)
 

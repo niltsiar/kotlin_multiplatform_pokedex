@@ -1,5 +1,7 @@
 # 🥳 Easter Eggs & Mini-Games Guide for Mobile Apps
 
+Last Updated: November 26, 2025
+
 A curated collection of **interactive, playful, and surprising easter eggs** for mobile apps.  
 Focus on **curiosity, discovery, and delight**, including mini-games, hidden animations, and context-aware surprises.
 

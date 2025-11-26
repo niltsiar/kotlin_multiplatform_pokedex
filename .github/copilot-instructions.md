@@ -1,6 +1,10 @@
 # Copilot Instructions for Kotlin Multiplatform POC
 
+**Last Updated:** November 26, 2025
+
 > **Related Documentation**: See also [`.junie/guidelines.md`](../.junie/guidelines.md) for high-level project guidelines and [`AGENTS.md`](../AGENTS.md) for autonomous agent workflows. These documents are kept in sync.
+
+> **⚠️ Sync Maintenance**: When updating architectural patterns, ensure AGENTS.md, guidelines.md, and this file stay synchronized. Run Documentation Management Mode monthly to verify.
 
 ## Project Overview
 
@@ -119,31 +123,28 @@ Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
 ## Critical Project Conventions
 
 ### Dependency Injection (Koin)
-**Pattern**: Classes stay DI-agnostic; wiring happens in separate modules
-- Internal `*Impl` classes
-- Public factory functions returning interface types
-- Koin modules in wiring (commonMain for data, androidMain/jvmMain for UI)
 
-**See**: `.junie/guides/patterns/di_patterns.md` for complete examples
+See [Impl+Factory Pattern](../.junie/guides/tech/critical_patterns_quick_ref.md#implfactory-pattern) for canonical rules.
+
+**Quick**: `internal class XImpl`, `fun X(...): X = XImpl(...)`, Koin uses factory functions.
+
+**Extended examples**: See `.junie/guides/patterns/di_patterns.md`
 
 ### Error Handling (Arrow Either)
-**Pattern**: Repositories return `Either<RepoError, T>`, never throw or return null
-- Define sealed `RepoError` hierarchy per feature
-- Use `Either.catch { }` to wrap throwing code
-- Map exceptions with `.mapLeft { it.toRepoError() }`
 
-**See**: `.junie/guides/patterns/error_handling_patterns.md` for complete examples
+See [Either Boundary Pattern](../.junie/guides/tech/critical_patterns_quick_ref.md#either-boundary-pattern) for canonical rules.
+
+**Quick**: Return `Either<RepoError, T>`, use `Either.catch { }.mapLeft { it.toRepoError() }`, sealed errors, DTO→domain mapping.
+
+**Extended examples**: See `.junie/guides/patterns/error_handling_patterns.md`
 
 ### ViewModels (androidx.lifecycle)
-**Pattern**: Must extend `ViewModel`, pass `viewModelScope` as constructor parameter
-- Extend `androidx.lifecycle.ViewModel`
-- Pass `viewModelScope` as constructor parameter (with default value)
-- Implement `UiStateHolder<S, E>`
-- Load data in lifecycle callbacks, NOT `init`
-- Use `kotlinx.collections.immutable` types
-- NEVER store `CoroutineScope` as field
 
-**See**: `.junie/guides/patterns/viewmodel_patterns.md` for complete examples
+See [ViewModel Pattern](../.junie/guides/tech/critical_patterns_quick_ref.md#viewmodel-pattern) for canonical rules.
+
+**Quick**: Extend `ViewModel`, pass `viewModelScope` to constructor, implement `UiStateHolder<S, E>`, no init work, lifecycle loading, immutable collections.
+
+**Extended examples**: See `.junie/guides/patterns/viewmodel_patterns.md`
 
 ### Navigation (Navigation 3)
 **Pattern**: Route objects in `:api`, UI in `:ui`, wiring in platform-specific source sets

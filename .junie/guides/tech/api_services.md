@@ -1,5 +1,7 @@
 # API Services Guidelines
 
+Last Updated: November 26, 2025
+
 Purpose: Keep remote APIs well-structured, testable, and decoupled from domain models.
 
 - Transport: Ktor
