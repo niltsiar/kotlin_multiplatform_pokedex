@@ -5,6 +5,8 @@ This repository is a Kotlin Multiplatform project using:
 - **Native SwiftUI** for iOS UI (consuming shared Kotlin business logic)
 - **Ktor** for Backend-for-Frontend (BFF) server
 
+> **Related Documentation**: See also [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) for GitHub Copilot-specific guidance and [`AGENTS.md`](../AGENTS.md) for autonomous agent workflows. These documents are kept in sync.
+
 ## Project Overview
 - **Languages/Tech**: Kotlin, Compose Multiplatform, SwiftUI, Gradle (Kotlin DSL), Koin DI, Arrow (Either), Kotest, MockK, Roborazzi, Navigation 3
 - **Targets**:
