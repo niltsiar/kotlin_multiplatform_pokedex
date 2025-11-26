@@ -526,6 +526,228 @@ fun provideDetailNavigation(navigator: Navigator): EntryProviderInstaller = {
 }
 ```
 
+## Navigation Animations with Navigation 3
+
+### Overview
+
+Navigation 3 supports custom animations through **metadata parameters** on `NavDisplay`. The `entry<T>()` function does NOT accept direct transition parameters—instead, use `NavDisplay.transitionSpec` and `NavDisplay.popTransitionSpec` helper functions to provide metadata-based animations.
+
+### Metadata-Based Animation Pattern
+
+**Key Point**: Navigation 3 animations work through metadata, not direct parameters on `entry<T>()`.
+
+**Official Documentation**: https://developer.android.com/guide/navigation/navigation-3/animate-destinations
+
+### NavDisplay.transitionSpec Helper
+
+Provides metadata for enter animations (forward navigation):
+
+```kotlin
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.navigation3.ui.NavDisplay
+
+NavDisplay(
+    backStack = navigator.backStack,
+    onBack = { navigator.goBack() },
+    entryProvider = entryProvider {
+        entryProviderInstallers.forEach { this.it() }
+    },
+    metadata = NavDisplay.transitionSpec(
+        slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) +
+        fadeIn(animationSpec = tween(durationMillis = 300))
+    )
+)
+```
+
+**Properties**:
+- `slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth })` - Slides from right
+- `fadeIn(animationSpec = tween(durationMillis = 300))` - Fades in over 300ms
+- `+` operator combines animations (using `togetherWith` internally)
+
+### NavDisplay.popTransitionSpec Helper
+
+Provides metadata for exit animations (back navigation):
+
+```kotlin
+NavDisplay(
+    backStack = navigator.backStack,
+    onBack = { navigator.goBack() },
+    entryProvider = entryProvider {
+        entryProviderInstallers.forEach { this.it() }
+    },
+    metadata = NavDisplay.popTransitionSpec(
+        slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth }) +
+        fadeOut(animationSpec = tween(durationMillis = 300))
+    )
+)
+```
+
+**Properties**:
+- `slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth })` - Slides to right
+- `fadeOut(animationSpec = tween(durationMillis = 300))` - Fades out over 300ms
+
+### Complete Animation Example
+
+From `features/pokemondetail/wiring/src/androidMain`:
+
+```kotlin
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.navigation3.ui.NavDisplay
+import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.navigation.PokemonDetail
+import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.PokemonDetailScreen
+import org.koin.compose.koinInject
+import org.koin.core.module.Module
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.parameter.parametersOf
+import org.koin.dsl.bind
+import org.koin.dsl.module
+
+internal actual fun Module.providePlatformNavigationProviders() {
+    factoryOf(::pokemonDetailNavigationProvider) bind EntryProviderInstaller::class
+}
+
+private fun pokemonDetailNavigationProvider(
+    navigator: Navigator
+): EntryProviderInstaller = {
+    entry<PokemonDetail>(
+        metadata = NavDisplay.transitionSpec(
+            slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) +
+            fadeIn(animationSpec = tween(durationMillis = 300))
+        ) + NavDisplay.popTransitionSpec(
+            slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth }) +
+            fadeOut(animationSpec = tween(durationMillis = 300))
+        )
+    ) { key ->
+        PokemonDetailScreen(
+            viewModel = koinInject { parametersOf(key.id) },
+            onBack = { navigator.goBack() }
+        )
+    }
+}
+```
+
+**Key Patterns**:
+1. ✅ `metadata = NavDisplay.transitionSpec(...)` for enter animations
+2. ✅ `+ NavDisplay.popTransitionSpec(...)` for exit animations
+3. ✅ Combine metadata with `+` operator
+4. ✅ Use `tween(durationMillis = 300)` for animation timing
+5. ✅ `slideInHorizontally + fadeIn` creates smooth combined animations
+6. ✅ `initialOffsetX = { fullWidth -> fullWidth }` slides from right edge
+7. ✅ `targetOffsetX = { fullWidth -> fullWidth }` slides to right edge
+
+### Common Animation Combinations
+
+#### Slide + Fade (Standard Material)
+```kotlin
+entry<MyRoute>(
+    metadata = NavDisplay.transitionSpec(
+        slideInHorizontally(initialOffsetX = { it }) + fadeIn(tween(300))
+    ) + NavDisplay.popTransitionSpec(
+        slideOutHorizontally(targetOffsetX = { it }) + fadeOut(tween(300))
+    )
+)
+```
+
+#### Slide Vertical + Fade
+```kotlin
+entry<MyRoute>(
+    metadata = NavDisplay.transitionSpec(
+        slideInVertically(initialOffsetY = { it }) + fadeIn(tween(300))
+    ) + NavDisplay.popTransitionSpec(
+        slideOutVertically(targetOffsetY = { it }) + fadeOut(tween(300))
+    )
+)
+```
+
+#### Scale + Fade (Modal)
+```kotlin
+entry<MyRoute>(
+    metadata = NavDisplay.transitionSpec(
+        scaleIn(initialScale = 0.9f) + fadeIn(tween(300))
+    ) + NavDisplay.popTransitionSpec(
+        scaleOut(targetScale = 0.9f) + fadeOut(tween(300))
+    )
+)
+```
+
+### Animation Properties
+
+**Duration**: Use `tween(durationMillis = Int)` to control timing
+```kotlin
+fadeIn(animationSpec = tween(durationMillis = 300))  // Standard
+fadeIn(animationSpec = tween(durationMillis = 150))  // Fast
+fadeIn(animationSpec = tween(durationMillis = 500))  // Slow
+```
+
+**Easing**: Use `tween(easing = Easing)` for custom curves
+```kotlin
+import androidx.compose.animation.core.FastOutSlowInEasing
+fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing))
+```
+
+**Offsets**: Use lambdas for dynamic positioning
+```kotlin
+slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth })  // From right
+slideInHorizontally(initialOffsetX = { fullWidth -> -fullWidth }) // From left
+slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth / 2 }) // Half screen
+```
+
+### Migration Notes
+
+**Old API (DOES NOT WORK)**:
+```kotlin
+// ❌ This does NOT work in Navigation 3
+entry<MyRoute>(
+    enterTransition = { slideInHorizontally() }  // No such parameter
+)
+```
+
+**New API (CORRECT)**:
+```kotlin
+// ✅ Use metadata parameter with NavDisplay.transitionSpec
+entry<MyRoute>(
+    metadata = NavDisplay.transitionSpec(slideInHorizontally() + fadeIn())
+)
+```
+
+### Testing Animations
+
+Animations can be tested in UI tests by checking state transitions:
+
+```kotlin
+@Test
+fun navigation_animates_correctly() = runComposeUiTest {
+    val navigator = Navigator(startDestination = PokemonList)
+    
+    setContent {
+        NavDisplay(
+            backStack = navigator.backStack,
+            metadata = NavDisplay.transitionSpec(slideInHorizontally() + fadeIn())
+        )
+    }
+    
+    navigator.goTo(PokemonDetail(1))
+    
+    // Wait for animation to complete
+    waitForIdle()
+    onNodeWithText("Bulbasaur").assertIsDisplayed()
+}
+```
+
+### Platform Differences
+
+**Android & Desktop**: Full animation support via Compose Multiplatform
+
+**iOS**: Not applicable (iOS uses native SwiftUI navigation with its own animation system)
+
+---
+
 ## Best Practices
 
 1. **Route objects are keys**: Keep them simple, no business logic
@@ -535,6 +757,9 @@ fun provideDetailNavigation(navigator: Navigator): EntryProviderInstaller = {
 5. **No iOS exports**: Navigation is Compose-specific, iOS uses SwiftUI
 6. **Test navigation**: Use Kotest for Navigator logic, Compose Test for UI navigation
 7. **Explicit back stack**: Navigator.backStack is observable state, debug-friendly
+8. **Animations via metadata**: Use `NavDisplay.transitionSpec` and `NavDisplay.popTransitionSpec` helpers
+9. **Combine animations**: Use `+` operator to combine enter/exit animations
+10. **Standard duration**: 300ms for most animations (Material Design guideline)
 }
 ```
 

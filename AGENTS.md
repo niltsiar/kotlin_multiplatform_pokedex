@@ -19,15 +19,18 @@ Currently in **early POC stage** with skeleton modules only.
   - `:composeApp` — Compose Multiplatform UI (Android + Desktop)
   - `:shared` — iOS umbrella framework (exports other KMP modules to iOS) + SKIE integration
   - `:server` — Ktor backend (BFF for all clients)
-  - `:iosApp` — Native SwiftUI app (imports shared.framework to access KMP modules) - **POKEMON LIST WORKING**
-  - `:features:pokemonlist` — FULLY IMPLEMENTED with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring) - **iOS INTEGRATION COMPLETE**
+  - `:iosApp` — Native SwiftUI app (imports shared.framework to access KMP modules)
+  - `:features:pokemonlist` — ✅ **FULLY IMPLEMENTED** with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring) + iOS SwiftUI integration
+  - `:features:pokemondetail` — ✅ **FULLY IMPLEMENTED** with parametric ViewModel, Navigation 3 animations, iOS SwiftUI + SKIE Type rename handling
   - `:core:designsystem` — Material 3 Expressive theme system
-  - `:core:navigation` — Navigation 3 modular architecture
+  - `:core:navigation` — Navigation 3 modular architecture with metadata-based animations
   - `:core:di` — Koin DI core module
   - `:core:httpclient` — Ktor HttpClient configuration
 - **What's documented**: Comprehensive architecture in `.junie/guides/`
-- **Reference implementation**: Use `pokemonlist` feature as reference for new features (includes iOS SwiftUI)
-- **Your job**: Implement new features following pokemonlist pattern, or extend existing modules
+- **Reference implementations**: 
+  - Use `pokemonlist` for simple list patterns (pagination, infinite scroll)
+  - Use `pokemondetail` for parametric ViewModels, nested DTOs, Navigation 3 animations, iOS parametric wrappers
+- **Your job**: Implement new features following established patterns, or extend existing modules
 
 **Platform UI Strategy**:
 - Android/Desktop: Shared Compose Multiplatform UI
@@ -331,6 +334,42 @@ NavDisplay(
 - ✅ Platform-specific wiring (androidMain/jvmMain) provides EntryProviderInstallers via Koin modules
 - ✅ Koin modules provide `Set<EntryProviderInstaller>` for navigation collection
 - ❌ NOT exported to iOS (Compose-specific navigation)
+
+**Navigation 3 Animations** (metadata-based):
+
+```kotlin
+// :features:pokemondetail:wiring/androidMain - With animations
+internal fun pokemonDetailNavigationProvider(
+    navigator: Navigator
+): EntryProviderInstaller = {
+    entry<PokemonDetail>(
+        metadata = NavDisplay.transitionSpec(
+            slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) +
+            fadeIn(animationSpec = tween(durationMillis = 300))
+        ) + NavDisplay.popTransitionSpec(
+            slideOutHorizontally(targetOffsetX = { fullWidth -> fullWidth }) +
+            fadeOut(animationSpec = tween(durationMillis = 300))
+        )
+    ) { key ->
+        PokemonDetailScreen(
+            pokemonId = key.id,
+            viewModel = koinInject { parametersOf(key.id) },
+            onBack = { navigator.goBack() }
+        )
+    }
+}
+```
+
+**Animation Pattern**:
+- ✅ Use `metadata = NavDisplay.transitionSpec(...)` for enter animations
+- ✅ Use `+ NavDisplay.popTransitionSpec(...)` for exit animations
+- ✅ Combine animations with `+` operator (togetherWith internally)
+- ✅ `slideInHorizontally + fadeIn` for smooth combined transitions
+- ✅ Standard duration: 300ms (Material Design guideline)
+- ❌ `entry<T>()` does NOT accept direct transition parameters
+- 📖 Official docs: https://developer.android.com/guide/navigation/navigation-3/animate-destinations
+
+**See**: `.junie/guides/tech/navigation.md` for complete animation patterns
 
 ### No Empty Use Cases
 **Call repositories directly from ViewModels unless orchestrating multiple repos.**

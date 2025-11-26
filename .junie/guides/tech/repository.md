@@ -211,3 +211,299 @@ Round‑trip JSON tests
 - Returning `Result` from repositories. Project standard is Arrow `Either`.
 - Swallowing errors or returning nulls; always model failure as `Either.Left(RepoError)`.
 - Leaking DTOs beyond the repository boundary; map to domain.
+
+---
+
+## Example: Parametric Repository (Pokemon Detail)
+
+### Pattern: Repository with Parameters
+
+Some repositories need parameters in their methods (e.g., fetch by ID). This follows the same Impl + Factory pattern with parameter passing.
+
+**API Layer** (`:features:pokemondetail:api`):
+```kotlin
+package com.minddistrict.multiplatformpoc.features.pokemondetail.api
+
+import arrow.core.Either
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.domain.PokemonDetail
+
+interface PokemonDetailRepository {
+    suspend fun getPokemonById(id: Int): Either<RepoError, PokemonDetail>
+}
+
+sealed interface RepoError {
+    data object Network : RepoError
+    data class Http(val code: Int, val message: String) : RepoError
+    data class Unknown(val throwable: Throwable) : RepoError
+}
+```
+
+**Data Layer** (`:features:pokemondetail:data`):
+
+**API Service** (handles HTTP):
+```kotlin
+package com.minddistrict.multiplatformpoc.features.pokemondetail.data
+
+import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.PokemonDetailDto
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+
+internal class PokemonDetailApiService(
+    private val httpClient: HttpClient
+) {
+    suspend fun getPokemonById(id: Int): PokemonDetailDto {
+        return httpClient.get("/pokemon/$id").body()
+    }
+}
+
+// Factory function
+internal fun PokemonDetailApiService(httpClient: HttpClient): PokemonDetailApiService =
+    PokemonDetailApiService(httpClient)
+```
+
+**DTOs** (nested structures):
+```kotlin
+package com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+internal data class PokemonDetailDto(
+    val id: Int,
+    val name: String,
+    val height: Int,
+    val weight: Int,
+    val types: List<TypeSlotDto>,
+    val stats: List<StatDto>,
+    val abilities: List<AbilitySlotDto>,
+    val sprites: SpritesDto
+)
+
+@Serializable
+internal data class TypeSlotDto(
+    val slot: Int,
+    val type: NamedResourceDto
+)
+
+@Serializable
+internal data class StatDto(
+    @SerialName("base_stat") val baseStat: Int,
+    val stat: NamedResourceDto
+)
+
+@Serializable
+internal data class AbilitySlotDto(
+    @SerialName("is_hidden") val isHidden: Boolean,
+    val ability: NamedResourceDto
+)
+
+@Serializable
+internal data class SpritesDto(
+    @SerialName("front_default") val frontDefault: String?
+)
+
+@Serializable
+internal data class NamedResourceDto(
+    val name: String,
+    val url: String
+)
+```
+
+**Mappers** (nested domain mapping):
+```kotlin
+package com.minddistrict.multiplatformpoc.features.pokemondetail.data.mappers
+
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.domain.*
+import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.*
+import kotlinx.collections.immutable.toImmutableList
+
+internal fun PokemonDetailDto.asDomain(): PokemonDetail = PokemonDetail(
+    id = id,
+    name = name.replaceFirstChar { it.uppercase() },
+    height = height,
+    weight = weight,
+    types = types.sortedBy { it.slot }.map { it.asDomain() }.toImmutableList(),
+    stats = stats.map { it.asDomain() }.toImmutableList(),
+    abilities = abilities.map { it.asDomain() }.toImmutableList(),
+    imageUrl = sprites.frontDefault ?: ""
+)
+
+internal fun TypeSlotDto.asDomain(): Type = Type(
+    name = type.name.replaceFirstChar { it.uppercase() },
+    url = type.url
+)
+
+internal fun StatDto.asDomain(): Stat = Stat(
+    name = stat.name.replace("-", " ").replaceFirstChar { it.uppercase() },
+    value = baseStat
+)
+
+internal fun AbilitySlotDto.asDomain(): Ability = Ability(
+    name = ability.name.replaceFirstChar { it.uppercase() },
+    isHidden = isHidden
+)
+```
+
+**Repository Implementation**:
+```kotlin
+package com.minddistrict.multiplatformpoc.features.pokemondetail.data
+
+import arrow.core.Either
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.PokemonDetailRepository
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.RepoError
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.domain.PokemonDetail
+import com.minddistrict.multiplatformpoc.features.pokemondetail.data.mappers.asDomain
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
+import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.TimeoutCancellationException
+
+internal class PokemonDetailRepositoryImpl(
+    private val api: PokemonDetailApiService
+) : PokemonDetailRepository {
+    override suspend fun getPokemonById(id: Int): Either<RepoError, PokemonDetail> =
+        Either.catch {
+            api.getPokemonById(id).asDomain()
+        }.mapLeft { throwable ->
+            throwable.toRepoError()
+        }
+}
+
+// Factory function
+internal fun PokemonDetailRepository(api: PokemonDetailApiService): PokemonDetailRepository =
+    PokemonDetailRepositoryImpl(api)
+
+// Error mapper
+private fun Throwable.toRepoError(): RepoError = when (this) {
+    is ClientRequestException -> RepoError.Http(response.status.value, message ?: "Client error")
+    is ServerResponseException -> RepoError.Http(response.status.value, message ?: "Server error")
+    is IOException, is TimeoutCancellationException -> RepoError.Network
+    else -> RepoError.Unknown(this)
+}
+```
+
+**Key Patterns**:
+- ✅ API service throws exceptions (Ktor default)
+- ✅ Repository wraps with `Either.catch { }`
+- ✅ Map exceptions to sealed `RepoError` with `.mapLeft { it.toRepoError() }`
+- ✅ DTO→domain mapping with extension functions (`.asDomain()`)
+- ✅ Nested DTOs map to nested domain models
+- ✅ Use `toImmutableList()` for domain collections
+- ✅ String transformations (capitalize, replace) in mappers
+- ✅ Factory pattern: `fun PokemonDetailRepository(...): PokemonDetailRepository`
+
+**Wiring** (`:features:pokemondetail:wiring`):
+```kotlin
+val pokemonDetailModule = module {
+    factory<PokemonDetailApiService> {
+        PokemonDetailApiService(httpClient = get())
+    }
+    factory<PokemonDetailRepository> {
+        PokemonDetailRepository(api = get())
+    }
+}
+```
+
+### Testing Parametric Repository
+
+**Test Structure** (androidUnitTest with Kotest + MockK):
+```kotlin
+package com.minddistrict.multiplatformpoc.features.pokemondetail.data
+
+import arrow.core.Either
+import com.minddistrict.multiplatformpoc.features.pokemondetail.api.RepoError
+import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.*
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+import io.ktor.client.plugins.ClientRequestException
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.TimeoutCancellationException
+
+class PokemonDetailRepositoryTest : StringSpec({
+    lateinit var mockApi: PokemonDetailApiService
+    lateinit var repository: PokemonDetailRepository
+    
+    beforeTest {
+        mockApi = mockk()
+        repository = PokemonDetailRepository(mockApi)
+    }
+    
+    "getPokemonById returns Right on success" {
+        val dto = PokemonDetailDto(
+            id = 25,
+            name = "pikachu",
+            height = 4,
+            weight = 60,
+            types = listOf(
+                TypeSlotDto(1, NamedResourceDto("electric", "https://..."))
+            ),
+            stats = listOf(
+                StatDto(35, NamedResourceDto("hp", "https://..."))
+            ),
+            abilities = listOf(
+                AbilitySlotDto(false, NamedResourceDto("static", "https://..."))
+            ),
+            sprites = SpritesDto("https://.../25.png")
+        )
+        coEvery { mockApi.getPokemonById(25) } returns dto
+        
+        val result = repository.getPokemonById(25)
+        
+        val pokemon = result.shouldBeRight()
+        pokemon.name shouldBe "Pikachu"
+        pokemon.types.size shouldBe 1
+        pokemon.types[0].name shouldBe "Electric"
+    }
+    
+    "getPokemonById returns Network error on timeout" {
+        coEvery { mockApi.getPokemonById(any()) } throws TimeoutCancellationException("timeout")
+        
+        val result = repository.getPokemonById(1)
+        
+        val error = result.shouldBeLeft()
+        error shouldBe RepoError.Network
+    }
+    
+    "getPokemonById returns Http error on 404" {
+        val mockResponse = mockk<HttpResponse> {
+            coEvery { status } returns HttpStatusCode.NotFound
+        }
+        coEvery { mockApi.getPokemonById(any()) } throws 
+            ClientRequestException(mockResponse, "Not found")
+        
+        val result = repository.getPokemonById(9999)
+        
+        val error = result.shouldBeLeft()
+        error.shouldBeInstanceOf<RepoError.Http>()
+        error.code shouldBe 404  // Smart cast!
+    }
+})
+```
+
+**Key Testing Patterns**:
+- ✅ Use MockK `coEvery` for suspend functions
+- ✅ Use Kotest `shouldBeRight()` for success cases (returns unwrapped value)
+- ✅ Use Kotest `shouldBeLeft()` for error cases (returns unwrapped error)
+- ✅ Use `shouldBeInstanceOf<T>()` for smart casting error types
+- ✅ Test all error paths (network, HTTP status codes, unknown)
+- ✅ Verify domain mapping (DTO→Domain transformations)
+- ✅ Test nested structures (types, stats, abilities)
+
+---
+
+## Summary
+
+- **Repositories return `Either<RepoError, T>`** at boundaries
+- **API services throw exceptions**, repositories catch and map
+- **Use sealed error hierarchies** for feature-specific errors
+- **DTO→domain mapping** happens in repositories via extension functions
+- **Impl + Factory pattern** keeps implementations internal
+- **Test with Kotest + MockK** in androidUnitTest for full framework support
+- **Parametric repositories** pass parameters to API service methods
+- **Nested structures** map through extension functions preserving immutability
