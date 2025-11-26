@@ -1328,7 +1328,7 @@ class HomeViewModel : ViewModel() {
 - [ ] Wiring modules use Koin `module { }` DSL
 - [ ] `single { }` or `factory { }` provides interface types
 - [ ] Factory functions used in wiring modules
-- [ ] Graph structure correct (`AppGraph.create()`, modules)
+- [ ] Module composition correct (direct `+` composition, no wrapper)
 
 #### 6. Testing Requirements
 - [ ] Kotest tests written in `commonTest/` (or platform-specific)

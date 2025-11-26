@@ -192,7 +192,7 @@ val jobsModule = module {
 ## Dependency Injection (Koin)
 - Use Koin 4.0.1 for DI across all platforms.
 - Keep production classes free of DI annotations. Use Koin's `module { }` DSL in wiring modules.
-- Root configuration: `AppGraph.create()` function returns list of Koin modules.
+- Root configuration: `coreModule()` and `navigationAggregationModule` composed directly with `+` operator.
 - Use wiring/aggregation modules to define Koin modules for feature dependencies.
 - Platform-specific modules in source sets (androidMain/jvmMain) for UI dependencies.
 

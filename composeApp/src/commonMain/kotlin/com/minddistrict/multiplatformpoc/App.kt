@@ -8,13 +8,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
-import com.minddistrict.multiplatformpoc.core.di.AppGraph
+import com.minddistrict.multiplatformpoc.core.di.coreModule
+import com.minddistrict.multiplatformpoc.core.di.navigationAggregationModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
 import com.minddistrict.multiplatformpoc.navigation.Navigator
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 
 // Platform-specific navigation modules (defined in androidMain/jvmMain)
 expect fun getPlatformNavigationModules(): List<Module>
@@ -22,20 +24,21 @@ expect fun getPlatformNavigationModules(): List<Module>
 @Composable
 @Preview
 fun App() {
-    // Initialize Koin with all feature modules
+    // Initialize Koin with all modules directly (idiomatic Koin pattern)
     KoinApplication(
         application = {
             modules(
-                AppGraph.create(
-                    baseUrl = "https://pokeapi.co/api/v2",
-                    featureModules = listOf(pokemonListModule) + getPlatformNavigationModules()
-                )
+                coreModule(baseUrl = "https://pokeapi.co/api/v2") +
+                pokemonListModule +
+                getPlatformNavigationModules() +
+                navigationAggregationModule
             )
         }
     ) {
-        // Get dependencies from Koin
+        // Get dependencies from Koin with explicit qualifier
         val navigator: Navigator = koinInject()
-        val entryProviderInstallers: Set<EntryProviderInstaller> = koinInject()
+        val entryProviderInstallers: Set<EntryProviderInstaller> = 
+            koinInject(qualifier = named("allNavigationInstallers"))
         
         PokemonTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
