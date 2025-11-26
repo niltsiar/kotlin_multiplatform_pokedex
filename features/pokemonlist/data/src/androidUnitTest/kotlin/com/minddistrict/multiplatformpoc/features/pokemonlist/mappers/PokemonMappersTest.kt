@@ -40,28 +40,6 @@ class PokemonMappersTest : StringSpec({
         }
     }
     
-    "extractIdFromUrl should extract ID from standard URL with trailing slash" {
-        val id = extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/25/")
-        id shouldBe 25
-    }
-    
-    "extractIdFromUrl should extract ID from URL without trailing slash" {
-        val id = extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/25")
-        id shouldBe 25
-    }
-    
-    "extractIdFromUrl should handle various IDs" {
-        val testCases = listOf(
-            "https://pokeapi.co/api/v2/pokemon/1/" to 1,
-            "https://pokeapi.co/api/v2/pokemon/150/" to 150,
-            "https://pokeapi.co/api/v2/pokemon/999/" to 999
-        )
-        
-        testCases.forEach { (url, expectedId) ->
-            extractIdFromUrl(url) shouldBe expectedId
-        }
-    }
-    
     "extractIdFromUrl should throw on invalid URL without ID" {
         shouldThrow<IllegalArgumentException> {
             extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/")
@@ -128,39 +106,6 @@ class PokemonMappersTest : StringSpec({
         }
     }
     
-    "PokemonSummaryDto.toDomain should capitalize first letter of name" {
-        val dto = PokemonSummaryDto(
-            name = "pikachu",
-            url = "https://pokeapi.co/api/v2/pokemon/25/"
-        )
-        
-        val domain = dto.toDomain()
-        
-        domain.name shouldBe "Pikachu"
-    }
-    
-    "PokemonSummaryDto.toDomain should preserve already capitalized names" {
-        val dto = PokemonSummaryDto(
-            name = "Bulbasaur",
-            url = "https://pokeapi.co/api/v2/pokemon/1/"
-        )
-        
-        val domain = dto.toDomain()
-        
-        domain.name shouldBe "Bulbasaur"
-    }
-    
-    "PokemonSummaryDto.toDomain should generate correct image URL" {
-        val dto = PokemonSummaryDto(
-            name = "pikachu",
-            url = "https://pokeapi.co/api/v2/pokemon/25/"
-        )
-        
-        val domain = dto.toDomain()
-        
-        domain.imageUrl shouldBe "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-    }
-    
     // Property-based tests for PokemonListDto mapping
     
     "property: PokemonListDto.toDomain preserves hasMore flag correctly" {
@@ -222,36 +167,6 @@ class PokemonMappersTest : StringSpec({
         page.pokemons[0].name shouldBe "Bulbasaur"
         page.pokemons[1].name shouldBe "Ivysaur"
         page.pokemons[2].name shouldBe "Venusaur"
-    }
-    
-    "PokemonListDto.toDomain should set hasMore to true when next is not null" {
-        val dto = PokemonListDto(
-            count = 1292,
-            next = "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
-            previous = null,
-            results = listOf(
-                PokemonSummaryDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/")
-            )
-        )
-        
-        val page = dto.toDomain()
-        
-        page.hasMore shouldBe true
-    }
-    
-    "PokemonListDto.toDomain should set hasMore to false when next is null" {
-        val dto = PokemonListDto(
-            count = 20,
-            next = null,
-            previous = "https://pokeapi.co/api/v2/pokemon?offset=0&limit=20",
-            results = listOf(
-                PokemonSummaryDto("mew", "https://pokeapi.co/api/v2/pokemon/151/")
-            )
-        )
-        
-        val page = dto.toDomain()
-        
-        page.hasMore shouldBe false
     }
     
     "PokemonListDto.toDomain should handle empty results" {

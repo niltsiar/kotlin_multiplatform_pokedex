@@ -64,6 +64,6 @@ class PokemonListViewModel(
 
 private fun RepoError.toUiMessage(): String = when (this) {
     is RepoError.Network -> "Network error. Please check your connection."
-    is RepoError.Http -> "Error: $message"
+    is RepoError.Http -> "HTTP error $code: ${message ?: "Unknown error"}"
     is RepoError.Unknown -> "An unexpected error occurred."
 }

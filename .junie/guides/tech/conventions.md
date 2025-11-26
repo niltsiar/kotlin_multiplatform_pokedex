@@ -404,11 +404,75 @@ See [kotest_smart_casting_quick_ref.md](./kotest_smart_casting_quick_ref.md) for
 - Record: `./gradlew recordRoborazziDebug`
 - Verify: `./gradlew verifyRoborazziDebug`
 
-### Property-Based Testing
-- Use Kotest `checkAll`/`forAll` in **androidUnitTest/** for:
-  - Mappers (DTO ↔ Domain invariants)
-  - Parsers (round-trip tests)
-  - Value objects (laws and constraints)
+### Property-Based Testing (PRIMARY STRATEGY)
+
+**CRITICAL: Favor property-based tests over concrete examples**
+
+- **Use property tests for**: Mappers, Repositories (HTTP codes, pagination), ViewModels (state transitions), Parsers, JSON round-trips
+- **Target coverage**: 30-40% property tests, 60-70% concrete tests (documentation/edge cases)
+- **Remove redundant tests**: If property test covers 1000 scenarios, delete concrete tests that test 1-2 scenarios
+- Use Kotest `checkAll`/`forAll` in **androidUnitTest/** for 1000x more coverage per test
+
+**Example:**
+```kotlin
+// ✅ KEEP: Property test (covers 200 scenarios)
+"property: HTTP error codes always produce Error state" {
+    checkAll(Arb.int(400..599)) { httpCode ->
+        // Test logic - runs 1000 times
+    }
+}
+
+// ❌ REMOVE: Redundant concrete test
+"should return Http 404 error" { /* ... */ }  // Already covered by property test
+```
+
+See complete guide: [testing_strategy.md](./testing_strategy.md#property-based-testing-primary-strategy)
+
+### Flow Testing with Turbine (MANDATORY for ViewModels)
+
+**CRITICAL: Use Turbine for testing StateFlow/SharedFlow/Flow**
+
+- **Never use Thread.sleep()** in tests (slow, flaky, unpredictable)
+- **Always use Turbine + TestDispatcher** for deterministic flow testing
+- **ViewModel pattern**: Inject `testScope` via constructor, no `Dispatchers.setMain/resetMain` needed
+
+**Setup:**
+```kotlin
+// gradle/libs.versions.toml
+turbine = "1.2.0"
+
+// androidUnitTest dependencies
+implementation(libs.turbine)
+```
+
+**Example:**
+```kotlin
+@OptIn(ExperimentalCoroutinesApi::class)
+class ViewModelTest : StringSpec({
+    val testDispatcher = StandardTestDispatcher()
+    val testScope = TestScope(testDispatcher)
+    
+    "should emit Loading then Content" {
+        val vm = MyViewModel(mockRepo, testScope)
+        
+        vm.uiState.test {
+            awaitItem() shouldBe Loading
+            vm.load()
+            testDispatcher.scheduler.advanceUntilIdle()
+            awaitItem() shouldBe Content
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+})
+```
+
+**Why Turbine?**
+- ✅ Deterministic (works with TestDispatcher)
+- ✅ Expressive (`awaitItem()`, `skipItems()`, `cancelAndIgnoreRemainingEvents()`)
+- ✅ Fast (no Thread.sleep, controlled time)
+- ✅ Flow-specific (built for Kotlin coroutines)
+
+See complete guide: [testing_strategy.md](./testing_strategy.md#flow-testing-with-turbine)
 
 ### JSON round‑trip tests
 - For modules dealing with JSON, favor round‑trip tests in **androidUnitTest/**:

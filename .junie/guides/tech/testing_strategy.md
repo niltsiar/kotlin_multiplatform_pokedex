@@ -36,6 +36,334 @@ Every production code file MUST have a corresponding test file. Tests are not op
 - ❌ @Composable without @Preview
 - ❌ Modified code without updated tests
 
+## 🎯 Property-Based Testing: Primary Strategy
+
+**CRITICAL PRINCIPLE: Favor property-based tests over concrete examples**
+
+### Why Property-Based Testing?
+
+1. **1000x More Coverage**: One property test = 1000 concrete examples (default iterations)
+2. **Finds Edge Cases**: Discovers bugs concrete tests miss
+3. **Self-Documenting**: Properties express invariants clearly
+4. **Less Maintenance**: One property test replaces dozens of concrete tests
+5. **Regression Protection**: Random data catches future breaking changes
+
+### When to Use Property-Based Tests
+
+**ALWAYS use property tests for:**
+- ✅ **Mappers** (DTO ↔ Domain): Data preservation, transformations
+- ✅ **Repositories**: HTTP error codes (400-599), pagination parameters
+- ✅ **ViewModels**: State transitions, event handling across ranges
+- ✅ **Parsers/Validators**: URL parsing, ID extraction, format validation
+- ✅ **JSON serialization**: Round-trip consistency
+- ✅ **Math/String utilities**: Commutative, associative, identity properties
+
+**Use concrete tests ONLY for:**
+- 📚 **Documentation examples**: Clear, specific scenarios for developers
+- 🎯 **Edge cases**: Specific failure modes that need explicit demonstration
+- 🔧 **Complex setups**: When property test setup is more complex than the test itself
+
+### Property Test Examples
+
+```kotlin
+// ✅ GOOD: Property-based test
+"property: HTTP error codes always produce Error state with code in message" {
+    checkAll(Arb.int(400..599)) { httpCode ->
+        val error = RepoError.Http(httpCode, "Error")
+        coEvery { mockRepository.load() } returns Either.Left(error)
+        
+        viewModel.load()
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        val state = viewModel.uiState.value
+        state.shouldBeInstanceOf<UiState.Error>()
+        state.message.contains(httpCode.toString()) shouldBe true
+    }
+}
+// Replaces 200 concrete tests (one per HTTP code)
+
+// ❌ BAD: Redundant concrete test
+"should return Http 404 error" {
+    val error = RepoError.Http(404, "Not found")
+    // ... same test logic
+}
+// Delete - already covered by property test above
+```
+
+### Kotest Property Testing Basics
+
+```kotlin
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.*
+import io.kotest.property.checkAll
+import io.kotest.property.forAll
+
+// checkAll - runs assertions, fails on first failure
+"property: mapper preserves ID" {
+    checkAll(Arb.int(1..1000)) { id ->
+        val dto = createDto(id)
+        dto.toDomain().id shouldBe id
+    }
+}
+
+// forAll - returns boolean, more flexible
+"property: round-trip is stable" {
+    forAll(Arb.string(1..100)) { str ->
+        parse(format(str)) == str
+    }
+}
+
+// Common Arb generators
+Arb.int(1..1000)                    // Integers in range
+Arb.string(1..50)                   // Strings of length 1-50
+Arb.boolean()                       // Random booleans
+Arb.list(Arb.int(), 0..20)         // Lists of 0-20 integers
+Arb.string(0..200).orNull()        // Nullable strings
+Arb.int(400..599)                  // HTTP error codes
+```
+
+### Guidelines for Removing Redundant Tests
+
+**Before removing a concrete test, verify:**
+
+1. ✅ Property test covers the SAME scenario with broader range
+2. ✅ Property test runs 1000+ iterations (default)
+3. ✅ Property test assertions are equivalent or stronger
+4. ✅ No unique setup/edge case in concrete test
+5. ✅ Documentation value is captured in property test name
+
+**Keep concrete tests if:**
+- 📚 Provides clear documentation for developers
+- 🎯 Tests specific edge case not covered by property range
+- 🔧 Setup complexity makes property test impractical
+
+**Example: What to Keep vs Remove**
+
+```kotlin
+// ✅ KEEP: Documents specific edge case
+"should throw on invalid URL without ID" {
+    shouldThrow<IllegalArgumentException> {
+        extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/")
+    }
+}
+
+// ✅ KEEP: Clear documentation example
+"should return Right with mapped domain on success" {
+    val dto = PokemonListDto(/* full example */)
+    coEvery { mockApi.load() } returns dto
+    val result = repository.load()
+    result.shouldBeRight { page ->
+        page.pokemons.size shouldBe 2
+        page.pokemons[0].name shouldBe "Bulbasaur"
+    }
+}
+
+// ❌ REMOVE: Redundant - covered by property test
+"should handle Pokemon ID 1" {
+    val dto = createDto(id = 1)
+    dto.toDomain().id shouldBe 1
+}
+// Property test already covers IDs 1-1000
+
+// ❌ REMOVE: Redundant - covered by property test
+"should return Http 404 error" {
+    val error = RepoError.Http(404, "Not found")
+    // ... testing
+}
+// Property test covers all HTTP codes 400-599
+```
+
+### Measuring Property Test Coverage
+
+**Target Metrics:**
+- 🎯 **30-40% of tests** should be property-based
+- 🎯 **60-70% of tests** should be concrete (documentation/edge cases)
+- 🎯 **15+ redundant tests removed** per feature module cleanup
+
+**Example Project Stats:**
+```
+Total Tests: 84
+Property Tests: 34 (40%)
+Concrete Tests: 50 (60%)
+Scenarios per run: 34,000+ (34 property tests × 1000 iterations)
+```
+
+## 🌊 Flow Testing with Turbine
+
+**CRITICAL: Use Turbine for testing StateFlow/SharedFlow/Flow**
+
+### Why Turbine?
+
+1. **Deterministic**: Works with TestDispatcher for controlled time
+2. **Expressive**: `awaitItem()`, `skipItems()`, `cancelAndIgnoreRemainingEvents()`
+3. **No Thread.sleep()**: Fast, predictable tests
+4. **Flow-specific**: Built for Kotlin coroutines Flow testing
+
+### Setup
+
+```kotlin
+// gradle/libs.versions.toml
+[versions]
+turbine = "1.2.0"
+
+[libraries]
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+
+// build.gradle.kts
+androidUnitTest.dependencies {
+    implementation(libs.turbine)
+    implementation(libs.kotlinx.coroutines.test)
+}
+```
+
+### ViewModel Flow Testing Pattern
+
+```kotlin
+@OptIn(ExperimentalCoroutinesApi::class)
+class PokemonListViewModelTest : StringSpec({
+    val testDispatcher = StandardTestDispatcher()
+    val testScope = TestScope(testDispatcher)
+    
+    lateinit var mockRepository: PokemonListRepository
+    
+    beforeTest {
+        mockRepository = mockk(relaxed = true)
+    }
+    
+    "should emit Loading then Content on success" {
+        val mockData = listOf(Pokemon(1, "Bulbasaur", "url"))
+        coEvery { mockRepository.loadPage(any(), any()) } returns 
+            Either.Right(PokemonPage(mockData.toImmutableList(), hasMore = false))
+        
+        val vm = PokemonListViewModel(mockRepository, testScope)
+        
+        vm.uiState.test {
+            // Initial state
+            awaitItem() shouldBe PokemonListUiState.Loading
+            
+            // Trigger load
+            vm.loadInitialPage()
+            testDispatcher.scheduler.advanceUntilIdle()
+            
+            // Verify state transition
+            val state = awaitItem()
+            state.shouldBeInstanceOf<PokemonListUiState.Content>()
+            state.pokemons shouldHaveSize 1
+            
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    
+    "property: HTTP error codes always produce Error state" {
+        checkAll(Arb.int(400..599)) { httpCode ->
+            val error = RepoError.Http(httpCode, "Test error")
+            coEvery { mockRepository.loadPage(any(), any()) } returns Either.Left(error)
+            
+            val vm = PokemonListViewModel(mockRepository, testScope)
+            vm.uiState.test {
+                skipItems(1) // Skip Loading
+                vm.loadInitialPage()
+                testDispatcher.scheduler.advanceUntilIdle()
+                
+                val state = awaitItem()
+                state.shouldBeInstanceOf<PokemonListUiState.Error>()
+                state.message.contains(httpCode.toString()) shouldBe true
+                
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
+})
+```
+
+### Turbine API Essentials
+
+```kotlin
+// Test a flow
+flow.test {
+    // Wait for next emission
+    val item = awaitItem()
+    item shouldBe expectedValue
+    
+    // Skip N emissions
+    skipItems(2)
+    
+    // Wait for completion
+    awaitComplete()
+    
+    // Wait for error
+    val error = awaitError()
+    
+    // Cancel and ignore remaining
+    cancelAndIgnoreRemainingEvents()
+}
+```
+
+### ⚠️ Forbidden: Thread.sleep() in Tests
+
+```kotlin
+// ❌ NEVER DO THIS
+"test with delay" {
+    viewModel.load()
+    Thread.sleep(1000)  // ❌ Slow, flaky, bad practice
+    viewModel.uiState.value shouldBe expected
+}
+
+// ✅ USE TURBINE + TEST DISPATCHER
+"test with flow" {
+    viewModel.uiState.test {
+        viewModel.load()
+        testDispatcher.scheduler.advanceUntilIdle()  // ✅ Fast, deterministic
+        awaitItem() shouldBe expected
+        cancelAndIgnoreRemainingEvents()
+    }
+}
+```
+
+### TestDispatcher Setup (No Dispatchers.setMain needed)
+
+```kotlin
+// ✅ CORRECT: Inject test scope into ViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
+class ViewModelTest : StringSpec({
+    val testDispatcher = StandardTestDispatcher()
+    val testScope = TestScope(testDispatcher)
+    
+    beforeTest {
+        mockRepository = mockk(relaxed = true)
+    }
+    // NO afterTest needed - no Dispatchers.setMain/resetMain
+    
+    "test" {
+        // Pass testScope to ViewModel constructor
+        val vm = MyViewModel(mockRepository, testScope)
+        
+        vm.uiState.test {
+            vm.doSomething()
+            testDispatcher.scheduler.advanceUntilIdle()
+            awaitItem() shouldBe expected
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+})
+
+// ViewModel must accept CoroutineScope parameter
+class MyViewModel(
+    private val repository: MyRepository,
+    viewModelScope: CoroutineScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main.immediate
+    )
+) : ViewModel(viewModelScope) {
+    // ViewModel uses injected scope
+}
+```
+
+**Why no Dispatchers.setMain?**
+- ✅ ViewModel receives test scope via constructor
+- ✅ ViewModel uses injected scope, not Dispatchers.Main
+- ✅ Cleaner test setup (no beforeTest/afterTest boilerplate)
+- ✅ Better encapsulation (ViewModel doesn't depend on global state)
+
 ## Strategic Decision: Mobile-First Testing
 
 **Primary Testing Location: `androidUnitTest/` source sets**
@@ -102,11 +430,12 @@ kotlin {
         }
         
         // Android: PRIMARY testing location for business logic
-        androidTest.dependencies {
+        androidUnitTest.dependencies {
             implementation(libs.kotest.assertions)
             implementation(libs.kotest.framework)
             implementation(libs.kotest.property)
             implementation(libs.mockk)
+            implementation(libs.turbine)  // Flow testing
             implementation(libs.kotlinx.coroutines.test)
         }
         
@@ -457,26 +786,24 @@ class PokemonMappersTest : StringSpec({
 })
 ```
 
-### ViewModel Test (androidTest/)
+### ViewModel Test with Turbine (androidUnitTest/)
 
 ```kotlin
-// features/pokemonlist/impl/src/androidTest/kotlin/.../PokemonViewModelTest.kt
+// features/pokemonlist/presentation/src/androidUnitTest/kotlin/.../PokemonViewModelTest.kt
+@OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModelTest : StringSpec({
-    lateinit var mockRepository: PokemonListRepository
-    lateinit var viewModel: PokemonListViewModel
     val testDispatcher = StandardTestDispatcher()
+    val testScope = TestScope(testDispatcher)
+    
+    lateinit var mockRepository: PokemonListRepository
     
     beforeTest {
-        Dispatchers.setMain(testDispatcher)
-        mockRepository = mockk()
-        viewModel = PokemonListViewModel(mockRepository)
+        mockRepository = mockk(relaxed = true)
     }
-    
-    afterTest {
-        Dispatchers.resetMain()
-    }
+    // Note: No Dispatchers.setMain/resetMain needed
     
     "should start with Loading state" {
+        val viewModel = PokemonListViewModel(mockRepository, testScope)
         viewModel.uiState.value shouldBe PokemonListUiState.Loading
     }
     
@@ -491,13 +818,17 @@ class PokemonListViewModelTest : StringSpec({
         )
         coEvery { mockRepository.loadPage(any(), any()) } returns Either.Right(mockPage)
         
-        // When
-        viewModel.loadInitialPage()
-        testDispatcher.scheduler.advanceUntilIdle()
+        val viewModel = PokemonListViewModel(mockRepository, testScope)
         
-        // Then
-        val state = viewModel.uiState.value
-        state shouldBeInstanceOf<PokemonListUiState.Content>()
+        // When + Then
+        viewModel.uiState.test {
+            awaitItem() shouldBe PokemonListUiState.Loading
+            
+            viewModel.loadInitialPage()
+            testDispatcher.scheduler.advanceUntilIdle()
+            
+            val state = awaitItem()
+            state.shouldBeInstanceOf<PokemonListUiState.Content>()
         (state as PokemonListUiState.Content).pokemons shouldHaveSize 2
         state.hasMore shouldBe true
         state.isLoadingMore shouldBe false
@@ -782,6 +1113,168 @@ class UserJsonRoundTripSpec : StringSpec({
     back shouldBe obj
   }
 })
+```
+
+## Property-Based Testing Best Practices
+
+### Effective Property Test Design
+
+**1. Choose the Right Properties**
+
+```kotlin
+// ✅ GOOD: Tests invariant (data preservation)
+"property: mapper preserves all fields" {
+    checkAll(arbPokemon()) { pokemon ->
+        val dto = pokemon.toDto()
+        val restored = dto.toDomain()
+        restored.id shouldBe pokemon.id
+        restored.name shouldBe pokemon.name
+    }
+}
+
+// ✅ GOOD: Tests transformation rule
+"property: toDomain always capitalizes name" {
+    checkAll(Arb.string(1..50)) { name ->
+        val dto = PokemonDto(name.lowercase())
+        dto.toDomain().name.first().isUpperCase() shouldBe true
+    }
+}
+
+// ❌ BAD: Too specific, not a property
+"property: ID 25 is Pikachu" {
+    checkAll(Arb.int(1..1000)) { id ->
+        if (id == 25) {
+            getPokemon(id).name shouldBe "Pikachu"
+        }
+    }
+}
+```
+
+**2. Use Appropriate Generators**
+
+```kotlin
+// Custom generators for domain types
+fun arbPokemon(): Arb<Pokemon> = arbitrary {
+    Pokemon(
+        id = Arb.int(1..1000).bind(),
+        name = Arb.string(1..30).bind(),
+        imageUrl = Arb.string(10..100).bind()
+    )
+}
+
+// Filtered generators
+Arb.string(1..50)
+    .filter { it.isNotEmpty() }
+    .filter { it.first().isLetter() }
+
+// Conditional generators
+Arb.int(0..10000).orNull()  // Nullable
+Arb.choice(arbSuccess(), arbError())  // Either success or error
+```
+
+**3. Balance Property vs Concrete Tests**
+
+```
+📊 Target Distribution:
+- 30-40% Property tests (broad coverage)
+- 60-70% Concrete tests (documentation + specific edge cases)
+
+🎯 Property Tests For:
+- Mappers (data preservation)
+- Repositories (HTTP codes, pagination)
+- ViewModels (state transitions)
+- Parsers/Validators
+- JSON round-trips
+
+📚 Concrete Tests For:
+- Happy path examples (documentation)
+- Specific edge cases (empty lists, null values)
+- Error scenarios (specific failure modes)
+- Complex setup scenarios
+```
+
+**4. Naming Conventions**
+
+```kotlin
+// ✅ GOOD: Starts with "property:"
+"property: HTTP error codes always produce Error state"
+"property: mapper preserves ID regardless of name"
+"property: round-trip maintains data integrity"
+
+// ❌ BAD: Looks like concrete test
+"repository maps DTO to domain"
+"ViewModel handles errors"
+```
+
+**5. Common Mistakes to Avoid**
+
+```kotlin
+// ❌ BAD: Too many iterations for fast test
+checkAll(iterations = 10000) { /* ... */ }  // Slow!
+
+// ✅ GOOD: Use default 1000 iterations
+checkAll(Arb.int()) { /* ... */ }
+
+// ❌ BAD: Non-deterministic without test dispatcher
+"property: loads data" {
+    checkAll(Arb.int()) { id ->
+        viewModel.load(id)
+        Thread.sleep(100)  // ❌ Bad!
+        viewModel.state.value.shouldBeInstanceOf<Success>()
+    }
+}
+
+// ✅ GOOD: Deterministic with TestDispatcher
+"property: loads data" {
+    checkAll(Arb.int(1..1000)) { id ->
+        coEvery { repo.load(id) } returns Either.Right(data)
+        val vm = MyViewModel(repo, testScope)
+        vm.uiState.test {
+            vm.load(id)
+            testDispatcher.scheduler.advanceUntilIdle()
+            awaitItem().shouldBeInstanceOf<Success>()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+}
+```
+
+### When to Remove Redundant Concrete Tests
+
+**Decision Matrix:**
+
+| Scenario | Property Test Exists? | Keep Concrete? | Reason |
+|----------|---------------------|----------------|--------|
+| HTTP 404 error | ✅ Yes (400-599) | ❌ Remove | Covered by property |
+| Network timeout | ❌ No | ✅ Keep | Specific error type |
+| ID extraction for ID=25 | ✅ Yes (1-10000) | ❌ Remove | Covered by property |
+| Empty list handling | ❌ No | ✅ Keep | Specific edge case |
+| Name capitalization for "pikachu" | ✅ Yes (all strings) | ❌ Remove | Covered by property |
+| Invalid URL format | ❌ No | ✅ Keep | Specific failure mode |
+| hasMore=true when next!=null | ✅ Yes (all scenarios) | ❌ Remove | Covered by property |
+| Complex setup example | ❌ No | ✅ Keep | Documentation value |
+
+**Cleanup Process:**
+
+1. **Identify property tests**: List all property tests and their coverage
+2. **Map concrete tests**: For each concrete test, check if property test covers it
+3. **Evaluate documentation value**: Does concrete test explain something clearly?
+4. **Remove redundant tests**: Delete tests fully covered by properties with no doc value
+5. **Verify test count**: Aim for 30-40% property tests after cleanup
+
+**Example Cleanup:**
+
+```kotlin
+// Before: 15 tests
+"property: HTTP codes 400-599 produce Http error" { /* ... */ }  // Keep
+"should return Http 404 error" { /* ... */ }  // ❌ Remove - redundant
+"should return Http 500 error" { /* ... */ }  // ❌ Remove - redundant
+"should return Http 503 error" { /* ... */ }  // ❌ Remove - redundant
+
+// After: 12 tests (removed 3 redundant)
+"property: HTTP codes 400-599 produce Http error" { /* ... */ }  // Keep
+"should return Network error on timeout" { /* ... */ }  // Keep - different error type
+"should return Right with mapped domain on success" { /* ... */ }  // Keep - documentation
 ```
 
 ## AI Agent Enforcement
