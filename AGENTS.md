@@ -174,10 +174,7 @@ See [Convention Plugins Pattern](.junie/guides/tech/critical_patterns_quick_ref.
 
 **Quick summary**: Shared config utilities, base plugin composition following [Now in Android](https://github.com/android/nowinandroid) patterns, 38% code reduction.
 
-**Usage guide**: See `.junie/guides/tech/convention_plugins_quick_ref.md` for detailed usage examples.
-**Implementation**: See `.junie/guides/tech/convention_plugins_improvements.md` for architecture details.
-
-> **📋 TODO**: Consolidate 4 convention plugin files (quick_ref, improvements, gradle_convention_plugins, gradle_convention_plugins_implementation) - tracked for future documentation audit.
+**Complete guide**: See `.junie/guides/tech/convention_plugins_guide.md` for usage, architecture, and implementation details (consolidated November 26, 2025).
 
 ### Dependency Injection: Koin (Implemented in pokemonlist)
 **Classes are DI-agnostic. Wire via Koin `module { }` DSL in wiring modules with platform-specific source sets.**
@@ -899,8 +896,7 @@ cat gradle/libs.versions.toml
 - **ViewModels**: `.junie/guides/tech/presentation_layer.md`
 - **Testing**: `.junie/guides/tech/testing_strategy.md`
 - **Navigation**: `.junie/guides/tech/navigation.md`
-- **Convention Plugins**: `.junie/guides/tech/convention_plugins_quick_ref.md` ← **Quick reference**
-- **Convention Plugins Improvements**: `.junie/guides/tech/convention_plugins_improvements.md` ← **Implementation details**
+- **Convention Plugins**: `.junie/guides/tech/convention_plugins_guide.md` ← **Complete consolidated guide**
 
 ### Product Documentation
 - **Requirements**: `.junie/guides/project/prd.md`
@@ -1889,22 +1885,6 @@ Before committing code, verify:
 
 ---
 
-## 📋 Future Documentation Tasks
-
-### Convention Plugins Consolidation (Tracked for Later)
-
-**Issue**: 4 overlapping files about convention plugins exist:
-- `.junie/guides/tech/convention_plugins_quick_ref.md` (usage guide)
-- `.junie/guides/tech/convention_plugins_improvements.md` (architecture details)
-- `.junie/guides/tech/gradle_convention_plugins.md` (comprehensive guidelines)
-- `.junie/guides/tech/gradle_convention_plugins_implementation.md` (implementation guide)
-
-**Action Needed**: Run Documentation Management Mode audit specifically focused on convention plugins documentation to:
-1. Identify overlapping content across the 4 files
-2. Propose consolidation strategy (merge vs clarify distinct purposes)
-3. Update cross-references in AGENTS.md, copilot-instructions.md, guidelines.md
-4. Ensure single clear entry point for convention plugin documentation
-
-**Priority**: Medium (not blocking current work, address during next documentation sync sprint)
-
-**Added**: November 26, 2025
+**Audit Completion**: November 26, 2025  
+**Next Audit Recommended**: December 26, 2025 (monthly cadence)  
+**Trigger Events for Earlier Audit**: After architectural pattern updates, before major releases

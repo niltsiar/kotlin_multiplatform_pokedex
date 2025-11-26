@@ -187,7 +187,7 @@ delay(100)  // Wrong: flaky
 - **Utility Organization** — `.junie/guides/tech/utility_organization.md` — Utilities, extensions, platform abstractions
 - **Testing Strategy** — `.junie/guides/tech/testing_strategy.md` — Kotest, MockK, Roborazzi, property-based testing
 - **Test Enforcement** — `.junie/guides/tech/testing_strategy.md` — ⚠️ MANDATORY: All code requires tests
-- **Gradle Convention Plugins** — `.junie/guides/tech/gradle_convention_plugins.md` — Build configuration, convention plugins
+- **Gradle Convention Plugins** — `.junie/guides/tech/convention_plugins_guide.md` — Build configuration, convention plugins (consolidated guide)
 
 ### UI/UX Development Guidelines
 When implementing UI screens and user experiences:

@@ -1,7 +1,7 @@
 # iOS Integration Guide - SwiftUI + KMP ViewModels
 
 > **Status**: ✅ Production Pattern Established  
-> **Last Updated**: November 2025  
+> **Last Updated**: November 26, 2025  
 > **Current Pattern**: Direct Integration (`private var` ViewModel + `@State` for UI state)  
 > **Alternative**: Wrapper Pattern (`@ObservableObject` + `@StateObject`) available for complex apps  
 > **Note**: This guide covers **iosApp** (native SwiftUI). For iOS Compose app (**iosAppCompose**), see Compose Multiplatform iOS documentation.
