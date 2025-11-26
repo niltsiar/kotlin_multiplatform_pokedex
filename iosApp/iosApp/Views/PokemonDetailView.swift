@@ -133,7 +133,7 @@ struct PokemonDetailView: View {
     
     // MARK: - Type Badges
     
-    private func typeBadgesSection(types: [Type_]) -> some View {
+    private func typeBadgesSection(types: [TypeOfPokemon]) -> some View {
         HStack(spacing: 12) {
             ForEach(types, id: \.name) { type in
                 Text(type.name.capitalized)
@@ -374,7 +374,7 @@ struct PokemonDetailView: View {
         }
     }
     
-    private func typeGradient(types: [Type_]) -> LinearGradient {
+    private func typeGradient(types: [TypeOfPokemon]) -> LinearGradient {
         let colors = types.map { typeColor(for: $0.name).opacity(0.3) }
         return LinearGradient(
             gradient: Gradient(colors: colors),
