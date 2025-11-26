@@ -136,11 +136,12 @@ kotlin {
 :features:pokemonlist:api           → Public contracts
 :features:pokemonlist:data          → Network + data layer
 :features:pokemonlist:presentation  → ViewModels (shared with iOS)
-:features:pokemonlist:ui            → Compose UI (Android/JVM only)
+:features:pokemonlist:ui            → Compose UI (Android/JVM/iOS Compose)
 :features:pokemonlist:wiring        → Koin modules
   ├── commonMain                    → Repos, ViewModels
   ├── androidMain                   → Navigation, UI
-  └── jvmMain                       → Navigation, UI
+  ├── jvmMain                       → Navigation, UI
+  └── iosMain                       → Navigation, UI (for iosAppCompose)
 ```
 
 ---

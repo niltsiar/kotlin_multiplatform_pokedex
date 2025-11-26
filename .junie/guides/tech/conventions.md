@@ -23,7 +23,7 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 :features:<feature>:api          → Public contracts (interfaces, domain models, navigation)
 :features:<feature>:data         → Network, DTOs, repositories (KMP - all targets)
 :features:<feature>:presentation → ViewModels, UI state (KMP - all targets, shared with iOS)
-:features:<feature>:ui           → Compose UI screens (Android + JVM only, NOT iOS)
+:features:<feature>:ui           → Compose UI screens (Android + JVM + iOS Compose)
 :features:<feature>:wiring       → DI assembly (KMP with platform-specific source sets)
 ```
 
@@ -134,10 +134,13 @@ For features with complex business logic orchestrating multiple repositories:
 
 ### Platform-Specific UI
 
-**:ui modules target Android + JVM Desktop only** (no iOS targets):
-- Android and Desktop share Compose Multiplatform UI
-- iOS uses native SwiftUI, accessing ViewModels via `:shared` framework
-- :ui modules are **NEVER exported** to iOS
+**:ui modules support all Compose platforms** (Android + JVM Desktop + iOS Compose):
+- Android, Desktop, and iOS Compose share Compose Multiplatform UI
+- iOS has TWO app options:
+  - **iosAppCompose** (experimental): Uses shared Compose UI from :ui modules
+  - **iosApp** (production): Uses native SwiftUI, accessing ViewModels via `:shared` framework
+- :ui modules are exported to iOS Compose app via ComposeApp.framework
+- :ui modules are **NOT exported** to native SwiftUI app (iosApp uses :shared framework)
 
 ### HttpClient Configuration
 
@@ -280,7 +283,7 @@ kotlin {
 - Keep navigation contracts in feature `api` (plain data classes/objects for Navigation 3); implementations in feature modules; aggregate via wiring where needed.
 - **ViewModels are KMP and shared across all platforms** (Android, Desktop, iOS): defined in `:features:<feature>:presentation` modules, exported to iOS via `:shared` framework.
 - ViewModels: all ViewModels must extend `androidx.lifecycle.ViewModel` (KMP). Do not perform work in `init`. Be lifecycle-aware (load on lifecycle callbacks). Do NOT store a `CoroutineScope` field; instead pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally. Use `SavedStateHandle` when needed to restore state/inputs. Do not expose mutable collections; prefer `kotlinx.collections.immutable` types. Implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>` located in `:core:util`.
-- **Compose UI is platform-specific**: Lives in `:features:<feature>:ui` modules (Android + JVM only). iOS uses native SwiftUI consuming shared ViewModels.
+- **Compose UI is cross-platform**: Lives in `:features:<feature>:ui` modules (Android + JVM + iOS Compose). Native SwiftUI app (iosApp) consumes shared ViewModels via :shared framework. iOS Compose app (iosAppCompose) uses shared Compose UI from :ui modules.
 
 ## iOS Shared Umbrella
 - The `shared` module produces a single umbrella framework for iOS.
@@ -317,11 +320,13 @@ val featureModule = module {
 
 **See**: [koin_di_quick_ref.md](../tech/koin_di_quick_ref.md) for complete patterns
 
-- **NEVER export to iOS**:
-  - `:features:<feature>:data` → Internal data layer
-  - `:features:<feature>:ui` → Compose UI (Android/JVM only)
-  - `:features:<feature>:wiring` → DI assembly (though iOS can consume via commonMain)
-  - `:composeApp` → Compose application module
+- **Export strategy by iOS app**:
+  - **Native SwiftUI app (iosApp via :shared framework)**:
+    - ✅ Export: `:features:<feature>:api`, `:features:<feature>:presentation`, `:core:*`
+    - ❌ Never export: `:features:<feature>:data`, `:features:<feature>:ui`, `:features:<feature>:wiring`, `:composeApp`
+  - **iOS Compose app (iosAppCompose via ComposeApp.framework)**:
+    - ✅ Uses: `:composeApp` framework which includes all :ui modules
+    - ❌ Does not use: `:shared` framework (different approach)
 
 **Example shared/build.gradle.kts:**
 ```kotlin

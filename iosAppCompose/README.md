@@ -102,6 +102,29 @@ Uses **Navigation 3** with:
 
 ## Troubleshooting
 
+### Plist Sanity Check Error
+
+If you encounter a plist sanity check error, the proper fix is to use the included `Info.plist` file (already configured in the Xcode project). The project now has:
+
+- **Info.plist** with all required iOS app keys
+- Xcode project configured to use this file (`INFOPLIST_FILE = iosAppCompose/Info.plist`)
+
+**Don't use the workaround**:
+```kotlin
+// ❌ Workaround (not needed)
+ComposeUIViewController(configure = { enforceStrictPlistSanityCheck = false }) { App() }
+
+// ✅ Proper fix (already implemented)
+ComposeUIViewController { App() }
+```
+
+The Info.plist includes:
+- Bundle configuration
+- UI scene manifest
+- Supported orientations
+- Required device capabilities
+- Status bar settings
+
 ### Framework Not Found
 
 If Xcode can't find the framework:
