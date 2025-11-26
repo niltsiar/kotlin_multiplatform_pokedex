@@ -6,13 +6,28 @@ plugins {
 }
 
 kotlin {
+    // iOS targets for Compose Multiplatform
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+    
     sourceSets {
         commonMain.dependencies {
             // Core DI module contains AppGraph
             implementation(projects.core.di)
             implementation(projects.core.designsystem)
+            
+            // Feature UI modules - now support iOS Compose
             implementation(projects.features.pokemonlist.ui)
             implementation(projects.features.pokemonlist.wiring)
+            implementation(projects.features.pokemondetail.ui)
+            implementation(projects.features.pokemondetail.wiring)
             
             // Koin
             implementation(libs.koin.core)
@@ -38,6 +53,9 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutinesSwing)
+        }
+        iosMain.dependencies {
+            // iOS-specific dependencies if needed
         }
     }
 }

@@ -30,6 +30,13 @@ kotlin {
             implementation(libs.koin.compose)
         }
         
+        // iOS targets for Compose Multiplatform iOS
+        iosMain.dependencies {
+            implementation(projects.features.pokemonlist.ui)
+            implementation(libs.androidx.navigation3.ui)  // For EntryProviderScope
+            implementation(libs.koin.compose)
+        }
+        
         // iOS targets use only commonMain (no UI module dependency)
         // iOS will consume ViewModels and repositories from :presentation and :api
         

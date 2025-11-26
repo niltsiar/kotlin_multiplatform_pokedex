@@ -264,7 +264,7 @@ private fun HeroSection(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = String.format("#%03d", id),
+                text = "#${id.toString().padStart(3, '0')}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

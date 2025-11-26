@@ -15,14 +15,14 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * 
  * These modules contain:
  * - Compose Multiplatform UI (@Composable functions)
- * - Platform-specific UI code (Android + Desktop JVM only)
+ * - Platform-specific UI code (Android + Desktop JVM + iOS Compose)
  * - Screen implementations
  * 
- * NOT exported to iOS (iOS uses native SwiftUI).
- * Only targets Android and JVM (Desktop).
+ * Targets: Android, JVM (Desktop), and iOS (for Compose Multiplatform iOS)
+ * Note: Original iOS app uses native SwiftUI, but iosAppCompose uses Compose UI
  * 
  * Note: Does NOT compose convention.feature.base because:
- * - UI modules need explicit target configuration (Android + JVM only, no iOS)
+ * - UI modules need explicit target configuration (Android + JVM + iOS)
  * - UI modules have different dependency needs (Compose instead of just base dependencies)
  */
 class ConventionFeatureUiPlugin : Plugin<Project> {
@@ -34,7 +34,7 @@ class ConventionFeatureUiPlugin : Plugin<Project> {
         }
         
         extensions.configure<KotlinMultiplatformExtension> {
-            // Explicit target configuration: Android + JVM only (no iOS)
+            // Explicit target configuration: Android + JVM + iOS
             androidTarget {
                 compilerOptions {
                     jvmTarget.set(JvmTarget.JVM_11)
@@ -46,8 +46,15 @@ class ConventionFeatureUiPlugin : Plugin<Project> {
                     jvmTarget.set(JvmTarget.JVM_11)
                 }
             }
+            
+            // iOS targets for Compose Multiplatform iOS
+            listOf(
+                iosArm64(),
+                iosSimulatorArm64(),
+                iosX64()
+            )
 
-            // Note: iOS targets NOT included - UI is platform-specific
+            // Note: iOS Compose support added for iosAppCompose experimental app
             // iOS uses native SwiftUI, not Compose
 
             sourceSets.apply {
