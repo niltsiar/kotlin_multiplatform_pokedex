@@ -52,6 +52,7 @@ include(":features:pokemonlist:wiring")
 
 // Pokemon Detail feature
 include(":features:pokemondetail:api")
+include(":features:pokemondetail:data")
+include(":features:pokemondetail:presentation")
 include(":features:pokemondetail:ui")
 include(":features:pokemondetail:wiring")
-include(":features:pokemondetail:api")
