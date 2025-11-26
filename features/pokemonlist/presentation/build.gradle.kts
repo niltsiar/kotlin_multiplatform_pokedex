@@ -34,6 +34,7 @@ kotlin {
             implementation(libs.kotest.assertions.arrow)
             implementation(libs.mockk)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
         }
     }
 }

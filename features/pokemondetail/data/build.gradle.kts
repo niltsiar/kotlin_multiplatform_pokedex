@@ -28,9 +28,12 @@ kotlin {
         
         androidUnitTest.dependencies {
             implementation(libs.kotest.assertions)
-            implementation(libs.kotest.property)
             implementation(libs.kotest.framework)
+            implementation(libs.kotest.property)
+            implementation(libs.kotest.runner.junit5)
+            implementation(libs.kotest.assertions.arrow)
             implementation(libs.mockk)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

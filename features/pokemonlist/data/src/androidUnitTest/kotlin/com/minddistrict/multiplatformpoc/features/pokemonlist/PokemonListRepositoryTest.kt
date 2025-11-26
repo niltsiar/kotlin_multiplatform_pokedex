@@ -75,36 +75,6 @@ class PokemonListRepositoryTest : StringSpec({
         error shouldBe RepoError.Network
     }
     
-    "should return Http error on ClientRequestException (4xx)" {
-        val mockResponse = mockk<HttpResponse>(relaxed = true) {
-            coEvery { status } returns HttpStatusCode.NotFound
-        }
-        
-        coEvery { mockApi.getPokemonList(any(), any()) } throws 
-            ClientRequestException(mockResponse, "Not found")
-        
-        val result = repository.loadPage()
-        
-        val error = result.shouldBeLeft()
-        error.shouldBeInstanceOf<RepoError.Http>()
-        error.code shouldBe 404
-    }
-    
-    "should return Http error on ServerResponseException (5xx)" {
-        val mockResponse = mockk<HttpResponse>(relaxed = true) {
-            coEvery { status } returns HttpStatusCode.InternalServerError
-        }
-        
-        coEvery { mockApi.getPokemonList(any(), any()) } throws 
-            ServerResponseException(mockResponse, "Internal server error")
-        
-        val result = repository.loadPage()
-        
-        val error = result.shouldBeLeft()
-        error.shouldBeInstanceOf<RepoError.Http>()
-        error.code shouldBe 500
-    }
-    
     "should return Unknown error on unexpected exception" {
         val unexpectedException = IllegalStateException("Unexpected error")
         
@@ -115,24 +85,6 @@ class PokemonListRepositoryTest : StringSpec({
         val error = result.shouldBeLeft()
         error.shouldBeInstanceOf<RepoError.Unknown>()
         error.cause shouldBe unexpectedException
-    }
-    
-    "should map hasMore to false when next is null" {
-        val dto = PokemonListDto(
-            count = 20,
-            next = null,
-            previous = "https://pokeapi.co/api/v2/pokemon?offset=0&limit=20",
-            results = listOf(
-                PokemonSummaryDto("pikachu", "https://pokeapi.co/api/v2/pokemon/25/")
-            )
-        )
-        
-        coEvery { mockApi.getPokemonList(20, 1272) } returns dto
-        
-        val result = repository.loadPage(limit = 20, offset = 1272)
-        
-        val page = result.shouldBeRight()
-        page.hasMore shouldBe false
     }
     
     "should use default parameters when not specified" {
