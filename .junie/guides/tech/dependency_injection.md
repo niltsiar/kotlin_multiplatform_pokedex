@@ -16,7 +16,7 @@ References
   - `:features:<feature>:api` — public contracts (interfaces, models), navigation contracts
   - `:features:<feature>:data` — network layer, data layer (API services, DTOs, repositories, mappers)
   - `:features:<feature>:presentation` — ViewModels and UI state (shared with iOS)
-  - `:features:<feature>:ui` — Compose UI screens (Android + JVM only, NOT exported to iOS)
+  - `:features:<feature>:ui` — Compose UI screens (Android + JVM + iOS Compose)
   - `:features:<feature>:wiring` — Koin module definitions for the feature
 - Only `api` modules are visible to other features; all other modules remain internal
 
@@ -292,15 +292,15 @@ val pokemonListModule: Module = module {
 
 ### In `:features:<name>:ui`
 - Implement Compose UI screens (@Composable functions)
-- **Android + JVM only** (no iOS targets)
+- **Android + JVM + iOS Compose** (used by iosAppCompose)
 - Keep DI-agnostic
 
 ### In `:features:<name>:wiring`
 - Define Koin modules that bind implementations to interfaces
 - Use **platform-specific source sets** for UI dependencies:
   - `commonMain` → Provides repositories, ViewModels (all platforms)
-  - `androidMain`/`jvmMain` → Provides UI entry points, navigation (Android/JVM only)
-  - iOS targets use only `commonMain` (no UI dependencies)
+  - `androidMain`/`jvmMain`/`iosMain` → Provides UI entry points, navigation (platform-specific)
+  - Native SwiftUI app (iosApp) uses only `commonMain` from :shared (no UI dependencies)
 
 ```kotlin
 // features/profile/api/src/commonMain/.../ProfileRepository.kt
@@ -576,11 +576,11 @@ Ensure Gradle `export` entries include:
 - `:features:<feature>:presentation` modules (ViewModels, UI state - shared with iOS)
 - `:core:*` modules (shared utilities, domain types)
 
-**Do NOT export**:
+**Do NOT export to :shared framework (native SwiftUI app)**:
 - `:features:<feature>:data` modules (internal data layer)
-- `:features:<feature>:ui` modules (Compose UI - Android/JVM only)
+- `:features:<feature>:ui` modules (Compose UI - used by iOS Compose app via ComposeApp.framework)
 - `:features:<feature>:wiring` modules (can be exported if needed for iOS Koin setup)
-- `:composeApp` (Compose application)
+- `:composeApp` (Compose application - used by iOS Compose app separately)
 
 **Example:**
 ```kotlin
@@ -600,7 +600,9 @@ sourceSets {
 }
 ```
 
-**iOS SwiftUI Integration**: iOS views consume KMP ViewModels from `:presentation` modules, call repositories from `:api` modules, all accessed via `shared.framework`.
+**iOS Integration**:
+- **Native SwiftUI app (iosApp)**: iOS views consume KMP ViewModels from `:presentation` modules via `shared.framework`
+- **Compose iOS app (iosAppCompose)**: Uses shared Compose UI from `:ui` modules via `ComposeApp.framework`
 
 ## Troubleshooting
 

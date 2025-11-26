@@ -201,7 +201,7 @@ dependencies {
 ---
 
 ### 4. `convention.compose.multiplatform`
-Compose Multiplatform UI configuration (Android + Desktop JVM).
+Compose Multiplatform UI configuration (Android + Desktop JVM + iOS).
 
 **What it does**:
 - Applies `org.jetbrains.compose` and `org.jetbrains.kotlin.plugin.compose`
@@ -209,9 +209,10 @@ Compose Multiplatform UI configuration (Android + Desktop JVM).
 - Adds lifecycle dependencies: ViewModel Compose, Runtime Compose
 - Adds Android-specific: Compose preview, Activity Compose
 - Adds Desktop/JVM: Desktop current OS runtime
+- Adds iOS: Supports iosArm64, iosSimulatorArm64, iosX64 targets
 - Adds debug: UI Tooling
 
-**When to use**: Modules with Compose UI (Android + Desktop only, NOT iOS)
+**When to use**: Modules with Compose UI (Android + Desktop + iOS Compose)
 
 **Example**:
 ```kotlin
@@ -230,7 +231,9 @@ kotlin {
 }
 ```
 
-**Note**: iOS uses native SwiftUI, not Compose Multiplatform.
+**Note**: This project has TWO iOS apps:
+- **iosApp** (production): Native SwiftUI app using :shared framework
+- **iosAppCompose** (experimental): Compose Multiplatform iOS app using ComposeApp.framework
 
 ---
 
@@ -410,10 +413,10 @@ kotlin {
             api(projects.core.domain)
             api(projects.core.util)
             
-            // ❌ Do NOT export:
+            // ❌ Do NOT export to native SwiftUI app (:shared framework):
             // - :impl modules (internal implementations)
             // - :wiring modules (DI assembly)
-            // - :composeApp (Compose UI is Android/Desktop only)
+            // - :composeApp (used by iOS Compose app via ComposeApp.framework instead)
         }
     }
 }

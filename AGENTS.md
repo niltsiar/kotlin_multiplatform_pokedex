@@ -8,20 +8,21 @@
 
 ### What You're Working On
 A **Kotlin Multiplatform** project with:
-- **Compose Multiplatform** for Android + Desktop (JVM) UI
-- **Native SwiftUI** for iOS UI (consuming shared Kotlin business logic)
+- **Compose Multiplatform** for Android + Desktop (JVM) + iOS UI (experimental)
+- **Native SwiftUI** for iOS UI (production - consuming shared Kotlin business logic)
 - **Ktor server** as Backend-for-Frontend (BFF)
 
 Currently in **early POC stage** with skeleton modules only.
 
 ### Current Reality vs. Documentation
 - **What exists**: 
-  - `:composeApp` — Compose Multiplatform UI (Android + Desktop)
-  - `:shared` — iOS umbrella framework (exports other KMP modules to iOS) + SKIE integration
+  - `:composeApp` — Compose Multiplatform UI (Android + Desktop + iOS)
+  - `:shared` — iOS umbrella framework (exports other KMP modules to native iOS SwiftUI) + SKIE integration
   - `:server` — Ktor backend (BFF for all clients)
-  - `:iosApp` — Native SwiftUI app (imports shared.framework to access KMP modules)
-  - `:features:pokemonlist` — ✅ **FULLY IMPLEMENTED** with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring) + iOS SwiftUI integration
-  - `:features:pokemondetail` — ✅ **FULLY IMPLEMENTED** with parametric ViewModel, Navigation 3 animations, iOS SwiftUI + SKIE Type rename handling
+  - `:iosApp` — Native SwiftUI app (production - imports shared.framework to access KMP modules)
+  - `:iosAppCompose` — Compose Multiplatform iOS app (experimental - uses Compose UI on iOS)
+  - `:features:pokemonlist` — ✅ **FULLY IMPLEMENTED** with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring) + iOS SwiftUI integration + iOS Compose support
+  - `:features:pokemondetail` — ✅ **FULLY IMPLEMENTED** with parametric ViewModel, Navigation 3 animations, iOS SwiftUI + SKIE Type rename handling + iOS Compose support
   - `:core:designsystem` — Material 3 Expressive theme system
   - `:core:navigation` — Navigation 3 modular architecture with metadata-based animations
   - `:core:di` — Koin DI core module
@@ -34,7 +35,8 @@ Currently in **early POC stage** with skeleton modules only.
 
 **Platform UI Strategy**:
 - Android/Desktop: Shared Compose Multiplatform UI
-- iOS: Native SwiftUI (separate implementation, accesses KMP business logic via shared.framework + SKIE)
+- iOS Production: Native SwiftUI (separate implementation, accesses KMP business logic via shared.framework + SKIE)
+- iOS Experimental: Compose Multiplatform (iosAppCompose - shares Compose UI with Android/Desktop)
 
 ### Critical Files
 ```
@@ -96,6 +98,7 @@ Is this about repositories/ViewModels/tests/technical?
 
 # ⚠️ NEVER run iOS builds unless explicitly required
 # iOS builds take 5-10 minutes and are rarely necessary
+# Exception: When working on iosAppCompose (Compose iOS), builds are needed
 ```
 
 ### 3. Implementation Pattern
@@ -125,7 +128,7 @@ Research → Plan → Implement → Test → Validate
 :features:pokemonlist:api           → Public contracts only
 :features:pokemonlist:data          → Network + Data layer (all KMP targets)
 :features:pokemonlist:presentation  → ViewModels, UI state (all KMP targets, exported to iOS)
-:features:pokemonlist:ui            → Compose UI screens (Android + JVM only)
+:features:pokemonlist:ui            → Compose UI screens (Android + JVM + iOS Compose)
 :features:pokemonlist:wiring        → DI assembly (platform-specific source sets)
 ```
 
@@ -133,7 +136,7 @@ Research → Plan → Implement → Test → Validate
 1. Each feature has its own network layer (API service, DTOs) in `:data` module
 2. Each feature has its own data layer (repositories, mappers) in `:data` module
 3. Each feature has its own presentation (ViewModels, UI state) in `:presentation` module - **shared with iOS**
-4. Each feature has its own Compose UI in `:ui` module - **Android + JVM only, NOT exported to iOS**
+4. Each feature has its own Compose UI in `:ui` module - **Android + JVM + iOS Compose** (iosAppCompose uses these screens)
 5. Wiring uses platform-specific source sets: `commonMain` provides repos/ViewModels, `androidMain`/`jvmMain` provide UI
 
 **DO NOT create generic :core:network or :core:data modules**
@@ -158,7 +161,7 @@ Following patterns from [Now in Android](https://github.com/android/nowinandroid
 **Base Plugin Composition**:
 - `convention.feature.base` provides KMP targets, tests, common dependencies (Arrow, Coroutines, Collections)
 - Feature layer plugins (api/impl/wiring) compose the base plugin
-- UI plugin maintains explicit target configuration (Android + JVM only)
+- UI plugin maintains explicit target configuration (Android + JVM + iOS)
 
 **Benefits**: 38% code reduction, single source of truth, automatic dependencies
 
@@ -893,7 +896,7 @@ let port = ConstantsKt.SERVER_PORT  // Accessed via shared.framework
 5. **Swallow `CancellationException`** (use `Either.catch` which handles it)
 6. **Create empty pass-through** use cases (call repos directly)
 7. **Export `:impl` or `:wiring`** to iOS via `:shared` (only export `:api` and `:core:*` modules)
-8. **Export `:composeApp`** to iOS via `:shared` (Compose UI is Android/Desktop only)
+8. **Export `:composeApp`** to iOS via `:shared` (Note: Native SwiftUI iosApp doesn't use Compose UI, but iosAppCompose does)
 9. **Add DI annotations** to production classes (wire in wiring modules)
 10. **Put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
 
@@ -934,20 +937,25 @@ class MyViewModel(...) : ViewModel(...) {
 
 ### Current Modules (Existing)
 ```
-:composeApp  → Compose Multiplatform UI (Android/Desktop ONLY)
+:composeApp  → Compose Multiplatform UI (Android + Desktop + iOS)
   ├── commonMain/kotlin    ← Shared Compose UI code
   ├── androidMain/kotlin   ← Android-specific UI
   ├── jvmMain/kotlin       ← Desktop-specific UI
+  ├── iosMain/kotlin       ← iOS Compose-specific code (MainViewController, navigation)
   └── commonTest/kotlin    ← Shared UI tests
 
-:shared      → iOS umbrella framework (exports other modules)
+:shared      → iOS umbrella framework (exports other modules to native SwiftUI)
   └── build.gradle.kts     ← Configures which modules to export to iOS
               Purpose: Aggregates :features:*:api, :features:*:presentation, :core:* modules
               Note: Contains minimal/no business logic itself
 
-:iosApp      → Native SwiftUI iOS app
+:iosApp      → Native SwiftUI iOS app (production)
   ├── SwiftUI views        ← iOS-specific UI implementation
   └── import Shared        → Accesses KMP modules via shared.framework
+
+:iosAppCompose → Compose Multiplatform iOS app (experimental)
+  ├── ContentView.swift    ← Wraps MainViewController from ComposeApp
+  └── import ComposeApp    → Accesses Compose UI framework from :composeApp
 
 :server      → Ktor Backend-for-Frontend (BFF)
   └── src/main/kotlin      ← REST API for all clients
@@ -997,7 +1005,8 @@ IF single repository call only     → Call directly from ViewModel
 IF platform-specific API access    → Use expect/actual in KMP modules (feature/core modules)
 IF platform-specific UI:
   - Android/Desktop UI            → Use Compose source sets (androidMain, jvmMain) in :composeApp
-  - iOS UI                        → Use SwiftUI in :iosApp (separate from Compose)
+  - iOS Production UI             → Use SwiftUI in :iosApp (separate from Compose, native implementation)
+  - iOS Experimental UI           → Use Compose in :iosAppCompose (shares Compose UI with Android/Desktop)
 IF shared business logic           → Use commonMain in feature/core modules
 IF simple constants                → Use commonMain in appropriate module (e.g., :core:config)
 IF iOS framework configuration     → Configure in :shared build.gradle.kts (export declarations)
@@ -1384,7 +1393,7 @@ class HomeViewModel : ViewModel() {
 
 #### 7. Navigation Contracts (When Applicable)
 - [ ] Route objects in `:api` module (plain Kotlin objects/data classes)
-- [ ] UI screens in `:ui` module (Android + JVM only)
+- [ ] UI screens in `:ui` module (Android + JVM + iOS Compose)
 - [ ] EntryProviderInstallers in `:wiring` platform-specific source sets (androidMain/jvmMain)
 - [ ] Navigator injected for cross-feature navigation
 - [ ] Koin modules provide `Set<EntryProviderInstaller>` for collection

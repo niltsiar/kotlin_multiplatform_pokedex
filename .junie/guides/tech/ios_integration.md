@@ -1,14 +1,20 @@
 # iOS Integration Guide - SwiftUI + KMP ViewModels
 
 > **Status**: ✅ Production Pattern Established  
-> **Last Updated**: November 26, 2025  
-> **Pattern**: Native SwiftUI UI consuming shared KMP ViewModels via SKIE
+> **Last Updated**: December 2025  
+> **Pattern**: Native SwiftUI UI consuming shared KMP ViewModels via SKIE  
+> **Note**: This guide covers **iosApp** (native SwiftUI). For iOS Compose app (**iosAppCompose**), see Compose Multiplatform iOS documentation.
 
 ---
 
 ## Overview
 
-This project uses **native SwiftUI for iOS UI** while sharing business logic (ViewModels, repositories, domain) from Kotlin Multiplatform. This is distinct from Compose Multiplatform's iOS support—we deliberately chose native SwiftUI for platform consistency and ecosystem access.
+This project has **TWO iOS app options**:
+
+1. **iosApp** (production - this guide): Native SwiftUI UI consuming shared KMP ViewModels via SKIE
+2. **iosAppCompose** (experimental): Compose Multiplatform UI sharing @Composable screens with Android/Desktop
+
+**This guide covers iosApp only.** The native SwiftUI approach was deliberately chosen for platform consistency and ecosystem access.
 
 ### Architecture Summary
 

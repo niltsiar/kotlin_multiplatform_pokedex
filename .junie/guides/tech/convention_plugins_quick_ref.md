@@ -54,9 +54,13 @@ plugins {
 }
 ```
 **For:** Compose Multiplatform screens (@Composable functions)  
-**Exports to iOS:** ❌ No (iOS uses native SwiftUI)  
-**Targets:** Android, JVM only (no iOS)  
+**Exports to iOS:** ✅ Yes (to iOS Compose app via ComposeApp.framework), ❌ No (to native SwiftUI app)  
+**Targets:** Android, JVM, iOS (iosArm64, iosSimulatorArm64, iosX64)  
 **Note:** Includes Arrow, Coroutines, Collections directly
+
+**iOS Strategy:**
+- **iosAppCompose** (experimental): Uses shared Compose UI from :ui modules
+- **iosApp** (production): Uses native SwiftUI, accesses ViewModels via :shared framework
 
 #### Feature Wiring Plugin
 ```kotlin
