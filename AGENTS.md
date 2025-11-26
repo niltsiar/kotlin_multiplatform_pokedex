@@ -17,28 +17,33 @@ Currently in **early POC stage** with skeleton modules only.
 ### Current Reality vs. Documentation
 - **What exists**: 
   - `:composeApp` — Compose Multiplatform UI (Android + Desktop)
-  - `:shared` — iOS umbrella framework (exports other KMP modules to iOS)
+  - `:shared` — iOS umbrella framework (exports other KMP modules to iOS) + SKIE integration
   - `:server` — Ktor backend (BFF for all clients)
-  - `:iosApp` — Native SwiftUI app (imports shared.framework to access KMP modules)
-  - `:features:pokemonlist` — FULLY IMPLEMENTED with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring)
+  - `:iosApp` — Native SwiftUI app (imports shared.framework to access KMP modules) - **POKEMON LIST WORKING**
+  - `:features:pokemonlist` — FULLY IMPLEMENTED with split-by-layer pattern (:api, :data, :presentation, :ui, :wiring) - **iOS INTEGRATION COMPLETE**
+  - `:core:designsystem` — Material 3 Expressive theme system
+  - `:core:navigation` — Navigation 3 modular architecture
+  - `:core:di` — Koin DI core module
+  - `:core:httpclient` — Ktor HttpClient configuration
 - **What's documented**: Comprehensive architecture in `.junie/guides/`
-- **Reference implementation**: Use `pokemonlist` feature as reference for new features
+- **Reference implementation**: Use `pokemonlist` feature as reference for new features (includes iOS SwiftUI)
 - **Your job**: Implement new features following pokemonlist pattern, or extend existing modules
 
 **Platform UI Strategy**:
 - Android/Desktop: Shared Compose Multiplatform UI
-- iOS: Native SwiftUI (separate implementation, accesses KMP business logic via shared.framework)
+- iOS: Native SwiftUI (separate implementation, accesses KMP business logic via shared.framework + SKIE)
 
 ### Critical Files
 ```
-.junie/guides/tech/conventions.md       ← Master reference (start here)
+.junie/guides/tech/conventions.md          ← Master reference (start here)
+.junie/guides/tech/ios_integration.md     ← iOS SwiftUI + KMP patterns (NEW)
 .junie/guides/tech/dependency_injection.md
 .junie/guides/tech/repository.md
 .junie/guides/tech/presentation_layer.md
 .junie/guides/tech/testing_strategy.md
-.junie/guides/project/prd.md           ← Product requirements
-gradle/libs.versions.toml              ← All dependency versions
-settings.gradle.kts                     ← Module structure
+.junie/guides/project/prd.md              ← Product requirements
+gradle/libs.versions.toml                 ← All dependency versions
+settings.gradle.kts                        ← Module structure
 ```
 
 ---

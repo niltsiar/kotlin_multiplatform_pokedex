@@ -1,5 +1,6 @@
 plugins {
     id("convention.kmp.library")
+    alias(libs.plugins.skie)
 }
 
 kotlin {
@@ -18,8 +19,16 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
+            // Export Pokemon List modules to iOS
             api(projects.features.pokemonlist.api)
             api(projects.features.pokemonlist.presentation)
+            
+            // Dependencies needed for KoinIos.kt
+            api(projects.core.di)
+            api(projects.features.pokemonlist.wiring)
+            
+            // Koin for dependency injection
+            api(libs.koin.core)
         }
     }
 }
