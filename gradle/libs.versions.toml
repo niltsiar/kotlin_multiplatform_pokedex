@@ -28,6 +28,7 @@ ktor = "3.3.2"
 logback = "1.5.21"
 koin = "4.0.1"
 mockk = "1.14.6"
+skie = "0.10.8"
 
 [libraries]
 # Gradle plugins (for convention plugins)
@@ -130,3 +131,5 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+skie = { id = "co.touchlab.skie", version.ref = "skie" }
+

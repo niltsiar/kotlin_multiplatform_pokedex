@@ -1,7 +1,7 @@
-# Implementation Summary - Material 3 Expressive Design System
+# Implementation Summary - Kotlin Multiplatform POC
 
-**Date**: November 25, 2025  
-**Status**: ✅ Phase 1 Complete - Core Infrastructure Ready
+**Date**: November 26, 2025  
+**Status**: ✅ Phase 1-3 Complete - Design System + Navigation + iOS Integration
 
 ---
 
@@ -662,32 +662,139 @@ androidx-window-core = "1.5.0"
 
 ---
 
-## 🎯 Next Steps
+### Phase 3: iOS SwiftUI Integration ✅
 
-1. **Start with Priority 1**: Implement responsive layouts and animations
-   - Begin with WindowSizeClass-based grid (easiest)
-   - Then add staggered entrance animations
-   - Finally add interaction animations (tap/hover)
+#### SKIE Library Integrated
+**Version**: 0.10.8 (compatible with Kotlin 2.2.21)
 
-2. **Test Incrementally**: After each animation, validate:
-   - Performance (60fps maintained)
-   - Behavior on all platforms (Android, Desktop, iOS)
-   - Preview rendering
+**Purpose**: Automatic Kotlin Coroutines → Swift async/await bridging
+- StateFlow → AsyncSequence (automatic, no manual code)
+- Suspend functions → async functions
+- Flow → AsyncSequence
 
-3. **Move to Priority 2**: Once animations are smooth, implement Navigation 3
-   - Start with type-safe routes
-   - Add NavHost and basic navigation
-   - Implement transitions
+**Configuration** (`shared/build.gradle.kts`):
+```kotlin
+plugins {
+    alias(libs.plugins.skie)
+}
+```
 
-4. **Wait for Priority 3**: NavigationSuiteScaffold not yet available
-   - Monitor CMP releases for standalone adaptive-navigation-suite
-   - Alternatively, explore adaptive-navigation3 integration
+#### iOS Koin Helpers Created
+**File**: `shared/src/iosMain/kotlin/com/minddistrict/multiplatformpoc/KoinIos.kt`
 
-5. **Polish with Priority 5**: Download and integrate Google Sans Flex
-   - Implement font weight animations
-   - Test rendering quality
+**Pattern**: Helper functions avoid Koin's complex Swift generic API
+
+```kotlin
+fun initKoin(baseUrl: String) {
+    startKoin {
+        modules(
+            coreModule(baseUrl),
+            pokemonListModule
+        )
+    }
+}
+
+fun getPokemonListViewModel(): PokemonListViewModel {
+    return KoinPlatform.getKoin().get()
+}
+```
+
+**Why**: Koin's Swift API (`get(qualifier:parameters:)`) is error-prone. Helper functions provide type-safe access.
+
+#### iOS Module Exports Configured
+**File**: `shared/build.gradle.kts`
+
+**Exported to iOS** (via Shared.framework):
+- ✅ `:features:pokemonlist:api` — interfaces, domain models
+- ✅ `:features:pokemonlist:presentation` — ViewModels, UI state
+- ✅ `:features:pokemondetail:api` — detail contracts
+- ✅ `:core:domain` — shared domain models
+
+**NOT Exported** (internal to KMP):
+- ❌ `:features:pokemonlist:data` — repositories, API services
+- ❌ `:features:pokemonlist:ui` — Compose UI (Android/Desktop only)
+- ❌ `:features:pokemonlist:wiring` — Koin modules
+
+**Dependencies Added**:
+```kotlin
+commonMain.dependencies {
+    api(projects.core.di)
+    api(projects.features.pokemonlist.wiring)
+    implementation(libs.koin.core)
+}
+```
+
+#### SwiftUI Implementation Complete
+
+**Files Created**:
+1. **`iosApp/iosApp/ViewModels/PokemonListViewModelWrapper.swift`**
+   - `@MainActor class ObservableObject`
+   - `@Published var uiState: PokemonListUiState`
+   - Fetches ViewModel via `KoinIosKt.getPokemonListViewModel()`
+   - Observes StateFlow via SKIE: `for await state in viewModel.uiState`
+   - Delegates method calls to KMP ViewModel
+
+2. **`iosApp/iosApp/Views/PokemonListView.swift`**
+   - 2-column LazyVGrid with `GridItem.flexible()`
+   - NavigationStack with Int-based path
+   - ScrollViewReader for scroll position preservation
+   - Switches on sealed UiState (Loading/Content/Error)
+   - Infinite scroll (triggers at 4 items from end)
+   - `.task { await wrapper.observeState() }` for lifecycle-aware observation
+
+3. **`iosApp/iosApp/Views/PokemonCard.swift`**
+   - AsyncImage with SF Symbol placeholders
+   - Tap scale animation (1.0 → 0.95 → 1.0)
+   - Haptic feedback `.sensoryFeedback(.impact)`
+   - iOS semantic colors for dark mode
+   - VoiceOver accessibility
+   - 4 #Preview variations
+
+4. **`iosApp/iosApp/Views/PokemonDetailView.swift`**
+   - Placeholder detail screen (Pokemon ID + "coming soon")
+   - Ready for future ViewModel integration
+
+5. **`iosApp/iosApp/iOSApp.swift`**
+   - Koin initialization in `init()`: `KoinIosKt.doInitKoin(baseUrl: "...")`
+   - PokemonListView as root screen
+
+**Key Patterns Established**:
+- SKIE automatic StateFlow bridging (no manual AsyncStream code)
+- Kotlin helper functions for Koin DI (avoids Swift generic complexity)
+- Type conversion handling (Kotlin Int → Swift Int32, requires `Int()` cast)
+- Native SwiftUI patterns (semantic colors, NavigationStack, ScrollViewReader)
+- @ObservableObject wrappers bridge KMP to SwiftUI reactive system
+
+**Build Output**:
+- Framework: `shared/build/bin/iosSimulatorArm64/debugFramework/Shared.framework`
+- Build time: ~1-2 minutes with SKIE processing
+- Xcode integration: Working, app launches successfully
 
 ---
 
-**Status**: Ready to continue implementation  
-**Next Action**: Start with Priority 1.1 (WindowSizeClass-based responsive grid)
+## 🎯 Next Steps
+
+1. **iOS Detail Screen**: Implement PokemonDetailViewModel in KMP + SwiftUI detail UI
+2. **Animations**: Implement responsive layouts and animations (Priority 1)
+3. **Navigation 3 Polish**: Complete navigation transitions
+4. **Testing**: Add unit tests for iOS wrappers
+5. **Polish**: Download Google Sans Flex font, implement font weight animations
+
+---
+
+**Status**: Core infrastructure complete (Design System + Navigation + iOS Integration)  
+**Platforms**: Android ✅ | Desktop ✅ | iOS ✅ | Server ✅  
+**Next Action**: iOS detail screen or Priority 1 animations
+
+---
+
+## 📚 Documentation Created
+
+### Technical Guides
+- `.junie/guides/tech/ios_integration.md` — Complete iOS integration patterns (SKIE, Koin, StateFlow, SwiftUI)
+- `.junie/guides/tech/convention_plugins_quick_ref.md` — Convention plugin usage
+- `.junie/guides/tech/kotest_smart_casting_quick_ref.md` — Kotest testing patterns
+- `.junie/guides/tech/koin_di_quick_ref.md` — Koin DI patterns
+
+### Checklists
+- `.junie/checklists/ios-pokemon-list-implementation.md` — ✅ COMPLETE - iOS Pokemon list implementation guide
