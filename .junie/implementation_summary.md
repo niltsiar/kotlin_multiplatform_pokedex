@@ -76,21 +76,32 @@ features/pokemondetail/api/.../navigation/
 
 **Pattern**: Simple Kotlin objects/data classes as route keys - no string routes, no @Serializable, no interfaces
 
-#### Metro DI Integration with Platform-Specific Wiring
-- `AppGraph` exposes `val navigator: Navigator` and `val entryProviderInstallers: Set<EntryProviderInstaller>`
-- Feature `:wiring` modules provide `EntryProviderInstaller` via `@IntoSet` in platform-specific source sets
+#### Koin DI Integration with Platform-Specific Wiring
+- `coreModule()` provides `Navigator` singleton and base dependencies
+- `navigationAggregationModule` collects all `EntryProviderInstaller` sets via named qualifiers
+- Feature `:wiring` modules provide `Set<EntryProviderInstaller>` with named qualifiers in platform-specific source sets
 - Common module provides ViewModels/repos, androidMain/jvmMain provide UI navigation entries
 
 **Wiring Pattern**:
 ```kotlin
 // commonMain - data layer providers
-@Provides fun provideRepository(...): Repository
+val featureModule = module {
+    factory<Repository> { Repository(...) }
+    factory { ViewModel(repository = get()) }
+}
 
 // androidMain/jvmMain - UI navigation entries
-@Provides @IntoSet
-fun provideNavigation(navigator: Navigator, viewModel: VM): EntryProviderInstaller = {
-    entry<RouteObject> {
-        Screen(viewModel, onClick = { navigator.goTo(NextRoute) })
+val featureNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("featureNavigationInstallers")) {
+        setOf(
+            {
+                entry<RouteObject> {
+                    val navigator: Navigator = koinInject()
+                    val viewModel: VM = koinInject()
+                    Screen(viewModel, onClick = { navigator.goTo(NextRoute) })
+                }
+            }
+        )
     }
 }
 ```
@@ -143,8 +154,8 @@ fun App() {
 **Key Changes**:
 - Replaced direct screen composition with `NavDisplay`
 - Navigator manages back stack (SnapshotStateList)
-- EntryProviderInstallers dynamically registered via Metro DI `@IntoSet`
-- Start destination: `PokemonList` (configured in NavigationProviders.kt)
+- EntryProviderInstallers dynamically registered via Koin named qualifiers
+- Start destination: `PokemonList` (configured in coreModule)
 
 #### Feature Screens Created
 - ✅ **PokemonListScreen**: Uses `navigator.goTo(PokemonDetail(id))` for navigation
@@ -178,18 +189,18 @@ fun App() {
 
 :core:navigation                # ✅ NEW - Navigator + EntryProviderInstaller
 :core:designsystem              # Material 3 Expressive design system
-:core:di                        # Metro DI with AppGraph
+:core:di                        # Koin modules (coreModule, navigationAggregationModule)
 :core:httpclient                # Ktor client configuration
 
 :features:pokemonlist:api       # Public contracts + PokemonList route object
 :features:pokemonlist:data      # Repository + API service (18/18 tests passing)
 :features:pokemonlist:presentation  # ViewModel + UI state
 :features:pokemonlist:ui        # Compose screens (Android + JVM)
-:features:pokemonlist:wiring    # ✅ UPDATED - Provides EntryProviderInstaller via @IntoSet
+:features:pokemonlist:wiring    # ✅ UPDATED - Provides EntryProviderInstaller via named qualifier
 
 :features:pokemondetail:api     # ✅ NEW - PokemonDetail route object
 :features:pokemondetail:ui      # ✅ NEW - Placeholder detail screen
-:features:pokemondetail:wiring  # ✅ NEW - Provides EntryProviderInstaller via @IntoSet
+:features:pokemondetail:wiring  # ✅ NEW - Provides EntryProviderInstaller via named qualifier
 ```
 
 ### What's Working Right Now
@@ -204,7 +215,7 @@ fun App() {
    - EntryProviderInstaller pattern for feature contributions
    - Route objects in feature :api modules (PokemonList, PokemonDetail)
    - Platform-specific wiring (androidMain/jvmMain) for UI registration
-   - Metro DI @IntoSet multibinding for dynamic graph assembly
+   - Koin named qualifiers for dynamic graph assembly
    - NavDisplay + entryProvider in App.kt
 
 3. ✅ **Working Features**
@@ -641,7 +652,7 @@ fun Modifier.animatedFontWeight(
 
 ### Project Docs
 - `.junie/guides/tech/conventions.md` - Architecture patterns
-- `.junie/guides/tech/dependency_injection.md` - Metro DI
+- `.junie/guides/tech/dependency_injection.md` - Koin DI
 - `.junie/guides/tech/presentation_layer.md` - ViewModel patterns
 - `.junie/guides/project/ui_ux.md` - Design specifications
 
@@ -774,17 +785,32 @@ commonMain.dependencies {
 
 ## 🎯 Next Steps
 
-1. **iOS Detail Screen**: Implement PokemonDetailViewModel in KMP + SwiftUI detail UI
-2. **Animations**: Implement responsive layouts and animations (Priority 1)
-3. **Navigation 3 Polish**: Complete navigation transitions
-4. **Testing**: Add unit tests for iOS wrappers
-5. **Polish**: Download Google Sans Flex font, implement font weight animations
+### High Priority
+1. **Roborazzi Screenshot Tests**: Implement baseline screenshot tests for `PokemonListScreen` and `PokemonDetailScreen`
+   - Record baselines: `./gradlew recordRoborazziDebug`
+   - Store in `composeApp/src/test/snapshots`
+   - Add tests for loading, content, error, and empty states
+2. **Responsive Layouts**: Implement WindowSizeClass-based adaptive layouts
+   - Compact: Single column
+   - Medium: Two columns
+   - Expanded: Grid with sidebars
+3. **UI Animations**: Implement delight factors and micro-interactions
+   - Staggered list entrance animations
+   - Card interaction feedback (scale, elevation)
+   - Shimmer loading skeletons
+   - Pull-to-refresh morphing animation
+
+### Medium Priority  
+4. **Pokemon Detail Enhancement**: Complete stats, types, abilities UI
+5. **Navigation 3 Polish**: Complete navigation transitions for all routes
+6. **Testing Coverage**: Expand unit tests for edge cases
+7. **Polish**: Download Google Sans Flex font, implement font weight animations
 
 ---
 
 **Status**: Core infrastructure complete (Design System + Navigation + iOS Integration)  
 **Platforms**: Android ✅ | Desktop ✅ | iOS ✅ | Server ✅  
-**Next Action**: iOS detail screen or Priority 1 animations
+**Next Action**: Roborazzi tests or responsive layouts
 
 ---
 

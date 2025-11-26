@@ -6,16 +6,18 @@ This repository is a Kotlin Multiplatform project using:
 - **Ktor** for Backend-for-Frontend (BFF) server
 
 ## Project Overview
-- **Languages/Tech**: Kotlin, Compose Multiplatform, SwiftUI, Gradle (Kotlin DSL), Metro DI, Arrow (Either), Kotest, MockK, Roborazzi, Navigation 3
+- **Languages/Tech**: Kotlin, Compose Multiplatform, SwiftUI, Gradle (Kotlin DSL), Koin DI, Arrow (Either), Kotest, MockK, Roborazzi, Navigation 3
 - **Targets**:
   - **Android app**: Compose Multiplatform UI in `:composeApp`
   - **Desktop (JVM) app**: Compose Multiplatform UI in `:composeApp`
-  - **iOS app**: Native SwiftUI in `:iosApp` consuming `:shared` framework (business logic only)
+  - **iOS app (production)**: Native SwiftUI in `:iosApp` consuming `:shared` framework (business logic only)
+  - **iOS app (experimental)**: Compose Multiplatform UI in `:iosAppCompose` sharing Compose code with Android/Desktop
   - **Server**: Ktor-based BFF in `:server`
 - **Module Structure**:
-  - `:composeApp` — Compose Multiplatform UI for Android + Desktop (commonMain for shared UI, androidMain/jvmMain for platform-specific)
+  - `:composeApp` — Compose Multiplatform UI for Android + Desktop + iOS (commonMain for shared UI, androidMain/jvmMain/iosMain for platform-specific)
   - `:shared` — iOS umbrella framework that exports other KMP modules (minimal code, mostly Gradle config)
-  - `:iosApp` — Native SwiftUI iOS app that imports shared.framework to access KMP modules
+  - `:iosApp` — Native SwiftUI iOS app (production) that imports shared.framework to access KMP modules
+  - `:iosAppCompose` — Experimental Compose Multiplatform iOS app that uses Compose UI from `:composeApp`
   - `:server` — Ktor Backend-for-Frontend providing REST APIs for all clients
   - `:build-logic/convention` — Custom Gradle convention plugins
   - **Required feature structure** (split-by-layer for all features):
@@ -23,7 +25,7 @@ This repository is a Kotlin Multiplatform project using:
     - `:features:<feature>:data` — network layer (API services, DTOs), data layer (repositories, mappers) - KMP all targets, NOT exported to iOS
     - `:features:<feature>:presentation` — ViewModels, UI state - **KMP all targets, shared with iOS**, exported to iOS via :shared umbrella
     - `:features:<feature>:ui` — Compose UI (@Composable screens) - **Android + JVM only**, NOT exported to iOS
-    - `:features:<feature>:wiring` — DI assembly (Metro) - KMP with platform-specific source sets, NOT exported to iOS
+    - `:features:<feature>:wiring` — DI assembly (Koin) - KMP with platform-specific source sets, NOT exported to iOS
     - `:features:<feature>:domain` (optional) — Use cases, validators - only if orchestrating 2+ repositories
   - **Optional shared infrastructure** (use sparingly):
     - `:core:designsystem` — reusable Compose components (Android/Desktop only, NOT exported)
@@ -50,7 +52,7 @@ Each feature contains ALL layers it needs internally:
 :features:<feature>:data         → Network + Data layer (API services, repos, DTOs, mappers)
 :features:<feature>:presentation → ViewModels, UI state (shared with iOS)
 :features:<feature>:ui           → Compose UI (Android + JVM only)
-:features:<feature>:wiring       → DI assembly (Metro)
+:features:<feature>:wiring       → DI assembly (Koin)
 ```
 
 **Example:**
@@ -83,17 +85,17 @@ Each feature contains ALL layers it needs internally:
 
 ### Feature Independence
 
-- Features MUST NOT depend on other features' `:impl` modules
+- Features MUST NOT depend on other features' `:data` or `:presentation` modules
 - Each feature owns its network layer (API service, DTOs, mappers)
 - Each feature defines its own DTOs (even for same backend endpoint)
 - Domain models in :api only if shared across features
 
 **Clean Architecture with vertical slices** — each feature must own its code end-to-end
-- **Vertical-slice feature modules** must follow api/impl/wiring pattern (see `.junie/guides/tech/conventions.md`)
+- **Vertical-slice feature modules** must follow api/data/presentation/ui/wiring pattern (see `.junie/guides/tech/conventions.md`)
 - **Required patterns**:
   - Impl + Factory: interfaces must be implemented by internal `*Impl` classes, exposed via public factory functions
-  - Only `api` modules exposed cross-feature; `impl` and `wiring` must remain internal
-  - Metro DI: production classes must stay DI-agnostic; wire via `@Provides` functions in wiring modules
+  - Only `api` modules exposed cross-feature; `data`, `presentation`, `ui`, and `wiring` must remain internal
+  - Koin DI: production classes must stay DI-agnostic; wire via Koin `module { }` DSL in wiring modules
   - Arrow Either: repositories must return `Either<RepoError, T>` at boundaries
 
 ## Directory Structure
@@ -108,11 +110,18 @@ Each feature contains ALL layers it needs internally:
   - Does NOT contain business logic itself (that lives in feature/core modules)
 - `features/` — **Feature modules (when created)**
   - `:features:<name>:api` — Public contracts (exported to iOS)
-  - `:features:<name>:impl` — Implementations (NOT exported)
-  - Business logic, domain models, repositories, use cases live here
-- `iosApp/` — **Native SwiftUI iOS app**
+  - `:features:<name>:data` — Network + Data layer (NOT exported)
+  - `:features:<name>:presentation` — ViewModels, UI state (exported to iOS)
+  - `:features:<name>:ui` — Compose UI (NOT exported)
+  - `:features:<name>:wiring` — DI assembly (NOT exported)
+  - Business logic, domain models, repositories live here
+- `iosApp/` — **Native SwiftUI iOS app (production)**
   - SwiftUI views and iOS-specific UI code
   - Imports `shared.framework` to access KMP modules
+- `iosAppCompose/` — **Experimental Compose Multiplatform iOS app**
+  - Uses Compose UI shared with Android/Desktop from `:composeApp`
+  - Wraps MainViewController from ComposeApp framework
+  - Alternative to native SwiftUI approach
 - `server/` — **Ktor Backend-for-Frontend**
   - REST API endpoints for all clients
   - Port 8080 (configurable in project constants)
@@ -139,7 +148,17 @@ Each feature contains ALL layers it needs internally:
   3. Validating iOS-specific expect/actual implementations in KMP modules
   4. Working on SwiftUI integration with shared.framework
 - **Note**: iOS uses native SwiftUI for UI (not Compose). The `:shared` module is an umbrella that exports KMP modules.
+- **Integration Pattern**: Direct Integration (private var ViewModel + @State for UI state) is current. See `.junie/guides/tech/ios_integration.md` for complete guide.
 - Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
+
+### iOS Compose (Experimental)
+- **Alternative approach**: Uses Compose Multiplatform UI instead of native SwiftUI
+- **Shares UI code**: Same Compose screens as Android/Desktop from `:composeApp`
+- **Build**: `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode` (5-10 min)
+- **Entry point**: `iosAppCompose/iosAppCompose.xcodeproj` (Xcode only)
+- **Use case**: When you want 100% UI code sharing across all platforms
+- **Trade-off**: Less native iOS feel, experimental Compose iOS support
+- **See**: `iosAppCompose/README.md` for detailed setup and comparison with native SwiftUI approach
 
 ### Desktop (JVM)
 - Run: `./gradlew :composeApp:run` or use IDE run configuration
@@ -151,7 +170,7 @@ Each feature contains ALL layers it needs internally:
 
 ## Testing
 
-**MANDATORY**: All production code MUST have tests. See `.junie/test-enforcement-agent.md` for complete enforcement rules.
+**MANDATORY**: All production code MUST have tests. See `.junie/guides/tech/testing_strategy.md` for complete enforcement rules.
 
 ### Test Enforcement Summary
 
@@ -220,8 +239,8 @@ See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical 
 
 - **ViewModels**: Must extend `androidx.lifecycle.ViewModel`; pass `viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` as constructor parameter to superclass; NEVER store `CoroutineScope` as field; do NOT perform work in `init`; load data in lifecycle-aware callbacks (not `init`); use `kotlinx.collections.immutable` types in UI state; implement `OneTimeEventEmitter<E>` via delegation for one-time events
 - **Repositories**: Return `Either<RepoError, T>`; use `Either.catch { ... }.mapLeft { it.toRepoError() }`; map DTOs to domain at boundary
-- **Navigation**: Use Navigation 3 (`org.jetbrains.androidx.navigation3:navigation3-ui`); define contracts in `api`, implementations in `impl`
-- **DI**: Metro with no annotations on classes; wire via `@Provides` in wiring modules
+- **Navigation**: Use Navigation 3 (`org.jetbrains.androidx.navigation3:navigation3-ui`); define contracts in `api`, route objects in feature modules
+- **DI**: Koin with no annotations on classes; wire via `module { }` DSL in wiring modules
 - **No empty use cases**: Call repositories directly from presentation when no orchestration needed
 - **Immutable UI state**: Use `kotlinx.collections.immutable` types (`ImmutableList`, `ImmutableMap`)
 - **Impl + Factory pattern**: Interfaces implemented by internal `*Impl` classes, exposed via public factory functions
@@ -232,7 +251,7 @@ See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical 
 - **First run**: May download Compose and JetBrains JDK; builds can take longer
 - **Android build failures**: Verify `local.properties` contains `sdk.dir` and JDK 17+ is used
 - **iOS builds**: Extremely slow (5-10 min); NEVER run iOS build/app during routine checks unless explicitly required
-- **Metro DI issues**: Metro uses K2 compiler plugin (NOT KSP). See [metro_di_quick_ref.md](.junie/guides/tech/metro_di_quick_ref.md) for troubleshooting
+- **Koin DI issues**: See [koin_di_quick_ref.md](.junie/guides/tech/koin_di_quick_ref.md) for troubleshooting
 - **Arrow Either**: Never catch and swallow `CancellationException`; use `Either.catch` which respects cancellation
 
 ## Product Requirements (PRD & User Flows & UI/UX)
@@ -259,7 +278,9 @@ How to use these documents when implementing:
 
 Implementation requirements:
 - Map requirements to modules:
-  - `:features:<feature>:impl` — feature logic/screens must be derived from PRD and user flows
+  - `:features:<feature>:data` — data layer must be derived from PRD API requirements
+  - `:features:<feature>:presentation` — ViewModels and UI state must be derived from PRD and user flows
+  - `:features:<feature>:ui` — Compose screens must be derived from PRD and user flows
   - `:core:designsystem` — reusable UI components must be generic and parameterized
   - `iosApp` — platform wrapper and integrations
   - `server` — backend APIs and business logic
@@ -284,9 +305,9 @@ Run through this checklist after implementing any code:
 
 #### 1. Architecture Validation
 - [ ] Code follows Clean Architecture with vertical slices
-- [ ] Features are properly modularized (api/impl/wiring pattern)
+- [ ] Features are properly modularized (api/data/presentation/ui/wiring pattern)
 - [ ] Only `api` modules are exposed to other features
-- [ ] `impl`, `data`, `presentation`, and `wiring` modules remain internal
+- [ ] `data`, `presentation`, `ui`, and `wiring` modules remain internal
 
 #### 2. Interface Pattern Enforcement (CRITICAL)
 Every interface (repositories, services, use cases) MUST follow the Impl + Factory Function pattern:
@@ -308,9 +329,9 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 
 #### 3. Dependency Injection Compliance
 - [ ] Production classes are free of DI annotations
-- [ ] Wiring modules use `@Provides` functions returning interface types
+- [ ] Wiring modules use Koin `module { }` DSL with `single`/`factory` functions returning interface types
 - [ ] Wiring modules properly aggregate dependencies
-- [ ] Graph structure is correct (`AppGraph`, `@DependencyGraph`, scope markers)
+- [ ] Koin modules are loaded in platform-specific source sets (commonMain for data, androidMain/jvmMain for UI)
 
 #### 4. Repository Boundary Rules
 - [ ] Repositories return `Either<RepoError, T>` using Arrow
@@ -331,7 +352,7 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 
 #### 6. Testing Requirements (MANDATORY)
 
-**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+**NO CODE WITHOUT TESTS** - See `.junie/guides/tech/testing_strategy.md`
 
 - [ ] Every production file has a corresponding test file
 - [ ] Tests are in correct location:
@@ -386,11 +407,11 @@ fun JobRepository(...): JobRepository = JobRepositoryImpl(...)
 - [ ] Complex screens have multiple previews (loading, content, error states)
 
 #### 9. Module Structure & Naming
-- [ ] Features follow `:features:<feature>:api`, `:features:<feature>:impl`, `:features:<feature>:wiring`
-- [ ] Shared modules: `:core:<domain>:api` (kept minimal)
-- [ ] iOS umbrella exports only `api` modules
-- [ ] Appropriate convention plugins applied (`convention.feature.api`, `convention.kmp.library`)
-- [ ] No dependencies from feature modules to other features' `impl` modules (only `api` allowed)
+- [ ] Features follow `:features:<feature>:api`, `:features:<feature>:data`, `:features:<feature>:presentation`, `:features:<feature>:ui`, `:features:<feature>:wiring`
+- [ ] Shared modules: `:core:<domain>` (kept minimal)
+- [ ] iOS umbrella exports only `api` and `presentation` modules (ViewModels for iOS)
+- [ ] Appropriate convention plugins applied (`convention.feature.api`, `convention.feature.data`, `convention.feature.presentation`, `convention.feature.ui`)
+- [ ] No dependencies from feature modules to other features' `data`, `presentation`, or `ui` modules (only `api` allowed)
 
 #### 9. Code Quality Gates
 - [ ] ktlint formatting compliance
@@ -434,13 +455,14 @@ After implementing code, provide:
 - **API Services** — `.junie/guides/tech/api_services.md` — Ktor client, DTOs, request/response patterns
 - **Presentation Layer** — `.junie/guides/tech/presentation_layer.md` — ViewModels, UI state, screen architecture
 - **Navigation** — `.junie/guides/tech/navigation.md` — Navigation 3, feature routing, deep links
+- **iOS Integration** — `.junie/guides/tech/ios_integration.md` — SwiftUI + KMP ViewModels, Direct Integration vs Wrapper patterns
 
 ### Infrastructure & Tools
-- **Dependency Injection** — `.junie/guides/tech/dependency_injection.md` — Metro DI, wiring modules, graph patterns
+- **Dependency Injection** — `.junie/guides/tech/dependency_injection.md` — Koin DI, wiring modules, platform-specific patterns
 - **Coroutines & Concurrency** — `.junie/guides/tech/coroutines.md` — Scopes, dispatchers, cancellation, Arrow patterns
 - **Utility Organization** — `.junie/guides/tech/utility_organization.md` — Utilities, extensions, platform abstractions
 - **Testing Strategy** — `.junie/guides/tech/testing_strategy.md` — Kotest, MockK, Roborazzi, property-based testing
-- **Test Enforcement** — `.junie/test-enforcement-agent.md` — ⚠️ MANDATORY: All code requires tests
+- **Test Enforcement** — `.junie/guides/tech/testing_strategy.md` — ⚠️ MANDATORY: All code requires tests
 - **Gradle Convention Plugins** — `.junie/guides/tech/gradle_convention_plugins.md` — Build configuration, convention plugins
 
 ### UI/UX Development Guidelines

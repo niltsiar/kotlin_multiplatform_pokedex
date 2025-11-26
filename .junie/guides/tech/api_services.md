@@ -8,7 +8,7 @@ Purpose: Keep remote APIs well-structured, testable, and decoupled from domain m
   - Configure content negotiation with Kotlinx Serialization; do not leak serialization annotations into domain models.
 
 - Location (feature modules)
-  - Place API service interfaces and implementations in feature `impl` modules, e.g. `:features:<feature>:impl/src/commonMain/kotlin/.../data/remote/apiservices`.
+  - Place API service interfaces and implementations in feature `:data` modules, e.g. `:features:<feature>:data/src/commonMain/kotlin/.../data/remote/apiservices`.
   - Keep request/response DTOs under `.../data/remote/request` and `.../data/remote/response` respectively.
   - Request and Response classes MUST have `Request` and `Response` suffixes in their class names.
   - All request and response classes MUST use `@Serializable` and `@SerialName` annotations for JSON serialization.

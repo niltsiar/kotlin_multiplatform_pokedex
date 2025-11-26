@@ -50,7 +50,7 @@ Type alias for feature navigation contributions:
 typealias EntryProviderInstaller = EntryProviderScope<Any>.() -> Unit
 ```
 
-**Purpose**: Enables Metro DI `@IntoSet` multibinding for dynamic navigation graph assembly
+**Purpose**: Enables Koin DI named qualifier collection for dynamic navigation graph assembly
 
 ## Route Definition Pattern
 
@@ -92,7 +92,7 @@ data class PokemonDetail(val id: Int)
 :features:pokemonlist:wiring/
 ├── build.gradle.kts                    # Depends on :core:navigation, :ui, :presentation
 └── src/
-    ├── commonMain/kotlin/              # Provides ViewModels, repositories
+    ├── commonMain/kotlin/              # Provides ViewModels, repositories via Koin
     ├── androidMain/kotlin/             # Provides EntryProviderInstaller for Android
     └── jvmMain/kotlin/                 # Provides EntryProviderInstaller for Desktop
 ```
@@ -101,71 +101,83 @@ data class PokemonDetail(val id: Int)
 
 ```kotlin
 // :features:pokemonlist:wiring/src/commonMain/.../PokemonListModule.kt
-@ContributesTo(AppScope::class)
-interface PokemonListModule {
-    
-    @Provides
-    fun provideRepository(api: PokemonListApiService): PokemonListRepository =
-        PokemonListRepository(api)
-    
-    @Provides
-    fun provideViewModel(repository: PokemonListRepository): PokemonListViewModel =
-        PokemonListViewModel(repository)
-}
-```
+import org.koin.dsl.module
 
-### Android Main (UI Navigation)
-
-```kotlin
-// :features:pokemonlist:wiring/src/androidMain/.../PokemonListNavigationProviders.kt
-@ContributesTo(AppScope::class)
-interface PokemonListNavigationProviders {
+val pokemonListModule = module {
+    // Provide repository
+    factory<PokemonListRepository> {
+        PokemonListRepository(api = get())
+    }
     
-    @Provides
-    @IntoSet
-    fun provideNavigation(
-        navigator: Navigator,
-        viewModel: PokemonListViewModel
-    ): EntryProviderInstaller = {
-        entry<PokemonList> {
-            PokemonListScreen(
-                viewModel = viewModel,
-                onPokemonClick = { pokemon ->
-                    navigator.goTo(PokemonDetail(pokemon.id))
-                }
-            )
-        }
+    // Provide ViewModel
+    factory {
+        PokemonListViewModel(repository = get())
     }
 }
 ```
 
 **Key points**:
-- `@IntoSet` collects all EntryProviderInstallers into `Set<EntryProviderInstaller>`
+- Uses Koin `module { }` DSL
+- `factory` for new instances per injection
+- Dependencies resolved via `get()`
+- No annotations on production classes
+
+### Android Main (UI Navigation)
+
+```kotlin
+// :features:pokemonlist:wiring/src/androidMain/.../PokemonListNavigationProviders.kt
+import org.koin.compose.koinInject
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+
+val pokemonListNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers")) {
+        setOf(
+            {
+                entry<PokemonList> {
+                    val navigator: Navigator = koinInject()
+                    val viewModel: PokemonListViewModel = koinInject()
+                    
+                    PokemonListScreen(
+                        viewModel = viewModel,
+                        onPokemonClick = { pokemon ->
+                            navigator.goTo(PokemonDetail(pokemon.id))
+                        },
+                    )
+                }
+            }
+        )
+    }
+}
+```
+
+**Key points**:
+- Returns `Set<EntryProviderInstaller>` with named qualifier
+- Named qualifier enables collection in `navigationAggregationModule`
+- `koinInject()` resolves dependencies from Compose context
 - `entry<RouteType>` registers composable for route
-- Navigator injected for cross-feature navigation
-- ViewModel injected from common module
 
 ### JVM Main (Desktop UI Navigation)
 
 ```kotlin
 // :features:pokemonlist:wiring/src/jvmMain/.../PokemonListNavigationProviders.kt
-@ContributesTo(AppScope::class)
-interface PokemonListNavigationProviders {
-    
-    @Provides
-    @IntoSet
-    fun provideNavigation(
-        navigator: Navigator,
-        viewModel: PokemonListViewModel
-    ): EntryProviderInstaller = {
-        entry<PokemonList> {
-            PokemonListScreen(
-                viewModel = viewModel,
-                onPokemonClick = { pokemon ->
-                    navigator.goTo(PokemonDetail(pokemon.id))
+val pokemonListNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers")) {
+        setOf(
+            {
+                entry<PokemonList> {
+                    val navigator: Navigator = koinInject()
+                    val viewModel: PokemonListViewModel = koinInject()
+                    
+                    PokemonListScreen(
+                        viewModel = viewModel,
+                        onPokemonClick = { pokemon ->
+                            navigator.goTo(PokemonDetail(pokemon.id))
+                        },
+                    )
                 }
-            )
-        }
+            }
+        )
     }
 }
 ```
@@ -176,55 +188,75 @@ interface PokemonListNavigationProviders {
 
 ```kotlin
 // :features:pokemondetail:wiring/src/androidMain/.../PokemonDetailNavigationProviders.kt
-@Provides
-@IntoSet
-fun provideNavigation(navigator: Navigator): EntryProviderInstaller = {
-    entry<PokemonDetail> { key ->
-        PokemonDetailScreen(
-            pokemonId = key.id,
-            onBackClick = { navigator.goBack() }
+import org.koin.core.parameter.parametersOf
+
+val pokemonDetailNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers")) {
+        setOf(
+            {
+                entry<PokemonDetail> { route ->
+                    val navigator: Navigator = koinInject()
+                    // Use parametersOf to inject route parameter into ViewModel
+                    val viewModel: PokemonDetailViewModel = koinInject(
+                        parameters = { parametersOf(route.id) }
+                    )
+                    
+                    PokemonDetailScreen(
+                        viewModel = viewModel,
+                        onBackClick = { navigator.goBack() }
+                    )
+                }
+            }
         )
     }
 }
 ```
 
-**Key difference**: `entry<T> { key -> }` receives typed route object for parameter extraction
+**Key differences**:
+- `entry<T> { route -> }` receives typed route object for parameter extraction
+- `koinInject(parameters = { parametersOf(route.id) })` passes parameters to ViewModel
+- ViewModel must accept parameter in constructor
 
 ## Application Integration
 
-### App Graph (`:core:di`)
+### Core DI Module (`:core:di`)
 
 ```kotlin
-// core/di/src/commonMain/kotlin/.../AppGraph.kt
-@ContributesTo(AppScope::class)
-interface AppGraph {
-    val navigator: Navigator
-    val entryProviderInstallers: Set<EntryProviderInstaller>
-    val pokemonListViewModel: PokemonListViewModel
+// core/di/src/commonMain/.../AppModules.kt
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+
+fun coreModule(baseUrl: String) = module {
+    // Provide baseUrl as named dependency
+    single(qualifier = named("baseUrl")) { baseUrl }
+    
+    // Provide Navigator singleton with start destination
+    single { Navigator(PokemonList) }
+}
+
+val navigationAggregationModule = module {
+    single<Set<EntryProviderInstaller>>(qualifier = named("allNavigationInstallers")) {
+        val allInstallers = mutableSetOf<EntryProviderInstaller>()
+        
+        // Collect all named navigation installer sets from features
+        runCatching {
+            getOrNull<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers"))
+        }.getOrNull()?.let { allInstallers.addAll(it) }
+        
+        runCatching {
+            getOrNull<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers"))
+        }.getOrNull()?.let { allInstallers.addAll(it) }
+        
+        allInstallers
+    }
 }
 ```
 
 **Components**:
-- `navigator`: Single Navigator instance for entire app
-- `entryProviderInstallers`: Collected from all feature wiring modules via @IntoSet
-- ViewModels: Exposed for lifecycle management in App.kt
-
-### Navigator Provider
-
-```kotlin
-// core/di/src/commonMain/kotlin/.../NavigationProviders.kt
-@ContributesTo(AppScope::class)
-interface NavigationProviders {
-    
-    @Provides
-    @SingleIn(AppScope::class)
-    fun provideNavigator(): Navigator = Navigator(
-        startDestination = PokemonList
-    )
-}
-```
-
-**Singleton**: Navigator is app-wide singleton managing global back stack
+- `coreModule(baseUrl)`: Function taking runtime parameters
+- `navigationAggregationModule`: Collects all feature navigation installers by named qualifier
+- `runCatching`: Safely handles platform differences (some modules may not exist on all platforms)
+- Returns aggregated `Set<EntryProviderInstaller>`
 
 ### App.kt Integration
 
@@ -232,18 +264,18 @@ interface NavigationProviders {
 // composeApp/src/commonMain/kotlin/.../App.kt
 @Composable
 fun App() {
-    val graph: AppGraph = remember { 
-        createGraphFactory<AppGraph.Factory>()
-            .create(baseUrl = "https://pokeapi.co/api/v2")
-    }
+    val navigator: Navigator = koinInject()
+    val entryProviderInstallers: Set<EntryProviderInstaller> = koinInject(
+        qualifier = named("allNavigationInstallers")
+    )
     
     PokemonTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             NavDisplay(
-                backStack = graph.navigator.backStack,
-                onBack = { graph.navigator.goBack() },
+                backStack = navigator.backStack,
+                onBack = { navigator.goBack() },
                 entryProvider = entryProvider {
-                    graph.entryProviderInstallers.forEach { this.it() }
+                    entryProviderInstallers.forEach { this.it() }
                 }
             )
         }
@@ -252,10 +284,30 @@ fun App() {
 ```
 
 **Flow**:
-1. Create AppGraph (Metro DI assembles all modules)
-2. NavDisplay observes navigator.backStack (SnapshotStateList)
-3. entryProvider installs all EntryProviderInstallers from features
-4. Back navigation triggers navigator.goBack()
+1. `koinInject()` resolves dependencies from Koin context
+2. `navigationAggregationModule` provides aggregated installers
+3. NavDisplay observes navigator.backStack (SnapshotStateList)
+4. entryProvider installs all EntryProviderInstallers from features
+5. Back navigation triggers navigator.goBack()
+
+**Koin Initialization** (in main()):
+```kotlin
+// Android: Application.onCreate()
+// Desktop: main() function
+startKoin {
+    modules(
+        coreModule(baseUrl = "https://pokeapi.co/api/v2"),
+        httpClientModule,
+        pokemonListModule,
+        pokemonDetailModule,
+        pokemonListNavigationModule,  // Platform-specific (androidMain/jvmMain)
+        pokemonDetailNavigationModule, // Platform-specific
+        navigationAggregationModule   // Must be AFTER feature modules
+    )
+}
+```
+
+**Critical**: `navigationAggregationModule` must be loaded AFTER all feature navigation modules
 
 ## Navigation Operations
 
@@ -441,13 +493,17 @@ class PokemonListNavigationTest {
 
 **Fix**:
 ```kotlin
-// Verify in AppGraph
-println(graph.entryProviderInstallers.size)  // Should be > 0
+// Verify in Koin modules
+println(getKoin().getAll<Set<EntryProviderInstaller>>().flatten().size)  // Should be > 0
 
 // Verify in wiring module
-@Provides
-@IntoSet  // ← Must have this
-fun provideNavigation(...): EntryProviderInstaller
+val featureNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("featureName")) {
+        setOf(
+            { /* EntryProviderInstaller lambda */ }
+        )
+    }
+}
 ```
 
 ### Navigator Not Navigating
@@ -500,27 +556,37 @@ object PokemonList  // No parameters
 data class PokemonDetail(val id: Int)  // With parameter
 
 // Wiring (androidMain)
-@Provides @IntoSet
-fun provideListNavigation(
-    navigator: Navigator,
-    viewModel: PokemonListViewModel
-): EntryProviderInstaller = {
-    entry<PokemonList> {
-        PokemonListScreen(
-            viewModel = viewModel,
-            onPokemonClick = { pokemon ->
-                navigator.goTo(PokemonDetail(pokemon.id))
+val pokemonListNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers")) {
+        setOf(
+            {
+                entry<PokemonList> {
+                    val navigator: Navigator = koinInject()
+                    val viewModel: PokemonListViewModel = koinInject()
+                    PokemonListScreen(
+                        viewModel = viewModel,
+                        onPokemonClick = { pokemon ->
+                            navigator.goTo(PokemonDetail(pokemon.id))
+                        }
+                    )
+                }
             }
         )
     }
 }
 
-@Provides @IntoSet
-fun provideDetailNavigation(navigator: Navigator): EntryProviderInstaller = {
-    entry<PokemonDetail> { key ->
-        PokemonDetailScreen(
-            pokemonId = key.id,
-            onBackClick = { navigator.goBack() }
+val pokemonDetailNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers")) {
+        setOf(
+            {
+                entry<PokemonDetail> { key ->
+                    val navigator: Navigator = koinInject()
+                    PokemonDetailScreen(
+                        pokemonId = key.id,
+                        onBackClick = { navigator.goBack() }
+                    )
+                }
+            }
         )
     }
 }
@@ -753,7 +819,7 @@ fun navigation_animates_correctly() = runComposeUiTest {
 1. **Route objects are keys**: Keep them simple, no business logic
 2. **Platform-specific UI**: androidMain/jvmMain for EntryProviderInstallers
 3. **Navigator is singleton**: One instance per app, injected everywhere
-4. **@IntoSet for discovery**: Let Metro DI collect all navigation entries
+4. **Koin named qualifiers for collection**: Use Koin named qualifiers to collect all navigation entries from feature modules
 5. **No iOS exports**: Navigation is Compose-specific, iOS uses SwiftUI
 6. **Test navigation**: Use Kotest for Navigator logic, Compose Test for UI navigation
 7. **Explicit back stack**: Navigator.backStack is observable state, debug-friendly

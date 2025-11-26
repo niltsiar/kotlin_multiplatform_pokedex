@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for Android and Desktop (JVM)**, and a **native SwiftUI app for iOS** that consumes shared business logic. The codebase is in **early POC stage**—only skeleton modules exist with minimal implementation. Comprehensive architecture patterns are documented in `.junie/guides/` but NOT yet implemented.
+This is a **Kotlin Multiplatform project** with **Compose Multiplatform UI for Android and Desktop (JVM)**, and a **native SwiftUI app for iOS** that consumes shared business logic. The project has **pokemonlist and pokemondetail features fully implemented** with design system, Navigation 3, and iOS integration operational. Additional architecture patterns are documented in `.junie/guides/` for future features.
 
 ### Current Module Structure
 ```
@@ -104,6 +104,8 @@ open build/dependencyUpdates/report.html
 
 **Note**: iOS uses native SwiftUI for UI (not Compose). The `:shared` module is an umbrella that exports KMP modules.
 
+**iOS Integration**: Direct Integration pattern (private var ViewModel + @State for UI state) is current. See `.junie/guides/tech/ios_integration.md` for complete guide including alternative Wrapper pattern for complex apps.
+
 Entry point: `iosApp/iosApp.xcodeproj` (Xcode only)
 
 ### Test Configuration
@@ -122,7 +124,7 @@ interface JobRepository {
   suspend fun getJobs(): Either<RepoError, List<Job>>
 }
 
-// :features:jobs:impl (internal)
+// :features:jobs:data (internal)
 internal class JobRepositoryImpl(...) : JobRepository { ... }
 fun JobRepository(...): JobRepository = JobRepositoryImpl(...)  // Factory
 
@@ -192,7 +194,7 @@ interface ProfileEntry {
   fun build(userId: String): String
 }
 
-// :features:profile:data or :features:profile:presentation
+// :features:profile:presentation (internal)
 internal class ProfileEntryImpl : ProfileEntry {
   override val route = "profile/{userId}"
   override fun build(userId: String) = "profile/$userId"
@@ -229,6 +231,7 @@ class ProfileViewModel(private val repo: UserRepository, ...) {
 4. **`presentation_layer.md`** — ViewModel lifecycle, UiStateHolder pattern, event handling
 5. **`navigation.md`** — Navigation 3 contracts, routing, deep links
 6. **`testing_strategy.md`** — Kotest assertions, property-based tests, Roborazzi
+7. **`ios_integration.md`** — iOS SwiftUI + KMP ViewModels patterns, Direct Integration vs Wrapper
 
 **Product requirements** (`.junie/guides/project/`):
 - **`prd.md`** — Features, acceptance criteria, business rules
@@ -358,7 +361,7 @@ struct PokemonCard: View {
 
 ### Test Enforcement (MANDATORY)
 
-**NO CODE WITHOUT TESTS** - See `.junie/test-enforcement-agent.md`
+**NO CODE WITHOUT TESTS** - See `.junie/guides/tech/testing_strategy.md`
 
 Before marking any code complete:
 - ✅ Every production file has a test file

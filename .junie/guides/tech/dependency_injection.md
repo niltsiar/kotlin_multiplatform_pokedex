@@ -601,7 +601,7 @@ sourceSets {
 ```
 
 **iOS Integration**:
-- **Native SwiftUI app (iosApp)**: iOS views consume KMP ViewModels from `:presentation` modules via `shared.framework`
+- **Native SwiftUI app (iosApp)**: iOS views consume KMP ViewModels from `:presentation` modules via `shared.framework` (Direct Integration pattern - see `ios_integration.md`)
 - **Compose iOS app (iosAppCompose)**: Uses shared Compose UI from `:ui` modules via `ComposeApp.framework`
 
 ## Troubleshooting

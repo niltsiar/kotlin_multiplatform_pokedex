@@ -318,20 +318,20 @@ kotlin {
 
 ---
 
-### Wiring Plugin (Metro DI)
+### Wiring Plugin (Koin DI)
 
 - Composes `convention.feature.base`
-- Applies Metro Gradle plugin (configures K2 compiler plugin automatically)
-- Metro runtime added automatically
+- Platform-specific source sets (commonMain, androidMain, jvmMain)
+- Koin dependencies added automatically
 
 See working implementation in `build-logic/convention/src/main/kotlin/com/minddistrict/multiplatformpoc/ConventionFeatureWiringPlugin.kt`
 
 **When to use**: Feature wiring modules
 
 **Contents**:
-- `@Provides` functions for Metro DI
-- Dependency graph aggregation
-- Multi-binding contributions
+- Koin `module { }` DSL definitions
+- Platform-specific navigation wiring (androidMain/jvmMain)
+- Dependency aggregation
 
 **Exported to iOS**: ❌ NO (DI wiring is internal)
 
@@ -339,15 +339,15 @@ See working implementation in `build-logic/convention/src/main/kotlin/com/minddi
 ```kotlin
 // features/jobs/wiring/build.gradle.kts
 plugins {
-    id("convention.feature.wiring")  // Applies Metro K2 compiler plugin
+    id("convention.feature.wiring")  // Platform-specific source sets for Koin modules
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.features.jobs.api)
-            implementation(projects.features.jobs.impl)
-            // TODO: Add Metro DI annotations when available
+            implementation(projects.features.jobs.data)
+            // Koin dependencies already included from base
         }
     }
 }

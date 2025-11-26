@@ -68,12 +68,12 @@ plugins {
     id("convention.feature.wiring")  // Composes: convention.feature.base
 }
 ```
-**For:** Metro DI @Provides functions, dependency graphs  
+**For:** Koin DI module DSL, platform-specific wiring  
 **Exports to iOS:** ❌ No  
 **Targets:** Android, JVM, iOS  
-**Configures:** Metro K2 compiler plugin (NOT KSP)  
-**Pattern:** `@BindingContainer` + `@ContributesTo(AppScope::class)`  
-**See:** [metro_di_quick_ref.md](metro_di_quick_ref.md) for complete DI patterns
+**Configures:** Platform-specific source sets (commonMain, androidMain, jvmMain)  
+**Pattern:** `module { }` DSL in platform-specific source sets  
+**See:** [koin_di_quick_ref.md](koin_di_quick_ref.md) for complete DI patterns
 
 ---
 
@@ -240,7 +240,10 @@ kotlin {
             implementation(projects.features.myfeature.data)
             implementation(projects.features.myfeature.presentation)
             
-            // TODO: Metro DI dependencies when added
+                    dependencies {
+            // Koin dependencies already included in base
+            // Add feature-specific dependencies here
+        }
         }
     }
 }

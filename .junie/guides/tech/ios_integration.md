@@ -1,8 +1,9 @@
 # iOS Integration Guide - SwiftUI + KMP ViewModels
 
 > **Status**: ✅ Production Pattern Established  
-> **Last Updated**: December 2025  
-> **Pattern**: Native SwiftUI UI consuming shared KMP ViewModels via SKIE  
+> **Last Updated**: November 2025  
+> **Current Pattern**: Direct Integration (`private var` ViewModel + `@State` for UI state)  
+> **Alternative**: Wrapper Pattern (`@ObservableObject` + `@StateObject`) available for complex apps  
 > **Note**: This guide covers **iosApp** (native SwiftUI). For iOS Compose app (**iosAppCompose**), see Compose Multiplatform iOS documentation.
 
 ---
@@ -18,29 +19,27 @@ This project has **TWO iOS app options**:
 
 ### Architecture Summary
 
+**Current Pattern**: Direct Integration (no separate wrapper layer)
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  iOS App (SwiftUI)                                          │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │  Views (SwiftUI)                                       │  │
 │  │  - PokemonListView                                     │  │
+│  │    • private var viewModel (from Koin)                │  │
+│  │    • @State var uiState (bridges StateFlow)           │  │
 │  │  - PokemonDetailView                                   │  │
 │  │  - NavigationStack (native iOS)                        │  │
 │  └───────────────────────────────────────────────────────┘  │
-│                           │                                  │
-│                           ▼                                  │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  ViewModel Wrappers (@ObservableObject)               │  │
-│  │  - PokemonListViewModelWrapper                        │  │
-│  │  - Bridge KMP ViewModels to SwiftUI                   │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                           │                                  │
+│                           │ Direct Access                   │
 │                           ▼                                  │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │  Shared.framework (SKIE-enhanced)                     │  │
 │  │  - Koin DI initialization                             │  │
 │  │  - Helper functions (getPokemonListViewModel)         │  │
 │  │  - StateFlow → AsyncSequence bridging                 │  │
+│  │  - KMP ViewModels consumed directly via .task         │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                            │
@@ -63,11 +62,521 @@ This project has **TWO iOS app options**:
 └─────────────────────────────────────────────────────────────┘
 ```
 
+**Alternative Pattern Available**: Wrapper Pattern with `@ObservableObject` (see ViewModel Integration Approaches section below)
+
+---
+
+## 🔀 ViewModel Integration Approaches
+
+> **Current Pattern**: Direct Integration (no wrappers)  
+> **Status**: ✅ Production - Works well for simple to medium complexity apps  
+> **Decision Guide**: Choose approach based on app requirements (see comparison below)
+
+This project supports **TWO patterns** for integrating KMP ViewModels with SwiftUI. Both are valid; choose based on your app's complexity and requirements.
+
+---
+
+### Pattern Comparison Overview
+
+| Aspect | Direct Integration (Current) | Wrapper Pattern |
+|--------|------------------------------|-----------------|
+| **Boilerplate** | ✅ Minimal (~10 lines per view) | ❌ More (~80 lines per ViewModel) |
+| **Lifecycle Management** | ⚠️ ViewModel recreated on View struct recreation | ✅ `@StateObject` preserves ViewModel across recreations |
+| **State Preservation** | ❌ Lost on parent updates/navigation changes | ✅ Survives parent updates, navigation changes |
+| **SwiftUI Best Practice** | ⚠️ Using `@State` for external state (non-idiomatic) | ✅ `@StateObject` for external state (Apple recommended) |
+| **Memory Leaks** | ✅ No leaks (`.task` cancels properly) | ✅ No leaks (`.task` cancels properly) |
+| **Testing** | ⚠️ Harder to mock ViewModel | ✅ Easy to mock wrapper in previews |
+| **Complexity** | ✅ Simple, direct | ⚠️ Additional abstraction layer |
+| **Current Usage** | ✅ PokemonListView, PokemonDetailView | ❌ Not currently used (legacy code exists) |
+
+---
+
+### Pattern 1: Direct Integration (Current Production Pattern)
+
+**When to Use**:
+- ✅ Simple to medium complexity apps
+- ✅ Linear navigation flows (stack-based)
+- ✅ Minimal state preservation requirements
+- ✅ Team prioritizes code simplicity over lifecycle guarantees
+- ✅ Views don't need to survive parent updates with state intact
+
+**Implementation**:
+
+```swift
+// iosApp/Views/PokemonListView.swift (Current)
+import SwiftUI
+import Shared
+
+struct PokemonListView: View {
+    // Direct ViewModel access from Koin
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    
+    // @State bridges StateFlow to SwiftUI reactivity
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .onAppear {
+                // One-time data load
+                if case is PokemonListUiStateLoading = uiState {
+                    viewModel.loadInitialPage()
+                }
+            }
+            .task {
+                // SKIE: StateFlow → AsyncSequence observation
+                // Auto-cancels when view disappears
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        switch uiState {
+        case is PokemonListUiStateLoading:
+            ProgressView("Loading...")
+        case let content as PokemonListUiStateContent:
+            // Render content
+        case let error as PokemonListUiStateError:
+            ErrorView(message: error.message)
+        default:
+            EmptyView()
+        }
+    }
+}
+```
+
+**Parametric ViewModel Example**:
+
+```swift
+// iosApp/Views/PokemonDetailView.swift (Current)
+struct PokemonDetailView: View {
+    let pokemonId: Int
+    private var viewModel: PokemonDetailViewModel
+    @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
+    
+    init(pokemonId: Int) {
+        self.pokemonId = pokemonId
+        // Get parametric ViewModel from Koin in init
+        viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
+    }
+    
+    var body: some View {
+        content
+            .task {
+                for await state in viewModel.uiState {
+                    uiState = state
+                }
+            }
+    }
+}
+```
+
+**Pros**:
+- ✅ **Minimal boilerplate**: ~10 lines per view (no separate wrapper class)
+- ✅ **Direct access**: Call ViewModel methods directly (`viewModel.loadInitialPage()`)
+- ✅ **Simple mental model**: One object (ViewModel), one state property
+- ✅ **No intermediate layer**: Fewer abstractions to understand
+- ✅ **Works with SKIE**: Leverages automatic StateFlow bridging
+- ✅ **No memory leaks**: `.task` cancels AsyncSequence properly
+
+**Cons**:
+- ❌ **ViewModel recreation**: New ViewModel created when View struct is recreated
+- ❌ **State loss scenarios**: Loses state on parent view updates, NavigationStack changes, @Environment changes
+- ❌ **Non-idiomatic SwiftUI**: Using `@State` for external state violates Apple guidelines
+- ❌ **Harder to test**: Can't easily mock ViewModel in SwiftUI Previews
+- ❌ **Performance overhead**: Unnecessary Koin resolution + repository injection on recreation
+- ❌ **Advanced navigation issues**: Breaks with tab views, sheets, parent state updates
+
+**Technical Details**:
+
+**SwiftUI View Struct Lifecycle**:
+```swift
+// SwiftUI recreates View structs in these scenarios:
+// 1. Parent view updates @State or @Binding
+// 2. NavigationStack path changes (even in parent)
+// 3. @Environment values change (colorScheme, locale, etc.)
+// 4. Device orientation changes
+// 5. Tab switching in TabView
+
+// With Direct Integration:
+struct MyView: View {
+    private var viewModel = getViewModel()  // ← Recreated on View struct recreation
+    @State private var uiState = Loading()  // ← Preserved by SwiftUI
+    
+    // Result: New ViewModel, state resets, reloads data
+}
+```
+
+**When View Struct Recreation Causes Issues**:
+
+```swift
+// Example: Parent toolbar update triggers View recreation
+NavigationStack {
+    PokemonListView()  // ← View struct recreated
+        .toolbar {
+            Button("Filter") { showFilter.toggle() }  // ← Parent state change
+        }
+}
+
+// Problem: PokemonListView's ViewModel recreated → Loading state → flicker
+```
+
+---
+
+### Pattern 2: Wrapper Pattern (Alternative)
+
+**When to Use**:
+- ✅ Complex navigation (tabs, sheets, deep stacks)
+- ✅ State must survive parent updates
+- ✅ Team values SwiftUI best practices over simplicity
+- ✅ Need easy mocking for SwiftUI Previews
+- ✅ Large-scale production apps with strict lifecycle requirements
+
+**Implementation**:
+
+**Step 1: Create Wrapper Class**
+
+```swift
+// iosApp/ViewModels/PokemonListViewModelWrapper.swift
+import Foundation
+import Shared
+import SwiftUI
+
+@MainActor
+class PokemonListViewModelWrapper: ObservableObject {
+    // @Published triggers SwiftUI re-renders
+    @Published var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    // Private KMP ViewModel (lifecycle managed by wrapper)
+    private let viewModel: PokemonListViewModel
+    
+    init() {
+        self.viewModel = KoinIosKt.getPokemonListViewModel()
+    }
+    
+    // Observe StateFlow and update @Published property
+    func observeState() async {
+        for await state in viewModel.uiState {
+            self.uiState = state
+        }
+    }
+    
+    // Delegate methods to KMP ViewModel
+    func loadInitialPage() {
+        viewModel.loadInitialPage()
+    }
+    
+    func loadNextPage() {
+        viewModel.loadNextPage()
+    }
+}
+```
+
+**Step 2: Use Wrapper in View**
+
+```swift
+// iosApp/Views/PokemonListView.swift
+import SwiftUI
+import Shared
+
+struct PokemonListView: View {
+    // @StateObject manages wrapper lifecycle (survives View recreation)
+    @StateObject private var wrapper = PokemonListViewModelWrapper()
+    
+    var body: some View {
+        content
+            .onAppear {
+                wrapper.loadInitialPage()
+            }
+            .task {
+                await wrapper.observeState()
+            }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        switch wrapper.uiState {
+        case is PokemonListUiStateLoading:
+            ProgressView()
+        case let content as PokemonListUiStateContent:
+            // Render content
+        default:
+            EmptyView()
+        }
+    }
+}
+```
+
+**Parametric ViewModel Wrapper**:
+
+```swift
+// iosApp/ViewModels/PokemonDetailViewModelWrapper.swift
+@MainActor
+class PokemonDetailViewModelWrapper: ObservableObject {
+    @Published var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
+    private let viewModel: PokemonDetailViewModel
+    
+    init(pokemonId: Int) {
+        self.viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
+    }
+    
+    func observeState() async {
+        for await state in viewModel.uiState {
+            self.uiState = state
+        }
+    }
+    
+    func retry() {
+        viewModel.retry()
+    }
+}
+
+// Usage in View
+struct PokemonDetailView: View {
+    let pokemonId: Int
+    @StateObject private var wrapper: PokemonDetailViewModelWrapper
+    
+    init(pokemonId: Int) {
+        self.pokemonId = pokemonId
+        // Initialize @StateObject in init with wrappedValue
+        _wrapper = StateObject(wrappedValue: PokemonDetailViewModelWrapper(pokemonId: pokemonId))
+    }
+    
+    var body: some View {
+        content
+            .task { await wrapper.observeState() }
+    }
+}
+```
+
+**Pros**:
+- ✅ **Lifecycle guarantees**: `@StateObject` preserves wrapper/ViewModel across View recreations
+- ✅ **State preservation**: Survives parent updates, navigation changes, environment changes
+- ✅ **SwiftUI idiomatic**: `@StateObject` for external state (Apple recommended)
+- ✅ **Easy testing**: Mock wrapper in SwiftUI Previews
+- ✅ **Clear separation**: Wrapper handles SwiftUI integration, ViewModel handles logic
+- ✅ **Production-ready**: Proven pattern for complex apps
+
+**Cons**:
+- ❌ **Boilerplate**: ~80 lines per ViewModel (wrapper class + methods)
+- ❌ **Additional abstraction**: Two objects per feature (ViewModel + Wrapper)
+- ❌ **Method delegation**: Must forward all ViewModel methods to wrapper
+- ❌ **Maintenance**: Need to update wrapper when ViewModel API changes
+
+**Technical Details**:
+
+**@StateObject Lifecycle**:
+```swift
+struct MyView: View {
+    @StateObject private var wrapper = ViewModelWrapper()
+    // ↑ Created once, survives View struct recreation
+    // SwiftUI manages lifecycle, destroys only when View permanently removed
+    
+    // Result: Same wrapper instance across parent updates, stable state
+}
+```
+
+---
+
+### Decision Matrix
+
+Use this table to choose the right pattern:
+
+| Requirement | Direct Integration | Wrapper Pattern |
+|-------------|-------------------|-----------------|
+| **Simple linear navigation** | ✅ Recommended | ⚠️ Overkill |
+| **Tab-based navigation** | ❌ State loss on tab switch | ✅ Required |
+| **Sheet/modal presentation** | ⚠️ May lose state | ✅ Preserves state |
+| **Parent view has @State** | ❌ ViewModel recreated | ✅ Survives |
+| **Deep navigation stacks** | ⚠️ Fragile | ✅ Robust |
+| **Team new to SwiftUI** | ✅ Simpler to understand | ❌ More complex |
+| **Testing in Previews** | ❌ Hard to mock | ✅ Easy to mock |
+| **Boilerplate tolerance** | ✅ Low (~10 lines) | ❌ High (~80 lines) |
+| **Production large-scale app** | ⚠️ Risky for complex flows | ✅ Safer choice |
+| **MVP/POC project** | ✅ Fast iteration | ⚠️ Premature optimization |
+
+---
+
+### Migration Guide
+
+#### Converting Direct Integration → Wrapper Pattern
+
+**When to Migrate**:
+- App grows beyond simple navigation
+- Users report state loss issues (data reloads unexpectedly)
+- Adding tabs, sheets, or complex navigation
+- Need better testability
+
+**Steps**:
+
+1. **Create Wrapper Class**:
+```swift
+// Before: No wrapper
+// After: Create iosApp/ViewModels/PokemonListViewModelWrapper.swift
+
+@MainActor
+class PokemonListViewModelWrapper: ObservableObject {
+    @Published var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    private let viewModel: PokemonListViewModel
+    
+    init() {
+        self.viewModel = KoinIosKt.getPokemonListViewModel()
+    }
+    
+    func observeState() async {
+        for await state in viewModel.uiState {
+            self.uiState = state
+        }
+    }
+    
+    // Add delegation methods for all ViewModel actions
+    func loadInitialPage() { viewModel.loadInitialPage() }
+    func loadNextPage() { viewModel.loadNextPage() }
+}
+```
+
+2. **Update View**:
+```swift
+// Before:
+struct PokemonListView: View {
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .task {
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+}
+
+// After:
+struct PokemonListView: View {
+    @StateObject private var wrapper = PokemonListViewModelWrapper()
+    
+    var body: some View {
+        content
+            .task {
+                await wrapper.observeState()
+            }
+    }
+    
+    // Update all references: uiState → wrapper.uiState
+    // Update all calls: viewModel.method() → wrapper.method()
+}
+```
+
+3. **Update References**:
+```swift
+// Before:
+switch uiState {
+    case is PokemonListUiStateLoading: ...
+}
+viewModel.loadInitialPage()
+
+// After:
+switch wrapper.uiState {
+    case is PokemonListUiStateLoading: ...
+}
+wrapper.loadInitialPage()
+```
+
+4. **Test Migration**:
+- [ ] Verify no state loss on parent updates
+- [ ] Test tab switching (if applicable)
+- [ ] Test sheet presentation/dismissal
+- [ ] Verify navigation back/forward preserves state
+- [ ] Check SwiftUI Previews still work
+
+#### Converting Wrapper Pattern → Direct Integration
+
+**When to Migrate**:
+- App remains simple (no tabs, shallow navigation)
+- Team wants less boilerplate
+- No state preservation issues reported
+
+**Steps**:
+
+1. **Update View**:
+```swift
+// Before:
+struct PokemonListView: View {
+    @StateObject private var wrapper = PokemonListViewModelWrapper()
+    
+    var body: some View {
+        content.task { await wrapper.observeState() }
+    }
+}
+
+// After:
+struct PokemonListView: View {
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .task {
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+}
+```
+
+2. **Update References**:
+```swift
+// Before:
+switch wrapper.uiState { ... }
+wrapper.loadInitialPage()
+
+// After:
+switch uiState { ... }
+viewModel.loadInitialPage()
+```
+
+3. **Delete Wrapper Class**:
+```bash
+rm iosApp/iosApp/ViewModels/PokemonListViewModelWrapper.swift
+```
+
+4. **Test for Regressions**:
+- [ ] Verify basic navigation works
+- [ ] Check data loads correctly
+- [ ] Test error/retry flows
+- [ ] Watch for unexpected reloads (sign of View recreation issues)
+
+---
+
+### Current Project Status
+
+**Active Pattern**: Direct Integration (Pattern 1)
+
+**Files**:
+- `iosApp/iosApp/Views/PokemonListView.swift` - Direct integration
+- `iosApp/iosApp/Views/PokemonDetailView.swift` - Direct integration (parametric)
+
+**Legacy Files** (not currently used):
+- `iosApp/iosApp/ViewModels/PokemonDetailViewModelWrapper.swift` - Example of Wrapper pattern (kept as reference)
+
+**Decision Rationale**:
+- Current app has simple navigation (single stack)
+- No tabs, sheets, or complex flows
+- Team prioritizes rapid iteration and simplicity
+- No state preservation issues reported in testing
+
+**Future Considerations**:
+- If adding tabs → migrate to Wrapper pattern
+- If users report data reloading unexpectedly → migrate to Wrapper pattern
+- If app scales beyond 5+ screens with complex navigation → migrate to Wrapper pattern
+
 ---
 
 ## 🎯 Key Patterns
-
-### 1. SKIE Integration
 
 **SKIE** (Swift Kotlin Interface Enhancer) automatically bridges Kotlin Coroutines to Swift async/await:
 
@@ -404,71 +913,76 @@ struct iOSApp: App {
 
 ### 3. StateFlow Observation
 
-#### Pattern: SKIE Automatic Bridging + Swift Async/Await
+#### SKIE Automatic Bridging
 
-**Swift ViewModel Wrapper**:
+SKIE automatically converts Kotlin `StateFlow` to Swift `AsyncSequence`, enabling native `for await ... in` syntax:
+
 ```swift
-import Foundation
-import Shared
-import SwiftUI
-
-@MainActor
-class PokemonListViewModelWrapper: ObservableObject {
-    @Published var uiState: PokemonListUiState = PokemonListUiStateLoading()
-    
-    private let viewModel: PokemonListViewModel
-    
-    init() {
-        // Get ViewModel from Koin via helper function
-        self.viewModel = KoinIosKt.getPokemonListViewModel()
-    }
-    
-    /**
-     * Observe StateFlow and update published property.
-     * SKIE automatically provides async iteration for StateFlow.
-     * Call from SwiftUI .task modifier (auto-cancels on view disappear).
-     */
-    func observeState() async {
-        for await state in viewModel.uiState {
-            self.uiState = state
-        }
-    }
-    
-    // Delegate method calls to KMP ViewModel
-    func loadInitialPage() {
-        viewModel.loadInitialPage()
-    }
-    
-    func loadNextPage() {
-        viewModel.loadNextPage()
-    }
+// SKIE makes this possible:
+for await state in viewModel.uiState {
+    // Receive StateFlow emissions
 }
 ```
 
 **Key Points**:
 - ✅ SKIE makes `StateFlow` iterable with `for await ... in`
 - ✅ Use `.task` modifier for automatic cancellation
-- ✅ `@Published` property triggers SwiftUI re-renders
-- ✅ `@MainActor` ensures UI updates on main thread
+- ✅ Properly cancels when view disappears (no memory leaks)
 
----
-
-### 4. SwiftUI View Integration
-
-**Pattern**: @StateObject + .task lifecycle
+#### Observation Pattern: Direct Integration (Current)
 
 ```swift
 import SwiftUI
 import Shared
 
 struct PokemonListView: View {
-    @StateObject private var wrapper = PokemonListViewModelWrapper()
-    @State private var scrollPosition: Int?
+    // Direct ViewModel access from Koin
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    
+    // @State bridges StateFlow emissions to SwiftUI
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .task {
+                // Observe StateFlow via SKIE AsyncSequence
+                // Auto-cancels when view disappears
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+}
+```
+
+**Key Points**:
+- ✅ Direct ViewModel access (no wrapper)
+- ✅ `@State` holds current UI state for SwiftUI reactivity
+- ✅ `.task` lifecycle automatically cancels on view disappear
+- ✅ Simple, minimal boilerplate
+
+#### Alternative: Wrapper Pattern
+
+See "ViewModel Integration Approaches" section above for Wrapper pattern with `@ObservableObject` + `@StateObject`.
+
+---
+
+### 4. SwiftUI View Integration
+
+**Current Pattern**: Direct Integration
+
+```swift
+import SwiftUI
+import Shared
+
+struct PokemonListView: View {
+    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
     
     var body: some View {
         NavigationStack {
             // Switch on UI state sealed class
-            switch wrapper.uiState {
+            switch uiState {
             case is PokemonListUiStateLoading:
                 ProgressView("Loading Pokémon...")
                 
@@ -478,8 +992,7 @@ struct PokemonListView: View {
             case let content as PokemonListUiStateContent:
                 PokemonGridView(
                     content: content,
-                    onLoadMore: { wrapper.loadNextPage() },
-                    scrollPosition: $scrollPosition
+                    onLoadMore: { viewModel.loadNextPage() }
                 )
                 
             default:
@@ -487,22 +1000,27 @@ struct PokemonListView: View {
             }
         }
         .onAppear {
-            wrapper.loadInitialPage()
+            // Load data on first appear
+            if case is PokemonListUiStateLoading = uiState {
+                viewModel.loadInitialPage()
+            }
         }
         .task {
-            // SKIE-enabled StateFlow observation
-            // Auto-cancels when view disappears
-            await wrapper.observeState()
+            // Observe StateFlow - auto-cancels on view disappear
+            for await state in viewModel.uiState {
+                self.uiState = state
+            }
         }
     }
 }
 ```
 
 **Critical Requirements**:
-- ✅ Use `@StateObject` for wrapper (not `@ObservedObject` or `@State`)
-- ✅ Call `observeState()` in `.task` modifier (not `.onAppear`)
+- ✅ Call ViewModel methods directly (e.g., `viewModel.loadInitialPage()`)
+- ✅ Observe StateFlow in `.task` modifier (not `.onAppear`)
 - ✅ Load initial data in `.onAppear` (one-time action)
 - ✅ Switch on sealed class types with `is` and `as`
+- ✅ Check current state before loading to avoid redundant calls
 
 ---
 

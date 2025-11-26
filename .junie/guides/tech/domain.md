@@ -5,7 +5,7 @@ Purpose: Make domain models and logic stable, pure, platform-agnostic, and easy 
 - Location
   - Prefer feature-local domain types: place domain models and pure business logic inside each feature’s modules.
     - Public contracts that other features need live in `:features:<feature>:api`.
-    - Private or implementation-only types live in `:features:<feature>:impl`.
+    - Private or implementation-only types live in `:features:<feature>:data` or `:features:<feature>:presentation`.
   - Shared, cross-feature domain types can live in a dedicated shared/core domain `api` module if necessary (e.g., `:core:domain:api`).
   - Keep domain free of platform-specific types (no Android/iOS classes, no Ktor, no SQL types).
 
