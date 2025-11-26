@@ -87,9 +87,18 @@ Is this about onboarding copy/flow?
   
 Is this about user journeys/navigation?
   → YES: Use User Flow Planning Mode (.junie/guides/prompts/user_flow_agent_system_prompt.md)
+
+Is this about test planning/strategy/coverage analysis?
+  → YES: Use Testing Strategy Mode (.junie/guides/prompts/testing_agent_system_prompt.md)
+
+Is this about backend/API design/Ktor server?
+  → YES: Use Backend Development Mode (.junie/guides/prompts/backend_agent_system_prompt.md)
   
 Is this about implementing UI from specs?
   → YES: Use Screen Implementation Mode (.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md)
+
+Is this about documentation sync/consistency/updates?
+  → YES: Use Documentation Management Mode (.junie/guides/prompts/documentation_agent_system_prompt.md)
   
 Is this about repositories/ViewModels/tests/technical?
   → YES: Use Standard Development Mode (this document)
@@ -1097,6 +1106,9 @@ cat gradle/libs.versions.toml
 - **User Flow Agent**: `.junie/guides/prompts/user_flow_agent_system_prompt.md`
 - **Compose Screen Agent**: `.junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md` (Android/Desktop/iosAppCompose)
 - **SwiftUI Screen Agent**: `.junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md` (iosApp production) **← NEW**
+- **Backend Development Agent**: `.junie/guides/prompts/backend_agent_system_prompt.md` **← NEW**
+- **Testing Strategy Agent**: `.junie/guides/prompts/testing_agent_system_prompt.md` **← NEW**
+- **Documentation Management Agent**: `.junie/guides/prompts/documentation_agent_system_prompt.md` **← NEW**
 - **Compose Animation Guide**: `.junie/guides/prompts/animation_example_guides.md`
 - **SwiftUI Animation Guide**: `.junie/guides/prompts/animation_example_guides_swiftui.md` **← NEW**
 - **Easter Eggs & Mini-Games**: `.junie/guides/prompts/easter_eggs_and_mini_games_guide.md`
@@ -1327,6 +1339,114 @@ CURRENT_MODE: SwiftUI Screen Implementation Mode
 [Production-ready SwiftUI code with variations and KMP integration]
 ```
 
+### Backend Development Mode
+**When to use**: Designing or implementing Ktor backend services, API endpoints, BFF logic
+
+**Activation**: `SWITCH_TO: Backend Development Mode`
+
+**Prompt**: `.junie/guides/prompts/backend_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Define API endpoints with request/response schemas
+- Design error contracts that map to Arrow `Either<RepoError, T>` boundaries as defined in repository patterns
+- Specify persistence, caching, and integration touchpoints
+- Plan operational guardrails (logging, metrics, tracing)
+- Provide deployment sequences and validation commands
+
+**Cross-mode workflow**: Backend changes often require Testing Strategy Mode for comprehensive test planning. Context from previous modes is automatically carried forward in conversation history.
+
+**Response Template**:
+```
+CURRENT_MODE: Backend Development Mode
+
+## Scope Summary
+[Bullet points]
+
+## API Surface
+| Endpoint | Method | Request | Response | Notes |
+| --- | --- | --- | --- | --- |
+
+## Error Model
+[Bullet points describing error types and mapping to RepoError]
+
+## Data & Integrations
+[Bullet points]
+
+## Operational Plan
+[Bullet points for logging, metrics, rollout, validation commands]
+
+## Cross-Team Actions
+[Bullet points]
+```
+
+### Testing Strategy Mode
+**When to use**: Planning comprehensive test coverage, analyzing risk areas, defining test strategies
+
+**Activation**: `SWITCH_TO: Testing Strategy Mode`
+
+**Prompt**: `.junie/guides/prompts/testing_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Assess change surface and identify risk areas
+- Define test coverage (unit, integration, screenshot, property-based)
+- Enforces property-based testing quotas (30-40% overall, 100% for mappers)
+- Validates Turbine usage for flow testing (NEVER Thread.sleep)
+- Plan execution with Gradle commands and CI gating
+- Report outcomes, gaps, and residual risks
+- Promote Turbine for flows, Roborazzi for UI, Kotest/MockK patterns
+
+**Cross-mode workflow**: Use before Standard Development Mode to plan tests upfront, or after Backend Development Mode / UI design modes to validate changes. Complements test enforcement rules (lines 336-450) by providing strategic test planning beyond mandatory workflow checks. Previous mode context (APIs, features) flows naturally through conversation.
+
+**Response Template**:
+```
+CURRENT_MODE: Testing Strategy Mode
+
+## Risk Summary
+[Bullet points]
+
+## Test Matrix
+| Layer | Target | Strategy | Tools |
+| --- | --- | --- | --- |
+
+## Execution Plan
+[Commands and scheduling guidance]
+
+## Follow-Up Actions
+[Residual risks, manual checks, monitoring hooks]
+```
+
+### Documentation Management Mode
+**When to use**: Auditing documentation consistency, synchronizing guides, updating conventions
+
+**Activation**: `SWITCH_TO: Documentation Management Mode`
+
+**Prompt**: `.junie/guides/prompts/documentation_agent_system_prompt.md`
+
+**Key responsibilities**:
+- Audit overlapping sections and outdated references
+- Propose restructuring for better LLM context efficiency
+- Detail sync actions across `.junie/guides/`, `AGENTS.md`, `copilot-instructions.md`
+- Surface follow-up work requiring confirmation
+- Treat `.junie/guides/tech/conventions.md` as source of truth
+
+**Response Template**:
+```
+CURRENT_MODE: Documentation Management Mode
+
+## Findings
+[Bullet points]
+
+## Recommended Changes
+| File | Action | Rationale |
+| --- | --- | --- |
+
+## Sync Checklist
+[Ordered list of actions]
+
+## Open Questions
+[Bullet points or None]
+```
+
 ### Mode Selection Guidelines
 
 **Product questions** → Product Design Mode
@@ -1364,10 +1484,54 @@ CURRENT_MODE: SwiftUI Screen Implementation Mode
 **If platform is ambiguous, ASK**:
 - "Which target? `:iosApp` (SwiftUI) or `:iosAppCompose` (Compose)?"
 
+**Backend questions** → Backend Development Mode
+- "Design the authentication API"
+- "Map backend errors to RepoError boundaries"
+- "Plan Ktor endpoint deployment strategy"
+- "Implement Pokemon data aggregation endpoint"
+
+**Testing Strategy questions** → Testing Strategy Mode
+- "Plan test coverage before implementing feature"
+- "Analyze property test requirements for new repository"
+- "Define property-based test strategy for mapper"
+- "Assess testing risks for backend changes"
+
+**Documentation questions** → Documentation Management Mode
+- "Sync AGENTS.md with new prompt files"
+- "Audit documentation for outdated architectural references"
+- "Update conventions.md consistency"
+
 **Technical questions** → Standard Development Mode (this document)
 - "Implement repository"
 - "Create ViewModel"
 - "Write tests"
+
+### Common Mode Workflows
+
+**Typical sequences for effective mode combinations:**
+
+**New Feature Flow:**
+1. Product Design Mode → Define requirements and scope
+2. UI/UX Design Mode → Plan screens, animations, and interactions
+3. Testing Strategy Mode → Establish test coverage upfront
+4. Screen Implementation Mode → Build UI (Compose or SwiftUI)
+5. Standard Development Mode → Implement business logic with tests
+
+**Backend Feature Flow:**
+1. Product Design Mode → Define API requirements
+2. Backend Development Mode → Design endpoints and error contracts
+3. Testing Strategy Mode → Plan comprehensive test coverage
+4. Standard Development Mode → Implement with repository integration
+
+**Onboarding Flow:**
+1. Onboarding Design Mode → Create copy and flow structure
+2. User Flow Planning Mode → Map navigation paths
+3. Screen Implementation Mode → Build onboarding UI
+
+**Documentation Sync:**
+- Documentation Management Mode → Standalone audit and synchronization
+
+**Note**: Mode transitions work with explicit `SWITCH_TO:` commands or natural follow-up questions (e.g., "Now plan the tests for this API" automatically switches to Testing Strategy Mode).
 
 ---
 
