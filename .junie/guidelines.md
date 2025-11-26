@@ -234,7 +234,7 @@ Extending:
 
 See `.junie/guides/tech/conventions.md` for comprehensive conventions. Critical patterns:
 
-- **ViewModels**: Must extend `androidx.lifecycle.ViewModel`; pass `viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` as constructor parameter to superclass; NEVER store `CoroutineScope` as field; do NOT perform work in `init`; load data in lifecycle-aware callbacks (not `init`); use `kotlinx.collections.immutable` types in UI state; implement `OneTimeEventEmitter<E>` via delegation for one-time events
+- **ViewModels**: See [ViewModel Pattern](guides/tech/critical_patterns_quick_ref.md#viewmodel-pattern) for complete rules on lifecycle-aware constructor injection, viewModelScope parameter, UiStateHolder<S, E>, immutable collections, and OneTimeEventEmitter<E>
 - **Repositories**: Return `Either<RepoError, T>`; use `Either.catch { ... }.mapLeft { it.toRepoError() }`; map DTOs to domain at boundary
 - **Navigation**: Use Navigation 3 (`org.jetbrains.androidx.navigation3:navigation3-ui`); define contracts in `api`, route objects in feature modules
 - **DI**: Koin with no annotations on classes; wire via `module { }` DSL in wiring modules
