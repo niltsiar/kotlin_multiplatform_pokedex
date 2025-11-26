@@ -10,6 +10,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.di.coreModule
 import com.minddistrict.multiplatformpoc.core.di.navigationAggregationModule
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
 import com.minddistrict.multiplatformpoc.navigation.Navigator
@@ -30,6 +31,7 @@ fun App() {
             modules(
                 coreModule(baseUrl = "https://pokeapi.co/api/v2") +
                 pokemonListModule +
+                pokemonDetailModule +
                 getPlatformNavigationModules() +
                 navigationAggregationModule
             )

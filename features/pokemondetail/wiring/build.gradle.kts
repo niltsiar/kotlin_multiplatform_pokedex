@@ -7,7 +7,11 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.features.pokemondetail.api)
+            implementation(projects.features.pokemondetail.data)
+            api(projects.features.pokemondetail.presentation)  // API: types exposed in providers
             implementation(projects.core.navigation)
+            implementation(projects.core.httpclient)
+            implementation(libs.ktor.client.core)
             implementation(libs.koin.core)
         }
         
