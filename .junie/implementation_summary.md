@@ -821,6 +821,3 @@ commonMain.dependencies {
 - `.junie/guides/tech/convention_plugins_quick_ref.md` — Convention plugin usage
 - `.junie/guides/tech/kotest_smart_casting_quick_ref.md` — Kotest testing patterns
 - `.junie/guides/tech/koin_di_quick_ref.md` — Koin DI patterns
-
-### Checklists
-- `.junie/checklists/ios-pokemon-list-implementation.md` — ✅ COMPLETE - iOS Pokemon list implementation guide
