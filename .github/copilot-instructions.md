@@ -1,10 +1,24 @@
 # Copilot Instructions for Kotlin Multiplatform POC
 
-**Last Updated:** November 26, 2025
+**Last Updated:** November 27, 2025
 
 > **Related Documentation**: See also [`.junie/guidelines.md`](../.junie/guidelines.md) for high-level project guidelines and [`AGENTS.md`](../AGENTS.md) for autonomous agent workflows. These documents are kept in sync.
 
 > **⚠️ Sync Maintenance**: When updating architectural patterns, ensure AGENTS.md, guidelines.md, and this file stay synchronized. Run Documentation Management Mode monthly to verify.
+
+> Quick Index: Specialized Agents (jump links)
+> - Product Design Mode — .junie/guides/prompts/product_designer_agent_system_prompt.md
+> - UI/UX Design Mode — .junie/guides/prompts/uiux_agent_system_prompt.md
+> - Screen Implementation Mode — .junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md
+> - SwiftUI Screen Agent — .junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md
+> - Onboarding Design Mode — .junie/guides/prompts/onboarding_agent_system_prompt.md
+> - User Flow Planning Mode — .junie/guides/prompts/user_flow_agent_system_prompt.md
+> - Testing Strategy Mode — .junie/guides/prompts/testing_agent_system_prompt.md
+> - Backend Development Mode — .junie/guides/prompts/backend_agent_system_prompt.md
+> - Documentation Management Mode — .junie/guides/prompts/documentation_agent_system_prompt.md
+> - Standard Development Mode — see “Task Type Decision Tree” in `AGENTS.md`
+>
+> For a browsable list with one‑line purposes, see `.junie/guides/prompts/README.md`.
 
 ## Project Overview
 
@@ -109,6 +123,7 @@ open build/dependencyUpdates/report.html
 4. Working on SwiftUI integration with shared.framework
 
 **Note**: iOS uses native SwiftUI for UI (not Compose). The `:shared` module is an umbrella that exports KMP modules.
+
 
 **iOS Integration**: Direct Integration pattern (private var ViewModel + @State for UI state) is current. See `.junie/guides/tech/ios_integration.md` for complete guide including alternative Wrapper pattern for complex apps.
 
