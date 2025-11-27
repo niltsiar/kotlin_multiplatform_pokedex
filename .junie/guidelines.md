@@ -1,10 +1,26 @@
 # Kotlin Multiplatform Guidelines for Junie
 
-**Last Updated:** November 26, 2025
+**Last Updated:** November 27, 2025
 
 > **Related**: [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) (Copilot), [`AGENTS.md`](../AGENTS.md) (Agents) — kept in sync
 
 > **⚠️ Sync Maintenance**: When updating architectural patterns, ensure AGENTS.md, copilot-instructions.md, and this file stay synchronized. Run Documentation Management Mode monthly to verify.
+
+## Agent Selector (Quick)
+
+Use these specialized modes for faster task routing:
+
+- Product Design Mode → .junie/guides/prompts/product_designer_agent_system_prompt.md
+- UI/UX Design Mode → .junie/guides/prompts/uiux_agent_system_prompt.md
+- Screen Implementation Mode → .junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md
+- SwiftUI Screen Agent → .junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md
+- Onboarding Design Mode → .junie/guides/prompts/onboarding_agent_system_prompt.md
+- User Flow Planning Mode → .junie/guides/prompts/user_flow_agent_system_prompt.md
+- Testing Strategy Mode → .junie/guides/prompts/testing_agent_system_prompt.md
+- Backend Development Mode → .junie/guides/prompts/backend_agent_system_prompt.md
+- Documentation Management Mode → .junie/guides/prompts/documentation_agent_system_prompt.md
+
+Tip: For a browsable list with brief purposes, see `.junie/guides/prompts/README.md`. For detailed guidance and the decision tree, see `AGENTS.md` → “Task Type Decision Tree”.
 
 ## Tech Stack
 

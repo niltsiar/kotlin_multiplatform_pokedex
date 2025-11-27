@@ -4,6 +4,22 @@ Last Updated: November 26, 2025
 
 > Fast lookup for commands, tables, API references, and common patterns.
 
+## Agent Selector (Quick)
+
+Use these specialized modes for faster task routing:
+
+- Product Design Mode → .junie/guides/prompts/product_designer_agent_system_prompt.md
+- UI/UX Design Mode → .junie/guides/prompts/uiux_agent_system_prompt.md
+- Screen Implementation Mode → .junie/guides/prompts/ui_ux_system_agent_for_generic_screen.md
+- SwiftUI Screen Agent → .junie/guides/prompts/ui_ux_system_agent_for_swiftui_screen.md
+- Onboarding Design Mode → .junie/guides/prompts/onboarding_agent_system_prompt.md
+- User Flow Planning Mode → .junie/guides/prompts/user_flow_agent_system_prompt.md
+- Testing Strategy Mode → .junie/guides/prompts/testing_agent_system_prompt.md
+- Backend Development Mode → .junie/guides/prompts/backend_agent_system_prompt.md
+- Documentation Management Mode → .junie/guides/prompts/documentation_agent_system_prompt.md
+
+Tip: For a browsable list with brief purposes, see `.junie/guides/prompts/README.md`. For detailed guidance, see `AGENTS.md` → “Task Type Decision Tree”.
+
 ## Essential Commands
 
 ### Primary Validation (ALWAYS RUN FIRST)
