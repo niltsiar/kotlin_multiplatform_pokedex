@@ -1,5 +1,5 @@
 plugins {
-    id("convention.feature.impl")
+    id("convention.feature.presentation")
 }
 
 kotlin {
@@ -7,18 +7,6 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.data)
-            
-            // Lifecycle & ViewModel
-            implementation(libs.androidx.lifecycle.viewmodel)
-            
-            // Collections
-            implementation(libs.kotlinx.collections.immutable)
-            
-            // Arrow
-            implementation(libs.arrow.core)
-            
-            // Coroutines
-            implementation(libs.kotlinx.coroutines.core)
         }
         
         commonTest.dependencies {

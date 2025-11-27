@@ -74,8 +74,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 📝 Documentation
 #### agents
 
-- Sync specialized agent discovery across docs (AGENTS.md, .junie/guidelines.md, .github/copilot-instructions.md, .junie/guides/QUICK_REFERENCE.md, .junie/guides/prompts/README.md)
-
 - Create autonomous AI agent workflow guide ([cb1c1b5](https://github.com/niltsiar/kotlin_multiplatform_pokedex/commit/cb1c1b517383fd17ba85cbe7d2f0e398dd2fdd37))
 
 - Enhance AI agent guide with specialized prompt references ([4319344](https://github.com/niltsiar/kotlin_multiplatform_pokedex/commit/4319344752fcc5bf5bba1cb97e52fb813736dbdd))

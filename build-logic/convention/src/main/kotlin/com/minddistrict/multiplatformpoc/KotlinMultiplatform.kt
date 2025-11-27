@@ -3,6 +3,8 @@ package com.minddistrict.multiplatformpoc
 import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import com.minddistrict.multiplatformpoc.libs
+import com.minddistrict.multiplatformpoc.getLibrary
 
 /**
  * Configures KMP targets for the project.
@@ -17,9 +19,13 @@ internal fun Project.configureKmpTargets(
     includeIos: Boolean = true,
 ) {
     extension.apply {
-        androidTarget {
-            compilerOptions {
-                jvmTarget.set(JvmTarget.JVM_11)
+        // Configure Android target only when Android plugin is applied
+        val hasAndroid = pluginManager.hasPlugin("com.android.library") || pluginManager.hasPlugin("com.android.application")
+        if (hasAndroid) {
+            androidTarget {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_11)
+                }
             }
         }
         
@@ -37,7 +43,7 @@ internal fun Project.configureKmpTargets(
 
         sourceSets.apply {
             commonTest.dependencies {
-                implementation(kotlin("test"))
+                implementation(libs.getLibrary("kotlin-test"))
             }
         }
     }

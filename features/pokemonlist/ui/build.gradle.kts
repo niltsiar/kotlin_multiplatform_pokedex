@@ -9,13 +9,6 @@ kotlin {
             implementation(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.presentation)
             
-            // Lifecycle Compose extensions
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            
-            // Collections
-            implementation(libs.kotlinx.collections.immutable)
-            
             // Image Loading
             implementation(libs.coil3.core)
             implementation(libs.coil3.compose)
