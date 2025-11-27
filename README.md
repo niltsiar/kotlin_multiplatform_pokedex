@@ -97,4 +97,56 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 
 ---
 
+## Development Workflow
+
+### Commit Message Convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) format. See [`.github/COMMIT_CONVENTION.md`](.github/COMMIT_CONVENTION.md) for detailed guidelines.
+
+**Format:**
+```
+<type>(<scope>): <description>
+```
+
+**Quick Reference:**
+
+| Type | Use Case | Example |
+|------|----------|---------|
+| `feat` | New features | `feat(pokemonlist): add infinite scroll pagination` |
+| `fix` | Bug fixes | `fix(pokemondetail): resolve crash on missing sprite data` |
+| `docs` | Documentation | `docs(conventions): add commit message guidelines` |
+| `test` | Tests | `test(pokemonlist): add property-based tests for repository` |
+| `build` | Build/dependencies | `build(gradle): update Kotlin to 2.1.0` |
+| `refactor` | Code refactoring | `refactor(designsystem): extract theme tokens to constants` |
+| `chore` | Maintenance | `chore: update .gitignore for build artifacts` |
+
+**Scopes:** Use general feature or area names: `pokemonlist`, `pokemondetail`, `designsystem`, `navigation`, `testing`, `ios`, `di`, `conventions`
+
+### CHANGELOG Generation
+
+This project uses [git-cliff](https://git-cliff.org/) to generate changelogs from conventional commits.
+
+**Installation (macOS):**
+```shell
+brew install git-cliff
+```
+
+**Generate/Update CHANGELOG:**
+```shell
+git cliff -o CHANGELOG.md
+```
+
+**For Releases:**
+```shell
+git cliff -o CHANGELOG.md --tag v1.0.0
+```
+
+**Configuration:** See [`cliff.toml`](cliff.toml) for git-cliff configuration including commit grouping, scope-based sub-grouping, and GitHub link templates.
+
+### Commit Validation (Optional)
+
+For production projects, consider automating validation via pre-commit hooks or CI/CD. See `.github/COMMIT_CONVENTION.md` for validation strategies.
+
+---
+
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
