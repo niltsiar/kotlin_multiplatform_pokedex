@@ -1,6 +1,6 @@
 # Convention Plugins Guide
 
-**Last Updated:** November 26, 2025
+**Last Updated:** November 27, 2025
 
 > **Purpose**: Complete guide to convention plugins in this Kotlin Multiplatform project. Covers architecture, available plugins, usage patterns, and implementation details.
 
@@ -73,11 +73,13 @@ build-logic/
       ConventionAndroidLibraryPlugin.kt
       ConventionFeatureBasePlugin.kt     # ← Base plugin for features
       ConventionFeatureApiPlugin.kt
-      ConventionFeatureImplPlugin.kt     # ← Used by data & presentation
+      ConventionFeatureDataPlugin.kt     # ← Data layer (networking/serialization)
+      ConventionFeaturePresentationPlugin.kt  # ← ViewModels & presentation deps
       ConventionFeatureUiPlugin.kt
       ConventionFeatureWiringPlugin.kt
       ConventionCoreLibraryPlugin.kt
       ConventionComposeMultiplatformPlugin.kt
+      ConventionKmpAndroidAppPlugin.kt  # ← Android app with KMP targets
       
       # Shared configuration utilities (Nov 2025)
       com/minddistrict/multiplatformpoc/
@@ -151,27 +153,30 @@ gradlePlugin {
 
 ### Shared Configuration Utilities
 
-**`KotlinMultiplatform.kt`** - Centralized KMP target configuration:
+**`KotlinMultiplatform.kt`** - Centralized KMP target configuration (Android autodetect, JVM 11, optional iOS):
 ```kotlin
-internal fun Project.configureKmpTargets() {
-    extensions.configure<KotlinMultiplatformExtension> {
-        jvm()
-        androidTarget {
-            @OptIn(ExperimentalKotlinGradlePluginApi::class)
-            compilerOptions {
-                jvmTarget.set(JvmTarget.JVM_17)
+internal fun Project.configureKmpTargets(
+    extension: KotlinMultiplatformExtension,
+    includeIos: Boolean = true,
+) {
+    extension.apply {
+        // Android target only when Android plugin is applied
+        val hasAndroid = pluginManager.hasPlugin("com.android.library") ||
+            pluginManager.hasPlugin("com.android.application")
+        if (hasAndroid) {
+            androidTarget {
+                compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
             }
         }
-        
-        listOf(
-            iosX64(),
-            iosArm64(),
-            iosSimulatorArm64()
-        ).forEach { iosTarget ->
-            iosTarget.binaries.framework {
-                baseName = "shared"
-                isStatic = true
-            }
+
+        jvm { compilerOptions { jvmTarget.set(JvmTarget.JVM_11) } }
+
+        if (includeIos) {
+            iosArm64(); iosSimulatorArm64(); iosX64()
+        }
+
+        sourceSets.apply {
+            commonTest.dependencies { implementation(libs.getLibrary("kotlin-test")) }
         }
     }
 }
@@ -202,23 +207,22 @@ fun VersionCatalog.getVersion(alias: String): String =
     findVersion(alias).get().toString()
 ```
 
-### Plugin Composition Hierarchy
+### Plugin Composition Hierarchy (Final)
 
 ```
-convention.feature.base                          # ← Base for all features
+convention.feature.base                               # ← Base for all features
 ├── Provides: KMP targets, tests, common deps
 ├── Dependencies: Arrow, Coroutines, Immutable Collections
 │
-├─→ convention.feature.api (composes base)       # ← Public contracts
-├─→ convention.feature.impl (composes base)      # ← Data + Presentation
-│   ├── Used by: :features:*/data
-│   └── Used by: :features:*/presentation
-└─→ convention.feature.wiring (composes base)    # ← DI assembly
+├─→ convention.feature.api (composes base)            # ← Public contracts
+├─→ convention.feature.data (composes base)           # ← Networking + serialization
+├─→ convention.feature.presentation (composes base)   # ← ViewModels & lifecycle
+└─→ convention.feature.wiring (composes base)         # ← DI assembly
 
-convention.feature.ui (standalone)               # ← Compose UI
-├── Does NOT compose base (explicit targets)
+convention.feature.ui (composes base + compose)       # ← Compose UI
+├── Applies: convention.feature.base
 ├── Applies: convention.compose.multiplatform
-└── Includes: Arrow, Coroutines, Collections directly
+└── Inherits common deps from base + adds Compose deps
 
 convention.core.library (standalone)             # ← Core modules
 └── Uses: configureKmpTargets(), configureTests()
@@ -226,7 +230,7 @@ convention.core.library (standalone)             # ← Core modules
 
 ---
 
-## Available Plugins
+## Available Plugins (Final)
 
 ### Base Plugin
 
@@ -283,76 +287,56 @@ plugins {
 // Add only API-specific dependencies if needed
 ```
 
----
+----
 
-#### `convention.feature.impl`
-**Internal implementations (data + presentation)**
+#### `convention.feature.data`
+**Internal data layer (repositories, API services, DTOs, mappers)**
 
 ```kotlin
-plugins {
-    id("convention.feature.impl")  // Composes: convention.feature.base
-}
-```
-
-**For**: 
-- **Data modules**: Repositories, API services, DTOs, mappers
-- **Presentation modules**: ViewModels, UI state
-
-**Exports to iOS**: 
-- Data: ❌ No
-- Presentation: ✅ Yes (ViewModels shared with iOS)
-
-**Targets**: Android, JVM, iOS  
-**Contents**:
-- Repository implementations
-- DTO to domain mappers
-- ViewModels and UI state
-- Network layer (Ktor client)
-
-**Example (Data)**:
-```kotlin
-// features/jobs/data/build.gradle.kts
-plugins {
-    id("convention.feature.impl")
-    alias(libs.plugins.kotlinx.serialization)
-}
+plugins { id("convention.feature.data") } // Composes: convention.feature.base
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.features.jobs.api)
-            
-            // Ktor
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.contentNegotiation)
-            
-            // Arrow, Coroutines, Collections already provided by base
+            implementation(projects.features.myfeature.api)
+            implementation(projects.core.httpclient)
+            // Ktor + kotlinx-serialization are provided by the plugin
+        }
+        commonTest.dependencies { implementation(libs.kotlin.test) }
+    }
+}
+```
+
+**Provides**:
+- Applies Kotlin Serialization plugin
+- Adds Ktor core, contentNegotiation, logging, and kotlinx-serialization JSON in commonMain
+- Adds OkHttp (androidMain), Java (jvmMain), Darwin (iosMain when present)
+
+**Exports to iOS**: ❌ No
+
+----
+
+#### `convention.feature.presentation`
+**Presentation layer (ViewModels and presentation-only deps)**
+
+```kotlin
+plugins { id("convention.feature.presentation") } // Composes: convention.feature.base
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.features.myfeature.api)
+            implementation(projects.features.myfeature.data)
+            // Lifecycle ViewModel KMP APIs provided by the plugin
         }
     }
 }
 ```
 
-**Example (Presentation)**:
-```kotlin
-// features/jobs/presentation/build.gradle.kts
-plugins {
-    id("convention.feature.impl")
-}
+**Provides**:
+- Adds `androidx.lifecycle:lifecycle-viewmodel` (KMP) to commonMain
 
-kotlin {
-    sourceSets {
-        commonMain.dependencies {
-            implementation(projects.features.jobs.api)
-            implementation(projects.features.jobs.data)
-            
-            // Lifecycle & ViewModel
-            implementation(libs.androidx.lifecycle.viewmodel)
-            
-            // Arrow, Coroutines, Collections already provided by base
-        }
-    }
-}
-```
+**Exports to iOS**: ✅ Yes (ViewModels shared with SwiftUI)
 
 ---
 
@@ -360,10 +344,7 @@ kotlin {
 **Compose Multiplatform UI screens**
 
 ```kotlin
-plugins {
-    id("convention.feature.ui")  // Does NOT compose base (explicit targets)
-    // Automatically applies: convention.compose.multiplatform
-}
+plugins { id("convention.feature.ui") } // Applies: feature.base + compose.multiplatform
 ```
 
 **For**: Compose Multiplatform screens (@Composable functions)  
@@ -371,8 +352,8 @@ plugins {
 - ✅ Yes (to iOS Compose app via ComposeApp.framework)
 - ❌ No (to native SwiftUI app - SwiftUI implements UI separately)
 
-**Targets**: Android, JVM, iOS (iosArm64, iosSimulatorArm64, iosX64)  
-**Note**: Includes Arrow, Coroutines, Collections directly (not via base)
+**Targets**: Android, JVM, iOS (inherits from base)
+**Note**: Inherits Arrow, Coroutines, Collections from base; adds Compose deps
 
 **iOS Strategy**:
 - **iosAppCompose** (experimental): Uses shared Compose UI from :ui modules
@@ -386,9 +367,7 @@ plugins {
 **Example**:
 ```kotlin
 // features/jobs/ui/build.gradle.kts
-plugins {
-    id("convention.feature.ui")  // Automatically includes Compose
-}
+plugins { id("convention.feature.ui") }
 
 kotlin {
     sourceSets {
@@ -397,8 +376,7 @@ kotlin {
             implementation(projects.features.jobs.presentation)
             implementation(projects.core.designsystem)
             
-            // Compose dependencies automatically included
-            // Arrow, Coroutines, Collections automatically included
+            // Compose + common deps automatically included via plugins
         }
     }
 }
@@ -518,9 +496,9 @@ plugins {
 | Module Type | Plugin | Exports to iOS | Common Deps Auto-Included |
 |-------------|--------|----------------|---------------------------|
 | Feature API | `convention.feature.api` | ✅ Yes | ✅ Yes (via base) |
-| Feature Data | `convention.feature.impl` | ❌ No | ✅ Yes (via base) |
-| Feature Presentation | `convention.feature.impl` | ✅ Yes | ✅ Yes (via base) |
-| Feature UI | `convention.feature.ui` | ❌ No (SwiftUI), ✅ Yes (Compose iOS) | ✅ Yes (direct) |
+| Feature Data | `convention.feature.data` | ❌ No | ✅ Yes (via base + Ktor/Ser) |
+| Feature Presentation | `convention.feature.presentation` | ✅ Yes | ✅ Yes (via base + Lifecycle) |
+| Feature UI | `convention.feature.ui` | ❌ No (SwiftUI), ✅ Yes (Compose iOS) | ✅ Yes (base + Compose) |
 | Feature Wiring | `convention.feature.wiring` | ❌ No | ✅ Yes (via base) |
 | Core Library | `convention.core.library` | ✅ Yes | ❌ No (add explicitly) |
 
@@ -550,8 +528,7 @@ plugins {
 **Data Module** (`features/myfeature/data/build.gradle.kts`):
 ```kotlin
 plugins {
-    id("convention.feature.impl")
-    alias(libs.plugins.kotlinx.serialization)  // If using serialization
+    id("convention.feature.data")
 }
 
 kotlin {
@@ -560,10 +537,7 @@ kotlin {
             implementation(projects.features.myfeature.api)
             implementation(projects.core.httpclient)
             
-            // Ktor
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.contentNegotiation)
-            implementation(libs.ktor.serialization.json)
+            // Ktor + serialization provided by the plugin
         }
         
         androidUnitTest.dependencies {
@@ -577,7 +551,7 @@ kotlin {
 **Presentation Module** (`features/myfeature/presentation/build.gradle.kts`):
 ```kotlin
 plugins {
-    id("convention.feature.impl")
+    id("convention.feature.presentation")
 }
 
 kotlin {
@@ -586,8 +560,7 @@ kotlin {
             implementation(projects.features.myfeature.api)
             implementation(projects.features.myfeature.data)
             
-            // Lifecycle & ViewModel
-            implementation(libs.androidx.lifecycle.viewmodel)
+            // Lifecycle ViewModel added by plugin
         }
         
         androidUnitTest.dependencies {
@@ -754,12 +727,7 @@ versionCatalogs {
 ### "Unresolved reference: getLibrary"
 **Symptom**: Cannot resolve extension function in plugin
 
-**Solution**: Import at top of plugin file:
-```kotlin
-import com.minddistrict.multiplatformpoc.getLibrary
-import com.minddistrict.multiplatformpoc.getVersion
-import com.minddistrict.multiplatformpoc.libs
-```
+**Solution**: Ensure the shared extensions exist in build-logic and are imported where used. If your docs tooling forbids `import` lines in code blocks, reference them inline instead: `com.minddistrict.multiplatformpoc.getLibrary`, `getVersion`, `libs`.
 
 ---
 

@@ -1,12 +1,10 @@
+import com.minddistrict.multiplatformpoc.configureKmpTargets
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class ConventionKmpLibraryPlugin : Plugin<Project> {
@@ -16,25 +14,8 @@ class ConventionKmpLibraryPlugin : Plugin<Project> {
         }
 
         extensions.configure<KotlinMultiplatformExtension> {
-            jvm {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_11)
-                }
-            }
-
-            iosArm64()
-            iosSimulatorArm64()
-            iosX64()
-
-            sourceSets.apply {
-                commonMain.dependencies {
-                    // Empty by default, modules add their own
-                }
-
-                commonTest.dependencies {
-                    implementation(kotlin("test"))
-                }
-            }
+            // Always delegate to the shared helper which is Android-aware
+            configureKmpTargets(this, includeIos = true)
         }
 
         // Configure all test tasks (JVM, KMP, Android, iOS) to never be cached

@@ -30,23 +30,23 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class ConventionFeatureBasePlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
-            apply("org.jetbrains.kotlin.multiplatform")
+            // Apply Android first so KMP can safely register androidTarget()
             apply("com.android.library")
+            // Delegate KMP targets and base test setup to kmp.library to avoid duplication
+            apply("convention.kmp.library")
         }
-        
-        // Configure KMP targets (Android, JVM, iOS)
+
+        // Add common feature dependencies on top of the base KMP configuration
         extensions.configure<KotlinMultiplatformExtension> {
-            configureKmpTargets(this, includeIos = true)
-            
             // Add common feature dependencies
             sourceSets.apply {
                 commonMain.dependencies {
                     // Arrow for functional error handling
                     implementation(libs.getLibrary("arrow-core"))
-                    
+
                     // Coroutines for async operations
                     implementation(libs.getLibrary("kotlinx-coroutines-core"))
-                    
+
                     // Immutable collections for UI state
                     implementation(libs.getLibrary("kotlinx-collections-immutable"))
                 }

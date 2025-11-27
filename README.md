@@ -95,6 +95,14 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 ### Testing
 - **[Kotest Smart Casting](.junie/guides/tech/kotest_smart_casting_quick_ref.md)** - Avoid unnecessary manual casts in tests
 
+### Build Logic & Convention Plugins
+- For how modules are configured (KMP targets, Android config, Compose, and shared deps), see the consolidated guide:
+  - [.junie/guides/tech/convention_plugins_guide.md](.junie/guides/tech/convention_plugins_guide.md)
+  - Plugins you will see across the repo:
+    - `convention.kmp.library`, `convention.core.library`
+    - `convention.feature.base`, `convention.feature.api`, `convention.feature.data`, `convention.feature.presentation`, `convention.feature.ui`, `convention.feature.wiring`
+    - `convention.compose.multiplatform`, `convention.kmp.android.app`
+
 ---
 
 ## Development Workflow

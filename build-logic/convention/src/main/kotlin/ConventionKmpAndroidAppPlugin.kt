@@ -46,7 +46,7 @@ class ConventionKmpAndroidAppPlugin : Plugin<Project> {
 
             sourceSets.apply {
                 commonTest.dependencies {
-                    implementation(kotlin("test"))
+                    implementation(libs.findLibrary("kotlin-test").get())
                 }
             }
         }
