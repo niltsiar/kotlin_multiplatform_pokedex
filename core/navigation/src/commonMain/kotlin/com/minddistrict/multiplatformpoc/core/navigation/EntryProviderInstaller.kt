@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.navigation
+package com.minddistrict.multiplatformpoc.core.navigation
 
 import androidx.navigation3.runtime.EntryProviderScope
 

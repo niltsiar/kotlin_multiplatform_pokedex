@@ -10,10 +10,10 @@ import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.di.coreModule
 import com.minddistrict.multiplatformpoc.core.di.navigationAggregationModule
+import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
-import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
-import com.minddistrict.multiplatformpoc.navigation.Navigator
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.core.module.Module
