@@ -1,11 +1,11 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring
 
+import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.PokemonListScreen
-import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
-import com.minddistrict.multiplatformpoc.navigation.Navigator
 import org.koin.compose.koinInject
 import org.koin.core.qualifier.named
 import org.koin.dsl.module

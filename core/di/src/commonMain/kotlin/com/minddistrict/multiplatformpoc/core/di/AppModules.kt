@@ -1,8 +1,8 @@
 package com.minddistrict.multiplatformpoc.core.di
 
+import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
-import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
-import com.minddistrict.multiplatformpoc.navigation.Navigator
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 

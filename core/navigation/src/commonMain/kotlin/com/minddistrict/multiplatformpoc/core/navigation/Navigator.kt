@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.navigation
+package com.minddistrict.multiplatformpoc.core.navigation
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList

@@ -1,10 +1,10 @@
 package com.minddistrict.multiplatformpoc.features.pokemondetail.wiring
 
+import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
+import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
 import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.PokemonDetailScreen
-import com.minddistrict.multiplatformpoc.navigation.EntryProviderInstaller
-import com.minddistrict.multiplatformpoc.navigation.Navigator
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
