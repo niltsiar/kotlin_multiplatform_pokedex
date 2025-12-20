@@ -9,7 +9,7 @@ Purpose: Minimal, tooling-free checks to avoid doc drift and broken links during
 `.junie/guides/**` has been removed. Canonical docs live in `docs/**`.
 
 ```bash
-rg "\.junie/guides" -n --glob '!.junie/guides/**'
+rg "\.junie/guides" -n
 ```
 
 Expected results:
@@ -17,8 +17,8 @@ Expected results:
 - Mentions in `docs/AGENTIC_SYSTEM_UPGRADE_PLAN.md` (plan/history text)
 - Mentions in `docs/DOC_LINK_VERIFICATION.md` (this document)
 
-If you see `.junie/guides/**` inside canonical docs (e.g. `docs/tech/**`, `docs/patterns/**`, `docs/project/**`), flip it
-to the corresponding `docs/**` link.
+If you see `.junie/guides/**` inside canonical docs (e.g. `docs/tech/**`, `docs/patterns/**`, `docs/project/**`), remove
+or replace it with the corresponding `docs/**` link (the legacy folder no longer exists).
 
 ## 2) Entrypoint spot-check (click-through)
 

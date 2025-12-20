@@ -6,7 +6,7 @@
 
 ## Context
 
-This repository currently keeps most agentic guidance under `.junie/guides/**` (prompts, tech guides, patterns, product docs) and uses a large, monolithic `AGENTS.md` plus mirrored content in `.github/copilot-instructions.md` and `.junie/guidelines.md`.
+This repository historically kept most agentic guidance under the **Junie guides folder** (deprecated, now removed) and used a large, monolithic `AGENTS.md` plus mirrored content in `.github/copilot-instructions.md` and `.junie/guidelines.md`.
 
 Inside this repo there is a reference project at `mandolin-cocotte/mobile/` that evolved the agentic system to be more **agent-agnostic**, **token-efficient**, and **docs-first** by moving canonicals to `docs/**` and using a **base prompt + delta prompts** model.
 
@@ -60,7 +60,7 @@ repo’s future maintenance.
 
 Ask-first triggers (non-exhaustive):
 
-- Removing or permanently deprecating `.junie/guides/**` (vs pointer-only indefinitely)
+- Removing or permanently deprecating the legacy Junie guides folder (vs pointer-only indefinitely)
 - Adding repo tooling (pre-commit, CI link checkers) that affects contributors
 - Splitting docs by domain (mobile vs server) or introducing additional top-level entrypoints
 - Renaming prompts/modes (changes mental model + downstream references)
@@ -205,7 +205,7 @@ add small, targeted guidance, but must only *reference* canonicals.
 - **Junie**
   - Keep `.junie/guidelines.md` as Junie’s primary “entrypoint”, but trim it to a short selector + links into
     `docs/**`.
-  - Keep `.junie/guides/**` as a compatibility layer during migration (pointer-only), then deprecate.
+  - Keep the legacy Junie guides folder as a compatibility layer during migration (pointer-only), then deprecate.
 
 - **Copilot**
   - Keep `.github/copilot-instructions.md` as Copilot’s primary “entrypoint”, but shrink it to a Copilot-friendly
@@ -223,15 +223,15 @@ add small, targeted guidance, but must only *reference* canonicals.
 
 **Objective**: produce a clear inventory and a safe migration order.
 
-- [x] Inventory current agentic entrypoints:
+ - [x] Inventory current agentic entrypoints:
   - [x] `AGENTS.md`
   - [x] `.github/copilot-instructions.md`
   - [x] `.junie/guidelines.md`
-  - [x] `.junie/guides/**`
+  - [x] legacy Junie guides folder (removed)
   - [x] `README.md` references to agent docs
 - [x] Identify duplication hotspots (same rules repeated across 2–3 files).
-- [x] Identify all references to `.junie/guides/**` that will need updates.
-- [x] Decide whether we want `.junie/guides/**` to be:
+- [x] Identify all references to the legacy Junie guides folder that will need updates.
+- [x] Decide whether we want the legacy Junie guides folder to be:
   - [x] a pointer layer (recommended), or
   - [ ] removed entirely after a deprecation window.
 - [x] Establish the “ask-first” decision points for this repo (from the Consultation Protocol above) and confirm
@@ -253,7 +253,7 @@ Commit checkpoints:
 **Objective**: create the new canonical doc structure without breaking existing links.
 
 - [x] Create folders: `docs/agent-prompts`, `docs/tech`, `docs/patterns`, `docs/project`.
-- [x] Copy (not move yet) content from `.junie/guides/**` into the corresponding `docs/**` folders.
+- [x] Copy (not move yet) content from the legacy Junie guides folder into the corresponding `docs/**` folders.
   - [x] Keep paths stable long enough to update links atomically later.
 - [x] Add missing mandolin-style docs that this repo currently lacks:
   - [x] `docs/tech/critical_patterns_compact.md`
@@ -279,7 +279,7 @@ Commit checkpoints (recommended granularity):
   - [x] Include mode selection decision table and tie-breakers.
   - [x] Include “Critical Guardrails (Top 10)”.
   - [x] Include the primary validation command.
-- [x] Convert existing prompts from `.junie/guides/prompts/*.md` into DELTA prompts under `docs/agent-prompts/`.
+- [x] Convert existing prompts from the legacy Junie guides prompts into DELTA prompts under `docs/agent-prompts/`.
   - [x] DELTA prompts must only contain role-specific additions.
   - [x] DELTA prompts must link to the base prompt and canonicals.
 - [x] Create `docs/agent-prompts/README.md` prompt index (mandolin style).
@@ -313,7 +313,7 @@ Commit checkpoints (recommended granularity):
 - [x] Update `.junie/guidelines.md` to:
   - [x] become “Junie integration + short rules + links” rather than long duplicates.
   - [x] use docs links (`docs/tech/**`, `docs/agent-prompts/**`) as canonicals.
-- [x] Update root `README.md` “Quick References” to point to `docs/` (not `.junie/guides`).
+- [x] Update root `README.md` “Quick References” to point to `docs/` (not the legacy Junie guides folder).
 
 - [x] Add/adjust entrypoint wording so that:
   - [x] The overall system is explicitly **platform agnostic** (works with any agent/tooling).
@@ -332,25 +332,25 @@ Commit checkpoints (recommended granularity):
 - [x] `docs(agentic): update Junie guidelines to be link-heavy + tool-specific` (commit: `ddfed3c`)
 - [x] `docs(agentic): update root README quick references to docs/*` (commit: `ab48a00`)
 
-### Phase 4 — Migration: flip links + deprecate `.junie/guides/**`
+### Phase 4 — Migration: flip links + deprecate legacy Junie guides folder
 
 **Objective**: make `docs/` canonical and prevent drift.
 
-- [x] Replace `.junie/guides/**` content with pointer files that link to `docs/**` equivalents.
+- [x] Replace the legacy Junie guides folder content with pointer files that link to `docs/**` equivalents.
   - [x] Prefer short “This file moved” docs with a single link.
-- [x] Update all internal references to `.junie/guides/**` to point to `docs/**`.
+- [x] Update all internal references from the legacy Junie guides folder to point to `docs/**`.
   - [x] Especially: prompt indexes, quick reference links, and any “start here” guides.
 
 Acceptance checks:
 
-- [x] No canonical content remains only in `.junie/guides/**`.
-- [x] `.junie/guides/**` either:
+- [x] No canonical content remains only in the legacy Junie guides folder.
+- [x] The legacy Junie guides folder either:
   - [x] contains only pointers, or
   - [ ] is removed (only after a deliberate deprecation decision).
 
 Final cleanup (post-plan):
 
-- [x] `.junie/guides/**` removed from the repo (cleanup complete).
+- [x] Legacy Junie guides folder removed from the repo (cleanup complete).
 
 Commit checkpoints (recommended granularity):
 
@@ -394,11 +394,11 @@ This table guides the migration work; adjust during implementation.
 
 | Current path | Target canonical path | Notes |
 |---|---|---|
-| `.junie/guides/QUICK_REFERENCE.md` | `docs/QUICK_REFERENCE.md` | Update README + base prompt to reference docs |
-| `.junie/guides/tech/*` | `docs/tech/*` | Canonical tech docs move to docs |
-| `.junie/guides/patterns/*` | `docs/patterns/*` | Extended patterns move to docs |
-| `.junie/guides/project/*` | `docs/project/*` | Product docs move to docs |
-| `.junie/guides/prompts/*` | `docs/agent-prompts/*` | Convert to base+delta model; keep support docs |
+| Legacy Junie guides `QUICK_REFERENCE.md` | `docs/QUICK_REFERENCE.md` | Update README + base prompt to reference docs |
+| Legacy Junie guides `tech/*` | `docs/tech/*` | Canonical tech docs move to docs |
+| Legacy Junie guides `patterns/*` | `docs/patterns/*` | Extended patterns move to docs |
+| Legacy Junie guides `project/*` | `docs/project/*` | Product docs move to docs |
+| Legacy Junie guides `prompts/*` | `docs/agent-prompts/*` | Convert to base+delta model; keep support docs |
 | `.junie/guidelines.md` | `.junie/guidelines.md` (trim) | Keep file but make it link-heavy |
 | `AGENTS.md` | `AGENTS.md` (shrink) | Route + sync + pointers |
 | `.github/copilot-instructions.md` | `.github/copilot-instructions.md` (shrink) | Copilot-friendly subset + pointers |
@@ -411,7 +411,7 @@ This table guides the migration work; adjust during implementation.
 4. Flip links and convert `.junie/guides` into pointers (Phase 4)
 5. Add validation workflow (Phase 5)
 
-Rationale: keep changes additive until entrypoints are updated; only then deprecate `.junie/guides/**`.
+Rationale: keep changes additive until entrypoints are updated; only then deprecate the legacy Junie guides folder.
 
 ## Acceptance Criteria (definition of done)
 
@@ -452,7 +452,7 @@ If you adopt tooling (optional):
 
 ## Open Questions / Decisions Needed
 
-1. ✅ Decision (2025-12-20): follow Mandolin-Cocotte approach — keep `.junie/guides/**` during migration, convert it to pointers, and remove/cleanup only as the final step once the whole plan is implemented.
+1. ✅ Decision (2025-12-20): follow Mandolin-Cocotte approach — keep the legacy Junie guides folder during migration, convert it to pointers, and remove/cleanup only as the final step once the whole plan is implemented.
 2. Do we want to add pre-commit / markdown formatting tools now, or keep it manual?
 3. Should we split the repo into separate “mobile” and “server” agentic docs like mandolin-cocotte does, or keep one unified doc set?
 4. Do we want an explicit, tool-agnostic “agent quickstart” entrypoint (e.g. `docs/AGENTS_QUICKSTART.md`) in addition
@@ -469,13 +469,13 @@ If you adopt tooling (optional):
 - `AGENTS.md` (large, comprehensive; includes routing, patterns, testing, and repeated “sync maintenance” guidance)
 - `.github/copilot-instructions.md` (Copilot entrypoint; duplicates many architecture and testing rules)
 - `.junie/guidelines.md` (Junie entrypoint; duplicates many architecture and testing rules)
-- `.junie/guides/**` (current canonicals):
+- Legacy Junie guides folder (previous canonicals; removed):
   - `tech/` (conventions, DI, repository, presentation, navigation, testing strategy, iOS integration, etc.)
   - `patterns/` (extended pattern guides)
   - `project/` (PRD, user flows, onboarding, UI/UX)
   - `prompts/` (specialized agent prompts + index)
   - `QUICK_REFERENCE.md`
-- `README.md` references quick refs under `.junie/guides/**` (e.g. Kotest smart casting, convention plugins guide)
+- `README.md` references quick refs under the legacy Junie guides folder (e.g. Kotest smart casting, convention plugins guide)
 
 #### Duplication hotspots (to eliminate via link-first canonicals)
 
@@ -493,8 +493,8 @@ The following topics appear (with overlapping or near-identical prose) across `A
 
 - Canonicals will live in `docs/**` (tech/patterns/project/prompts). Tool entrypoints (`AGENTS.md`, `.github/copilot-instructions.md`, `.junie/guidelines.md`) will be trimmed to routing + must-follow rules + clickable links into `docs/**`.
 
-#### `.junie/guides/**` deprecation strategy (decision)
+#### Legacy Junie guides folder deprecation strategy (decision)
 
-- Keep `.junie/guides/**` during migration.
-- After link flips, replace `.junie/guides/**` with pointer stubs to `docs/**`.
-- Remove/cleanup `.junie/guides/**` as the last step once the entire migration plan is complete.
+- Keep the legacy Junie guides folder during migration.
+- After link flips, replace it with pointer stubs to `docs/**`.
+- Remove/cleanup it as the last step once the entire migration plan is complete.
