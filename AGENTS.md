@@ -78,7 +78,12 @@ Required alignment set:
 
 Then run the lightweight link checks:
 
-- [`docs/DOC_LINK_VERIFICATION.md`](docs/DOC_LINK_VERIFICATION.md)
+- Sanity scan (no legacy paths should remain):
+  ```bash
+  rg "\\.junie/guides" -n
+  ```
+
+  Expected: no matches (the legacy Junie guides folder has been removed).
 
 ## 🚀 Essential Workflow
 
