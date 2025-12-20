@@ -4,14 +4,17 @@
 
 ## Overview
 
-This guide covers Navigation 3 modular architecture for Kotlin Multiplatform with Compose. Navigation follows split-by-layer pattern: route contracts in `:api`, UI in `:ui`, and wiring in platform-specific source sets (androidMain/jvmMain).
+This guide covers Navigation 3 modular architecture for Kotlin Multiplatform with Compose. Navigation follows split-by-layer pattern: route contracts in `:api`, UI in `:ui`, business DI in `:wiring`, and **Compose navigation registration in `:wiring-ui`**.
+
+In this repo we have **two iOS apps**, with strict framework boundaries. Read:
+- [`docs/tech/ios_apps_architecture.md`](./ios_apps_architecture.md)
 
 ## Architecture Principles
 
 - **Feature-local navigation**: Each feature owns its routes and UI registration
 - **Route objects in :api**: Plain Kotlin objects/data classes as navigation keys
-- **UI in platform-specific wiring**: androidMain/jvmMain provide EntryProviderInstallers
-- **No iOS exports**: Navigation is Compose-only (not exported via :shared)
+- **UI registration in wiring-ui**: platform source sets provide EntryProviderInstallers
+- **No iOS exports in Shared.framework**: Navigation is Compose-only and must not leak into `Shared.framework`
 - **Explicit back stack**: Navigator class manages navigation state
 
 ## Core Components
@@ -86,17 +89,22 @@ data class PokemonDetail(val id: Int)
 
 **Why no @Serializable?**: Navigation 3 uses routes as in-memory keys, not for URL serialization
 
-## Wiring Pattern (Platform-Specific)
+## Wiring Pattern
 
 ### Module Structure
 
 ```
 :features:pokemonlist:wiring/
-├── build.gradle.kts                    # Depends on :core:navigation, :ui, :presentation
+├── build.gradle.kts                    # Business DI only (no Compose UI, no Navigation 3 UI)
 └── src/
-    ├── commonMain/kotlin/              # Provides ViewModels, repositories via Koin
-    ├── androidMain/kotlin/             # Provides EntryProviderInstaller for Android
-    └── jvmMain/kotlin/                 # Provides EntryProviderInstaller for Desktop
+    └── commonMain/kotlin/              # Provides ViewModels, repositories via Koin
+
+:features:pokemonlist:wiring-ui/
+├── build.gradle.kts                    # Compose navigation registration (EntryProviderInstallers)
+└── src/
+    ├── androidMain/kotlin/             # Android EntryProviderInstallers
+    ├── jvmMain/kotlin/                 # Desktop EntryProviderInstallers
+    └── iosMain/kotlin/                 # iOS Compose EntryProviderInstallers (for iosAppCompose only)
 ```
 
 ### Common Main (Data Layer)
@@ -127,7 +135,7 @@ val pokemonListModule = module {
 ### Android Main (UI Navigation)
 
 ```kotlin
-// :features:pokemonlist:wiring/src/androidMain/.../PokemonListNavigationProviders.kt
+// :features:pokemonlist:wiring-ui/src/androidMain/.../PokemonListNavigationProviders.kt
 import org.koin.compose.koinInject
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -162,7 +170,7 @@ val pokemonListNavigationModule = module {
 ### JVM Main (Desktop UI Navigation)
 
 ```kotlin
-// :features:pokemonlist:wiring/src/jvmMain/.../PokemonListNavigationProviders.kt
+// :features:pokemonlist:wiring-ui/src/jvmMain/.../PokemonListNavigationProviders.kt
 val pokemonListNavigationModule = module {
     single<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers")) {
         setOf(
@@ -189,7 +197,7 @@ val pokemonListNavigationModule = module {
 ### Parameterized Routes
 
 ```kotlin
-// :features:pokemondetail:wiring/src/androidMain/.../PokemonDetailNavigationProviders.kt
+// :features:pokemondetail:wiring-ui/src/androidMain/.../PokemonDetailNavigationProviders.kt
 import org.koin.core.parameter.parametersOf
 
 val pokemonDetailNavigationModule = module {
@@ -657,7 +665,7 @@ NavDisplay(
 
 ### Complete Animation Example
 
-From `features/pokemondetail/wiring/src/androidMain`:
+From `features/pokemondetail/wiring-ui/src/androidMain`:
 
 ```kotlin
 import androidx.compose.animation.core.tween
