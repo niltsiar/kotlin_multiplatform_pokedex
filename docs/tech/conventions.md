@@ -26,7 +26,8 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 :features:<feature>:data         → Network, DTOs, repositories (KMP - all targets)
 :features:<feature>:presentation → ViewModels, UI state (KMP - all targets, shared with iOS)
 :features:<feature>:ui           → Compose UI screens (Android + JVM + iOS Compose)
-:features:<feature>:wiring       → DI assembly (KMP with platform-specific source sets)
+:features:<feature>:wiring       → Business DI assembly (KMP commonMain only; safe to export to `Shared.framework`)
+:features:<feature>:wiring-ui    → Compose UI wiring (Navigation 3 entries, screen registration; NOT exported to `Shared.framework`)
 ```
 
 **Example for Pokemon List feature:**
@@ -50,14 +51,17 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
       └── PokemonListUiState.kt           (UI state - immutable collections)
 
 :features:pokemonlist:ui/
-  └── src/commonMain/kotlin/            (Android + JVM only - no iOS targets)
-      └── PokemonListScreen.kt            (Compose UI - NOT exported to iOS)
+  └── src/commonMain/kotlin/            (Android + JVM + iOS Compose)
+      └── PokemonListScreen.kt          (Compose UI - exported via `ComposeApp.framework` only)
 
 :features:pokemonlist:wiring/
   ├── src/commonMain/kotlin/
   │   └── PokemonListModule.kt          (Koin module: repos, ViewModels)
-  ├── src/androidMain/kotlin/           (Android-specific UI wiring)
-  └── src/jvmMain/kotlin/               (JVM Desktop-specific UI wiring)
+
+:features:pokemonlist:wiring-ui/
+  ├── src/androidMain/kotlin/           (Android Compose navigation registration)
+  ├── src/jvmMain/kotlin/               (Desktop Compose navigation registration)
+  └── src/iosMain/kotlin/               (iOS Compose navigation registration; iosAppCompose only)
 ```
 
 ### When to Share Infrastructure (:core modules)
@@ -107,12 +111,12 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
    ```kotlin
    // :features:pokemonlist:data - Pokemon List's API service
    internal class PokemonListApiService(private val httpClient: HttpClient) {
-       suspend fun getPokemons(limit: Int, offset: Int): PokemonListDto { ... }
+       suspend fun getPokemons(limit: Int, offset: Int): PokemonListDto { /* ... */ }
    }
    
    // :features:pokemondetail:data - Pokemon Detail's API service  
    internal class PokemonDetailApiService(private val httpClient: HttpClient) {
-       suspend fun getPokemonById(id: Int): PokemonDetailDto { ... }
+       suspend fun getPokemonById(id: Int): PokemonDetailDto { /* ... */ }
    }
    ```
 
