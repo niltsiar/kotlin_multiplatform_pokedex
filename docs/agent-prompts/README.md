@@ -29,6 +29,11 @@ Role prompts MUST be deltas and assume the consumer includes:
   - Use when: Building native iOS UI.
   - Entry: [ui_ux_system_agent_for_swiftui_screen_DELTA.md](ui_ux_system_agent_for_swiftui_screen_DELTA.md)
 
+- KMP Mobile Expert Mode
+  - Purpose: Shared KMP business logic (ViewModels, repositories, modules, iOS bridging).
+  - Use when: Implementing shared layer features, architecture decisions, iOS export questions.
+  - Entry: [kmp_mobile_expert_agent_system_prompt_DELTA.md](kmp_mobile_expert_agent_system_prompt_DELTA.md)
+
 - Onboarding Design Mode
   - Purpose: Craft onboarding flows and copy.
   - Use when: First-run, education, account creation flows.

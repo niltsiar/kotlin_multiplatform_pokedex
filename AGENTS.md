@@ -14,7 +14,8 @@
 | 🧩 Product | Product Design | [`product_designer_agent_system_prompt_DELTA.md`](docs/agent-prompts/product_designer_agent_system_prompt_DELTA.md) | PRD/acceptance criteria, scope decisions |
 | 🎨 Visual Design | UI/UX Design | [`uiux_agent_system_prompt_DELTA.md`](docs/agent-prompts/uiux_agent_system_prompt_DELTA.md) | Screen layouts, motion, interaction design |
 | 📱 Compose UI | Screen (Compose) | [`ui_ux_system_agent_for_generic_screen_DELTA.md`](docs/agent-prompts/ui_ux_system_agent_for_generic_screen_DELTA.md) | Implement Android/Desktop Compose screens |
-| SwiftUI | Screen (SwiftUI) | [`ui_ux_system_agent_for_swiftui_screen_DELTA.md`](docs/agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md) | Implement native iOS screens |
+|  SwiftUI | Screen (SwiftUI) | [`ui_ux_system_agent_for_swiftui_screen_DELTA.md`](docs/agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md) | Implement native iOS screens |
+| 🔧 KMP Logic | KMP Mobile Expert | [`kmp_mobile_expert_agent_system_prompt_DELTA.md`](docs/agent-prompts/kmp_mobile_expert_agent_system_prompt_DELTA.md) | Shared ViewModels, repositories, iOS bridging |
 | 🚪 Onboarding | Onboarding Design | [`onboarding_agent_system_prompt_DELTA.md`](docs/agent-prompts/onboarding_agent_system_prompt_DELTA.md) | Onboarding flows and copy |
 | 🗺️ Flows | User Flow Planning | [`user_flow_agent_system_prompt_DELTA.md`](docs/agent-prompts/user_flow_agent_system_prompt_DELTA.md) | End-to-end journeys, navigation contracts |
 | 🧪 Test Planning | Testing Strategy | [`testing_agent_system_prompt_DELTA.md`](docs/agent-prompts/testing_agent_system_prompt_DELTA.md) | Coverage analysis, test design |
