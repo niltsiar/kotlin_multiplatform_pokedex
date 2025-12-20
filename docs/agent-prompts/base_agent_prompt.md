@@ -28,6 +28,10 @@ role prompts). Role prompts MUST reference this file and only add role-specific 
 | 🗺️ Agent Routing | [AGENTS.md](../../AGENTS.md) | Routing table, decision tree, sync guardrails |
 | 📦 Product Canon | [prd.md](../project/prd.md) | Acceptance criteria and scope |
 
+**Reference Implementation** (pokemonlist feature — use as template):
+
+- [API](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/PokemonListRepository.kt) • [Data](../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt) • [Presentation](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) • [UI](../../features/pokemonlist/ui/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/PokemonListScreen.kt) • [Wiring](../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
+
 ## Mode Selection (Quick Decision)
 
 | Input Type | Mode |
