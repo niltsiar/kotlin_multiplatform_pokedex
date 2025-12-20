@@ -86,4 +86,4 @@ class JobRepositoryImpl(
   - Favor JSON round‑trip tests for DTOs: `json -> object -> json` and `object -> json -> object` to verify adapters are symmetric.
 
 - Alignment with Product Docs
-  - Ensure endpoints, payloads, and status handling align with .junie/guides/project/prd.md. When UX requires specific error messages or states, follow .junie/guides/project/user_flow.md. Surface discrepancies explicitly.
+  - Ensure endpoints, payloads, and status handling align with [prd.md](../project/prd.md). When UX requires specific error messages or states, follow [user_flow.md](../project/user_flow.md). Surface discrepancies explicitly.

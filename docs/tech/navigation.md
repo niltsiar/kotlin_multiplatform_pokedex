@@ -850,4 +850,4 @@ Button(onClick = {
 
 ## Notes
 - Keep navigation state ephemeral and derived from the backstack where possible; avoid duplicating route state in view models.
-- Align destination availability and restrictions with PRD and flows in `.junie/guides/project/user_flow.md`.
+- Align destination availability and restrictions with PRD and flows in [user_flow.md](../project/user_flow.md).

@@ -295,13 +295,10 @@ struct PokemonDetailView: View {
         case let content as PokemonDetailUiStateContent:
             DetailContent(pokemon: content.pokemon)
         case let error as PokemonDetailUiStateError:
-            ErrorView(message: error.message, onRetry: { wrapper.retry() })
+            ErrorView(message: error.message, onRetry: { viewModel.retry() })
         default:
             EmptyView()
         }
-    }
-    .task {
-        await wrapper.observeState()
     }
 }
 ```
@@ -572,7 +569,7 @@ class ProfileViewModel(
 ```
 
 ## Alignment with Product Docs
-- Map UI states to user flows from `.junie/guides/project/user_flow.md`
-- Implement copy and content from `.junie/guides/project/prd.md`
-- Follow UX specifications from `.junie/guides/project/ui_ux.md`
-- Handle premium states according to `.junie/guides/project/paywall.md`
+- Map UI states to user flows from [user_flow.md](../project/user_flow.md)
+- Implement copy and content from [prd.md](../project/prd.md)
+- Follow UX specifications from [ui_ux.md](../project/ui_ux.md)
+- Handle premium states according to the product canon (add a `docs/project/paywall.md` if/when we introduce premium)
