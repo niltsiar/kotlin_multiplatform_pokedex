@@ -5,18 +5,14 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * Convention plugin for feature wiring/DI modules.
- * 
- * These modules contain:
- * - Koin module definitions
- * - Dependency graph aggregation
- * 
- * NOT exported to iOS.
- * 
- * Composes: convention.feature.base
- * - KMP targets (Android, JVM, iOS)
- * - Test configuration
- * - Common dependencies (Arrow, Coroutines, Collections)
+ * Convention plugin for feature wiring (business DI) modules.
+ *
+ * These modules contain business-layer Koin modules (repositories, view models, etc.).
+ *
+ * Boundary rules:
+ * - MUST stay Compose-agnostic.
+ * - MUST NOT depend on Navigation 3 UI / Compose-only wiring.
+ * - MAY be exported via `Shared.framework` to support the native SwiftUI `iosApp`.
  */
 class ConventionFeatureWiringPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
