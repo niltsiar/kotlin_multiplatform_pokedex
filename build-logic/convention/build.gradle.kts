@@ -63,6 +63,10 @@ gradlePlugin {
             id = "convention.feature.wiring"
             implementationClass = "ConventionFeatureWiringPlugin"
         }
+        register("featureWiringUi") {
+            id = "convention.feature.wiring-ui"
+            implementationClass = "ConventionFeatureWiringUiPlugin"
+        }
         register("featureUi") {
             id = "convention.feature.ui"
             implementationClass = "ConventionFeatureUiPlugin"
