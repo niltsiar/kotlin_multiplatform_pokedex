@@ -27,8 +27,10 @@ kotlin {
             // Feature UI modules - now support iOS Compose
             implementation(projects.features.pokemonlist.ui)
             implementation(projects.features.pokemonlist.wiring)
+            implementation(projects.features.pokemonlist.wiringUi)
             implementation(projects.features.pokemondetail.ui)
             implementation(projects.features.pokemondetail.wiring)
+            implementation(projects.features.pokemondetail.wiringUi)
             
             // Koin
             implementation(libs.koin.core)
