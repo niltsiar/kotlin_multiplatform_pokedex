@@ -31,10 +31,18 @@ Full catalog: [`docs/agent-prompts/README.md`](../docs/agent-prompts/README.md)
 
 ## Context Packs (LLM Efficiency)
 
-- Prefer links over pasted excerpts.
-- Low-token pack:
-  - [`docs/tech/testing_quick_ref.md`](../docs/tech/testing_quick_ref.md)
-  - [`docs/tech/critical_patterns_compact.md`](../docs/tech/critical_patterns_compact.md)
+| Scenario              | Include (minimum)                                 | Optional Adds                                                                             | Target Tokens |
+| --------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------- |
+| Standard dev/bugfix   | `base_agent_prompt` + 1 relevant delta prompt     | Link to exact file/diff; use testing_quick_ref + critical_patterns_compact when tight     | ≤ 1.6k        |
+| Documentation edits   | Documentation delta + `AGENTS.md` (routing table) | Canonical links (`conventions`, `critical_patterns`); swap to compact/quick refs if tight | ≤ 1.2k        |
+| Architecture/Q&A only | `AGENTS.md` + links to canonicals                 | Add one feature example link; compact/quick refs for patterns/tests                       | ≤ 0.9k        |
+
+- Prefer links over pasted excerpts; add one link at a time to stay within budget.
+- When more context is needed, **switch modes** rather than stacking deltas.
+
+Low-token pack:
+- [`docs/tech/testing_quick_ref.md`](../docs/tech/testing_quick_ref.md)
+- [`docs/tech/critical_patterns_compact.md`](../docs/tech/critical_patterns_compact.md)
 
 ## Essential Rules (Copilot)
 
