@@ -101,4 +101,4 @@ class SubmitOrderUseCase(
 ```
 
 - Alignment with Product Docs
-  - When modeling entities, constraints, and states, prefer the canonical definitions from .junie/guides/project/prd.md and .junie/guides/project/user_flow.md. If conflicts arise, follow PRD for data rules and user_flow for sequence/UX; call out discrepancies.
+  - When modeling entities, constraints, and states, prefer the canonical definitions from [prd.md](../project/prd.md) and [user_flow.md](../project/user_flow.md). If conflicts arise, follow PRD for data rules and user_flow for sequence/UX; call out discrepancies.

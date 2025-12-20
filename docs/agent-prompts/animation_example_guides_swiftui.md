@@ -1056,7 +1056,7 @@ struct PokemonListView: View {
 
 - **Compose Animations**: See `animation_example_guides.md` for Compose Multiplatform equivalents
 - **Device Interactions**: See `easter_eggs_and_mini_games_guide.md` for interactive patterns
-- **iOS Integration**: See `.junie/guides/tech/ios_integration.md` for KMP ViewModel patterns
+- **iOS Integration**: See [`docs/tech/ios_integration.md`](../tech/ios_integration.md) for KMP ViewModel patterns
 - **Apple HIG**: [Human Interface Guidelines - Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
 
 ---
