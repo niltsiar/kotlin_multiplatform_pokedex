@@ -50,6 +50,7 @@ include(":features:pokemonlist:data")
 include(":features:pokemonlist:presentation")
 include(":features:pokemonlist:ui")
 include(":features:pokemonlist:wiring")
+include(":features:pokemonlist:wiring-ui")
 
 // Pokemon Detail feature
 include(":features:pokemondetail:api")
@@ -57,3 +58,4 @@ include(":features:pokemondetail:data")
 include(":features:pokemondetail:presentation")
 include(":features:pokemondetail:ui")
 include(":features:pokemondetail:wiring")
+include(":features:pokemondetail:wiring-ui")
