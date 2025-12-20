@@ -63,6 +63,23 @@ Canonicals they must link to (single source of truth):
 - `docs/tech/conventions.md`
 - `docs/tech/critical_patterns_quick_ref.md`
 
+## ✅ When Agentic Docs Change (Checklist)
+
+If you change anything in the agentic system (routing, prompts, canonicals), update **all relevant entrypoints** so they
+stay link-first and consistent.
+
+Required alignment set:
+
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+- `.junie/guidelines.md`
+- `docs/agent-prompts/base_agent_prompt.md`
+- `docs/agent-prompts/README.md`
+
+Then run the lightweight link checks:
+
+- [`docs/DOC_LINK_VERIFICATION.md`](docs/DOC_LINK_VERIFICATION.md)
+
 ## 🚀 Essential Workflow
 
 Primary validation (run first, always):
