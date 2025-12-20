@@ -46,7 +46,7 @@ Start here:
 
 Legacy note:
 
-- `.junie/guides/**` is now a **pointer layer** during migration and will be cleaned up at the end of the plan.
+- ✅ `.junie/guides/**` has been removed (cleanup complete). Canonicals live in `docs/**`.
 
 ## 🔄 Multi-Entrypoint Synchronization (Guardrails)
 
