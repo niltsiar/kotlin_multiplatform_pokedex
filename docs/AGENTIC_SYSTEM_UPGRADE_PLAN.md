@@ -348,11 +348,15 @@ Acceptance checks:
   - [x] contains only pointers, or
   - [ ] is removed (only after a deliberate deprecation decision).
 
+Final cleanup (post-plan):
+
+- [x] `.junie/guides/**` removed from the repo (cleanup complete).
+
 Commit checkpoints (recommended granularity):
 
 - [x] `docs(agentic): flip internal references from .junie/guides to docs/*` (commit: `ab48a00`)
 - [x] `docs(agentic): replace .junie/guides content with pointers to docs/*` (commit: `ebc2d96`)
-- [ ] *(optional)* `chore(agentic): remove deprecated .junie/guides after window`
+- [x] *(optional)* `chore(agentic): remove deprecated .junie/guides after window` (commit: `b3c7e45`)
 
 ### Phase 5 — Add lightweight validation workflow (docs-only)
 

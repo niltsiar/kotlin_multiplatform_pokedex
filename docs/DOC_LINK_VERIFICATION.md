@@ -6,7 +6,7 @@ Purpose: Minimal, tooling-free checks to avoid doc drift and broken links during
 
 ## 1) Sanity check: no accidental `.junie/guides/**` canonicals
 
-The pointer layer is allowed in `.junie/guides/**`, but canonical docs should live in `docs/**`.
+`.junie/guides/**` has been removed. Canonical docs live in `docs/**`.
 
 ```bash
 rg "\.junie/guides" -n --glob '!.junie/guides/**'
@@ -14,8 +14,8 @@ rg "\.junie/guides" -n --glob '!.junie/guides/**'
 
 Expected results:
 
-- Mentions in `docs/AGENTIC_SYSTEM_UPGRADE_PLAN.md` (plan text)
-- Mentions in `AGENTS.md` describing the pointer layer
+- Mentions in `docs/AGENTIC_SYSTEM_UPGRADE_PLAN.md` (plan/history text)
+- Mentions in `docs/DOC_LINK_VERIFICATION.md` (this document)
 
 If you see `.junie/guides/**` inside canonical docs (e.g. `docs/tech/**`, `docs/patterns/**`, `docs/project/**`), flip it
 to the corresponding `docs/**` link.
