@@ -21,6 +21,7 @@ kotlin {
         commonMain.dependencies {
             // Core DI module contains AppGraph
             implementation(projects.core.di)
+            implementation(projects.core.diUi)
             implementation(projects.core.designsystem)
             
             // Feature UI modules - now support iOS Compose

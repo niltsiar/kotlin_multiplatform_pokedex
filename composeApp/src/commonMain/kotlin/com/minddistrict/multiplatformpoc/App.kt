@@ -9,7 +9,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.di.coreModule
-import com.minddistrict.multiplatformpoc.core.di.navigationAggregationModule
+import com.minddistrict.multiplatformpoc.core.diui.navigationAggregationModule
+import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
 import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
@@ -33,6 +34,7 @@ fun App() {
                 pokemonListModule +
                 pokemonDetailModule +
                 getPlatformNavigationModules() +
+                navigationUiModule +
                 navigationAggregationModule
             )
         }

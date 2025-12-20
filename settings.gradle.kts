@@ -40,6 +40,7 @@ include(":shared")
 // Core modules
 include(":core:designsystem")
 include(":core:di")
+include(":core:di-ui")
 include(":core:httpclient")
 include(":core:navigation")
 
