@@ -525,7 +525,7 @@ fun MyScreen(viewModel: MyViewModel, onNavigate: (Any) -> Unit) {
 
 ## See Also
 
-- `.junie/guides/tech/navigation.md` — Complete navigation guide
+- [navigation.md](../tech/navigation.md) — Complete navigation guide
 - Official docs: https://developer.android.com/guide/navigation/navigation-3/animate-destinations
 - `patterns/di_patterns.md` — Navigation DI patterns
 - `patterns/viewmodel_patterns.md` — ViewModel with navigation

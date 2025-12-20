@@ -234,7 +234,7 @@ kotlin {
 
 **Benefits**: 38% code reduction, single source of truth, automatic dependencies
 
-**See**: `.junie/guides/tech/convention_plugins_quick_ref.md` for complete usage guide
+**See**: [convention_plugins_guide.md](../tech/convention_plugins_guide.md) for complete usage guide
 
 ## Module Structure Examples
 

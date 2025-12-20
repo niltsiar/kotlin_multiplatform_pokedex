@@ -656,8 +656,8 @@ result.shouldBeRight { pokemon ->
 
 ## See Also
 
-- `.junie/guides/tech/testing_strategy.md` — Complete testing strategy
-- `.junie/guides/tech/kotest_smart_casting_quick_ref.md` — Smart casting patterns
-- `.junie/guides/tech/koin_di_quick_ref.md` — DI in tests
+- [testing_strategy.md](../tech/testing_strategy.md) — Complete testing strategy
+- [kotest_smart_casting_quick_ref.md](../tech/kotest_smart_casting_quick_ref.md) — Smart casting patterns
+- [koin_di_quick_ref.md](../tech/koin_di_quick_ref.md) — DI in tests
 - `patterns/error_handling_patterns.md` — Testing Either boundaries
 - `patterns/viewmodel_patterns.md` — ViewModel testability
