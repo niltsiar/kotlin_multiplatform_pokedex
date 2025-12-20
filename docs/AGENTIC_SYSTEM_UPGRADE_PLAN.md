@@ -110,7 +110,7 @@ Use `docs(...)` for documentation-only changes; use `chore(...)` for tooling and
 - `docs(agentic): shrink AGENTS.md and link to canonicals`
 - `docs(agentic): update copilot instructions to link to docs canonicals`
 - `docs(agentic): trim Junie guidelines and link to docs canonicals`
-- `docs(agentic): convert .junie/guides to pointer layer`
+- `docs(agentic): convert legacy Junie guides folder to pointer layer`
 - `chore(docs): add doc link-check script`
 - `chore(precommit): add markdown/yaml/json lint hooks`
 
@@ -151,7 +151,7 @@ Create a docs-first layout similar to mandolin-cocotte/mobile:
 ```
 docs/
   AGENTIC_SYSTEM_UPGRADE_PLAN.md   (this file)
-  QUICK_REFERENCE.md              (commands quick ref; currently lives in .junie/guides)
+  QUICK_REFERENCE.md              (commands quick ref; historically lived in the legacy Junie guides folder)
   agent-prompts/
     base_agent_prompt.md
     README.md
@@ -354,9 +354,9 @@ Final cleanup (post-plan):
 
 Commit checkpoints (recommended granularity):
 
-- [x] `docs(agentic): flip internal references from .junie/guides to docs/*` (commit: `ab48a00`)
-- [x] `docs(agentic): replace .junie/guides content with pointers to docs/*` (commit: `ebc2d96`)
-- [x] *(optional)* `chore(agentic): remove deprecated .junie/guides after window` (commit: `b3c7e45`)
+- [x] `docs(agentic): flip internal references from legacy Junie guides folder to docs/*` (commit: `ab48a00`)
+- [x] `docs(agentic): replace legacy Junie guides folder content with pointers to docs/*` (commit: `ebc2d96`)
+- [x] *(optional)* `chore(agentic): remove deprecated legacy Junie guides folder after window` (commit: `b3c7e45`)
 
 ### Phase 5 — Add lightweight validation workflow (docs-only)
 
@@ -408,7 +408,7 @@ This table guides the migration work; adjust during implementation.
 1. Add `docs/` structure and copy canonicals (Phase 1)
 2. Add base prompt and DELTA prompts (Phase 2)
 3. Update entrypoints to point at docs (Phase 3)
-4. Flip links and convert `.junie/guides` into pointers (Phase 4)
+4. Flip links and convert the legacy Junie guides folder into pointers (Phase 4)
 5. Add validation workflow (Phase 5)
 
 Rationale: keep changes additive until entrypoints are updated; only then deprecate the legacy Junie guides folder.
@@ -423,7 +423,7 @@ Rationale: keep changes additive until entrypoints are updated; only then deprec
   - [ ] `.junie/guidelines.md`
   - [ ] `docs/agent-prompts/README.md`
 - [ ] No broken internal links in agentic docs.
-- [ ] `.junie/guides/**` is no longer canonical (pointer-only or removed).
+- [ ] Legacy Junie guides folder is no longer canonical (pointer-only or removed).
 
 - [ ] Platform-agnostic requirement is met:
   - [ ] No canonical doc under `docs/**` requires a specific agent runtime.
@@ -437,7 +437,7 @@ Documentation-only checks (no builds required):
 
 ```bash
 # Find remaining references to old locations
-rg "\.junie/guides" -n
+For current link-audit commands, see [`docs/DOC_LINK_VERIFICATION.md`](DOC_LINK_VERIFICATION.md).
 
 # Find non-clickable references (backticked paths) inside prompts
 rg "`[^`]+/[^`]+`" docs/agent-prompts -n
