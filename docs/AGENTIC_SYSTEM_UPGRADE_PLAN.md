@@ -223,18 +223,18 @@ add small, targeted guidance, but must only *reference* canonicals.
 
 **Objective**: produce a clear inventory and a safe migration order.
 
-- [ ] Inventory current agentic entrypoints:
-  - [ ] `AGENTS.md`
-  - [ ] `.github/copilot-instructions.md`
-  - [ ] `.junie/guidelines.md`
-  - [ ] `.junie/guides/**`
-  - [ ] `README.md` references to agent docs
-- [ ] Identify duplication hotspots (same rules repeated across 2–3 files).
-- [ ] Identify all references to `.junie/guides/**` that will need updates.
-- [ ] Decide whether we want `.junie/guides/**` to be:
-  - [ ] a pointer layer (recommended), or
+- [x] Inventory current agentic entrypoints:
+  - [x] `AGENTS.md`
+  - [x] `.github/copilot-instructions.md`
+  - [x] `.junie/guidelines.md`
+  - [x] `.junie/guides/**`
+  - [x] `README.md` references to agent docs
+- [x] Identify duplication hotspots (same rules repeated across 2–3 files).
+- [x] Identify all references to `.junie/guides/**` that will need updates.
+- [x] Decide whether we want `.junie/guides/**` to be:
+  - [x] a pointer layer (recommended), or
   - [ ] removed entirely after a deprecation window.
-- [ ] Establish the “ask-first” decision points for this repo (from the Consultation Protocol above) and confirm
+- [x] Establish the “ask-first” decision points for this repo (from the Consultation Protocol above) and confirm
   decisions with the maintainer before proceeding to irreversible steps.
 
 Deliverable:
@@ -246,112 +246,112 @@ Deliverable:
 
 Commit checkpoints:
 
-- [ ] `docs(agentic): document audit findings and migration order`
+- [x] `docs(agentic): document audit findings and migration order` (commit: `6b91189`)
 
 ### Phase 1 — Establish `docs/` canonicals (additive)
 
 **Objective**: create the new canonical doc structure without breaking existing links.
 
-- [ ] Create folders: `docs/agent-prompts`, `docs/tech`, `docs/patterns`, `docs/project`.
-- [ ] Copy (not move yet) content from `.junie/guides/**` into the corresponding `docs/**` folders.
-  - [ ] Keep paths stable long enough to update links atomically later.
-- [ ] Add missing mandolin-style docs that this repo currently lacks:
-  - [ ] `docs/tech/critical_patterns_compact.md`
-  - [ ] `docs/tech/testing_quick_ref.md`
+- [x] Create folders: `docs/agent-prompts`, `docs/tech`, `docs/patterns`, `docs/project`.
+- [x] Copy (not move yet) content from `.junie/guides/**` into the corresponding `docs/**` folders.
+  - [x] Keep paths stable long enough to update links atomically later.
+- [x] Add missing mandolin-style docs that this repo currently lacks:
+  - [x] `docs/tech/critical_patterns_compact.md`
+  - [x] `docs/tech/testing_quick_ref.md`
 
 Acceptance checks:
 
-- [ ] `docs/**` is complete enough to serve as canonicals.
-- [ ] No existing doc path has been removed yet.
+- [x] `docs/**` is complete enough to serve as canonicals.
+- [x] No existing doc path has been removed yet.
 
 Commit checkpoints (recommended granularity):
 
-- [ ] `docs(agentic): add docs/* folders for canonicals`
-- [ ] `docs(agentic): copy tech/patterns/project docs into docs/* (no link flips)`
-- [ ] `docs(agentic): add low-token quick refs (critical_patterns_compact, testing_quick_ref)`
+- [x] `docs(agentic): add docs/* folders for canonicals` (commit: `ab5a917`)
+- [x] `docs(agentic): copy tech/patterns/project docs into docs/* (no link flips)` (commit: `ab5a917`)
+- [x] `docs(agentic): add low-token quick refs (critical_patterns_compact, testing_quick_ref)` (commit: `1b721a8`)
 
 ### Phase 2 — Introduce “base + delta” prompt model
 
 **Objective**: switch prompts to base+delta and make references clickable.
 
-- [ ] Create `docs/agent-prompts/base_agent_prompt.md` modeled after `mandolin-cocotte/mobile/docs/agent-prompts/base_agent_prompt.md`.
-  - [ ] Include canonical link table pointing to `docs/tech/**` and `AGENTS.md`.
-  - [ ] Include mode selection decision table and tie-breakers.
-  - [ ] Include “Critical Guardrails (Top 10)”.
-  - [ ] Include the primary validation command.
-- [ ] Convert existing prompts from `.junie/guides/prompts/*.md` into DELTA prompts under `docs/agent-prompts/`.
-  - [ ] DELTA prompts must only contain role-specific additions.
-  - [ ] DELTA prompts must link to the base prompt and canonicals.
-- [ ] Create `docs/agent-prompts/README.md` prompt index (mandolin style).
-  - [ ] Enforce: “ALL references must be clickable links”.
+- [x] Create `docs/agent-prompts/base_agent_prompt.md` modeled after `mandolin-cocotte/mobile/docs/agent-prompts/base_agent_prompt.md`.
+  - [x] Include canonical link table pointing to `docs/tech/**` and `AGENTS.md`.
+  - [x] Include mode selection decision table and tie-breakers.
+  - [x] Include “Critical Guardrails (Top 10)”.
+  - [x] Include the primary validation command.
+- [x] Convert existing prompts from `.junie/guides/prompts/*.md` into DELTA prompts under `docs/agent-prompts/`.
+  - [x] DELTA prompts must only contain role-specific additions.
+  - [x] DELTA prompts must link to the base prompt and canonicals.
+- [x] Create `docs/agent-prompts/README.md` prompt index (mandolin style).
+  - [x] Enforce: “ALL references must be clickable links”.
 
 Acceptance checks:
 
-- [ ] Every role prompt begins with: base + canonical links.
-- [ ] Prompts contain no duplicated canonical sections.
-- [ ] Prompt references are clickable links.
+- [x] Every role prompt begins with: base + canonical links.
+- [x] Prompts contain no duplicated canonical sections.
+- [x] Prompt references are clickable links.
 
 Commit checkpoints (recommended granularity):
 
-- [ ] `docs(agentic): add base_agent_prompt and canonical link table`
-- [ ] `docs(agentic): add docs/agent-prompts README + clickable-link rule`
-- [ ] `docs(agentic): add delta prompts (one commit or one per prompt)`
+- [x] `docs(agentic): add base_agent_prompt and canonical link table` (commit: `f4eeae2`)
+- [x] `docs(agentic): add docs/agent-prompts README + clickable-link rule` (commit: `f4eeae2`)
+- [x] `docs(agentic): add delta prompts (one commit or one per prompt)` (commit: `f4eeae2`)
 
 ### Phase 3 — Redesign entrypoints (keep them small)
 
 **Objective**: shrink high-churn entrypoint files and make them link-out to canonicals.
 
-- [ ] Update `AGENTS.md` to:
-  - [ ] be significantly smaller (routing + essential workflow + sync contract).
-  - [ ] link to canonicals in `docs/tech/**` and the prompt index in `docs/agent-prompts/README.md`.
-  - [ ] include a “Multi-Agent File Synchronization” table like mandolin.
-  - [ ] include context-packing/token-budget guidance.
-- [ ] Update `.github/copilot-instructions.md` to:
-  - [ ] keep a concise summary + must-follow rules.
-  - [ ] link to canonicals rather than duplicating full sections.
-  - [ ] keep the agent routing table in sync with `AGENTS.md`.
-- [ ] Update `.junie/guidelines.md` to:
-  - [ ] become “Junie integration + short rules + links” rather than long duplicates.
-  - [ ] use docs links (`docs/tech/**`, `docs/agent-prompts/**`) as canonicals.
-- [ ] Update root `README.md` “Quick References” to point to `docs/` (not `.junie/guides`).
+- [x] Update `AGENTS.md` to:
+  - [x] be significantly smaller (routing + essential workflow + sync contract).
+  - [x] link to canonicals in `docs/tech/**` and the prompt index in `docs/agent-prompts/README.md`.
+  - [x] include a “Multi-Agent File Synchronization” table like mandolin.
+  - [x] include context-packing/token-budget guidance.
+- [x] Update `.github/copilot-instructions.md` to:
+  - [x] keep a concise summary + must-follow rules.
+  - [x] link to canonicals rather than duplicating full sections.
+  - [x] keep the agent routing table in sync with `AGENTS.md`.
+- [x] Update `.junie/guidelines.md` to:
+  - [x] become “Junie integration + short rules + links” rather than long duplicates.
+  - [x] use docs links (`docs/tech/**`, `docs/agent-prompts/**`) as canonicals.
+- [x] Update root `README.md` “Quick References” to point to `docs/` (not `.junie/guides`).
 
-- [ ] Add/adjust entrypoint wording so that:
-  - [ ] The overall system is explicitly **platform agnostic** (works with any agent/tooling).
-  - [ ] **Junie** and **Copilot** are still called out as first-class supported agents/tools.
+- [x] Add/adjust entrypoint wording so that:
+  - [x] The overall system is explicitly **platform agnostic** (works with any agent/tooling).
+  - [x] **Junie** and **Copilot** are still called out as first-class supported agents/tools.
 
 Acceptance checks:
 
-- [ ] `AGENTS.md`, `.github/copilot-instructions.md`, and `.junie/guidelines.md` all reference the same canonicals.
-- [ ] Agent mode names + file paths match across all three.
-- [ ] “Last Updated” timestamps updated consistently.
+- [x] `AGENTS.md`, `.github/copilot-instructions.md`, and `.junie/guidelines.md` all reference the same canonicals.
+- [x] Agent mode names + file paths match across all three.
+- [x] “Last Updated” timestamps updated consistently.
 
 Commit checkpoints (recommended granularity):
 
-- [ ] `docs(agentic): update AGENTS.md to route + link to docs canonicals`
-- [ ] `docs(agentic): update copilot instructions to link to docs canonicals`
-- [ ] `docs(agentic): update Junie guidelines to be link-heavy + tool-specific`
-- [ ] `docs(agentic): update root README quick references to docs/*`
+- [x] `docs(agentic): update AGENTS.md to route + link to docs canonicals` (commit: `ddfed3c`)
+- [x] `docs(agentic): update copilot instructions to link to docs canonicals` (commit: `ddfed3c`)
+- [x] `docs(agentic): update Junie guidelines to be link-heavy + tool-specific` (commit: `ddfed3c`)
+- [x] `docs(agentic): update root README quick references to docs/*` (commit: `ab48a00`)
 
 ### Phase 4 — Migration: flip links + deprecate `.junie/guides/**`
 
 **Objective**: make `docs/` canonical and prevent drift.
 
-- [ ] Replace `.junie/guides/**` content with pointer files that link to `docs/**` equivalents.
-  - [ ] Prefer short “This file moved” docs with a single link.
-- [ ] Update all internal references to `.junie/guides/**` to point to `docs/**`.
-  - [ ] Especially: prompt indexes, quick reference links, and any “start here” guides.
+- [x] Replace `.junie/guides/**` content with pointer files that link to `docs/**` equivalents.
+  - [x] Prefer short “This file moved” docs with a single link.
+- [x] Update all internal references to `.junie/guides/**` to point to `docs/**`.
+  - [x] Especially: prompt indexes, quick reference links, and any “start here” guides.
 
 Acceptance checks:
 
-- [ ] No canonical content remains only in `.junie/guides/**`.
-- [ ] `.junie/guides/**` either:
-  - [ ] contains only pointers, or
+- [x] No canonical content remains only in `.junie/guides/**`.
+- [x] `.junie/guides/**` either:
+  - [x] contains only pointers, or
   - [ ] is removed (only after a deliberate deprecation decision).
 
 Commit checkpoints (recommended granularity):
 
-- [ ] `docs(agentic): flip internal references from .junie/guides to docs/*`
-- [ ] `docs(agentic): replace .junie/guides content with pointers to docs/*`
+- [x] `docs(agentic): flip internal references from .junie/guides to docs/*` (commit: `ab48a00`)
+- [x] `docs(agentic): replace .junie/guides content with pointers to docs/*` (commit: `ebc2d96`)
 - [ ] *(optional)* `chore(agentic): remove deprecated .junie/guides after window`
 
 ### Phase 5 — Add lightweight validation workflow (docs-only)
@@ -362,9 +362,9 @@ Options (pick one):
 
 **A) Minimal (recommended to start)**
 
-- [ ] Add a `docs/agent-prompts/documentation_agent_system_prompt_DELTA.md` modeled after mandolin.
-- [ ] Add a checklist section in `AGENTS.md` for “When agentic docs change, also update X/Y/Z”.
-- [ ] Add a small “Link Verification” guide: suggested grep patterns and manual checks.
+- [x] Add a `docs/agent-prompts/documentation_agent_system_prompt_DELTA.md` modeled after mandolin. (commit: `f4eeae2`)
+- [x] Add a checklist section in `AGENTS.md` for “When agentic docs change, also update X/Y/Z”. (commit: `ec781ae`)
+- [x] Add a small “Link Verification” guide: suggested grep patterns and manual checks. (commit: `ec781ae`)
 
 **B) Add repo tooling (optional)**
 
@@ -380,7 +380,7 @@ Acceptance checks:
 
 Commit checkpoints (recommended granularity):
 
-- [ ] `docs(agentic): add documentation agent delta prompt (docs/agent-prompts)`
+- [x] `docs(agentic): add documentation agent delta prompt (docs/agent-prompts)` (commit: `f4eeae2`)
 - [ ] `chore(docs): add doc link verification script`
 - [ ] `chore(precommit): add markdown/yaml/json lint hooks (optional)`
 
