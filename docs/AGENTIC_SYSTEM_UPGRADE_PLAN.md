@@ -448,8 +448,49 @@ If you adopt tooling (optional):
 
 ## Open Questions / Decisions Needed
 
-1. Should `.junie/guides/**` be kept as pointer-only indefinitely, or removed after a window?
+1. ✅ Decision (2025-12-20): follow Mandolin-Cocotte approach — keep `.junie/guides/**` during migration, convert it to pointers, and remove/cleanup only as the final step once the whole plan is implemented.
 2. Do we want to add pre-commit / markdown formatting tools now, or keep it manual?
 3. Should we split the repo into separate “mobile” and “server” agentic docs like mandolin-cocotte does, or keep one unified doc set?
 4. Do we want an explicit, tool-agnostic “agent quickstart” entrypoint (e.g. `docs/AGENTS_QUICKSTART.md`) in addition
    to `AGENTS.md`, to make adoption easier for tools that don’t read `.junie/**` or `.github/**`?
+
+---
+
+## Audit / Decisions (Implementation Log)
+
+### 2025-12-20 — Phase 0 audit
+
+#### Inventory (current entrypoints)
+
+- `AGENTS.md` (large, comprehensive; includes routing, patterns, testing, and repeated “sync maintenance” guidance)
+- `.github/copilot-instructions.md` (Copilot entrypoint; duplicates many architecture and testing rules)
+- `.junie/guidelines.md` (Junie entrypoint; duplicates many architecture and testing rules)
+- `.junie/guides/**` (current canonicals):
+  - `tech/` (conventions, DI, repository, presentation, navigation, testing strategy, iOS integration, etc.)
+  - `patterns/` (extended pattern guides)
+  - `project/` (PRD, user flows, onboarding, UI/UX)
+  - `prompts/` (specialized agent prompts + index)
+  - `QUICK_REFERENCE.md`
+- `README.md` references quick refs under `.junie/guides/**` (e.g. Kotest smart casting, convention plugins guide)
+
+#### Duplication hotspots (to eliminate via link-first canonicals)
+
+The following topics appear (with overlapping or near-identical prose) across `AGENTS.md`, `.github/copilot-instructions.md`, and `.junie/guidelines.md`:
+
+- Agent selector / specialized modes list
+- Tech stack overview
+- Feature module structure (split-by-layer api/data/presentation/ui/wiring)
+- iOS export rules (`:shared` exports, “don’t export :data/:ui/:wiring”)
+- Essential commands (primary Gradle validation, dependency updates, iOS build avoidance)
+- Critical patterns (Koin Impl+Factory, Arrow Either, ViewModel rules, Navigation 3 rules, testing rules)
+- Testing enforcement (Kotest/MockK/Turbine, androidUnitTest location rules, property tests)
+
+#### Canonical target (decision)
+
+- Canonicals will live in `docs/**` (tech/patterns/project/prompts). Tool entrypoints (`AGENTS.md`, `.github/copilot-instructions.md`, `.junie/guidelines.md`) will be trimmed to routing + must-follow rules + clickable links into `docs/**`.
+
+#### `.junie/guides/**` deprecation strategy (decision)
+
+- Keep `.junie/guides/**` during migration.
+- After link flips, replace `.junie/guides/**` with pointer stubs to `docs/**`.
+- Remove/cleanup `.junie/guides/**` as the last step once the entire migration plan is complete.
