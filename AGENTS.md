@@ -53,16 +53,20 @@ Legacy note:
 
 These entrypoints MUST remain aligned (routing table + top-level guardrails only; no duplicated canonicals):
 
-- `AGENTS.md` (this file)
-- `.github/copilot-instructions.md`
-- `.junie/guidelines.md`
-- `docs/agent-prompts/base_agent_prompt.md`
-- `docs/agent-prompts/README.md`
+| File | Purpose | Update When |
+| --- | --- | --- |
+| [`AGENTS.md`](AGENTS.md) | Agent routing, decision trees | New agent/pattern added |
+| [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | Copilot context | Agent table changes |
+| [`.junie/guidelines.md`](.junie/guidelines.md) | Junie context | Agent table changes |
+| [`docs/tech/conventions.md`](docs/tech/conventions.md) | Architecture rules | Pattern/module changes |
+| [`docs/tech/critical_patterns_quick_ref.md`](docs/tech/critical_patterns_quick_ref.md) | 6 core patterns | Pattern rule changes |
+| [`docs/agent-prompts/README.md`](docs/agent-prompts/README.md) | Agent catalog | New agent prompt added |
 
-Canonicals they must link to (single source of truth):
+**Sync guardrail**: When any agent prompt changes (base or delta), update `Last Updated` headers here, in
+`.github/copilot-instructions.md`, `.junie/guidelines.md`, and `docs/agent-prompts/*` accordingly, then run
+Documentation Mode to verify links.
 
-- `docs/tech/conventions.md`
-- `docs/tech/critical_patterns_quick_ref.md`
+**Validation**: Run Documentation Mode after modifying any file above
 
 ## ✅ When Agentic Docs Change (Checklist)
 
