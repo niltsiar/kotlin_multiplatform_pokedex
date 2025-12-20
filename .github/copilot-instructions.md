@@ -20,6 +20,7 @@ Specialized deltas:
 - UI/UX Design (Compose-first) → [`uiux_agent_system_prompt_DELTA.md`](../docs/agent-prompts/uiux_agent_system_prompt_DELTA.md)
 - Screen Implementation (Compose) → [`ui_ux_system_agent_for_generic_screen_DELTA.md`](../docs/agent-prompts/ui_ux_system_agent_for_generic_screen_DELTA.md)
 - Screen Implementation (SwiftUI) → [`ui_ux_system_agent_for_swiftui_screen_DELTA.md`](../docs/agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md)
+- KMP Mobile Expert → [`kmp_mobile_expert_agent_system_prompt_DELTA.md`](../docs/agent-prompts/kmp_mobile_expert_agent_system_prompt_DELTA.md)
 - Onboarding → [`onboarding_agent_system_prompt_DELTA.md`](../docs/agent-prompts/onboarding_agent_system_prompt_DELTA.md)
 - User Flows → [`user_flow_agent_system_prompt_DELTA.md`](../docs/agent-prompts/user_flow_agent_system_prompt_DELTA.md)
 - Testing Strategy → [`testing_agent_system_prompt_DELTA.md`](../docs/agent-prompts/testing_agent_system_prompt_DELTA.md)
