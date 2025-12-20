@@ -46,7 +46,7 @@ Start here:
 
 Legacy note:
 
-- ✅ `.junie/guides/**` has been removed (cleanup complete). Canonicals live in `docs/**`.
+- ✅ The legacy Junie guides folder has been removed (cleanup complete). Canonicals live in `docs/**`.
 
 ## 🔄 Multi-Entrypoint Synchronization (Guardrails)
 
