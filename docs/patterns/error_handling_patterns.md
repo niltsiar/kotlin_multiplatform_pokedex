@@ -443,8 +443,8 @@ suspend fun getJobs(): Either<RepoError, List<Job>> =
 
 ## See Also
 
-- `.junie/guides/tech/repository.md` — Complete repository pattern guide
-- `.junie/guides/tech/coroutines.md` — Cancellation and structured concurrency
+- [repository.md](../tech/repository.md) — Complete repository pattern guide
+- [coroutines.md](../tech/coroutines.md) — Cancellation and structured concurrency
 - `patterns/di_patterns.md` — DI patterns with Either
 - `patterns/viewmodel_patterns.md` — Using Either in ViewModels
 - `patterns/testing_patterns.md` — Testing Either boundaries

@@ -46,7 +46,7 @@ Start here:
 
 Legacy note:
 
-- `.junie/guides/**` remains during migration and will be converted to pointers and cleaned up at the end of the plan.
+- `.junie/guides/**` is now a **pointer layer** during migration and will be cleaned up at the end of the plan.
 
 ## 🔄 Multi-Entrypoint Synchronization (Guardrails)
 

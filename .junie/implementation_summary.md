@@ -651,10 +651,10 @@ fun Modifier.animatedFontWeight(
 - [Material 3 Expressive](https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration)
 
 ### Project Docs
-- `.junie/guides/tech/conventions.md` - Architecture patterns
-- `.junie/guides/tech/dependency_injection.md` - Koin DI
-- `.junie/guides/tech/presentation_layer.md` - ViewModel patterns
-- `.junie/guides/project/ui_ux.md` - Design specifications
+- `docs/tech/conventions.md` - Architecture patterns
+- `docs/tech/dependency_injection.md` - Koin DI
+- `docs/tech/presentation_layer.md` - ViewModel patterns
+- `docs/project/ui_ux.md` - Design specifications
 
 ### Dependencies Added
 ```toml
@@ -817,7 +817,7 @@ commonMain.dependencies {
 ## 📚 Documentation Created
 
 ### Technical Guides
-- `.junie/guides/tech/ios_integration.md` — Complete iOS integration patterns (SKIE, Koin, StateFlow, SwiftUI)
-- `.junie/guides/tech/convention_plugins_quick_ref.md` — Convention plugin usage
-- `.junie/guides/tech/kotest_smart_casting_quick_ref.md` — Kotest testing patterns
-- `.junie/guides/tech/koin_di_quick_ref.md` — Koin DI patterns
+- `docs/tech/ios_integration.md` — Complete iOS integration patterns (SKIE, Koin, StateFlow, SwiftUI)
+- `docs/tech/convention_plugins_guide.md` — Convention plugin usage
+- `docs/tech/kotest_smart_casting_quick_ref.md` — Kotest testing patterns
+- `docs/tech/koin_di_quick_ref.md` — Koin DI patterns

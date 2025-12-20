@@ -571,8 +571,8 @@ class MyViewModel(
 
 ## See Also
 
-- `.junie/guides/tech/presentation_layer.md` — Complete presentation layer guide
-- `.junie/guides/tech/coroutines.md` — Scopes, dispatchers, lifecycle
+- [presentation_layer.md](../tech/presentation_layer.md) — Complete presentation layer guide
+- [coroutines.md](../tech/coroutines.md) — Scopes, dispatchers, lifecycle
 - `patterns/di_patterns.md` — ViewModel DI patterns
 - `patterns/error_handling_patterns.md` — Using Either in ViewModels
 - `patterns/testing_patterns.md` — ViewModel testing with Turbine

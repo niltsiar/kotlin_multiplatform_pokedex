@@ -476,7 +476,7 @@ class PokemonListView: View {
 
 ## See Also
 
-- `.junie/guides/tech/dependency_injection.md` — Complete DI strategy guide
-- `.junie/guides/tech/koin_di_quick_ref.md` — Koin quick reference and troubleshooting
-- `patterns/architecture_patterns.md` — Module structure and conventions
-- `patterns/viewmodel_patterns.md` — ViewModel DI patterns
+- [dependency_injection.md](../tech/dependency_injection.md) — Complete DI strategy guide
+- [koin_di_quick_ref.md](../tech/koin_di_quick_ref.md) — Koin quick reference and troubleshooting
+- [architecture_patterns.md](architecture_patterns.md) — Module structure and conventions
+- [viewmodel_patterns.md](viewmodel_patterns.md) — ViewModel DI patterns
