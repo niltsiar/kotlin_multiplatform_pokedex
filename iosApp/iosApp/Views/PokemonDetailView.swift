@@ -14,28 +14,39 @@ import Shared
  * - AsyncStream lifecycle management via .task
  * - Back navigation with swipe gesture support
  * 
- * This view integrates with the KMP PokemonDetailViewModel via PokemonDetailViewModelWrapper,
+ * This view integrates with the KMP PokemonDetailViewModel directly,
  * observing StateFlow updates and triggering retry on errors.
  */
 struct PokemonDetailView: View {
     let pokemonId: Int
-    private var wrapper: PokemonDetailViewModel
+    
+    @StateObject private var owner = IosViewModelStoreOwner()
+    
+    // Computed property delegates to generic viewModel(intParam:) (ViewModelStore cached)
+    private var viewModel: PokemonDetailViewModel {
+        owner.viewModel(intParam: pokemonId)
+    }
+    
     @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
     @Environment(\.dismiss) private var dismiss
-    
-    init(pokemonId: Int) {
-        self.pokemonId = pokemonId
-        wrapper = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
-    }
     
     var body: some View {
         content
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                // Directly call ViewModel lifecycle method (aligned with official Android KMP ViewModel guide)
+                viewModel.onStart(owner: Shared.DummyLifecycleOwner())
+            }
             .task {
                 // Observe StateFlow - automatically cancels when view disappears
-                for await state in wrapper.uiState {
+                for await state in viewModel.uiState {
                     uiState = state
                 }
+            }
+            .onDisappear {
+                // Call lifecycle stop method
+                viewModel.onStop(owner: Shared.DummyLifecycleOwner())
+                // Note: @StateObject's deinit automatically clears ViewModels when view is dismissed
             }
     }
     
@@ -313,7 +324,7 @@ struct PokemonDetailView: View {
                 .padding(.horizontal)
             
             Button(action: {
-                wrapper.retry()
+                viewModel.retry()
             }) {
                 Text("Retry")
                     .font(.headline)

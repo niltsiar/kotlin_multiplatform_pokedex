@@ -1,14 +1,10 @@
 package com.minddistrict.multiplatformpoc
 
 import com.minddistrict.multiplatformpoc.core.di.coreModule
-import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
-import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
-import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import org.koin.core.context.startKoin
-import org.koin.core.context.KoinContext
 import org.koin.mp.KoinPlatform
-import org.koin.core.parameter.parametersOf
 
 /**
  * iOS-specific Koin initialization helper.
@@ -52,30 +48,3 @@ fun initKoin(baseUrl: String) {
  */
 fun getKoin() = KoinPlatform.getKoin()
 
-/**
- * Helper to get PokemonListViewModel from Koin for iOS.
- * This avoids dealing with Koin's Swift API complexity.
- * 
- * Usage in Swift:
- * ```swift
- * let viewModel = KoinIosKt.getPokemonListViewModel()
- * ```
- */
-fun getPokemonListViewModel(): PokemonListViewModel {
-    return KoinPlatform.getKoin().get()
-}
-
-/**
- * Helper to get PokemonDetailViewModel from Koin for iOS.
- * This avoids dealing with Koin's Swift API complexity.
- * 
- * Usage in Swift:
- * ```swift
- * let viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: 25)
- * ```
- * 
- * @param pokemonId The ID of the Pokemon to load details for
- */
-fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel {
-    return KoinPlatform.getKoin().get { parametersOf(pokemonId) }
-}

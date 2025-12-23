@@ -11,8 +11,19 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            
+            // Export AndroidX lifecycle for ViewModel support
+            export(libs.androidx.lifecycle.runtime)
+            export(libs.androidx.lifecycle.viewmodel)
+            
+            // Export core modules
+            export(projects.core.di)
+            
+            // Export Pokemon List modules
             export(projects.features.pokemonlist.api)
             export(projects.features.pokemonlist.presentation)
+            
+            // Export Pokemon Detail modules
             export(projects.features.pokemondetail.api)
             export(projects.features.pokemondetail.presentation)
         }
@@ -21,6 +32,10 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
+            // AndroidX lifecycle for ViewModel support
+            api(libs.androidx.lifecycle.runtime)
+            api(libs.androidx.lifecycle.viewmodel)
+            
             // Export Pokemon List modules to iOS
             api(projects.features.pokemonlist.api)
             api(projects.features.pokemonlist.presentation)

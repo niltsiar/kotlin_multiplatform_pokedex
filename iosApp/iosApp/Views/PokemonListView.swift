@@ -12,12 +12,18 @@ import Shared
  * - Navigation to detail screen
  * - AsyncStream lifecycle management via .task
  * 
- * This view integrates with the KMP PokemonListViewModel via PokemonListViewModelWrapper,
+ * This view integrates with the KMP PokemonListViewModel directly,
  * observing StateFlow updates and triggering data loads.
  */
 
 struct PokemonListView: View {
-    private var viewModel = KoinIosKt.getPokemonListViewModel()
+    @StateObject private var owner = IosViewModelStoreOwner()
+    
+    // Computed property delegates to generic viewModel() (ViewModelStore cached)
+    private var viewModel: PokemonListViewModel {
+        owner.viewModel()
+    }
+    
     @State private var navigationPath: [Int] = []
     @State private var scrollPosition: Int?
     @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
@@ -31,10 +37,18 @@ struct PokemonListView: View {
                 }
         }
         .onAppear {
-            // Load initial page when view appears for the first time
-            if case is PokemonListUiStateLoading = uiState {
-                viewModel.loadInitialPage()
+            // Restore UX state from ViewModel (survives SwiftUI view recreation).
+            if scrollPosition == nil {
+                scrollPosition = viewModel.restoredScrollAnchorPokemonId?.intValue
+                    ?? viewModel.restoredLastSelectedPokemonId?.intValue
             }
+
+            // Directly call ViewModel lifecycle method (aligned with official Android KMP ViewModel guide)
+            viewModel.onStart(owner: Shared.DummyLifecycleOwner())
+        }
+        .onDisappear {
+            // Call lifecycle stop method
+            viewModel.onStop(owner: Shared.DummyLifecycleOwner())
         }
         .task {
             // Observe StateFlow - automatically cancels when view disappears
@@ -92,9 +106,15 @@ struct PokemonListView: View {
                     ForEach(Array(content.pokemons.enumerated()), id: \.element.id) { index, pokemon in
                         PokemonCard(pokemon: pokemon) {
                             // Save scroll position before navigating
-                            scrollPosition = Int(pokemon.id)
+                            let id = Int(pokemon.id)
+                            scrollPosition = id
+
+                            // Persist selection + anchor for full state restoration.
+                            viewModel.onPokemonSelected(pokemonId: Int32(id))
+                            viewModel.onScrollAnchorPokemonIdChanged(pokemonId: Int32(id))
+
                             // Navigate to detail
-                            navigationPath.append(Int(pokemon.id))
+                            navigationPath.append(id)
                         }
                         .id(Int(pokemon.id))
                         .onAppear {
