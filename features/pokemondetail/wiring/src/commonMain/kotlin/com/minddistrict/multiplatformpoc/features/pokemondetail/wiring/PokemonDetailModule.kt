@@ -6,6 +6,8 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.data.PokemonDeta
 import com.minddistrict.multiplatformpoc.features.pokemondetail.data.PokemonDetailRepository as createPokemonDetailRepository
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
 import io.ktor.client.HttpClient
+import androidx.lifecycle.SavedStateHandle
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 /**
@@ -46,12 +48,26 @@ val pokemonDetailModule = module {
      * Provides the ViewModel for Pokemon Detail screen.
      * Takes pokemonId as a parameter via Koin's parametersOf.
      * 
-     * Usage: val viewModel: PokemonDetailViewModel = koinInject(parameters = { parametersOf(pokemonId) })
+     * Note: On Desktop/JVM, SavedStateHandle is created inline since Koin's Android-specific
+     * parameter resolution doesn't work on non-Android platforms.
+     * 
+     * Usage: val viewModel: PokemonDetailViewModel = koinViewModel(parameters = { parametersOf(pokemonId) })
      */
-    factory { (pokemonId: Int) ->
-        PokemonDetailViewModel(
+    viewModel { (pokemonId: Int) ->
+        createPokemonDetailViewModel(
             repository = get(),
-            pokemonId = pokemonId
+            pokemonId = pokemonId,
+            savedStateHandle = SavedStateHandle(),
         )
     }
 }
+
+private fun createPokemonDetailViewModel(
+    repository: PokemonDetailRepository,
+    pokemonId: Int,
+    savedStateHandle: SavedStateHandle,
+): PokemonDetailViewModel = PokemonDetailViewModel(
+    repository = repository,
+    pokemonId = pokemonId,
+    savedStateHandle = savedStateHandle,
+)
