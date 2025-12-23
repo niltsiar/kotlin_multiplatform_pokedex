@@ -5,55 +5,50 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.di.coreModule
-import com.minddistrict.multiplatformpoc.core.diui.navigationAggregationModule
 import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
-import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.pokemonDetailNavigationModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.pokemonListNavigationModule
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
-import org.koin.core.module.Module
-import org.koin.core.qualifier.named
-
-// Platform-specific navigation modules (defined in androidMain/jvmMain)
-expect fun getPlatformNavigationModules(): List<Module>
+import org.koin.compose.navigation3.koinEntryProvider
+import org.koin.core.KoinApplication
+import org.koin.dsl.koinConfiguration
 
 @Composable
 @Preview
 fun App() {
     // Initialize Koin with all modules directly (idiomatic Koin pattern)
     KoinApplication(
-        application = {
-            modules(
-                coreModule(baseUrl = "https://pokeapi.co/api/v2") +
-                pokemonListModule +
-                pokemonDetailModule +
-                getPlatformNavigationModules() +
-                navigationUiModule +
-                navigationAggregationModule
-            )
-        }
+        configuration = koinConfiguration(
+            declaration = fun KoinApplication.() {
+                modules(
+                    coreModule(baseUrl = "https://pokeapi.co/api/v2") +
+                        pokemonListModule +
+                        pokemonDetailModule +
+                        pokemonListNavigationModule +
+                        pokemonDetailNavigationModule +
+                        navigationUiModule,
+                )
+            },
+        ),
     ) {
-        // Get dependencies from Koin with explicit qualifier
         val navigator: Navigator = koinInject()
-        val entryProviderInstallers: Set<EntryProviderInstaller> = 
-            koinInject(qualifier = named("allNavigationInstallers"))
-        
+
+        // Koin's Navigation 3 integration automatically aggregates all navigation<T> entries
+        val entryProvider = koinEntryProvider()
+
         PokemonTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 NavDisplay(
                     backStack = navigator.backStack,
                     onBack = { navigator.goBack() },
-                    entryProvider = entryProvider {
-                        entryProviderInstallers.forEach { installer ->
-                            this.installer()
-                        }
-                    }
+                    entryProvider = entryProvider,
                 )
             }
         }

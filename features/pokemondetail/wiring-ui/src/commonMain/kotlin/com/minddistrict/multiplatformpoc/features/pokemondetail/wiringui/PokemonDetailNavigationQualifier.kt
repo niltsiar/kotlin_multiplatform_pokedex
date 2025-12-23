@@ -1,3 +1,0 @@
-package com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui
-
-internal const val PokemonDetailNavigationInstallersQualifier = "pokemonDetailNavigationInstallers"
