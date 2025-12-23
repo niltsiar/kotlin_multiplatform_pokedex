@@ -6,6 +6,7 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListReposit
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.PokemonPage
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.RepoError
+import androidx.lifecycle.SavedStateHandle
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotBeEmpty
@@ -32,7 +33,11 @@ class PokemonListViewModelTest : StringSpec({
     
     beforeTest {
         mockRepository = mockk(relaxed = true)
-        viewModel = PokemonListViewModel(mockRepository, testScope)
+        viewModel = PokemonListViewModel(
+            repository = mockRepository,
+            savedStateHandle = SavedStateHandle(),
+            viewModelScope = testScope,
+        )
     }
     
     "initial state should be Loading" {
@@ -139,7 +144,11 @@ class PokemonListViewModelTest : StringSpec({
             
             coEvery { mockRepository.loadPage(any(), any()) } returns Either.Right(page)
             
-            val vm = PokemonListViewModel(mockRepository, testScope)
+            val vm = PokemonListViewModel(
+                repository = mockRepository,
+                savedStateHandle = SavedStateHandle(),
+                viewModelScope = testScope,
+            )
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -161,7 +170,11 @@ class PokemonListViewModelTest : StringSpec({
         forAll(arbRepoError()) { error ->
             coEvery { mockRepository.loadPage(any(), any()) } returns Either.Left(error)
             
-            val vm = PokemonListViewModel(mockRepository, testScope)
+            val vm = PokemonListViewModel(
+                repository = mockRepository,
+                savedStateHandle = SavedStateHandle(),
+                viewModelScope = testScope,
+            )
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -192,7 +205,11 @@ class PokemonListViewModelTest : StringSpec({
             
             coEvery { mockRepository.loadPage(any(), any()) } returns Either.Right(page)
             
-            val vm = PokemonListViewModel(mockRepository, testScope)
+            val vm = PokemonListViewModel(
+                repository = mockRepository,
+                savedStateHandle = SavedStateHandle(),
+                viewModelScope = testScope,
+            )
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -220,7 +237,11 @@ class PokemonListViewModelTest : StringSpec({
             val error = RepoError.Http(httpCode, "Test error")
             coEvery { mockRepository.loadPage(any(), any()) } returns Either.Left(error)
             
-            val vm = PokemonListViewModel(mockRepository, testScope)
+            val vm = PokemonListViewModel(
+                repository = mockRepository,
+                savedStateHandle = SavedStateHandle(),
+                viewModelScope = testScope,
+            )
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
