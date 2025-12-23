@@ -13,6 +13,7 @@ kotlin {
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.navigation3)  // Koin Navigation 3 DSL
         }
 
         commonTest.dependencies {
