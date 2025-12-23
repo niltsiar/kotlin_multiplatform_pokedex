@@ -1,37 +1,13 @@
 package com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme
 
 import androidx.compose.ui.graphics.Color
-
-/**
- * Pokémon Type Colors - Unstyled Theme
- * Matching Material 3 Expressive design system colors for consistency
- * WCAG AA compliant (4.5:1 contrast ratio on appropriate backgrounds)
- */
-object UnstyledPokemonTypeColors {
-    // Primary Pokémon type colors (adjusted for accessibility)
-    val Fire = Color(0xFFFF4422)
-    val Water = Color(0xFF3399FF)
-    val Grass = Color(0xFF77CC55)
-    val Electric = Color(0xFFFFCC33)
-    val Psychic = Color(0xFFFF5599)
-    val Ice = Color(0xFF66CCFF)
-    val Dragon = Color(0xFF7766EE)
-    val Dark = Color(0xFF775544)
-    val Fairy = Color(0xFFEE99EE)
-    val Normal = Color(0xFFAAAA99)
-    val Fighting = Color(0xFFBB5544)
-    val Flying = Color(0xFF8899FF)
-    val Poison = Color(0xFF9955BB)
-    val Ground = Color(0xFFDDBB55)
-    val Rock = Color(0xFFBBAA77)
-    val Bug = Color(0xFFAABB22)
-    val Ghost = Color(0xFF6666BB)
-    val Steel = Color(0xFFAAAABB)
-}
+import com.minddistrict.multiplatformpoc.core.designsystem.core.PokemonTypeColors
 
 /**
  * Unstyled Theme Color System
  * Matches Material 3 Expressive neutral palette with Pokémon type accent colors
+ * 
+ * Note: Pokémon type colors are imported from designsystem-core for consistency
  */
 object UnstyledColors {
     // Light Theme Colors

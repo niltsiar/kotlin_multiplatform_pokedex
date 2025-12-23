@@ -7,6 +7,9 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            // Core design tokens
+            api(projects.core.designsystemCore)
+            
             // Compose Unstyled
             implementation(libs.composeunstyled)
             implementation(libs.composeunstyled.theming)
