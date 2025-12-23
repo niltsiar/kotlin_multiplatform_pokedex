@@ -46,13 +46,17 @@ class EventChannel<E> : OneTimeEventEmitter<E> {
 }
 ```
 
-ViewModels rules (required)
-- All ViewModels must extend `androidx.lifecycle.ViewModel` (KMP).
-- Do not perform work in `init` blocks. Be lifecycle‑aware and start work in lifecycle callbacks (or Compose effects) instead.
-- Do NOT store a `CoroutineScope` field. Instead, pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally.
-- Use `SavedStateHandle` when necessary to persist screen state/inputs across configuration changes or process death (Android fully supported).
-- Do not expose mutable collections; prefer `kotlinx.collections.immutable` types (`ImmutableList`, `ImmutableMap`, etc.).
-- For one‑time events, implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>`.
+**ViewModels:** Follow the canonical [ViewModel Pattern](critical_patterns_quick_ref.md#viewmodel-pattern). Key requirements:
+- Extend `androidx.lifecycle.ViewModel` and implement `DefaultLifecycleObserver`
+- Pass `viewModelScope` as constructor parameter to superclass (NOT stored as field)
+- NO work in `init` - use `onStart(owner: LifecycleOwner)` for initialization
+- Use `SavedStateHandle` for state persistence across configuration changes
+- Use `kotlinx.collections.immutable` types in UI state
+- For one‑time events, implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>`
+
+**Reference Implementations:**
+- [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) ([Tests](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt))
+- [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) ([Tests](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt))
 
 Example ViewModel with lifecycle start and SavedStateHandle
 ```kotlin
@@ -76,15 +80,19 @@ class HomeViewModel(
         }
     }
 
-    fun start(lifecycle: Lifecycle) {
+    // Lifecycle-aware initialization via DefaultLifecycleObserver
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadData()
+    }
+    
+    private fun loadData() {
         viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                _uiState.value = HomeUiState.Loading
-                repository.loadItems().fold(
-                    ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
-                    ifRight = { items -> _uiState.value = HomeUiState.Content(items.map(::toUi).toImmutableList()) }
-                )
-            }
+            _uiState.value = HomeUiState.Loading
+            repository.loadItems().fold(
+                ifLeft = { _uiState.value = HomeUiState.Error(mapError(it)) },
+                ifRight = { items -> _uiState.value = HomeUiState.Content(items.map(::toUi).toImmutableList()) }
+            )
         }
     }
 
@@ -555,14 +563,18 @@ class ProfileViewModel(
 
   override fun onUiEvent(event: ProfileUiEvent) { /* ... */ }
 
-  fun start(lifecycle: Lifecycle) {
+  // Lifecycle-aware initialization via DefaultLifecycleObserver
+  override fun onStart(owner: LifecycleOwner) {
+    super.onStart(owner)
+    loadUser()
+  }
+  
+  private fun loadUser() {
     viewModelScope.launch {
-      lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        repo.getUser(userId).fold(
-          ifLeft = { _uiState.value = ProfileUiState.Error(mapError(it)) },
-          ifRight = { user -> _uiState.value = ProfileUiState.Content(user.toUi()) }
-        )
-      }
+      repo.getUser(userId).fold(
+        ifLeft = { _uiState.value = ProfileUiState.Error(mapError(it)) },
+        ifRight = { user -> _uiState.value = ProfileUiState.Content(user.toUi()) }
+      )
     }
   }
 }

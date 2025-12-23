@@ -38,6 +38,7 @@ All code must comply with `.editorconfig` settings. Key rules:
 
 - Base prompt (shared rules): [`docs/agent-prompts/base_agent_prompt.md`](../docs/agent-prompts/base_agent_prompt.md)
 - Agent catalog (pick a mode): [`docs/agent-prompts/README.md`](../docs/agent-prompts/README.md)
+- **Canonical agent routing table:** [`docs/agent-prompts/README.md#-agent-routing-table-canonical`](../docs/agent-prompts/README.md#-agent-routing-table-canonical)
 - Routing overview: [`AGENTS.md`](../AGENTS.md)
 
 ## Canonical Docs

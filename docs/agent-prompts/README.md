@@ -7,6 +7,24 @@ Role prompts MUST be deltas and assume the consumer includes:
 
 - [base_agent_prompt.md](base_agent_prompt.md)
 
+## 🎯 Agent Routing Table (Canonical)
+
+**This is the single source of truth for agent routing. All entrypoints reference this table.**
+
+| Task Type | Agent Mode | Prompt | When to Use |
+| --- | --- | --- | --- |
+| 🧩 Product | Product Design | [`product_designer_agent_system_prompt_DELTA.md`](product_designer_agent_system_prompt_DELTA.md) | PRD/acceptance criteria, scope decisions |
+| 🎨 Visual Design | UI/UX Design | [`uiux_agent_system_prompt_DELTA.md`](uiux_agent_system_prompt_DELTA.md) | Screen layouts, motion, interaction design |
+| 📱 Compose UI | Screen (Compose) | [`ui_ux_system_agent_for_generic_screen_DELTA.md`](ui_ux_system_agent_for_generic_screen_DELTA.md) | Implement Android/Desktop Compose screens |
+|  SwiftUI | Screen (SwiftUI) | [`ui_ux_system_agent_for_swiftui_screen_DELTA.md`](ui_ux_system_agent_for_swiftui_screen_DELTA.md) | Implement native iOS screens |
+| 🔧 KMP Logic | KMP Mobile Expert | [`kmp_mobile_expert_agent_system_prompt_DELTA.md`](kmp_mobile_expert_agent_system_prompt_DELTA.md) | Shared ViewModels, repositories, iOS bridging |
+| 🚪 Onboarding | Onboarding Design | [`onboarding_agent_system_prompt_DELTA.md`](onboarding_agent_system_prompt_DELTA.md) | Onboarding flows and copy |
+| 🗺️ Flows | User Flow Planning | [`user_flow_agent_system_prompt_DELTA.md`](user_flow_agent_system_prompt_DELTA.md) | End-to-end journeys, navigation contracts |
+| 🧪 Test Planning | Testing Strategy | [`testing_agent_system_prompt_DELTA.md`](testing_agent_system_prompt_DELTA.md) | Coverage analysis, test design |
+| 🧰 Backend | Backend Development | [`backend_agent_system_prompt_DELTA.md`](backend_agent_system_prompt_DELTA.md) | Ktor server endpoints and contracts |
+| 📝 Docs | Documentation | [`documentation_agent_system_prompt_DELTA.md`](documentation_agent_system_prompt_DELTA.md) | Keep docs consistent + link-first |
+| ⚙️ Standard | Development | [AGENTS.md](../../AGENTS.md) | General implementation tasks |
+
 ## Specialized Agents (Pick One)
 
 - Product Design Mode
@@ -66,3 +84,16 @@ Role prompts MUST be deltas and assume the consumer includes:
 - Easter eggs / mini-games guide: [easter_eggs_and_mini_games_guide.md](easter_eggs_and_mini_games_guide.md)
 
 Tip: If unsure which to choose, open [AGENTS.md](../../AGENTS.md) and jump to the “Task Type Decision Tree”.
+## Validation
+
+All DELTA prompt files must start with:
+```markdown
+Include Base Agent Prompt + Canonical Links.
+```
+
+Verify all delta files follow this pattern:
+```bash
+rg "Include Base Agent Prompt" docs/agent-prompts/*DELTA.md -c
+```
+
+Expected: Each file should show count of 1.

@@ -1,6 +1,6 @@
 # Quick Reference Guide
 
-Last Updated: November 26, 2025
+Last Updated: December 20, 2025
 
 > Fast lookup for commands, tables, API references, and common patterns.
 
@@ -152,6 +152,116 @@ open iosAppCompose/iosAppCompose.xcodeproj  # Compose iOS app (experimental)
 - Repositories: 40-50% property tests
 - ViewModels: 30-40% property tests
 
+## SavedStateHandle Quick Reference
+
+**Purpose:** Persist ViewModel state across configuration changes and process death.
+
+**Platform Support:**
+- ✅ Android: Full native support
+- ✅ Desktop/JVM: Manual creation
+- ⚠️ iOS: App state restoration (different lifecycle than Android)
+
+**Current Pattern (Delegate - SavedState 1.4.0+):**
+```kotlin
+import androidx.lifecycle.serialization.saved
+
+class MyViewModel(
+    private val repository: MyRepository,
+    private val savedStateHandle: SavedStateHandle,  // ← Always inject
+    viewModelScope: CoroutineScope = ...
+) : ViewModel(viewModelScope), DefaultLifecycleObserver {
+    
+    // ✨ Single line - automatic persistence
+    private var state by savedStateHandle.saved { MyState() }
+    
+    fun updateData() {
+        state = state.copy(...)  // ← Automatically persisted on write!
+        // No persistState() call needed
+    }
+}
+```
+
+**Why This Works:**
+- ✅ **93% code reduction** - Eliminates ~28 lines of boilerplate per ViewModel
+- ✅ **Automatic persistence** - State saved on every property write
+- ✅ **Type-safe** - Uses kotlinx.serialization internally
+- ✅ **KMP compatible** - Works in `commonMain` source set
+- ✅ **No manual calls** - No `persistState()` functions or key management
+
+**Critical: Use Correct Import!**
+```kotlin
+// ✅ CORRECT - For SavedStateHandle delegate
+import androidx.lifecycle.serialization.saved
+
+// ❌ WRONG - For SavedStateRegistryOwner (different use case)
+import androidx.savedstate.serialization.saved
+```
+
+**Requirements:**
+- AndroidX SavedState 1.4.0+
+- AndroidX Lifecycle 2.10.0-alpha07+
+- State type must be `@Serializable`
+
+**Legacy Pattern (Manual - Pre-1.4.0):**
+```kotlin
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+
+class MyViewModel(
+    private val repository: MyRepository,
+    private val savedStateHandle: SavedStateHandle,
+    viewModelScope: CoroutineScope = ...
+) : ViewModel(viewModelScope), DefaultLifecycleObserver {
+    
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    
+    // Manual restoration from SavedStateHandle
+    private var state: MyState = savedStateHandle
+        .get<String>(KEY_STATE)
+        ?.let { json.decodeFromString(it) }
+        ?: MyState()
+    
+    private fun persistState() {
+        savedStateHandle[KEY_STATE] = json.encodeToString(state)
+    }
+    
+    fun updateData() {
+        state = state.copy(...)
+        persistState()  // ← Must call manually after every mutation
+    }
+    
+    companion object {
+        private const val KEY_STATE = "state"
+    }
+}
+```
+
+**Koin Wiring:**
+```kotlin
+// Android (auto-provides)
+viewModel { PokemonListViewModel(get(), SavedStateHandle()) }
+
+// Desktop/JVM (manual creation)
+viewModel { PokemonListViewModel(get(), SavedStateHandle()) }
+```
+
+**Testing:**
+```kotlin
+beforeTest {
+    viewModel = MyViewModel(
+        repository = mockRepository,
+        savedStateHandle = SavedStateHandle(),  // ← Always provide
+        viewModelScope = testScope
+    )
+}
+```
+
+**Reference Implementations:**
+- [PokemonListViewModel.kt](../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) (delegate pattern)
+- [PokemonDetailViewModel.kt](../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) (delegate pattern)
+- [DI Patterns Guide](patterns/di_patterns.md#savedstatehandle-in-viewmodels)
+
 ## Module Structure Reference
 
 ### Current Modules
@@ -210,10 +320,21 @@ open iosAppCompose/iosAppCompose.xcodeproj  # Compose iOS app (experimental)
 ```kotlin
 viewModel.uiState.test {
     awaitItem() shouldBe Loading
-    viewModel.start(mockk(relaxed = true))
+    viewModel.loadInitialPage()  // Call public methods directly
     testScope.advanceUntilIdle()
     awaitItem().shouldBeInstanceOf<Content>()
     cancelAndIgnoreRemainingEvents()
+}
+
+// Separate test for lifecycle integration
+"onStart should trigger loading" {
+    val viewModel = createViewModel()
+    val lifecycleOwner = TestLifecycleOwner(Lifecycle.State.STARTED)
+    
+    viewModel.onStart(lifecycleOwner)
+    testScope.advanceUntilIdle()
+    
+    viewModel.uiState.value shouldBeInstanceOf<Content>()
 }
 ```
 
@@ -225,7 +346,7 @@ viewModel.uiState.test {
 | Missing factory function | `fun X(...): X = XImpl(...)` | `patterns/di_patterns.md` |
 | `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` | `patterns/error_handling_patterns.md` |
 | `private val scope = ...` | `viewModelScope: CoroutineScope` param | `patterns/viewmodel_patterns.md` |
-| `init { loadData() }` | `fun start(lifecycle: Lifecycle) { ... }` | `patterns/viewmodel_patterns.md` |
+| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | `patterns/viewmodel_patterns.md` |
 | `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | `patterns/viewmodel_patterns.md` |
 | Empty use case | Call repository directly from ViewModel | `patterns/architecture_patterns.md` |
 | `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | `patterns/architecture_patterns.md` |

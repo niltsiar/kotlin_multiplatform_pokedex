@@ -1,10 +1,10 @@
 # KMP Mobile Expert Agent (Delta Prompt)
 
-Last Updated: December 20, 2025
+Last Updated: December 22, 2025
 
 ---
 
-id: kmp_mobile_expert version: 2.0 lastUpdated: 2025-12-20 includes:
+id: kmp_mobile_expert version: 2.1 lastUpdated: 2025-12-22 includes:
 
 - [base_agent_prompt.md](base_agent_prompt.md) links: canonicals:
   - [conventions.md](../tech/conventions.md)
@@ -28,71 +28,19 @@ KMP-specific guidance only.**
 
 ## SKIE-Specific Patterns (iOS Only)
 
-### StateFlow → AsyncSequence Bridging
+### Key Patterns Summary
 
-```swift
-// SKIE auto-converts StateFlow to AsyncSequence
-struct PokemonListView: View {
-    private var viewModel = KoinIosKt.getPokemonListViewModel()
-    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+- **StateFlow → AsyncSequence**: SKIE auto-converts, use `.task { for await ... }` pattern
+- **Lifecycle**: ViewModels implement `DefaultLifecycleObserver`, call `onStart()`/`onStop()` from `.onAppear`/`.onDisappear`
+- **Sealed Classes**: Swift uses `is`/`as` checks for sealed interface hierarchies
+- **Type Renames**: `Type` → `Type_`, `Error` → `Error_`, `Result` → `Result_` (Swift keyword conflicts)
+- **Parametric ViewModels**: Use `Int32` for Int parameters in iOS helper functions
 
-    var body: some View {
-        content.task {
-            for await state in viewModel.uiState {
-                withAnimation(.spring()) { self.uiState = state }
-            }
-        }
-    }
-}
-```
+**Complete iOS Integration Guide**: [ios_integration.md](../tech/ios_integration.md)
 
-**See**: [ios_integration.md](../tech/ios_integration.md) for complete patterns
-
-### Sealed Class Handling
-
-Kotlin `sealed interface` → Swift class hierarchy with `is`/`as` checks:
-
-```swift
-switch uiState {
-case is PokemonListUiStateLoading: ProgressView()
-case let content as PokemonListUiStateContent: PokemonListContent(pokemons: content.pokemons)
-case let error as PokemonListUiStateError: ErrorView(message: error.message)
-default: EmptyView()
-}
-```
-
-### Type Renames Table
-
-| Kotlin   | Swift     | Reason         |
-| -------- | --------- | -------------- |
-| `Type`   | `Type_`   | Swift keyword  |
-| `Error`  | `Error_`  | Swift protocol |
-| `Result` | `Result_` | Swift type     |
-
-**Pokédex-specific**: `PokemonType` sealed interface becomes `PokemonType_` in Swift due to `Type` keyword conflict.
-
-### Parametric ViewModels (iOS)
-
-```kotlin
-// Kotlin (wiring iosMain)
-fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel =
-    KoinPlatform.getKoin().get { parametersOf(pokemonId) }
-```
-
-```swift
-// Swift
-struct PokemonDetailView: View {
-    let pokemonId: Int
-    private var viewModel: PokemonDetailViewModel
-
-    init(pokemonId: Int) {
-        self.pokemonId = pokemonId
-        viewModel = KoinIosKt.getPokemonDetailViewModel(pokemonId: Int32(pokemonId))
-    }
-}
-```
-
-**Reference**: See [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) for parametric ViewModel example.
+**Reference Implementations**:
+- Simple ViewModel: [PokemonListView.swift](../../iosApp/iosApp/Views/PokemonListView.swift)
+- Parametric ViewModel: [PokemonDetailView.swift](../../iosApp/iosApp/Views/PokemonDetailView.swift)
 
 ## Task Workflow (KMP Feature Design)
 
@@ -106,48 +54,45 @@ struct PokemonDetailView: View {
 
 ### 2. Design ViewModel Contracts (`:presentation`)
 
+**Key Rules**:
 - `sealed interface UiState` (Loading, Content, Error)
 - `sealed interface UiEvent` (user actions like LoadMore, Retry, ItemClicked)
 - `ImmutableList`/`ImmutableMap` in state (critical for iOS)
 - `UiStateHolder<S, E>` implementation
-- NO work in `init` - use lifecycle callbacks
+- Inject `SavedStateHandle` and use `by saved` delegate for state persistence
+- Pass `viewModelScope` as constructor parameter to superclass (NOT stored as field)
+- `DefaultLifecycleObserver` implementation with `onStart(owner: LifecycleOwner)` for initialization
+- NO work in `init` - lifecycle-aware loading in `onStart()`
 
-**Example**: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt)
+**See**: [ViewModel Pattern](../CODE_REFERENCES.md#viewmodel-pattern) for complete examples
 
 ### 3. Specify Data Layer (`:data`)
 
+**Key Rules**:
 - DTOs with `@Serializable` (PokéAPI JSON structure)
 - `Either<RepoError, T>` repository returns (NO exceptions, NO nullable)
 - `Either.catch { }.mapLeft { it.toRepoError() }` pattern
 - Sealed error hierarchy per feature (Network, Http, Unknown)
 - Mappers: DTO → Domain with property-based tests
 
-**Example**: [PokemonListRepositoryImpl.kt](../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt)
+**See**: [Repository Pattern](../CODE_REFERENCES.md#repository-pattern-either-boundary) for complete examples
 
 ### 4. Define Koin Wiring (`:wiring`)
 
-```kotlin
-// commonMain - business logic
-val pokemonListModule = module {
-    factory<PokemonListRepository> { 
-        PokemonListRepository(api = get()) 
-    }
-    factory<PokemonListViewModel> { 
-        PokemonListViewModel(repository = get(), testScope) 
-    }
-}
+**See**: [DI Patterns](../CODE_REFERENCES.md#di-patterns-koin) for module structure examples
 
-// iosMain - helpers for SwiftUI
-fun getPokemonListViewModel(): PokemonListViewModel = 
-    KoinPlatform.getKoin().get()
+### 5. Define Navigation 3 Wiring (`:wiring-ui`)
 
-fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel =
-    KoinPlatform.getKoin().get { parametersOf(pokemonId) }
-```
+**Compose platforms only** (Android, Desktop, iOS Compose)
 
-**Example**: [PokemonListModule.kt](../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
+**Key Patterns**:
+- **ViewModel scoping**: Use `key = "type_${route.param}"` for parametric routes (Navigation 3 scopes by type, not parameters)
+- **Lifecycle management**: Use `DisposableEffect(route.param)` to register/unregister lifecycle observer per route instance
+- **Metadata animations**: Use `NavDisplay.transitionSpec()` for enter, `NavDisplay.popTransitionSpec()` for exit
 
-### 5. Platform Integration Guidance
+**See**: [Navigation Patterns](../CODE_REFERENCES.md#navigation-patterns) for complete examples
+
+### 6. Platform Integration Guidance
 
 - **Android/Desktop**: `koinInject()`, `collectAsStateWithLifecycle()`
 - **iOS**: `KoinIosKt.getViewModel()`, `.task { for await ... }`
@@ -215,61 +160,17 @@ fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel =
 
 ### Pagination with Infinite Scroll
 
-```kotlin
-// ViewModel pattern for offset-based pagination
-class PokemonListViewModel(...) : ViewModel(viewModelScope), UiStateHolder<...> {
-    private var currentOffset = 0
-    private val pageSize = 20
-    
-    fun loadNextPage() {
-        if (_uiState.value is Loading || _uiState.value is Error) return
-        
-        viewModelScope.launch {
-            repository.loadPage(pageSize, currentOffset).fold(
-                ifLeft = { error -> _uiState.value = Error(error.toUiMessage()) },
-                ifRight = { page ->
-                    currentOffset += pageSize
-                    val updated = existingPokemons + page.pokemons
-                    _uiState.value = Content(updated.toImmutableList(), page.hasMore)
-                }
-            )
-        }
-    }
-}
-```
+**See**: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) for offset-based pagination implementation
+
+**Key Pattern**: Track `currentOffset` and `pageSize`, update on successful loads, use ImmutableList concatenation
 
 ### Type Color Mapping
 
-```kotlin
-// Domain model with type colors (Material 3 adjusted)
-data class Pokemon(
-    val id: Int,
-    val name: String,
-    val types: ImmutableList<PokemonType>,
-    val imageUrl: String
-)
-
-sealed interface PokemonType {
-    val color: Color
-    
-    object Fire : PokemonType { override val color = Color(0xFFFF4422) }
-    object Water : PokemonType { override val color = Color(0xFF3399FF) }
-    // ... all 18 types
-}
-```
+**See**: [Pokemon domain models](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/) for PokemonType sealed interface with Material 3 adjusted colors
 
 ### Error Mapping from PokéAPI
 
-```kotlin
-fun Throwable.toRepoError(): RepoError = when (this) {
-    is IOException -> RepoError.Network
-    is ClientRequestException -> RepoError.Http(
-        code = response.status.value,
-        message = message ?: "HTTP error"
-    )
-    else -> RepoError.Unknown(this)
-}
-```
+**See**: [Error Handling](../CODE_REFERENCES.md#error-handling-patterns) for Throwable → RepoError mapping examples
 
 ## Reference Implementation: `pokemonlist` Feature
 

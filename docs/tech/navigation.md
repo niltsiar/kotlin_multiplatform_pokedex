@@ -120,8 +120,22 @@ val pokemonListModule = module {
     }
     
     // Provide ViewModel
-    factory {
-        PokemonListViewModel(repository = get())
+    // ViewModels with SavedStateHandle (Android auto-provides)
+    viewModel { (savedStateHandle: SavedStateHandle) ->
+        PokemonDetailViewModel(
+            repository = get(),
+            pokemonId = savedStateHandle.get<Int>("pokemonId") ?: 0,
+            savedStateHandle = savedStateHandle,
+        )
+    }
+    
+    // OR on Desktop/JVM (manual creation)
+    viewModel {
+        PokemonDetailViewModel(
+            repository = get(),
+            pokemonId = 0,  // from navigation parameter
+            savedStateHandle = SavedStateHandle(),
+        )
     }
 }
 ```
@@ -163,16 +177,17 @@ val pokemonListNavigationModule = module {
 
 **Key points**:
 - Returns `Set<EntryProviderInstaller>` with named qualifier
-- Named qualifier enables collection in `navigationAggregationModule`
+- Public const qualifier enables direct collection in App.kt
 - `koinInject()` resolves dependencies from Compose context
 - `entry<RouteType>` registers composable for route
+- Lifecycle registration with `DisposableEffect` ensures ViewModel lifecycle awareness
 
-### JVM Main (Desktop UI Navigation)
+### Compose Multiplatform Navigation (All Platforms)
 
 ```kotlin
-// :features:pokemonlist:wiring-ui/src/jvmMain/.../PokemonListNavigationProviders.kt
+// :features:pokemonlist:wiring-ui/src/commonMain/.../PokemonListNavigationProviders.kt
 val pokemonListNavigationModule = module {
-    single<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers")) {
+    single<Set<EntryProviderInstaller>>(named(PokemonListNavigationInstallersQualifier)) {
         setOf(
             {
                 entry<PokemonList> {
@@ -197,19 +212,32 @@ val pokemonListNavigationModule = module {
 ### Parameterized Routes
 
 ```kotlin
-// :features:pokemondetail:wiring-ui/src/androidMain/.../PokemonDetailNavigationProviders.kt
+// :features:pokemondetail:wiring-ui/src/commonMain/.../PokemonDetailNavigationProviders.kt
 import org.koin.core.parameter.parametersOf
 
 val pokemonDetailNavigationModule = module {
-    single<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers")) {
+    single<Set<EntryProviderInstaller>>(named(PokemonDetailNavigationInstallersQualifier)) {
         setOf(
             {
                 entry<PokemonDetail> { route ->
                     val navigator: Navigator = koinInject()
                     // Use parametersOf to inject route parameter into ViewModel
-                    val viewModel: PokemonDetailViewModel = koinInject(
+                    val viewModel: PokemonDetailViewModel = koinViewModel(
                         parameters = { parametersOf(route.id) }
                     )
+                    val lifecycleOwner = LocalLifecycleOwner.current
+                    
+                    // Register ViewModel with lifecycle if it implements DefaultLifecycleObserver
+                    DisposableEffect(viewModel) {
+                        if (viewModel is DefaultLifecycleObserver) {
+                            lifecycleOwner.lifecycle.addObserver(viewModel)
+                        }
+                        onDispose {
+                            if (viewModel is DefaultLifecycleObserver) {
+                                lifecycleOwner.lifecycle.removeObserver(viewModel)
+                            }
+                        }
+                    }
                     
                     PokemonDetailScreen(
                         viewModel = viewModel,
@@ -224,8 +252,9 @@ val pokemonDetailNavigationModule = module {
 
 **Key differences**:
 - `entry<T> { route -> }` receives typed route object for parameter extraction
-- `koinInject(parameters = { parametersOf(route.id) })` passes parameters to ViewModel
+- `koinViewModel(parameters = { parametersOf(route.id) })` passes parameters to ViewModel
 - ViewModel must accept parameter in constructor
+- Lifecycle registration with `DisposableEffect` ensures ViewModel lifecycle awareness
 
 ## Application Integration
 
@@ -244,39 +273,48 @@ fun coreModule(baseUrl: String) = module {
     single { Navigator(PokemonList) }
 }
 
-val navigationAggregationModule = module {
-    single<Set<EntryProviderInstaller>>(qualifier = named("allNavigationInstallers")) {
-        val allInstallers = mutableSetOf<EntryProviderInstaller>()
-        
-        // Collect all named navigation installer sets from features
-        runCatching {
-            getOrNull<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers"))
-        }.getOrNull()?.let { allInstallers.addAll(it) }
-        
-        runCatching {
-            getOrNull<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers"))
-        }.getOrNull()?.let { allInstallers.addAll(it) }
-        
-        allInstallers
-    }
+val navigationUiModule = module {
+    // Provide Navigator singleton with start destination
+    single { Navigator(PokemonList) }
 }
 ```
 
 **Components**:
 - `coreModule(baseUrl)`: Function taking runtime parameters
-- `navigationAggregationModule`: Collects all feature navigation installers by named qualifier
-- `runCatching`: Safely handles platform differences (some modules may not exist on all platforms)
-- Returns aggregated `Set<EntryProviderInstaller>`
+- `navigationUiModule`: Provides Navigator singleton with start destination
+- Navigation installers collected directly in App.kt using public const qualifiers
+- No aggregation module needed — simpler, more explicit
 
 ### App.kt Integration
 
 ```kotlin
 // composeApp/src/commonMain/kotlin/.../App.kt
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.PokemonListNavigationInstallersQualifier
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.PokemonDetailNavigationInstallersQualifier
+
 @Composable
 fun App() {
-    val navigator: Navigator = koinInject()
-    val entryProviderInstallers: Set<EntryProviderInstaller> = koinInject(
-        qualifier = named("allNavigationInstallers")
+    KoinApplication(
+        application = {
+            modules(
+                coreModule(baseUrl = "https://pokeapi.co/api/v2") +
+                pokemonListModule +
+                pokemonDetailModule +
+                pokemonListNavigationModule +
+                pokemonDetailNavigationModule +
+                navigationUiModule
+            )
+        }
+    ) {
+        val navigator: Navigator = koinInject()
+        
+        // Collect navigation installers from all feature modules
+        val pokemonListInstallers: Set<EntryProviderInstaller> = 
+            koinInject(qualifier = named(PokemonListNavigationInstallersQualifier))
+        val pokemonDetailInstallers: Set<EntryProviderInstaller> = 
+            koinInject(qualifier = named(PokemonDetailNavigationInstallersQualifier))
+        
+        val allInstallers = pokemonListInstallers + pokemonDetailInstallers
     )
     
     PokemonTheme {
@@ -295,29 +333,28 @@ fun App() {
 
 **Flow**:
 1. `koinInject()` resolves dependencies from Koin context
-2. `navigationAggregationModule` provides aggregated installers
+2. Navigation installers collected directly using public const qualifiers
 3. NavDisplay observes navigator.backStack (SnapshotStateList)
 4. entryProvider installs all EntryProviderInstallers from features
 5. Back navigation triggers navigator.goBack()
 
-**Koin Initialization** (in main()):
+**Koin Initialization** (in App.kt KoinApplication):
 ```kotlin
-// Android: Application.onCreate()
-// Desktop: main() function
-startKoin {
-    modules(
-        coreModule(baseUrl = "https://pokeapi.co/api/v2"),
-        httpClientModule,
-        pokemonListModule,
-        pokemonDetailModule,
-        pokemonListNavigationModule,  // Platform-specific (androidMain/jvmMain)
-        pokemonDetailNavigationModule, // Platform-specific
-        navigationAggregationModule   // Must be AFTER feature modules
-    )
-}
+KoinApplication(
+    application = {
+        modules(
+            coreModule(baseUrl = "https://pokeapi.co/api/v2") +
+            pokemonListModule +
+            pokemonDetailModule +
+            pokemonListNavigationModule +  // Compose platforms: Android, Desktop, iOS Compose
+            pokemonDetailNavigationModule + // Compose platforms
+            navigationUiModule
+        )
+    }
+) { /* ... */ }
 ```
 
-**Critical**: `navigationAggregationModule` must be loaded AFTER all feature navigation modules
+**Note**: All navigation modules are now in commonMain, shared across all Compose Multiplatform targets (Android, Desktop, iOS Compose)
 
 ## Navigation Operations
 

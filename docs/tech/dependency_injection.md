@@ -50,36 +50,13 @@ fun coreModule(baseUrl: String) = module {
     // Provide Navigator singleton with start destination
     single { Navigator(PokemonList) }
 }
-
-/**
- * Navigation aggregation module that collects all EntryProviderInstallers.
- * Must be loaded AFTER all feature navigation modules.
- * 
- * Provides: Set<EntryProviderInstaller> with qualifier "allNavigationInstallers"
- */
-val navigationAggregationModule = module {
-    single<Set<EntryProviderInstaller>>(qualifier = named("allNavigationInstallers")) {
-        val allInstallers = mutableSetOf<EntryProviderInstaller>()
-        
-        // Collect named installer sets from features
-        runCatching {
-            getOrNull<Set<EntryProviderInstaller>>(named("pokemonListNavigationInstallers"))
-        }.getOrNull()?.let { allInstallers.addAll(it) }
-        
-        runCatching {
-            getOrNull<Set<EntryProviderInstaller>>(named("pokemonDetailNavigationInstallers"))
-        }.getOrNull()?.let { allInstallers.addAll(it) }
-        
-        allInstallers
-    }
-}
 ```
 
 **Key Points**:
 - `coreModule()` is a **function** that takes runtime parameters and returns a Koin module
-- `navigationAggregationModule` is a **property** (val) since it has no parameters
-- Aggregated set uses qualifier `"allNavigationInstallers"` for clarity
-- No wrapper object needed - this is idiomatic Koin
+- `navigationUiModule` is a **property** (val) providing Navigator singleton
+- Navigation installers collected directly in App.kt using public const qualifiers
+- No aggregation module needed — simpler, more explicit
 - Runtime parameters (like `baseUrl`) are provided as named dependencies or constructor params
 - Modules are composed with `+` operator in `KoinApplication`
 
@@ -436,11 +413,11 @@ import org.koin.compose.koinInject
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import com.minddistrict.multiplatformpoc.core.di.coreModule
-import com.minddistrict.multiplatformpoc.core.di.navigationAggregationModule
+import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
-
-// Platform-specific navigation modules (defined in androidMain/jvmMain)
-expect fun getPlatformNavigationModules(): List<Module>
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.PokemonListNavigationInstallersQualifier
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.PokemonDetailNavigationInstallersQualifier
+import org.koin.core.qualifier.named
 
 @Composable
 fun App() {
@@ -450,22 +427,28 @@ fun App() {
             modules(
                 coreModule(baseUrl = "https://pokeapi.co/api/v2") +  // Function with params
                 pokemonListModule +                                    // Feature module
-                getPlatformNavigationModules() +                       // Platform modules
-                navigationAggregationModule                            // Aggregation module
+                pokemonDetailModule +                                  // Feature module
+                pokemonListNavigationModule +                          // Navigation (commonMain)
+                pokemonDetailNavigationModule +                        // Navigation (commonMain)
+                navigationUiModule                                     // Navigator singleton
             )
         }
     ) {
-        // Access dependencies using koinInject() with explicit qualifier for aggregated set
+        // Collect navigation installers from all feature modules
         val navigator: Navigator = koinInject()
-        val entryProviderInstallers: Set<EntryProviderInstaller> = 
-            koinInject(qualifier = named("allNavigationInstallers"))
+        val pokemonListInstallers: Set<EntryProviderInstaller> = 
+            koinInject(qualifier = named(PokemonListNavigationInstallersQualifier))
+        val pokemonDetailInstallers: Set<EntryProviderInstaller> = 
+            koinInject(qualifier = named(PokemonDetailNavigationInstallersQualifier))
+        
+        val allInstallers = pokemonListInstallers + pokemonDetailInstallers
         
         // Use in UI
         NavDisplay(
             backStack = navigator.backStack,
             onBack = { navigator.goBack() },
             entryProvider = entryProvider {
-                entryProviderInstallers.forEach { this.it() }
+                allInstallers.forEach { this.it() }
             }
         )
     }
@@ -475,9 +458,9 @@ fun App() {
 **Key Points**:
 - Modules composed directly with `+` operator - no wrapper needed
 - Runtime parameters passed via function calls: `coreModule(baseUrl = "...")`
-- Platform-specific modules loaded via expect/actual pattern
-- Navigation aggregation module loaded last to collect all installers
-- Aggregated set injected with explicit qualifier: `named("allNavigationInstallers")`
+- All navigation modules now in commonMain (shared across Android/Desktop/iOS Compose)
+- Navigation installers collected directly using public const qualifiers
+- No aggregation module or expect/actual pattern needed
 ```
 
 **Key Points**:

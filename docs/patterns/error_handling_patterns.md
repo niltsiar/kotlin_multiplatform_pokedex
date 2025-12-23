@@ -193,21 +193,26 @@ class PokemonListViewModel(
     )
     override val uiState: StateFlow<PokemonListUiState> = _uiState
     
-    fun start(lifecycle: Lifecycle) {
+    // Lifecycle-aware initialization via DefaultLifecycleObserver
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadInitialPage()
+    }
+    
+    private fun loadInitialPage() {
         viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                repository.loadPage().fold(
-                    ifLeft = { error ->
-                        _uiState.value = PokemonListUiState.Error(
-                            message = error.toUiMessage()
-                        )
-                    },
-                    ifRight = { page ->
-                        _uiState.value = PokemonListUiState.Content(
-                            pokemons = page.pokemons,
-                            hasMore = page.hasMore,
-                            isLoadingMore = false
-                        )
+            repository.loadPage().fold(
+                ifLeft = { error ->
+                    _uiState.value = PokemonListUiState.Error(
+                        message = error.toUiMessage()
+                    )
+                },
+                ifRight = { page ->
+                    _uiState.value = PokemonListUiState.Content(
+                        pokemons = page.pokemons,
+                        hasMore = page.hasMore,
+                        isLoadingMore = false
+                    )
                     }
                 )
             }

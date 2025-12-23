@@ -333,7 +333,7 @@ class PokemonListViewModelTest : StringSpec({
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
             
-            viewModel.start(mockk(relaxed = true))
+            viewModel.onStart(TestLifecycleOwner())
             testScope.advanceUntilIdle()
             
             awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>().let { state ->
@@ -353,7 +353,7 @@ class PokemonListViewModelTest : StringSpec({
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
             
-            viewModel.start(mockk(relaxed = true))
+            viewModel.onStart(TestLifecycleOwner())
             testScope.advanceUntilIdle()
             
             awaitItem().shouldBeInstanceOf<PokemonListUiState.Error>().let { state ->
@@ -373,7 +373,7 @@ class PokemonListViewModelTest : StringSpec({
             PokemonPage(initialPokemons.toImmutableList(), hasMore = true)
         )
         
-        viewModel.start(mockk(relaxed = true))
+        viewModel.onStart(TestLifecycleOwner())
         testScope.advanceUntilIdle()
         
         // Setup loadMore response
@@ -433,7 +433,7 @@ class PokemonListViewModelTest : StringSpec({
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
             
-            viewModel.start(mockk(relaxed = true))
+            viewModel.onStart(TestLifecycleOwner())
             testScope.advanceUntilIdle()
             
             awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>().let { state ->

@@ -143,12 +143,15 @@ val pokemonListNavigationModule = module {
 // :features:pokemondetail:wiring/androidMain/PokemonDetailNavigationModule.kt
 package com.example.features.pokemondetail.wiring
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.core.navigation.EntryProviderInstaller
 import com.example.core.navigation.Navigator
 import com.example.features.pokemondetail.api.PokemonDetail
 import com.example.features.pokemondetail.presentation.PokemonDetailViewModel
 import com.example.features.pokemondetail.ui.PokemonDetailScreen
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
@@ -156,17 +159,30 @@ val pokemonDetailNavigationModule = module {
     single<Set<EntryProviderInstaller>> {
         setOf(
             { 
-                entry<PokemonDetail> { key ->
+                entry<PokemonDetail> { route ->
                     val navigator = koinInject<Navigator>()
-                    val viewModel = koinInject<PokemonDetailViewModel> {
-                        // Pass pokemon ID to ViewModel
-                        parametersOf(key.id, this@entry.lifecycle.coroutineScope)
+                    
+                    // CRITICAL: Key ViewModel by route parameter to ensure new instance per ID
+                    // Without key, Navigation 3 will reuse same ViewModel for all PokemonDetail routes
+                    val viewModel: PokemonDetailViewModel = koinViewModel(
+                        key = "pokemon_detail_${route.id}",  // ← Essential for parametric routes
+                        parameters = { parametersOf(route.id) }
+                    )
+                    
+                    val lifecycleOwner = LocalLifecycleOwner.current
+                    
+                    // Register ViewModel with lifecycle (implements DefaultLifecycleObserver)
+                    // Key by route.id to properly dispose when navigating to different Pokemon
+                    DisposableEffect(route.id) {
+                        lifecycleOwner.lifecycle.addObserver(viewModel)
+                        onDispose {
+                            lifecycleOwner.lifecycle.removeObserver(viewModel)
+                        }
                     }
                     
                     PokemonDetailScreen(
-                        pokemonId = key.id,
                         viewModel = viewModel,
-                        onBack = { navigator.goBack() }
+                        onBackClick = { navigator.goBack() }
                     )
                 }
             }

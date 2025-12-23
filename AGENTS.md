@@ -9,19 +9,23 @@
 
 ## 🎯 Specialized Agent Routing
 
-| Task Type | Agent Mode | Prompt | When to Use |
-| --- | --- | --- | --- |
-| 🧩 Product | Product Design | [`product_designer_agent_system_prompt_DELTA.md`](docs/agent-prompts/product_designer_agent_system_prompt_DELTA.md) | PRD/acceptance criteria, scope decisions |
-| 🎨 Visual Design | UI/UX Design | [`uiux_agent_system_prompt_DELTA.md`](docs/agent-prompts/uiux_agent_system_prompt_DELTA.md) | Screen layouts, motion, interaction design |
-| 📱 Compose UI | Screen (Compose) | [`ui_ux_system_agent_for_generic_screen_DELTA.md`](docs/agent-prompts/ui_ux_system_agent_for_generic_screen_DELTA.md) | Implement Android/Desktop Compose screens |
-|  SwiftUI | Screen (SwiftUI) | [`ui_ux_system_agent_for_swiftui_screen_DELTA.md`](docs/agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md) | Implement native iOS screens |
-| 🔧 KMP Logic | KMP Mobile Expert | [`kmp_mobile_expert_agent_system_prompt_DELTA.md`](docs/agent-prompts/kmp_mobile_expert_agent_system_prompt_DELTA.md) | Shared ViewModels, repositories, iOS bridging |
-| 🚪 Onboarding | Onboarding Design | [`onboarding_agent_system_prompt_DELTA.md`](docs/agent-prompts/onboarding_agent_system_prompt_DELTA.md) | Onboarding flows and copy |
-| 🗺️ Flows | User Flow Planning | [`user_flow_agent_system_prompt_DELTA.md`](docs/agent-prompts/user_flow_agent_system_prompt_DELTA.md) | End-to-end journeys, navigation contracts |
-| 🧪 Test Planning | Testing Strategy | [`testing_agent_system_prompt_DELTA.md`](docs/agent-prompts/testing_agent_system_prompt_DELTA.md) | Coverage analysis, test design |
-| 🧰 Backend | Backend Development | [`backend_agent_system_prompt_DELTA.md`](docs/agent-prompts/backend_agent_system_prompt_DELTA.md) | Ktor server endpoints and contracts |
-| 📝 Docs | Documentation | [`documentation_agent_system_prompt_DELTA.md`](docs/agent-prompts/documentation_agent_system_prompt_DELTA.md) | Keep docs consistent + link-first |
-| ⚙️ Standard | Development | *(this file)* | General implementation tasks |
+**Canonical routing table:** See [docs/agent-prompts/README.md](docs/agent-prompts/README.md#-agent-routing-table-canonical) for the complete agent routing table.
+
+**Quick reference:**
+
+| Task Type | Agent Mode | When to Use |
+| --- | --- | --- |
+| 🧩 Product | Product Design | PRD/acceptance criteria, scope decisions |
+| 🎨 Visual Design | UI/UX Design | Screen layouts, motion, interaction design |
+| 📱 Compose UI | Screen (Compose) | Implement Android/Desktop Compose screens |
+|  SwiftUI | Screen (SwiftUI) | Implement native iOS screens |
+| 🔧 KMP Logic | KMP Mobile Expert | Shared ViewModels, repositories, iOS bridging |
+| 🚪 Onboarding | Onboarding Design | Onboarding flows and copy |
+| 🗺️ Flows | User Flow Planning | End-to-end journeys, navigation contracts |
+| 🧪 Test Planning | Testing Strategy | Coverage analysis, test design |
+| 🧰 Backend | Backend Development | Ktor server endpoints and contracts |
+| 📝 Docs | Documentation | Keep docs consistent + link-first |
+| ⚙️ Standard | Development | General implementation tasks |
 
 ## 🧠 Context Packing (LLM Efficiency)
 
@@ -85,7 +89,7 @@ Then run the lightweight link checks:
 
 - Sanity scan (no legacy paths should remain):
   ```bash
-  rg "\\.junie/guides" -n
+  rg "junie/guides" -n
   ```
 
   Expected: no matches (the legacy Junie guides folder has been removed).
@@ -182,7 +186,7 @@ git commit -m "fix(navigation): correct back stack handling"
 | **ViewModel**       | Pass `viewModelScope` to constructor, NO work in `init`, lifecycle-aware | [→ Pattern](docs/tech/critical_patterns_quick_ref.md#viewmodel-pattern)       |
 | **Either Boundary** | Return `Either<RepoError, T>`, use `Either.catch { }.mapLeft { }`        | [→ Pattern](docs/tech/critical_patterns_quick_ref.md#either-boundary-pattern) |
 | **Impl+Factory**    | `internal class XImpl`, `fun X(...): X = XImpl(...)`                     | [→ Pattern](docs/tech/critical_patterns_quick_ref.md#implfactory-pattern)     |
-| **Navigation 3**    | Route objects in `:api`, EntryProviderInstaller in wiring                | [→ Pattern](docs/tech/critical_patterns_quick_ref.md#navigation-3-pattern)    |
+| **Navigation 3**    | Koin DSL: `navigation<Route>` + `koinEntryProvider()`                   | [→ Pattern](docs/tech/critical_patterns_quick_ref.md#navigation-3-pattern)    |
 | **Testing**         | androidUnitTest/ for business logic, 30-40% property tests               | [→ Pattern](docs/tech/critical_patterns_quick_ref.md#testing-pattern)         |
 
 ---

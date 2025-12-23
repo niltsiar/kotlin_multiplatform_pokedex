@@ -1,27 +1,38 @@
-# ViewModel Patterns (androidx.lifecycle)
+# ViewModel Patterns - Extended Examples
 
-Last Updated: November 26, 2025
+Last Updated: December 20, 2025
 
-> **Canonical Reference**: See [ViewModel Pattern](../tech/critical_patterns_quick_ref.md#viewmodel-pattern) for core rules.
+> **Core Rules**: See [ViewModel Pattern](../tech/critical_patterns_quick_ref.md#viewmodel-pattern) for canonical pattern definition.
 
-> Comprehensive code examples for lifecycle-aware ViewModels, viewModelScope injection, UiStateHolder, and immutable state.
+This guide provides extended examples and edge cases for the ViewModel pattern.
 
-## Core Principle
+## Reference Implementations
 
-**ALL ViewModels MUST follow this pattern exactly:**
+**Production ViewModels:**
+- [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) - List with pagination
+- [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) - Parametric ViewModel
+
+**Tests:**
+- [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt)
+- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt)
+
+## Core Pattern Summary
+
+**ALL ViewModels MUST follow this pattern** (see [canonical rules](../tech/critical_patterns_quick_ref.md#viewmodel-pattern)):
 1. Extend `androidx.lifecycle.ViewModel`
-2. Pass `viewModelScope` as constructor parameter (with default value)
-3. NEVER store `CoroutineScope` as a field
+2. Implement `DefaultLifecycleObserver` for lifecycle awareness
+3. Pass `viewModelScope` as constructor parameter to superclass (NOT stored as field)
 4. NEVER perform work in `init` block
-5. Use lifecycle-aware callbacks for data loading
+5. Override `onStart(owner: LifecycleOwner)` for initialization logic
 6. Use `kotlinx.collections.immutable` types in UI state
 
 ## Basic ViewModel Pattern
 
 ```kotlin
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -32,72 +43,66 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class HomeViewModel(
-    private val repository: JobRepository,
+class PokemonListViewModel(
+    private val repository: PokemonListRepository,
+    private val savedStateHandle: SavedStateHandle,
     viewModelScope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main.immediate
     )
 ) : ViewModel(viewModelScope),  // ← Pass to superclass constructor
-    UiStateHolder<HomeUiState, HomeUiEvent> {
+    DefaultLifecycleObserver,   // ← Lifecycle awareness
+    UiStateHolder<PokemonListUiState, PokemonListUiEvent> {
     
-    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    override val uiState: StateFlow<HomeUiState> = _uiState
+    private val _uiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
+    override val uiState: StateFlow<PokemonListUiState> = _uiState
     
     // ⚠️ NEVER perform work in init {}
     
-    // Load data in lifecycle-aware callbacks
-    fun start(lifecycle: Lifecycle) {
-        viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                repository.getJobs().fold(
-                    ifLeft = { error ->
-                        _uiState.value = HomeUiState.Error(error.toUiMessage())
-                    },
-                    ifRight = { jobs ->
-                        _uiState.value = HomeUiState.Content(
-                            jobs = jobs.toImmutableList()
-                        )
-                    }
-                )
-            }
-        }
+    // Lifecycle-aware initialization replaces repeatOnLifecycle pattern
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadInitialPage()
     }
     
-    override fun onUiEvent(event: HomeUiEvent) {
-        when (event) {
-            is HomeUiEvent.Refresh -> refresh()
-            is HomeUiEvent.ItemClicked -> handleClick(event.id)
-        }
-    }
-    
-    private fun refresh() {
+    private fun loadInitialPage() {
         viewModelScope.launch {
-            _uiState.value = HomeUiState.Loading
-            repository.getJobs().fold(
+            _uiState.value = PokemonListUiState.Loading
+            repository.loadPage(limit = 20, offset = 0).fold(
                 ifLeft = { error ->
-                    _uiState.value = HomeUiState.Error(error.toUiMessage())
+                    _uiState.value = PokemonListUiState.Error(error.toUiMessage())
                 },
-                ifRight = { jobs ->
-                    _uiState.value = HomeUiState.Content(
-                        jobs = jobs.toImmutableList()
+                ifRight = { page ->
+                    _uiState.value = PokemonListUiState.Content(
+                        pokemons = page.pokemons,
+                        hasMore = page.hasMore,
+                        isLoadingMore = false
                     )
                 }
             )
         }
     }
     
-    private fun handleClick(id: String) {
-        // Handle item click
+    override fun onUiEvent(event: PokemonListUiEvent) {
+        when (event) {
+            is PokemonListUiEvent.LoadMore -> loadNextPage()
+            is PokemonListUiEvent.Retry -> loadInitialPage()
+        }
+    }
+    
+    private fun loadNextPage() {
+        // Pagination logic
     }
 }
 
 // UI State with immutable collections
-sealed interface HomeUiState {
-    data object Loading : HomeUiState
+sealed interface PokemonListUiState {
+    data object Loading : PokemonListUiState
     data class Content(
-        val jobs: ImmutableList<Job>
-    ) : HomeUiState
-    data class Error(val message: String) : HomeUiState
+        val pokemons: ImmutableList<Pokemon>,
+        val hasMore: Boolean,
+        val isLoadingMore: Boolean
+    ) : PokemonListUiState
+    data class Error(val message: String) : PokemonListUiState
 }
 
 // UI Events
@@ -115,14 +120,62 @@ interface UiStateHolder<S, E> {
 
 ## Parametric ViewModel (With ID/Parameters)
 
+**CRITICAL: Navigation 3 requires explicit ViewModel scoping for parametric routes**
+
+When using parametric routes (e.g., `PokemonDetail(id: Int)`), you MUST provide a unique `key` to `koinViewModel()` that includes the parameter. Without this, Navigation 3 will reuse the same ViewModel instance across different parameter values, causing stale data bugs.
+
+### Navigation Wiring (Required Pattern)
+
+```kotlin
+// :features:pokemondetail:wiring-ui/commonMain/PokemonDetailNavigationProviders.kt
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+entry<PokemonDetail> { route ->
+    val navigator: Navigator = koinInject()
+    
+    // ✅ REQUIRED: Key ViewModel by route parameter
+    val viewModel: PokemonDetailViewModel = koinViewModel(
+        key = "pokemon_detail_${route.id}",  // ← Essential for parametric routes
+        parameters = { parametersOf(route.id) }
+    )
+    
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // ✅ REQUIRED: Key DisposableEffect by route parameter
+    DisposableEffect(route.id) {  // ← Not viewModel!
+        lifecycleOwner.lifecycle.addObserver(viewModel)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(viewModel)
+        }
+    }
+    
+    PokemonDetailScreen(
+        viewModel = viewModel,
+        onBackClick = { navigator.goBack() }
+    )
+}
+```
+
+**Why This Matters:**
+- Without `key`, navigating from `PokemonDetail(1)` → `PokemonDetail(2)` reuses ViewModel with ID=1
+- Without `DisposableEffect(route.id)`, lifecycle observers aren't properly cleaned up
+- Navigation 3 entry scope is based on route **type**, not parameter values
+
+### ViewModel Implementation
+
 ```kotlin
 class PokemonDetailViewModel(
     private val pokemonId: Int,
     private val repository: PokemonDetailRepository,
+    private val savedStateHandle: SavedStateHandle,
     viewModelScope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main.immediate
     )
 ) : ViewModel(viewModelScope),
+    DefaultLifecycleObserver,
     UiStateHolder<PokemonDetailUiState, PokemonDetailUiEvent> {
     
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(
@@ -130,35 +183,14 @@ class PokemonDetailViewModel(
     )
     override val uiState: StateFlow<PokemonDetailUiState> = _uiState
     
-    fun start(lifecycle: Lifecycle) {
-        viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                repository.getById(pokemonId).fold(
-                    ifLeft = { error ->
-                        _uiState.value = PokemonDetailUiState.Error(
-                            message = error.toUiMessage()
-                        )
-                    },
-                    ifRight = { pokemon ->
-                        _uiState.value = PokemonDetailUiState.Content(
-                            pokemon = pokemon
-                        )
-                    }
-                )
-            }
-        }
+    // Lifecycle-aware initialization
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadPokemon()
     }
     
-    override fun onUiEvent(event: PokemonDetailUiEvent) {
-        when (event) {
-            is PokemonDetailUiEvent.Retry -> retry()
-            is PokemonDetailUiEvent.Favorite -> toggleFavorite()
-        }
-    }
-    
-    private fun retry() {
+    private fun loadPokemon() {
         viewModelScope.launch {
-            _uiState.value = PokemonDetailUiState.Loading
             repository.getById(pokemonId).fold(
                 ifLeft = { error ->
                     _uiState.value = PokemonDetailUiState.Error(
@@ -171,6 +203,13 @@ class PokemonDetailViewModel(
                     )
                 }
             )
+        }
+    }
+    
+    override fun onUiEvent(event: PokemonDetailUiEvent) {
+        when (event) {
+            is PokemonDetailUiEvent.Retry -> loadPokemon()
+            is PokemonDetailUiEvent.Favorite -> toggleFavorite()
         }
     }
     
@@ -200,6 +239,7 @@ class PokemonListViewModel(
         SupervisorJob() + Dispatchers.Main.immediate
     )
 ) : ViewModel(viewModelScope),
+    DefaultLifecycleObserver,
     UiStateHolder<PokemonListUiState, PokemonListUiEvent> {
     
     private val _uiState = MutableStateFlow<PokemonListUiState>(
@@ -209,18 +249,22 @@ class PokemonListViewModel(
     
     private var currentOffset = 0
     
-    fun start(lifecycle: Lifecycle) {
+    // Lifecycle-aware initialization
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadInitialPage()
+    }
+    
+    private fun loadInitialPage() {
         viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                loadPage()
-            }
+            loadPage()
         }
     }
     
     override fun onUiEvent(event: PokemonListUiEvent) {
         when (event) {
             is PokemonListUiEvent.LoadMore -> loadMore()
-            is PokemonListUiEvent.Retry -> retry()
+            is PokemonListUiEvent.Retry -> loadInitialPage()
         }
     }
     
@@ -397,8 +441,20 @@ fun LoginScreen(viewModel: LoginViewModel, onNavigateToHome: () -> Unit) {
 
 ## SavedStateHandle Pattern
 
+**Current Pattern (Delegate - SavedState 1.4.0+):**
+
+Use `by saved` delegate for automatic state persistence across configuration changes and process death.
+
 ```kotlin
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.serialization.saved
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class SearchPersistedState(
+    val query: String = "",
+    val lastResults: List<SearchResult> = emptyList()
+)
 
 class SearchViewModel(
     private val repository: SearchRepository,
@@ -409,15 +465,11 @@ class SearchViewModel(
 ) : ViewModel(viewModelScope),
     UiStateHolder<SearchUiState, SearchUiEvent> {
     
-    companion object {
-        private const val KEY_QUERY = "search_query"
-        private const val KEY_RESULTS = "search_results"
-    }
+    // ✨ Single line - automatic persistence (no manual calls needed)
+    private var persistedState by savedStateHandle.saved { SearchPersistedState() }
     
     private val _uiState = MutableStateFlow<SearchUiState>(
-        SearchUiState.Idle(
-            query = savedStateHandle.get<String>(KEY_QUERY) ?: ""
-        )
+        restoreUiState()
     )
     override val uiState: StateFlow<SearchUiState> = _uiState
     
@@ -429,18 +481,12 @@ class SearchViewModel(
     }
     
     private fun updateQuery(query: String) {
-        savedStateHandle[KEY_QUERY] = query
+        persistedState = persistedState.copy(query = query)  // ← Automatically persisted
         _uiState.value = SearchUiState.Idle(query)
     }
     
     private fun search() {
-        val currentState = _uiState.value
-        val query = when (currentState) {
-            is SearchUiState.Idle -> currentState.query
-            is SearchUiState.Results -> currentState.query
-            else -> return
-        }
-        
+        val query = persistedState.query
         if (query.isBlank()) return
         
         viewModelScope.launch {
@@ -454,17 +500,46 @@ class SearchViewModel(
                     )
                 },
                 ifRight = { results ->
-                    val immutableResults = results.toImmutableList()
-                    savedStateHandle[KEY_RESULTS] = results
+                    persistedState = persistedState.copy(
+                        lastResults = results  // ← Automatically persisted
+                    )
                     _uiState.value = SearchUiState.Results(
                         query = query,
-                        results = immutableResults
+                        results = results.toImmutableList()
                     )
                 }
             )
         }
     }
+    
+    private fun restoreUiState(): SearchUiState {
+        return if (persistedState.lastResults.isNotEmpty()) {
+            SearchUiState.Results(
+                query = persistedState.query,
+                results = persistedState.lastResults.toImmutableList()
+            )
+        } else {
+            SearchUiState.Idle(persistedState.query)
+        }
+    }
 }
+```
+
+**Key Benefits:**
+- ✅ **93% code reduction** - No manual JSON encoding/decoding
+- ✅ **Automatic persistence** - State saved on every property write
+- ✅ **Type-safe** - Uses kotlinx.serialization internally
+- ✅ **No manual calls** - No `persistState()` functions needed
+- ✅ **KMP compatible** - Works in `commonMain` source set
+
+**Critical Requirements:**
+1. Import: `androidx.lifecycle.serialization.saved` (NOT `androidx.savedstate.serialization.saved`)
+2. State type must be `@Serializable`
+3. Property name stability (renaming breaks restoration for existing users)
+
+**Reference Implementations:**
+- [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt)
+- [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt)
 
 sealed interface SearchUiState {
     val query: String
@@ -526,14 +601,11 @@ class MyViewModel(...) : ViewModel(...) {
     }
 }
 
-// ✅ CORRECT
-class MyViewModel(...) : ViewModel(...) {
-    fun start(lifecycle: Lifecycle) {
-        viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                loadData()  // Lifecycle-aware
-            }
-        }
+// ✅ CORRECT  
+class MyViewModel(...) : ViewModel(...), DefaultLifecycleObserver {
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadData()  // Lifecycle-aware, called when UI becomes visible
     }
 }
 ```
