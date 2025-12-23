@@ -60,14 +60,14 @@ Navigation 3
 
 1. Do not run iOS builds for routine validation; prefer Android
 2. Never store `CoroutineScope` as a field in ViewModels
-3. Never do work in ViewModel `init`; use lifecycle callbacks
-4. Repositories return `Either<RepoError, T>` (no `Result`, no nullable)
-5. Never swallow `CancellationException` (use `Either.catch` / `arrow.core.raise.catch`)
-6. No empty pass-through use cases (call repos directly when no orchestration is needed)
-7. Don’t export `:data`, `:ui`, `:wiring` to iOS (only `api` + `presentation`)
-8. No business logic in `:shared` (it is an umbrella/export module)
-9. No DI annotations in production classes (wire in wiring modules)
-10. Every `@Composable` needs a realistic `@Preview`
+3. Never do work in ViewModel `init`; override `onStart(owner: LifecycleOwner)` from `DefaultLifecycleObserver`
+4. Always inject `SavedStateHandle` in ViewModels and use `by saved` delegate for state persistence
+5. Repositories return `Either<RepoError, T>` (no `Result`, no nullable)
+6. Never swallow `CancellationException` (use `Either.catch` / `arrow.core.raise.catch`)
+7. No empty pass-through use cases (call repos directly when no orchestration is needed)
+8. Don't export `:data`, `:ui`, `:wiring` to iOS (only `api` + `presentation`)
+9. No business logic in `:shared` (it is an umbrella/export module)
+10. No DI annotations in production classes (wire in wiring modules)
 
 ## Essential Workflows
 

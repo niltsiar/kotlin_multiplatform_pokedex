@@ -47,6 +47,57 @@ fun JobRepository(api: JobApiService): JobRepository =
 - ✅ Simplifies testing (no mocking framework needed for interfaces)
 - ✅ Clean boundary between public API and internal implementation
 
+## SavedStateHandle in ViewModels
+
+**Rule:** All ViewModels MUST inject `SavedStateHandle` for state persistence.
+
+**Why:** Preserves state across:
+- Android configuration changes (rotation, language switch)
+- Android process death (low memory)
+- Desktop window state restoration
+- iOS SwiftUI view rebuilds (via shared ViewModels)
+
+**Platform Support:**
+- ✅ Android: Full native support via `viewModel { }` DSL
+- ✅ Desktop/JVM: Manual creation (`SavedStateHandle()`)
+- ✅ iOS: App state restoration when ViewModel recreated
+
+**Reference Implementations:**
+- [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) - Delegate pattern for scroll position + pagination
+- [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) - Delegate pattern for detail state
+- [PokemonListModule.kt](../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt) - Koin wiring example
+
+**Current Pattern (Delegate - SavedState 1.4.0+):**
+```kotlin
+import androidx.lifecycle.serialization.saved
+
+class MyViewModel(
+    private val repository: MyRepository,
+    private val savedStateHandle: SavedStateHandle,  // ← Always inject
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+) : ViewModel(viewModelScope), DefaultLifecycleObserver {
+    
+    // ✨ Single line - automatic persistence (93% code reduction)
+    private var persistedState by savedStateHandle.saved { MyPersistedState() }
+    
+    // State automatically persisted on every write
+    fun updateData() {
+        persistedState = persistedState.copy(...)
+        // No manual persistState() call needed!
+    }
+}
+```
+
+**Requirements:**
+- State type must be `@Serializable`
+- Import: `androidx.lifecycle.serialization.saved` (NOT `androidx.savedstate.serialization.saved`)
+- Dependencies: AndroidX Lifecycle 2.10.0-alpha07+, SavedState 1.4.0+
+
+**⚠️ Property Name Stability:**
+Renaming the property breaks state restoration for existing users (delegate uses property name as internal key).
+
+See [ViewModel Patterns Guide](../patterns/viewmodel_patterns.md#savedstatehandle-pattern) for complete examples.
+
 ## Wiring Modules with Platform-Specific Source Sets
 
 ### commonMain: Business Logic Wiring
@@ -285,7 +336,7 @@ class PokemonListViewModelTest : StringSpec({
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
             
-            viewModel.start(mockk(relaxed = true))
+            viewModel.onStart(TestLifecycleOwner())
             testScope.advanceUntilIdle()
             
             awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>().let { state ->
@@ -345,7 +396,7 @@ class PokemonListIntegrationTest : StringSpec({
         
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
-            viewModel.start(mockk(relaxed = true))
+            viewModel.onStart(TestLifecycleOwner())
             
             awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>()
             cancelAndIgnoreRemainingEvents()

@@ -1,9 +1,9 @@
 # iOS Integration Guide - SwiftUI + KMP ViewModels
 
 > **Status**: ✅ Production Pattern Established  
-> **Last Updated**: November 26, 2025  
-> **Current Pattern**: Direct Integration (`private var` ViewModel + `@State` for UI state)  
-> **Alternative**: Wrapper Pattern (`@ObservableObject` + `@StateObject`) available for complex apps  
+> **Last Updated**: December 22, 2025  
+> **Current Pattern**: Direct Integration (simplified - aligned with official Android KMP ViewModel guide)  
+> **Philosophy**: Keep it simple - ViewModels implement DefaultLifecycleObserver, SwiftUI calls lifecycle methods directly  
 > **Note**: This guide covers **iosApp** (native SwiftUI). For iOS Compose app (**iosAppCompose**), see Compose Multiplatform iOS documentation.
 
 ---
@@ -17,9 +17,18 @@ This project has **TWO iOS app options**:
 
 **This guide covers iosApp only.** The native SwiftUI approach was deliberately chosen for platform consistency and ecosystem access.
 
+### Key Features
+
+- ✅ **DefaultLifecycleObserver Support**: ViewModels implement `DefaultLifecycleObserver` for lifecycle-aware behavior
+- ✅ **Simple Direct Calls**: SwiftUI calls `onStart(owner)` / `onStop(owner)` directly from `.onAppear` / `.onDisappear`
+- ✅ **No Complex Infrastructure**: No custom LifecycleOwner/LifecycleRegistry - aligned with official Android KMP ViewModel guide
+- ✅ **Koin DI Integration**: Simple helper functions to get ViewModels from Koin
+- ✅ **SKIE Bridging**: StateFlow → AsyncSequence conversion for reactive UI updates
+- ✅ **ViewModelStore**: Stable ViewModel storage that survives SwiftUI view recreation
+
 ### Architecture Summary
 
-**Current Pattern**: Direct Integration (no separate wrapper layer)
+**Pattern**: Simplified Direct Integration (no wrapper layer, no complex lifecycle infrastructure)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -27,8 +36,10 @@ This project has **TWO iOS app options**:
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │  Views (SwiftUI)                                       │  │
 │  │  - PokemonListView                                     │  │
-│  │    • private var viewModel (from Koin)                │  │
+│  │    • viewModel (from Koin)                            │  │
 │  │    • @State var uiState (bridges StateFlow)           │  │
+│  │    • .onAppear → viewModel.onStart()                  │  │
+│  │    • .onDisappear → viewModel.onStop()                │  │
 │  │  - PokemonDetailView                                   │  │
 │  │  - NavigationStack (native iOS)                        │  │
 │  └───────────────────────────────────────────────────────┘  │
@@ -39,7 +50,7 @@ This project has **TWO iOS app options**:
 │  │  - Koin DI initialization                             │  │
 │  │  - Helper functions (getPokemonListViewModel)         │  │
 │  │  - StateFlow → AsyncSequence bridging                 │  │
-│  │  - KMP ViewModels consumed directly via .task         │  │
+│  │  - SimpleViewModelStoreOwner (survives view recreate) │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                            │
@@ -50,6 +61,7 @@ This project has **TWO iOS app options**:
 │  │  Presentation Layer (exported to iOS)                 │  │
 │  │  - PokemonListViewModel                               │  │
 │  │  - StateFlow<UiState>                                 │  │
+│  │  - DefaultLifecycleObserver implementation            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │  Data Layer (NOT exported to iOS)                     │  │
@@ -62,7 +74,268 @@ This project has **TWO iOS app options**:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Alternative Pattern Available**: Wrapper Pattern with `@ObservableObject` (see ViewModel Integration Approaches section below)
+---
+
+## 🔄 Simplified iOS Lifecycle Pattern
+
+**Philosophy**: Align with the [official Android KMP ViewModel guide](https://developer.android.com/kotlin/multiplatform/viewmodel). 
+ViewModels implement `DefaultLifecycleObserver`, and we just call the lifecycle methods directly from SwiftUI.
+
+### SimpleViewModelStoreOwner
+
+A minimal ViewModelStore provider that survives SwiftUI view recreation:
+
+```kotlin
+// core/di/src/iosMain/kotlin/.../ios/ViewModelStoreOwnerProvider.kt
+class SimpleViewModelStoreOwner : ViewModelStoreOwner {
+    override val viewModelStore: ViewModelStore = ViewModelStore()
+}
+```
+
+**That's it!** No `LifecycleOwner`, no `LifecycleRegistry`, no state management. Just a ViewModelStore to keep ViewModels alive.
+
+### SwiftUI Integration Pattern
+
+SwiftUI views call ViewModel lifecycle methods directly:
+
+```swift
+// iosApp/Views/PokemonListView.swift
+import SwiftUI
+import Shared
+
+struct PokemonListView: View {
+    private let viewModelKey = "PokemonList"
+    private var viewModel: PokemonListViewModel { 
+        KoinIosKt.getPokemonListViewModel(key: viewModelKey) 
+    }
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .onAppear {
+                // Directly call ViewModel lifecycle method
+                // (aligned with official Android KMP ViewModel guide)
+                viewModel.onStart(owner: DummyLifecycleOwner())
+            }
+            .onDisappear {
+                // Call lifecycle stop method
+                viewModel.onStop(owner: DummyLifecycleOwner())
+            }
+            .task {
+                // SKIE: StateFlow → AsyncSequence bridging
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        switch uiState {
+        case is PokemonListUiStateLoading:
+            ProgressView("Loading...")
+        case let content as PokemonListUiStateContent:
+            PokemonListContent(pokemons: content.pokemons)
+        case let error as PokemonListUiStateError:
+            ErrorView(message: error.message)
+        default:
+            EmptyView()
+        }
+    }
+}
+```
+
+**Pattern Highlights**:
+- ✅ Get ViewModel via Koin helper with stable key
+- ✅ Call `viewModel.onStart(owner)` in `.onAppear` → starts data loading
+- ✅ Call `viewModel.onStop(owner)` in `.onDisappear` → stops background work
+- ✅ `.task` handles StateFlow observation (auto-cancels on view disappear)
+- ✅ No complex lifecycle infrastructure needed!
+
+### DummyLifecycleOwner
+
+Since SwiftUI doesn't have a native `LifecycleOwner` concept, we use a simple stub:
+
+```swift
+// iosApp/DummyLifecycleOwner.swift
+import Shared
+
+class DummyLifecycleOwner: Shared.LifecycleOwner {
+    private let _lifecycle = Shared.LifecycleRegistry(owner: nil)
+    
+    var lifecycle: Shared.Lifecycle {
+        return _lifecycle
+    }
+}
+```
+
+This is just to satisfy the API signature. The actual lifecycle management happens through the direct method calls.
+    
+    // Called from SwiftUI .onDisappear
+    fun handleOnDisappear() {
+        lifecycleRegistry.currentState = Lifecycle.State.CREATED
+    }
+}
+```
+
+**Key Features**:
+- ✅ Combines `ViewModelStoreOwner` + `LifecycleOwner` in one class
+- ✅ Uses `LifecycleRegistry` for manual lifecycle state management
+- ✅ Transitions to `STARTED` on `.onAppear`, `CREATED` on `.onDisappear`
+- ✅ Auto-registers `DefaultLifecycleObserver` ViewModels via Koin extension
+
+### Auto-Registration Pattern
+
+ViewModels implementing `DefaultLifecycleObserver` are automatically registered with the lifecycle:
+
+```kotlin
+// shared/src/iosMain/kotlin/.../di/KoinIos.kt
+inline fun <reified T : ViewModel> LifecycleViewModelStoreOwner.koinViewModel(
+    qualifier: Qualifier? = null,
+    noinline parameters: ParametersDefinition? = null,
+): T {
+    val viewModel = koinViewModel(
+        vmClass = T::class,
+        viewModelStore = viewModelStore,
+        qualifier = qualifier,
+        parameters = parameters
+    )
+    
+    // Auto-register DefaultLifecycleObserver ViewModels with lifecycle
+    if (viewModel is DefaultLifecycleObserver) {
+        lifecycle.addObserver(viewModel)
+    }
+    
+    return viewModel
+}
+```
+
+**Benefits**:
+- ✅ ViewModels don't need manual lifecycle setup code
+- ✅ Swift views call simple `handleOnAppear()`/`handleOnDisappear()`
+- ✅ Consistent lifecycle behavior across Android/iOS/Desktop
+
+### SwiftUI Integration Pattern
+
+SwiftUI views drive the lifecycle through `.onAppear` and `.onDisappear`:
+
+```swift
+// iosApp/Views/PokemonListView.swift
+import SwiftUI
+import Shared
+
+struct PokemonListView: View {
+    // Get combined ViewModelStore + LifecycleOwner
+    private let owner = KoinIosKt.getViewModelStoreOwner(key: "PokemonListView")
+    
+    // Get ViewModel from owner (auto-registers with lifecycle)
+    private lazy var viewModel: PokemonListViewModel = {
+        owner.koinViewModel()
+    }()
+    
+    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
+    
+    var body: some View {
+        content
+            .onAppear {
+                // Notify lifecycle: CREATED → STARTED
+                owner.handleOnAppear()
+            }
+            .onDisappear {
+                // Notify lifecycle: STARTED → CREATED
+                owner.handleOnDisappear()
+            }
+            .task {
+                // SKIE: StateFlow → AsyncSequence bridging
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+    
+    @ViewBuilder
+    private var content: some View {
+        switch uiState {
+        case is PokemonListUiStateLoading:
+            ProgressView("Loading...")
+        case let content as PokemonListUiStateContent:
+            // Render Pokemon list
+            PokemonListContent(pokemons: content.pokemons)
+        case let error as PokemonListUiStateError:
+            ErrorView(message: error.message)
+        default:
+            EmptyView()
+        }
+    }
+}
+```
+
+**Pattern Highlights**:
+- ✅ Get `LifecycleViewModelStoreOwner` from Koin with stable key
+- ✅ Get ViewModel via extension (auto-registration happens)
+- ✅ Call `handleOnAppear()`in `.onAppear` → triggers `onStart()`
+- ✅ Call `handleOnDisappear()` in `.onDisappear` → stops background work
+- ✅ `.task` handles StateFlow observation (auto-cancels)
+
+### Parametric ViewModels
+
+Same pattern works with parametric ViewModels:
+
+```swift
+// iosApp/Views/PokemonDetailView.swift
+struct PokemonDetailView: View {
+    let pokemonId: Int
+    
+    private let owner: LifecycleViewModelStoreOwner
+    private let viewModel: PokemonDetailViewModel
+    @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
+    
+    init(pokemonId: Int) {
+        self.pokemonId = pokemonId
+        
+        // Get stable owner with unique key
+        let ownerKey = "PokemonDetailView_\(pokemonId)"
+        self.owner = KoinIosKt.getViewModelStoreOwner(key: ownerKey)
+        
+        // Get parametric ViewModel (auto-registers with lifecycle)
+        self.viewModel = KoinIosKt.getPokemonDetailViewModel(
+            owner: owner,
+            pokemonId: Int32(pokemonId)
+        )
+    }
+    
+    var body: some View {
+        content
+            .onAppear {
+                owner.handleOnAppear()
+            }
+            .onDisappear {
+                owner.handleOnDisappear()
+            }
+            .task {
+                for await state in viewModel.uiState {
+                    uiState = state
+                }
+            }
+    }
+}
+```
+
+### Lifecycle State Transitions
+
+**Lifecycle flow**:
+```
+View Created → owner.handleOnAppear() → STARTED → ViewModel.onStart() → Load Data
+View Hidden → owner.handleOnDisappear() → CREATED → Background work continues
+View Destroyed → ViewModelStore cleared → ViewModel.onCleared()
+```
+
+**Key Benefits**:
+- ✅ ViewModels use standard `DefaultLifecycleObserver.onStart()` pattern
+- ✅ No platform-specific lifecycle code in ViewModels
+- ✅ Consistent with Android/Desktop Compose (uses `LocalLifecycleOwner`)
+- ✅ No need for manual `start(lifecycle)` or `repeatOnLifecycle` calls
+- ✅ Clean separation: SwiftUI handles view lifecycle, ViewModel handles data lifecycle
 
 ---
 

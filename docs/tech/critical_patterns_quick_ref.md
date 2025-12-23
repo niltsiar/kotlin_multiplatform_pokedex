@@ -1,6 +1,6 @@
 # Critical Patterns Quick Reference
 
-**Last Updated:** November 26, 2025
+**Last Updated:** December 22, 2025
 
 > **Purpose**: Canonical source of truth for the 6 core architectural patterns in this Kotlin Multiplatform project. All other documentation should link to this file rather than duplicating these definitions.
 
@@ -8,68 +8,91 @@
 
 ## ViewModel Pattern
 
-**Rule**: All ViewModels MUST follow the lifecycle-aware constructor injection pattern.
+**Rule**: All ViewModels MUST implement `DefaultLifecycleObserver` for lifecycle-aware operations.
 
 ### Required Elements
 
 1. **Extend `androidx.lifecycle.ViewModel`**
-2. **Pass `viewModelScope` as constructor parameter** with default value
-3. **Pass scope to superclass constructor** (NOT stored as field)
-4. **NO work in `init` block**
-5. **Lifecycle-aware loading** via `repeatOnLifecycle`
-6. **Implement `UiStateHolder<S, E>`**
-7. **Use `kotlinx.collections.immutable` types** in UI state
+2. **Implement `DefaultLifecycleObserver`** for lifecycle awareness
+3. **Pass `viewModelScope` as constructor parameter** with default value
+4. **Pass scope to superclass constructor** (NOT stored as field)
+5. **Inject `SavedStateHandle` and use `by saved` delegate** for state persistence
+6. **NO work in `init` block**
+7. **Override `onStart(owner: LifecycleOwner)`** for initialization logic
+8. **Implement `UiStateHolder<S, E>`**
+9. **Use `kotlinx.collections.immutable` types** in UI state
 
 ### Canonical Example
 
 ```kotlin
-class HomeViewModel(
-    private val repository: JobRepository,
+import androidx.lifecycle.serialization.saved
+
+class PokemonListViewModel(
+    private val repository: PokemonListRepository,
+    private val savedStateHandle: SavedStateHandle,
     viewModelScope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main.immediate
     )
 ) : ViewModel(viewModelScope),  // ← Pass to superclass constructor
-    UiStateHolder<HomeUiState, HomeUiEvent> {
+    DefaultLifecycleObserver,   // ← Lifecycle awareness
+    UiStateHolder<PokemonListUiState, PokemonListUiEvent> {
     
-    private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    override val uiState: StateFlow<HomeUiState> = _uiState
+    // ✨ Automatic state persistence with delegate
+    private var persistedState by savedStateHandle.saved { PokemonListPersistedState() }
+    
+    private val _uiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
+    override val uiState: StateFlow<PokemonListUiState> = _uiState
     
     // ⚠️ NEVER perform work in init {}
     
-    // Load data in lifecycle-aware callbacks
-    fun start(lifecycle: Lifecycle) {
+    // Lifecycle-aware initialization (replaces repeatOnLifecycle pattern)
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        loadInitialPage()
+    }
+    
+    private fun loadInitialPage() {
         viewModelScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                repository.getJobs().fold(
-                    ifLeft = { error -> 
-                        _uiState.value = HomeUiState.Error(error.toUiMessage()) 
-                    },
-                    ifRight = { jobs -> 
-                        _uiState.value = HomeUiState.Content(jobs.toImmutableList())
-                    }
-                )
-            }
+            _uiState.value = PokemonListUiState.Loading
+            repository.loadPage(limit = 20, offset = 0).fold(
+                ifLeft = { error ->
+                    _uiState.value = PokemonListUiState.Error(error.toUiMessage())
+                },
+                ifRight = { page ->
+                    persistedState = persistedState.copy(
+                        pokemons = page.pokemons  // ← Automatically persisted
+                    )
+                    _uiState.value = PokemonListUiState.Content(
+                        pokemons = page.pokemons.toImmutableList(),
+                        hasMore = page.hasMore
+                    )
+                }
+            )
         }
     }
     
-    override fun onUiEvent(event: HomeUiEvent) {
+    override fun onUiEvent(event: PokemonListUiEvent) {
         when (event) {
-            is HomeUiEvent.Refresh -> refresh()
-            is HomeUiEvent.ItemClicked -> handleClick(event.id)
+            is PokemonListUiEvent.LoadMore -> loadNextPage()
+            is PokemonListUiEvent.Retry -> loadInitialPage()
         }
     }
 }
 ```
 
+**Note**: ViewModels implementing `DefaultLifecycleObserver` are automatically registered with the lifecycle in Compose (via `LocalLifecycleOwner`) and in iOS (via custom `LifecycleViewModelStoreOwner`).
+
 ### Common Violations
 
 | ❌ Anti-Pattern | ✅ Correct Pattern |
 |----------------|-------------------|
-| `class MyViewModel : ViewModel()` | `class MyViewModel(viewModelScope: CoroutineScope = ...) : ViewModel(viewModelScope)` |
+| `class MyViewModel : ViewModel()` | `class MyViewModel(...) : ViewModel(...), DefaultLifecycleObserver` |
 | `private val scope = CoroutineScope(...)` | Pass `viewModelScope` to constructor |
-| `init { loadData() }` | `fun start(lifecycle: Lifecycle) { ... }` |
+| No `SavedStateHandle` parameter | Inject `SavedStateHandle` and use `by saved` delegate |
+| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { loadData() }` |
+| `fun start(lifecycle: Lifecycle) { repeatOnLifecycle... }` | `override fun onStart(owner: LifecycleOwner) { ... }` |
 | `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` |
-| Work in constructor | Load in lifecycle callbacks |
+| Work in constructor | Work in `onStart()`lifecycle callback |
 
 ---
 
@@ -193,16 +216,18 @@ val jobsDataModule = module {
 
 ## Navigation 3 Pattern
 
-**Rule**: Use Navigation 3 with route objects in `:api`, UI in `:ui`, wiring in platform-specific source sets.
+**Rule**: Use Koin Navigation 3 DSL with `navigation<Route>` in modules and `koinEntryProvider()` in app.
 
 ### Required Elements
 
 1. **Route objects**: Plain Kotlin objects/data classes (NO `@Serializable`)
 2. **Navigator**: Manages explicit back stack (`SnapshotStateList`)
-3. **EntryProviderInstaller**: `typealias EntryProviderInstaller = EntryProviderScope<Any>.() -> Unit`
-4. **Platform-specific wiring**: `androidMain`/`jvmMain` provide `EntryProviderInstaller` via Koin
+3. **Koin Navigation 3 DSL**: Use `navigation<Route>` in wiring modules (commonMain)
+4. **Imports**: `org.koin.dsl.navigation3.navigation` and `org.koin.compose.navigation3.koinEntryProvider`
 5. **Metadata-based animations**: `NavDisplay.transitionSpec()` for enter, `NavDisplay.popTransitionSpec()` for exit
-6. **Koin collection**: `Set<EntryProviderInstaller>` aggregates all feature navigation
+6. **Automatic aggregation**: `koinEntryProvider()` collects all `navigation<T>` entries automatically
+7. **Parametric ViewModel scoping**: For routes with parameters, MUST use `koinViewModel(key = "screen_${route.param}", ...)`
+8. **Lifecycle registration**: Use `DisposableEffect(route.param)` to scope lifecycle observer registration to route instance
 
 ### Canonical Example
 
@@ -210,11 +235,15 @@ val jobsDataModule = module {
 // Route object in :api module (plain Kotlin)
 data class PokemonDetail(val id: Int)
 
-// EntryProviderInstaller in :wiring androidMain/jvmMain
-internal fun pokemonDetailNavigationProvider(
-    navigator: Navigator
-): EntryProviderInstaller = {
-    entry<PokemonDetail>(
+// Koin wiring module in :wiring-ui/commonMain
+import org.koin.dsl.navigation3.navigation
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.dsl.module
+
+val pokemonDetailNavigationModule = module {
+    // Declare navigation entry using Koin's Navigation 3 DSL
+    navigation<PokemonDetail>(
         metadata = NavDisplay.transitionSpec(
             slideInHorizontally(initialOffsetX = { it }) +
             fadeIn(animationSpec = tween(300))
@@ -222,19 +251,45 @@ internal fun pokemonDetailNavigationProvider(
             slideOutHorizontally(targetOffsetX = { it }) +
             fadeOut(animationSpec = tween(300))
         )
-    ) { key ->
+    ) { route ->
+        val navigator: Navigator = koinInject()
+        // CRITICAL: Use unique key for parametric routes
+        val viewModel = koinViewModel<PokemonDetailViewModel>(
+            key = "pokemon_detail_${route.id}"
+        ) { parametersOf(route.id) }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        
+        // Register ViewModel with lifecycle (implements DefaultLifecycleObserver)
+        // Key by route.id to properly dispose when navigating to different Pokemon
+        DisposableEffect(route.id) {
+            lifecycleOwner.lifecycle.addObserver(viewModel)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(viewModel)
+            }
+        }
+        
         PokemonDetailScreen(
-            pokemonId = key.id,
-            viewModel = koinInject { parametersOf(key.id) },
+            pokemonId = route.id,
+            viewModel = viewModel,
             onBack = { navigator.goBack() }
         )
     }
 }
 
-// Koin wiring module (provides Set<EntryProviderInstaller>)
-val pokemonDetailWiringModule = module {
-    single<EntryProviderInstaller> {
-        pokemonDetailNavigationProvider(get())
+// App.kt - Automatic aggregation
+import org.koin.compose.navigation3.koinEntryProvider
+
+@Composable
+fun App() {
+    KoinApplication(/* modules */) {
+        val navigator: Navigator = koinInject()
+        val entryProvider = koinEntryProvider()  // Auto-collects all navigation<T>
+        
+        NavDisplay(
+            backStack = navigator.backStack,
+            onBack = { navigator.goBack() },
+            entryProvider = entryProvider
+        )
     }
 }
 ```
@@ -244,10 +299,15 @@ val pokemonDetailWiringModule = module {
 | ❌ Anti-Pattern | ✅ Correct Pattern |
 |----------------|-------------------|
 | `@Serializable` on route objects | Plain Kotlin objects/data classes |
+| Wrong import: `org.koin.compose.module.navigation` | `org.koin.dsl.navigation3.navigation` |
+| Wrong import: `org.koin.dsl.navigation3.koinEntryProvider` | `org.koin.compose.navigation3.koinEntryProvider` |
+| Manual `Set<EntryProviderInstaller>` collection | Use `koinEntryProvider()` auto-aggregation |
+| No `key` for parametric ViewModels | `koinViewModel(key = "screen_${route.id}")` |
 | Direct transition parameters to `entry<T>()` | Use `metadata = NavDisplay.transitionSpec(...)` |
 | UI screens in `:api` module | UI in `:ui`, routes in `:api` |
 | Export navigation to iOS | Navigation is Compose-specific, NOT exported |
 | String-based routes | Type-safe route objects |
+| No lifecycle registration for ViewModels | Use `DisposableEffect(route.param)` pattern |
 
 ---
 
@@ -300,7 +360,7 @@ class PokemonListViewModelSpec : FreeSpec({
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
             
-            viewModel.start(mockk(relaxed = true))
+            viewModel.loadInitialPage()  // Call public methods directly
             testScope.advanceUntilIdle()
             
             val content = awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>()

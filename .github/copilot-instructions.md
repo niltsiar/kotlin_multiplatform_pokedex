@@ -14,20 +14,7 @@ All modes should include the shared base prompt:
 
 - [`docs/agent-prompts/base_agent_prompt.md`](../docs/agent-prompts/base_agent_prompt.md)
 
-Specialized deltas:
-
-- Product Design → [`product_designer_agent_system_prompt_DELTA.md`](../docs/agent-prompts/product_designer_agent_system_prompt_DELTA.md)
-- UI/UX Design (Compose-first) → [`uiux_agent_system_prompt_DELTA.md`](../docs/agent-prompts/uiux_agent_system_prompt_DELTA.md)
-- Screen Implementation (Compose) → [`ui_ux_system_agent_for_generic_screen_DELTA.md`](../docs/agent-prompts/ui_ux_system_agent_for_generic_screen_DELTA.md)
-- Screen Implementation (SwiftUI) → [`ui_ux_system_agent_for_swiftui_screen_DELTA.md`](../docs/agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md)
-- KMP Mobile Expert → [`kmp_mobile_expert_agent_system_prompt_DELTA.md`](../docs/agent-prompts/kmp_mobile_expert_agent_system_prompt_DELTA.md)
-- Onboarding → [`onboarding_agent_system_prompt_DELTA.md`](../docs/agent-prompts/onboarding_agent_system_prompt_DELTA.md)
-- User Flows → [`user_flow_agent_system_prompt_DELTA.md`](../docs/agent-prompts/user_flow_agent_system_prompt_DELTA.md)
-- Testing Strategy → [`testing_agent_system_prompt_DELTA.md`](../docs/agent-prompts/testing_agent_system_prompt_DELTA.md)
-- Backend → [`backend_agent_system_prompt_DELTA.md`](../docs/agent-prompts/backend_agent_system_prompt_DELTA.md)
-- Documentation → [`documentation_agent_system_prompt_DELTA.md`](../docs/agent-prompts/documentation_agent_system_prompt_DELTA.md)
-
-Full catalog: [`docs/agent-prompts/README.md`](../docs/agent-prompts/README.md)
+**Canonical agent routing table:** See [`docs/agent-prompts/README.md`](../docs/agent-prompts/README.md#-agent-routing-table-canonical) for complete routing table.
 
 ## Context Packs (LLM Efficiency)
 

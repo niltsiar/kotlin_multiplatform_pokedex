@@ -22,7 +22,7 @@ Koin is a **runtime dependency injection** framework for Kotlin Multiplatform wi
 - ✅ Lightweight (no code generation or reflection)
 - ✅ Easy testing with module overrides
 
-**Version**: Koin 4.0.1
+**Version**: Koin 4.2.0-beta2
 
 ---
 
@@ -32,7 +32,7 @@ Koin is a **runtime dependency injection** framework for Kotlin Multiplatform wi
 
 ```toml
 [versions]
-koin = "4.0.1"
+koin = "4.2.0-beta2"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }

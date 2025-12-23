@@ -1,6 +1,6 @@
 # Project Conventions (Architecture, Modules, DI, Errors, Testing)
 
-**Last Updated:** November 26, 2025
+**Last Updated:** December 22, 2025
 
 > **Purpose**: Master reference for cross-cutting rules covering architecture, modules, dependency injection, error handling, and testing conventions.
 
@@ -59,9 +59,8 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
   │   └── PokemonListModule.kt          (Koin module: repos, ViewModels)
 
 :features:pokemonlist:wiring-ui/
-  ├── src/androidMain/kotlin/           (Android Compose navigation registration)
-  ├── src/jvmMain/kotlin/               (Desktop Compose navigation registration)
-  └── src/iosMain/kotlin/               (iOS Compose navigation registration; iosAppCompose only)
+  └── src/commonMain/kotlin/            (Compose navigation registration - all platforms: Android, Desktop, iOS Compose)
+      └── PokemonListNavigationProviders.kt  (Navigation entry provider + lifecycle registration)
 ```
 
 ### When to Share Infrastructure (:core modules)
@@ -224,9 +223,9 @@ val jobsModule = module {
 ## Dependency Injection (Koin)
 - Use Koin 4.0.1 for DI across all platforms.
 - Keep production classes free of DI annotations. Use Koin's `module { }` DSL in wiring modules.
-- Root configuration: `coreModule()` and `navigationAggregationModule` composed directly with `+` operator.
+- Root configuration: `coreModule()` composed with feature modules directly using `+` operator.
 - Use wiring/aggregation modules to define Koin modules for feature dependencies.
-- Platform-specific modules in source sets (androidMain/jvmMain) for UI dependencies.
+- Platform-specific modules in source sets (androidMain/jvmMain/iosMain) when needed; prefer commonMain for Compose Multiplatform shared code.
 
 ### Wiring modules and Gradle Compilation Avoidance
 - Wiring modules are created specifically to improve build speed by leveraging Gradle's Compilation Avoidance. See:
@@ -288,7 +287,17 @@ kotlin {
 - Define `UiStateHolder<S, E>` as an interface; have viewmodels implement it. One-time events should be emitted via a `OneTimeEventEmitter<E>` backed by a Channel and include `suspend fun emit(event: E)` so ViewModels can delegate to a reusable `EventChannel<E>`.
 - Keep navigation contracts in feature `api` (plain data classes/objects for Navigation 3); implementations in feature modules; aggregate via wiring where needed.
 - **ViewModels are KMP and shared across all platforms** (Android, Desktop, iOS): defined in `:features:<feature>:presentation` modules, exported to iOS via `:shared` framework.
-- ViewModels: all ViewModels must extend `androidx.lifecycle.ViewModel` (KMP). Do not perform work in `init`. Be lifecycle-aware (load on lifecycle callbacks). Do NOT store a `CoroutineScope` field; instead pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally. Use `SavedStateHandle` when needed to restore state/inputs. Do not expose mutable collections; prefer `kotlinx.collections.immutable` types. Implement `OneTimeEventEmitter<E>` by delegation to `EventChannel<E>` located in `:core:util`.
+- **ViewModels:** Follow the canonical [ViewModel Pattern](critical_patterns_quick_ref.md#viewmodel-pattern). All ViewModels extend `androidx.lifecycle.ViewModel`, implement `DefaultLifecycleObserver`, inject `SavedStateHandle` and use `by saved` delegate for state persistence, pass `viewModelScope` as constructor parameter (NOT stored as field), and use lifecycle-aware initialization via `onStart(owner: LifecycleOwner)`. See [ViewModel Pattern Guide](../patterns/viewmodel_patterns.md) for complete implementation details.
+  - **Reference Implementations:**
+    - [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) + [Tests](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt)
+    - [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) + [Tests](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt)
+  - **SavedStateHandle Delegate Success Story:**
+    Migrating from manual JSON serialization to `by saved` delegate achieved **93% boilerplate reduction**:
+    - Manual approach: ~40 lines (JSON encoder/decoder setup, restoration logic, persist() calls)
+    - Delegate approach: ~3 lines (`private var state by savedStateHandle.saved { InitialState() }`)
+    - See [migration comparison](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt#L33-35) and [delegate usage](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt#L35-36)
+    - **Automatic persistence:** State saved on every property write, no manual calls needed
+    - **Requires:** androidx.lifecycle.serialization 2.10.0-alpha07+, `@Serializable` state types
 - **Compose UI is cross-platform**: Lives in `:features:<feature>:ui` modules (Android + JVM + iOS Compose). Native SwiftUI app (iosApp) consumes shared ViewModels via :shared framework using Direct Integration pattern (see `ios_integration.md`). iOS Compose app (iosAppCompose) uses shared Compose UI from :ui modules.
 
 ## iOS Shared Umbrella
@@ -419,19 +428,6 @@ See [kotest_smart_casting_quick_ref.md](./kotest_smart_casting_quick_ref.md) for
 - **Remove redundant tests**: If property test covers 1000 scenarios, delete concrete tests that test 1-2 scenarios
 - Use Kotest `checkAll`/`forAll` in **androidUnitTest/** for 1000x more coverage per test
 
-**Example:**
-```kotlin
-// ✅ KEEP: Property test (covers 200 scenarios)
-"property: HTTP error codes always produce Error state" {
-    checkAll(Arb.int(400..599)) { httpCode ->
-        // Test logic - runs 1000 times
-    }
-}
-
-// ❌ REMOVE: Redundant concrete test
-"should return Http 404 error" { /* ... */ }  // Already covered by property test
-```
-
 See complete guide: [testing_strategy.md](./testing_strategy.md#property-based-testing-primary-strategy)
 
 ### Flow Testing with Turbine (MANDATORY for ViewModels)
@@ -441,42 +437,6 @@ See complete guide: [testing_strategy.md](./testing_strategy.md#property-based-t
 - **Never use Thread.sleep()** in tests (slow, flaky, unpredictable)
 - **Always use Turbine + TestDispatcher** for deterministic flow testing
 - **ViewModel pattern**: Inject `testScope` via constructor, no `Dispatchers.setMain/resetMain` needed
-
-**Setup:**
-```kotlin
-// gradle/libs.versions.toml
-turbine = "1.2.0"
-
-// androidUnitTest dependencies
-implementation(libs.turbine)
-```
-
-**Example:**
-```kotlin
-@OptIn(ExperimentalCoroutinesApi::class)
-class ViewModelTest : StringSpec({
-    val testDispatcher = StandardTestDispatcher()
-    val testScope = TestScope(testDispatcher)
-    
-    "should emit Loading then Content" {
-        val vm = MyViewModel(mockRepo, testScope)
-        
-        vm.uiState.test {
-            awaitItem() shouldBe Loading
-            vm.load()
-            testDispatcher.scheduler.advanceUntilIdle()
-            awaitItem() shouldBe Content
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-})
-```
-
-**Why Turbine?**
-- ✅ Deterministic (works with TestDispatcher)
-- ✅ Expressive (`awaitItem()`, `skipItems()`, `cancelAndIgnoreRemainingEvents()`)
-- ✅ Fast (no Thread.sleep, controlled time)
-- ✅ Flow-specific (built for Kotlin coroutines)
 
 See complete guide: [testing_strategy.md](./testing_strategy.md#flow-testing-with-turbine)
 
@@ -620,7 +580,7 @@ kotlin {
 **Key files to reference**:
 - `features/pokemondetail/api/src/commonMain/.../PokemonDetail.kt` — Route with parameter
 - `features/pokemondetail/presentation/src/commonMain/.../PokemonDetailViewModel.kt` — Parametric ViewModel
-- `features/pokemondetail/wiring/src/androidMain/.../PokemonDetailNavigationProvider.kt` — Navigation with animations
+- `features/pokemondetail/wiring-ui/src/commonMain/.../PokemonDetailNavigationProviders.kt` — Navigation with animations
 - `features/pokemondetail/wiring/src/commonMain/kotlin/...Module.kt` — Koin with `parametersOf`
 - `features/pokemondetail/ui/src/commonMain/.../PokemonDetailScreen.kt` — Stateful UI with @Preview variations
 - `iosApp/iosApp/Views/PokemonDetailView.swift` — iOS parametric ViewModel usage

@@ -1,6 +1,6 @@
 # Testing Strategy Guidelines: Mobile-First Approach
 
-**Last Updated:** November 26, 2025
+**Last Updated:** December 22, 2025
 
 **Purpose**: Define a mobile-first testing strategy that maximizes testing capabilities within Kotlin Multiplatform framework limitations.
 
@@ -50,6 +50,20 @@ Every production code file MUST have a corresponding test file. Tests are not op
 4. **Less Maintenance**: One property test replaces dozens of concrete tests
 5. **Regression Protection**: Random data catches future breaking changes
 
+### Project Metrics (Real Implementation)
+
+**Current Property Test Coverage:**
+- **Total Property Tests**: 34 tests across ViewModel and Repository layers
+- **Generated Scenarios**: 34,000+ test cases per test run (34 tests × ~1000 iterations)
+- **Coverage Ratio**: ~40% property tests, ~60% concrete tests (documentation + edge cases)
+- **Coverage Multiplier**: 1000× more scenarios than concrete tests
+
+**Example Implementations:**
+- [PokemonListViewModelTest.kt#L235-240](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt#L235-240) — HTTP error code property test (400-599 range)
+- [PokemonDetailViewModelTest.kt#L272-310](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L272-310) — Success state property tests
+- [PokemonDetailViewModelTest.kt#L315-375](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L315-375) — Error handling property tests
+- [PokemonDetailViewModelTest.kt#L404-420](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L404-420) — ViewModel ID scoping property test
+
 ### When to Use Property-Based Tests
 
 **ALWAYS use property tests for:**
@@ -67,62 +81,21 @@ Every production code file MUST have a corresponding test file. Tests are not op
 
 ### Property Test Examples
 
-```kotlin
-// ✅ GOOD: Property-based test
-"property: HTTP error codes always produce Error state with code in message" {
-    checkAll(Arb.int(400..599)) { httpCode ->
-        val error = RepoError.Http(httpCode, "Error")
-        coEvery { mockRepository.load() } returns Either.Left(error)
-        
-        viewModel.load()
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        val state = viewModel.uiState.value
-        state.shouldBeInstanceOf<UiState.Error>()
-        state.message.contains(httpCode.toString()) shouldBe true
-    }
-}
-// Replaces 200 concrete tests (one per HTTP code)
-
-// ❌ BAD: Redundant concrete test
-"should return Http 404 error" {
-    val error = RepoError.Http(404, "Not found")
-    // ... same test logic
-}
-// Delete - already covered by property test above
-```
+**See real implementations:**
+- [PokemonListViewModelTest.kt#L235-240](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt#L235-240) — HTTP error property test
+- [PokemonDetailViewModelTest.kt#L272-310](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L272-310) — Success state properties
+- [PokemonDetailViewModelTest.kt#L315-375](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L315-375) — Error handling properties
 
 ### Kotest Property Testing Basics
 
-```kotlin
-import io.kotest.property.Arb
-import io.kotest.property.arbitrary.*
-import io.kotest.property.checkAll
-import io.kotest.property.forAll
+**Core API:**
+- `checkAll(Arb.type())` — Runs assertions, fails on first failure
+- `forAll(Arb.type())` — Returns boolean for flexible composition
+- Common generators: `Arb.int(range)`, `Arb.string(length)`, `Arb.list()`, `.orNull()`
 
-// checkAll - runs assertions, fails on first failure
-"property: mapper preserves ID" {
-    checkAll(Arb.int(1..1000)) { id ->
-        val dto = createDto(id)
-        dto.toDomain().id shouldBe id
-    }
-}
-
-// forAll - returns boolean, more flexible
-"property: round-trip is stable" {
-    forAll(Arb.string(1..100)) { str ->
-        parse(format(str)) == str
-    }
-}
-
-// Common Arb generators
-Arb.int(1..1000)                    // Integers in range
-Arb.string(1..50)                   // Strings of length 1-50
-Arb.boolean()                       // Random booleans
-Arb.list(Arb.int(), 0..20)         // Lists of 0-20 integers
-Arb.string(0..200).orNull()        // Nullable strings
-Arb.int(400..599)                  // HTTP error codes
-```
+**See complete examples:**
+- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) — Multiple property test patterns
+- [Kotest Property Testing Docs](https://kotest.io/docs/proptest/property-based-testing.html)
 
 ### Guidelines for Removing Redundant Tests
 
@@ -141,39 +114,11 @@ Arb.int(400..599)                  // HTTP error codes
 
 **Example: What to Keep vs Remove**
 
-```kotlin
-// ✅ KEEP: Documents specific edge case
-"should throw on invalid URL without ID" {
-    shouldThrow<IllegalArgumentException> {
-        extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/")
-    }
-}
+**Keep:** Edge cases, documentation examples with clear setup
+**Remove:** Tests fully covered by property test ranges
 
-// ✅ KEEP: Clear documentation example
-"should return Right with mapped domain on success" {
-    val dto = PokemonListDto(/* full example */)
-    coEvery { mockApi.load() } returns dto
-    val result = repository.load()
-    result.shouldBeRight { page ->
-        page.pokemons.size shouldBe 2
-        page.pokemons[0].name shouldBe "Bulbasaur"
-    }
-}
-
-// ❌ REMOVE: Redundant - covered by property test
-"should handle Pokemon ID 1" {
-    val dto = createDto(id = 1)
-    dto.toDomain().id shouldBe 1
-}
-// Property test already covers IDs 1-1000
-
-// ❌ REMOVE: Redundant - covered by property test
-"should return Http 404 error" {
-    val error = RepoError.Http(404, "Not found")
-    // ... testing
-}
-// Property test covers all HTTP codes 400-599
-```
+**See decision in practice:**
+- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) — Mix of property tests (HTTP codes 400-599) + concrete edge cases (specific failure modes)
 
 ### Measuring Property Test Coverage
 
@@ -203,103 +148,29 @@ Scenarios per run: 34,000+ (34 property tests × 1000 iterations)
 
 ### Setup
 
-```kotlin
-// gradle/libs.versions.toml
-[versions]
-turbine = "1.2.0"
-
-[libraries]
-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
-
-// build.gradle.kts
-androidUnitTest.dependencies {
-    implementation(libs.turbine)
-    implementation(libs.kotlinx.coroutines.test)
-}
-```
+**Dependencies:**
+- See [gradle/libs.versions.toml](../../gradle/libs.versions.toml) for current Turbine version
+- Add to `androidUnitTest.dependencies` in feature module `build.gradle.kts`
 
 ### ViewModel Flow Testing Pattern
 
-```kotlin
-@OptIn(ExperimentalCoroutinesApi::class)
-class PokemonListViewModelTest : StringSpec({
-    val testDispatcher = StandardTestDispatcher()
-    val testScope = TestScope(testDispatcher)
-    
-    lateinit var mockRepository: PokemonListRepository
-    
-    beforeTest {
-        mockRepository = mockk(relaxed = true)
-    }
-    
-    "should emit Loading then Content on success" {
-        val mockData = listOf(Pokemon(1, "Bulbasaur", "url"))
-        coEvery { mockRepository.loadPage(any(), any()) } returns 
-            Either.Right(PokemonPage(mockData.toImmutableList(), hasMore = false))
-        
-        val vm = PokemonListViewModel(mockRepository, testScope)
-        
-        vm.uiState.test {
-            // Initial state
-            awaitItem() shouldBe PokemonListUiState.Loading
-            
-            // Trigger load
-            vm.loadInitialPage()
-            testDispatcher.scheduler.advanceUntilIdle()
-            
-            // Verify state transition
-            val state = awaitItem()
-            state.shouldBeInstanceOf<PokemonListUiState.Content>()
-            state.pokemons shouldHaveSize 1
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-    
-    "property: HTTP error codes always produce Error state" {
-        checkAll(Arb.int(400..599)) { httpCode ->
-            val error = RepoError.Http(httpCode, "Test error")
-            coEvery { mockRepository.loadPage(any(), any()) } returns Either.Left(error)
-            
-            val vm = PokemonListViewModel(mockRepository, testScope)
-            vm.uiState.test {
-                skipItems(1) // Skip Loading
-                vm.loadInitialPage()
-                testDispatcher.scheduler.advanceUntilIdle()
-                
-                val state = awaitItem()
-                state.shouldBeInstanceOf<PokemonListUiState.Error>()
-                state.message.contains(httpCode.toString()) shouldBe true
-                
-                cancelAndIgnoreRemainingEvents()
-            }
-        }
-    }
-})
-```
+**Key Pattern:** Inject `testScope` into ViewModel, use Turbine `.test { }` for flow assertions, advance time with `testDispatcher.scheduler.advanceUntilIdle()`.
+
+**Complete implementations:**
+- [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) — Standard flow testing with state transitions
+- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) — Parametric ViewModel + property tests
 
 ### Turbine API Essentials
 
-```kotlin
-// Test a flow
-flow.test {
-    // Wait for next emission
-    val item = awaitItem()
-    item shouldBe expectedValue
-    
-    // Skip N emissions
-    skipItems(2)
-    
-    // Wait for completion
-    awaitComplete()
-    
-    // Wait for error
-    val error = awaitError()
-    
-    // Cancel and ignore remaining
-    cancelAndIgnoreRemainingEvents()
-}
-```
+**Core Methods:**
+- `awaitItem()` — Get next emission (fails if none)
+- `skipItems(n)` — Skip n emissions  
+- `expectNoEvents()` — Assert no emissions
+- `cancelAndIgnoreRemainingEvents()` — Clean teardown (always call at end)
+
+**Pattern:** `flow.test { /* assertions */ }`
+
+**See in practice:** [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt#L61-82)
 
 ### ⚠️ Forbidden: Thread.sleep() in Tests
 
@@ -670,210 +541,56 @@ See [kotest_smart_casting_quick_ref.md](./kotest_smart_casting_quick_ref.md) for
 
 ### Repository Test (androidTest/)
 
-```kotlin
-// features/pokemonlist/impl/src/androidTest/kotlin/.../PokemonRepositoryTest.kt
-class PokemonRepositoryTest : StringSpec({
-    lateinit var mockApi: PokemonListApiService
-    lateinit var repository: PokemonListRepository
-    
-    beforeTest {
-        mockApi = mockk()
-        repository = PokemonListRepository(mockApi)
-    }
-    
-    "should return Right with pokemon list on success" {
-        // Given
-        val mockDto = PokemonListDto(
-            count = 1292,
-            next = "https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20",
-            previous = null,
-            results = listOf(
-                PokemonSummaryDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
-                PokemonSummaryDto("ivysaur", "https://pokeapi.co/api/v2/pokemon/2/")
-            )
-        )
-        coEvery { mockApi.getPokemonList(20, 0) } returns mockDto
-        
-        // When
-        val result = repository.loadPage(limit = 20, offset = 0)
-        
-        // Then
-        result.shouldBeRight { page ->
-            page.pokemons shouldHaveSize 2
-            page.pokemons[0].name shouldBe "Bulbasaur"  // Capitalized
-            page.pokemons[0].id shouldBe 1
-            page.hasMore shouldBe true
-        }
-    }
-    
-    "should return Network error on timeout" {
-        coEvery { mockApi.getPokemonList(any(), any()) } throws 
-            ConnectTimeoutException("Connection timeout")
-        
-        val result = repository.loadPage()
-        
-        result.shouldBeLeft { error ->
-            error shouldBe RepoError.Network
-        }
-    }
-    
-    "should return Http error on 404" {
-        coEvery { mockApi.getPokemonList(any(), any()) } throws
-            ClientRequestException(mockk(relaxed = true), "Not found")
-        
-        val result = repository.loadPage()
-        
-        result.shouldBeLeft { error ->
-            error shouldBeInstanceOf<RepoError.Http>()
-        }
-    }
-})
+**Pattern:** Mock API service, test Either-based error handling, verify DTO-to-domain mapping.
 
-// Helper extensions for Either testing
-fun <L, R> Either<L, R>.shouldBeRight(assertion: (R) -> Unit = {}) {
-    this.fold(
-        ifLeft = { fail("Expected Right but was Left($it)") },
-        ifRight = { assertion(it) }
-    )
-}
+**Complete implementation:**
+- [PokemonListRepositoryTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt) — Success/Network/Http error paths
+- [PokemonDetailRepositoryTest.kt](../../features/pokemondetail/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/data/PokemonDetailRepositoryTest.kt) — Parametric repository with nested DTOs
 
-fun <L, R> Either<L, R>.shouldBeLeft(assertion: (L) -> Unit = {}) {
-    this.fold(
-        ifLeft = { assertion(it) },
-        ifRight = { fail("Expected Left but was Right($it)") }
-    )
-}
-```
+**Key Patterns:**
+- Use MockK for API services: `mockApi = mockk()`
+- Test Either paths: `result.shouldBeRight { }` and `result.shouldBeLeft { }`
+- Cover all error types: Network, Http (with codes), Unknown
 
 ### Property-Based Mapper Test (androidTest/)
 
-```kotlin
-// features/pokemonlist/impl/src/androidTest/kotlin/.../PokemonMappersTest.kt
-class PokemonMappersTest : StringSpec({
-    "property: DTO to domain preserves id and name" {
-        checkAll(
-            Arb.int(1..1000),
-            Arb.string(1..30)
-        ) { id, name ->
-            val dto = PokemonSummaryDto(
-                name = name.lowercase(),
-                url = "https://pokeapi.co/api/v2/pokemon/$id/"
-            )
-            
-            val domain = dto.toDomain()
-            
-            domain.id shouldBe id
-            domain.name.lowercase() shouldBe name.lowercase()
-            domain.name.first().isUpperCase() shouldBe true  // Always capitalized
-        }
-    }
-    
-    "property: domain to DTO round-trip preserves data" {
-        checkAll(
-            Arb.int(1..1000),
-            Arb.string(1..30).map { it.replaceFirstChar { c -> c.uppercaseChar() } }
-        ) { id, name ->
-            val original = Pokemon(
-                id = id,
-                name = name,
-                imageUrl = "https://example.com/$id.png"
-            )
-            
-            // In real scenario, if you have toDto()
-            // val dto = original.toDto()
-            // val restored = dto.toDomain()
-            // restored shouldBe original
-        }
-    }
-})
-```
+**Pattern:** Use `checkAll()` with `Arb` generators to test data preservation invariants across 1000+ random inputs.
+
+**Complete implementations:**
+- [PokemonDetailRepositoryTest.kt#L77-95](../../features/pokemondetail/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/data/PokemonDetailRepositoryTest.kt#L77-95) — Property test for ID extraction from URLs
+- [PokemonDetailViewModelTest.kt#L272-420](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L272-420) — Multiple property tests for state transitions
+
+**Key Principles:**
+- 100% property test coverage for mappers (NO concrete tests for simple transformations)
+- Test invariants: ID preservation, name capitalization, data completeness
+- Use appropriate Arb generators: `Arb.int(range)`, `Arb.string(length)`
 
 ### ViewModel Test with Turbine (androidUnitTest/)
 
-```kotlin
-// features/pokemonlist/presentation/src/androidUnitTest/kotlin/.../PokemonViewModelTest.kt
-@OptIn(ExperimentalCoroutinesApi::class)
-class PokemonListViewModelTest : StringSpec({
-    val testDispatcher = StandardTestDispatcher()
-    val testScope = TestScope(testDispatcher)
-    
-    lateinit var mockRepository: PokemonListRepository
-    
-    beforeTest {
-        mockRepository = mockk(relaxed = true)
-    }
-    // Note: No Dispatchers.setMain/resetMain needed
-    
-    "should start with Loading state" {
-        val viewModel = PokemonListViewModel(mockRepository, testScope)
-        viewModel.uiState.value shouldBe PokemonListUiState.Loading
-    }
-    
-    "should emit Content state on successful load" {
-        // Given
-        val mockPage = PokemonPage(
-            pokemons = listOf(
-                Pokemon(1, "Bulbasaur", "url1"),
-                Pokemon(2, "Ivysaur", "url2")
-            ).toImmutableList(),
-            hasMore = true
-        )
-        coEvery { mockRepository.loadPage(any(), any()) } returns Either.Right(mockPage)
-        
-        val viewModel = PokemonListViewModel(mockRepository, testScope)
-        
-        // When + Then
-        viewModel.uiState.test {
-            awaitItem() shouldBe PokemonListUiState.Loading
-            
-            viewModel.loadInitialPage()
-            testDispatcher.scheduler.advanceUntilIdle()
-            
-            val state = awaitItem()
-            state.shouldBeInstanceOf<PokemonListUiState.Content>()
-        (state as PokemonListUiState.Content).pokemons shouldHaveSize 2
-        state.hasMore shouldBe true
-        state.isLoadingMore shouldBe false
-    }
-    
-    "should emit Error state on repository failure" {
-        coEvery { mockRepository.loadPage(any(), any()) } returns 
-            Either.Left(RepoError.Network)
-        
-        viewModel.loadInitialPage()
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        val state = viewModel.uiState.value
-        state shouldBeInstanceOf<PokemonListUiState.Error>()
-        (state as PokemonListUiState.Error).message shouldContain "network"
-    }
-})
-```
+**Critical:** Always inject `SavedStateHandle()` in tests.
+
+**Pattern:** Inject `testScope`, use Turbine for flow assertions, verify state transitions and event handling.
+
+**Complete implementations:**
+- [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) — Pagination, loading states, error handling
+- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) — Parametric ViewModel, lifecycle integration, property tests
+
+**Key Principles:**
+- Inject `SavedStateHandle()` in ViewModel constructor
+- Inject `testScope` for deterministic coroutine testing
+- Use Turbine `.test { }` for flow assertions
+- Test: Initial state, Loading → Content/Error transitions, event handling
+- NO `Dispatchers.setMain/resetMain` needed (testScope pattern)
 
 ### Simple Utility Test (commonTest/)
 
-```kotlin
-// features/pokemonlist/impl/src/commonTest/kotlin/.../UrlUtilsTest.kt
-class UrlUtilsTest {
-    @Test
-    fun extractIdFromUrl_validUrl_returnsId() {
-        val url = "https://pokeapi.co/api/v2/pokemon/25/"
-        val id = extractPokemonId(url)
-        assertEquals(25, id)
-    }
-    
-    @Test
-    fun extractIdFromUrl_invalidUrl_returnsNull() {
-        val url = "https://pokeapi.co/api/v2/pokemon/"
-        val id = extractPokemonId(url)
-        assertNull(id)
-    }
-}
+**Pattern:** Use `kotlin-test` for pure functions with no dependencies. Only for truly generic utilities.
 
-fun extractPokemonId(url: String): Int? {
-    return url.trimEnd('/').substringAfterLast('/').toIntOrNull()
-}
-```
+**Rule:** If it needs mocking or Kotest features → use `androidUnitTest/` instead.
+
+**Example structure:** Basic assertions with `assertEquals`, `assertNull`, `assertTrue`.
+
+**Most tests belong in androidUnitTest/** — see Repository/ViewModel examples above for primary pattern.
 
 ## Property-Based Testing Guidelines
 
@@ -1123,56 +840,17 @@ class UserJsonRoundTripSpec : StringSpec({
 
 **1. Choose the Right Properties**
 
-```kotlin
-// ✅ GOOD: Tests invariant (data preservation)
-"property: mapper preserves all fields" {
-    checkAll(arbPokemon()) { pokemon ->
-        val dto = pokemon.toDto()
-        val restored = dto.toDomain()
-        restored.id shouldBe pokemon.id
-        restored.name shouldBe pokemon.name
-    }
-}
+**Good:** Test invariants (data preservation), transformation rules (capitalization), mathematical properties
+**Bad:** Specific concrete values (ID 25 = Pikachu), conditional logic not universal
 
-// ✅ GOOD: Tests transformation rule
-"property: toDomain always capitalizes name" {
-    checkAll(Arb.string(1..50)) { name ->
-        val dto = PokemonDto(name.lowercase())
-        dto.toDomain().name.first().isUpperCase() shouldBe true
-    }
-}
-
-// ❌ BAD: Too specific, not a property
-"property: ID 25 is Pikachu" {
-    checkAll(Arb.int(1..1000)) { id ->
-        if (id == 25) {
-            getPokemon(id).name shouldBe "Pikachu"
-        }
-    }
-}
-```
+**See examples:** [PokemonDetailViewModelTest.kt#L272-420](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L272-420)
 
 **2. Use Appropriate Generators**
 
-```kotlin
-// Custom generators for domain types
-fun arbPokemon(): Arb<Pokemon> = arbitrary {
-    Pokemon(
-        id = Arb.int(1..1000).bind(),
-        name = Arb.string(1..30).bind(),
-        imageUrl = Arb.string(10..100).bind()
-    )
-}
+**Built-in:** `Arb.int(range)`, `Arb.string(length)`, `Arb.list()`, `.orNull()`, `.filter { }`
+**Custom:** Create `Arb<YourType>` using `arbitrary { }` builder
 
-// Filtered generators
-Arb.string(1..50)
-    .filter { it.isNotEmpty() }
-    .filter { it.first().isLetter() }
-
-// Conditional generators
-Arb.int(0..10000).orNull()  // Nullable
-Arb.choice(arbSuccess(), arbError())  // Either success or error
-```
+**See usage:** [PokemonDetailViewModelTest.kt#L272-310](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L272-310) — Uses Arb.int ranges for Pokemon IDs
 
 **3. Balance Property vs Concrete Tests**
 
@@ -1210,36 +888,17 @@ Arb.choice(arbSuccess(), arbError())  // Either success or error
 
 **5. Common Mistakes to Avoid**
 
-```kotlin
-// ❌ BAD: Too many iterations for fast test
-checkAll(iterations = 10000) { /* ... */ }  // Slow!
+**❌ DON'T:**
+- Custom iteration counts: `checkAll(iterations = 10000)` — Slow!
+- `Thread.sleep()` or `delay()` — Use Turbine + TestDispatcher
+- Skip test dispatcher advancement — Always call `advanceUntilIdle()`
 
-// ✅ GOOD: Use default 1000 iterations
-checkAll(Arb.int()) { /* ... */ }
+**✅ DO:**
+- Use default 1000 iterations
+- Inject `testScope` into ViewModels
+- Use Turbine `.test { }` for flow testing
 
-// ❌ BAD: Non-deterministic without test dispatcher
-"property: loads data" {
-    checkAll(Arb.int()) { id ->
-        viewModel.load(id)
-        Thread.sleep(100)  // ❌ Bad!
-        viewModel.state.value.shouldBeInstanceOf<Success>()
-    }
-}
-
-// ✅ GOOD: Deterministic with TestDispatcher
-"property: loads data" {
-    checkAll(Arb.int(1..1000)) { id ->
-        coEvery { repo.load(id) } returns Either.Right(data)
-        val vm = MyViewModel(repo, testScope)
-        vm.uiState.test {
-            vm.load(id)
-            testDispatcher.scheduler.advanceUntilIdle()
-            awaitItem().shouldBeInstanceOf<Success>()
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-}
-```
+**See correct pattern:** [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) — Property tests with Turbine + TestScope
 
 ### When to Remove Redundant Concrete Tests
 
@@ -1266,18 +925,11 @@ checkAll(Arb.int()) { /* ... */ }
 
 **Example Cleanup:**
 
-```kotlin
-// Before: 15 tests
-"property: HTTP codes 400-599 produce Http error" { /* ... */ }  // Keep
-"should return Http 404 error" { /* ... */ }  // ❌ Remove - redundant
-"should return Http 500 error" { /* ... */ }  // ❌ Remove - redundant
-"should return Http 503 error" { /* ... */ }  // ❌ Remove - redundant
+**Before:** 15 tests with redundant concrete tests for HTTP 404, 500, 503
+**After:** 12 tests — one property test covering HTTP 400-599 range replaces 3+ concrete tests
+**Result:** Same coverage (actually better — 200 HTTP codes vs 3), less maintenance
 
-// After: 12 tests (removed 3 redundant)
-"property: HTTP codes 400-599 produce Http error" { /* ... */ }  // Keep
-"should return Network error on timeout" { /* ... */ }  // Keep - different error type
-"should return Right with mapped domain on success" { /* ... */ }  // Keep - documentation
-```
+**See real cleanup:** [PokemonDetailViewModelTest.kt#L315-375](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt#L315-375) — Property test for error handling replaced multiple concrete error tests
 
 ## AI Agent Enforcement
 
