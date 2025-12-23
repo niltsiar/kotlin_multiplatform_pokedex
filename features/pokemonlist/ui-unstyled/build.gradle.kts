@@ -10,7 +10,7 @@ kotlin {
             implementation(projects.features.pokemonlist.presentation)
 
             // Core
-            implementation(projects.core.designsystem)  // Will be designsystem-unstyled once created
+            implementation(projects.core.designsystemUnstyled)
 
             // Compose Unstyled
             implementation(libs.composeunstyled)
