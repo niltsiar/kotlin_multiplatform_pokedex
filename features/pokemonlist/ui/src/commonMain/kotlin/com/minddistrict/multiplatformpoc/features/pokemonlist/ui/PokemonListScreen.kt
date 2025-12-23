@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.collectLatest
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListUiState
@@ -27,14 +29,16 @@ fun PokemonListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    LaunchedEffect(Unit) {
-        viewModel.loadInitialPage()
-    }
-    
     PokemonListContent(
         uiState = uiState,
+        restoredScrollIndex = viewModel.restoredScrollIndex,
+        restoredScrollOffset = viewModel.restoredScrollOffset,
         onLoadMore = viewModel::loadNextPage,
-        onPokemonClick = onPokemonClick,
+        onPokemonClick = {
+            viewModel.onPokemonSelected(it.id)
+            onPokemonClick(it)
+        },
+        onScrollPositionChanged = viewModel::onScrollPositionChanged,
         modifier = modifier
     )
 }
@@ -42,8 +46,11 @@ fun PokemonListScreen(
 @Composable
 private fun PokemonListContent(
     uiState: PokemonListUiState,
+    restoredScrollIndex: Int,
+    restoredScrollOffset: Int,
     onLoadMore: () -> Unit,
     onPokemonClick: (Pokemon) -> Unit = {},
+    onScrollPositionChanged: (firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -69,7 +76,18 @@ private fun PokemonListContent(
         }
         
         is PokemonListUiState.Content -> {
-            val gridState = rememberLazyGridState()
+            val gridState = rememberLazyGridState(
+                initialFirstVisibleItemIndex = restoredScrollIndex,
+                initialFirstVisibleItemScrollOffset = restoredScrollOffset,
+            )
+
+            LaunchedEffect(gridState) {
+                snapshotFlow {
+                    gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
+                }.collectLatest { (index, offset) ->
+                    onScrollPositionChanged(index, offset)
+                }
+            }
             
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -89,8 +107,8 @@ private fun PokemonListContent(
                     )
                     
                     // Load more when near end
-                    if (index >= uiState.pokemons.size - 4 && !uiState.isLoadingMore && uiState.hasMore) {
-                        LaunchedEffect(Unit) {
+                    LaunchedEffect(index, uiState.pokemons.size, uiState.isLoadingMore, uiState.hasMore) {
+                        if (index >= uiState.pokemons.size - 4 && !uiState.isLoadingMore && uiState.hasMore) {
                             onLoadMore()
                         }
                     }
@@ -196,7 +214,11 @@ private fun PokemonListLoadingPreview() {
         Surface {
             PokemonListContent(
                 uiState = PokemonListUiState.Loading,
+                restoredScrollIndex = 0,
+                restoredScrollOffset = 0,
                 onLoadMore = {}
+                ,
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }
@@ -209,7 +231,11 @@ private fun PokemonListErrorPreview() {
         Surface {
             PokemonListContent(
                 uiState = PokemonListUiState.Error("Network error. Please check your connection."),
+                restoredScrollIndex = 0,
+                restoredScrollOffset = 0,
                 onLoadMore = {}
+                ,
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }
@@ -257,7 +283,10 @@ private fun PokemonListContentPreview() {
                     isLoadingMore = false,
                     hasMore = true
                 ),
-                onLoadMore = {}
+                restoredScrollIndex = 0,
+                restoredScrollOffset = 0,
+                onLoadMore = {},
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }
@@ -285,7 +314,10 @@ private fun PokemonListContentLoadingMorePreview() {
                     isLoadingMore = true,
                     hasMore = true
                 ),
-                onLoadMore = {}
+                restoredScrollIndex = 0,
+                restoredScrollOffset = 0,
+                onLoadMore = {},
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }

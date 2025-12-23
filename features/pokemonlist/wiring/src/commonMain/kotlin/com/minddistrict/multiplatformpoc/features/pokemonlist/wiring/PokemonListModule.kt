@@ -6,6 +6,8 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListAp
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListRepository as createPokemonListRepository
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import io.ktor.client.HttpClient
+import androidx.lifecycle.SavedStateHandle
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 /**
@@ -44,10 +46,22 @@ val pokemonListModule = module {
     
     /**
      * Provides the ViewModel for Pokemon List screen.
+     * 
+     * Note: On Desktop/JVM, SavedStateHandle is created inline since Koin's Android-specific
+     * parameter resolution doesn't work on non-Android platforms.
      */
-    factory {
-        PokemonListViewModel(
-            repository = get()
+    viewModel {
+        createPokemonListViewModel(
+            repository = get(),
+            savedStateHandle = SavedStateHandle(),
         )
     }
 }
+
+private fun createPokemonListViewModel(
+    repository: PokemonListRepository,
+    savedStateHandle: SavedStateHandle,
+): PokemonListViewModel = PokemonListViewModel(
+    repository = repository,
+    savedStateHandle = savedStateHandle,
+)
