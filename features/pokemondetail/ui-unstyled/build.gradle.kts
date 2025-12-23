@@ -12,7 +12,8 @@ kotlin {
             // Core
             implementation(projects.core.designsystem)  // Will be designsystem-unstyled once created
 
-            // Compose Unstyled (to be added in Phase 1.4)
+            // Compose Unstyled - TO BE CONFIGURED IN PHASE 2
+            // Note: Need to verify Maven coordinates and repository
             // implementation(libs.composeunstyled)
             // implementation(libs.composeunstyled.theming)
             // implementation(libs.composeunstyled.primitives)
