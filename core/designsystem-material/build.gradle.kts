@@ -7,6 +7,9 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            // Core design tokens
+            api(projects.core.designsystemCore)
+            
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -27,5 +30,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.minddistrict.multiplatformpoc.core.designsystem"
+    namespace = "com.minddistrict.multiplatformpoc.core.designsystem.material"
 }

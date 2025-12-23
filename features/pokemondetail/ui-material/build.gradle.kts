@@ -5,7 +5,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.core.designsystem)
+            implementation(projects.core.designsystemMaterial)
             implementation(projects.features.pokemondetail.api)
             implementation(projects.features.pokemondetail.presentation)
             

@@ -22,7 +22,7 @@ kotlin {
             // Core DI module contains AppGraph
             implementation(projects.core.di)
             implementation(projects.core.diUi)
-            implementation(projects.core.designsystem)
+            implementation(projects.core.designsystemMaterial)
             
             // Feature UI modules - now support iOS Compose
             implementation(projects.features.pokemonlist.uiMaterial)
