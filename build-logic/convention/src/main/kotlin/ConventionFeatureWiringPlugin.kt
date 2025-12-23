@@ -1,7 +1,9 @@
 import com.minddistrict.multiplatformpoc.libs
+import com.minddistrict.multiplatformpoc.getLibrary
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
@@ -23,7 +25,10 @@ class ConventionFeatureWiringPlugin : Plugin<Project> {
         
         extensions.configure<KotlinMultiplatformExtension> {
             sourceSets.apply {
-                // Koin dependencies added in individual wiring module build files
+                commonMain.dependencies {
+                    // Enables `viewModel { }` DSL in commonMain wiring modules (Compose-agnostic)
+                    implementation(libs.getLibrary("koin-core-viewmodel"))
+                }
             }
         }
     }
