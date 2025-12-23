@@ -22,5 +22,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.ui"
+    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material"
 }

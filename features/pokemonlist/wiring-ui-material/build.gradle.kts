@@ -25,5 +25,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui"
+    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.material"
 }
