@@ -23,5 +23,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.unstyled"
+    namespace = "com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.unstyled"
 }
