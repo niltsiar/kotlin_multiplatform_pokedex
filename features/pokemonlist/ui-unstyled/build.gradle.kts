@@ -11,11 +11,16 @@ kotlin {
 
             // Core
             implementation(projects.core.designsystemUnstyled)
+            implementation(projects.core.designsystemCore)
 
-            // Compose Unstyled
-            implementation(libs.composeunstyled)
-            implementation(libs.composeunstyled.theming)
-            implementation(libs.composeunstyled.primitives)
+            // Coil for image loading
+            implementation(libs.coil3.compose)
+            implementation(libs.coil3.network)
+
+            // Compose Unstyled (removed - not compatible)
+            // implementation(libs.composeunstyled)
+            // implementation(libs.composeunstyled.theming)
+            // implementation(libs.composeunstyled.primitives)
 
             // Koin
             implementation(libs.koin.core)
