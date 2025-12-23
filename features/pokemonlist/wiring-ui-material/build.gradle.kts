@@ -7,9 +7,11 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.navigation)
 
+            implementation(projects.features.pokemonlist.api)
+            implementation(projects.features.pokemonlist.presentation)
+            implementation(projects.features.pokemonlist.uiMaterial)
+
             implementation(projects.features.pokemondetail.api)
-            implementation(projects.features.pokemondetail.presentation)
-            implementation(projects.features.pokemondetail.ui)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
@@ -23,5 +25,5 @@ kotlin {
 }
 
 android {
-    namespace = "com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui"
+    namespace = "com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui"
 }
