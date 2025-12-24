@@ -17,10 +17,10 @@ kotlin {
             implementation(libs.coil3.compose)
             implementation(libs.coil3.network)
 
-            // Compose Unstyled (removed - not compatible)
-            // implementation(libs.composeunstyled)
-            // implementation(libs.composeunstyled.theming)
-            // implementation(libs.composeunstyled.primitives)
+            // Compose Unstyled
+            implementation(libs.composeunstyled)
+            implementation(libs.composeunstyled.theming)
+            implementation(libs.composeunstyled.primitives)
 
             // Koin
             implementation(libs.koin.core)
