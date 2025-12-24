@@ -1,7 +1,7 @@
 package com.minddistrict.multiplatformpoc.core.designsystem.core
 
-import androidx.compose.material3.adaptive.WindowSizeClass
-import androidx.compose.material3.adaptive.WindowWidthSizeClass
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
  * Adaptive Layout Utilities (Shared across Material & Unstyled)
  * 
  * Provides responsive design utilities following Material 3 Adaptive guidelines.
- * Uses Compose Multiplatform WindowSizeClass (works on Android, iOS, Desktop, Web).
+ * Uses Compose Multiplatform WindowAdaptiveInfo (works on Android, iOS, Desktop, Web).
  * 
  * **Breakpoints (Material 3 Standard):**
  * - **Compact**: 0-599dp (phone portrait, optimize for single-column)
@@ -27,182 +27,141 @@ import androidx.compose.ui.unit.dp
  * ```
  * @Composable
  * fun MyScreen() {
- *     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+ *     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+ *     val columns = gridColumns(windowAdaptiveInfo)
  *     
  *     LazyVerticalGrid(
- *         columns = GridCells.Fixed(gridColumns(windowSizeClass)),
- *         contentPadding = PaddingValues(adaptiveSpacing(windowSizeClass))
+ *         columns = GridCells.Fixed(columns),
+ *         contentPadding = PaddingValues(adaptiveSpacing(windowAdaptiveInfo))
  *     ) { ... }
  * }
  * ```
  */
 
+// Breakpoint Constants (Material 3 Standard - in dp)
+private const val WIDTH_COMPACT_UPPER_BOUND = 600
+private const val WIDTH_MEDIUM_UPPER_BOUND = 840
+
 /**
- * Calculate appropriate grid columns based on window size
+ * Determines the number of grid columns based on window width.
  * 
- * Returns responsive column count following Material guidelines:
- * - Compact (< 600dp): 2 columns (phone portrait)
- * - Medium (600-839dp): 3 columns (phone landscape, small tablet)
- * - Expanded (≥ 840dp): 4 columns (large tablet, desktop)
- * 
- * **Use cases:**
- * - Product grids (Pokémon cards)
- * - Image galleries
- * - Any grid layout requiring responsive columns
- * 
- * @param windowSizeClass Current window size class from currentWindowAdaptiveInfo()
- * @return Number of columns appropriate for the window size
+ * Returns:
+ * - **2 columns** for Compact (<600dp)
+ * - **3 columns** for Medium (600-839dp)
+ * - **4 columns** for Expanded (≥840dp)
  */
-fun gridColumns(windowSizeClass: WindowSizeClass): Int {
-    return when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> 2   // < 600dp
-        WindowWidthSizeClass.MEDIUM -> 3    // 600-839dp
-        WindowWidthSizeClass.EXPANDED -> 4  // >= 840dp
-        else -> 2
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun gridColumns(windowAdaptiveInfo: WindowAdaptiveInfo): Int {
+    val widthDp = windowAdaptiveInfo.windowSizeClass.windowWidthDp
+    return when {
+        widthDp < WIDTH_COMPACT_UPPER_BOUND -> 2
+        widthDp < WIDTH_MEDIUM_UPPER_BOUND -> 3
+        else -> 4 // EXPANDED
     }
 }
 
 /**
- * Calculate adaptive spacing based on window size
+ * Returns adaptive spacing based on window width.
  * 
- * Returns appropriate spacing following Material adaptive principles:
- * - Compact: 8dp (maximize content on small screens)
- * - Medium: 16dp (comfortable spacing for medium screens)
- * - Expanded: 24dp (generous spacing for large screens)
- * 
- * **Use cases:**
- * - Grid contentPadding
- * - Screen margins
- * - Component spacing
- * 
- * @param windowSizeClass Current window size class from currentWindowAdaptiveInfo()
- * @return Spacing value (Dp) appropriate for the window size
+ * Returns:
+ * - **8dp** (Spacing.xs) for Compact
+ * - **16dp** (Spacing.md) for Medium
+ * - **24dp** (Spacing.lg) for Expanded
  */
-fun adaptiveSpacing(windowSizeClass: WindowSizeClass): Dp {
-    return when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> Spacing.xs   // 8dp
-        WindowWidthSizeClass.MEDIUM -> Spacing.md    // 16dp
-        WindowWidthSizeClass.EXPANDED -> Spacing.lg  // 24dp
-        else -> Spacing.xs
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun adaptiveSpacing(windowAdaptiveInfo: WindowAdaptiveInfo): Dp {
+    val widthDp = windowAdaptiveInfo.windowSizeClass.windowWidthDp
+    return when {
+        widthDp < WIDTH_COMPACT_UPPER_BOUND -> 8.dp
+        widthDp < WIDTH_MEDIUM_UPPER_BOUND -> 16.dp
+        else -> 24.dp // EXPANDED
     }
 }
 
 /**
- * Calculate adaptive item spacing (gap between items) based on window size
+ * Returns adaptive item spacing for grids/lists.
  * 
- * Returns spacing for gaps between grid items:
- * - Compact: 12dp (comfortable gaps on phones)
- * - Medium: 16dp (standard gaps on tablets)
- * - Expanded: 20dp (generous gaps on large screens)
- * 
- * **Use cases:**
- * - Grid horizontalArrangement/verticalArrangement spacing
- * - Row/Column spacing between items
- * 
- * @param windowSizeClass Current window size class from currentWindowAdaptiveInfo()
- * @return Item spacing value (Dp)
+ * Returns:
+ * - **12dp** (Spacing.sm) for Compact
+ * - **16dp** (Spacing.md) for Medium
+ * - **20dp** for Expanded
  */
-fun adaptiveItemSpacing(windowSizeClass: WindowSizeClass): Dp {
-    return when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> Spacing.sm   // 12dp
-        WindowWidthSizeClass.MEDIUM -> Spacing.md    // 16dp
-        WindowWidthSizeClass.EXPANDED -> 20.dp       // 20dp
-        else -> Spacing.sm
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun adaptiveItemSpacing(windowAdaptiveInfo: WindowAdaptiveInfo): Dp {
+    val widthDp = windowAdaptiveInfo.windowSizeClass.windowWidthDp
+    return when {
+        widthDp < WIDTH_COMPACT_UPPER_BOUND -> 12.dp
+        widthDp < WIDTH_MEDIUM_UPPER_BOUND -> 16.dp
+        else -> 20.dp // EXPANDED
     }
 }
 
 /**
- * Determine navigation type based on window size
+ * Navigation Type for Adaptive Navigation UI.
  * 
- * Returns appropriate navigation pattern following Material 3 Adaptive guidelines:
- * - Compact: BOTTOM_BAR (traditional phone navigation)
- * - Medium: RAIL (vertical navigation for landscape)
- * - Expanded: DRAWER (permanent navigation drawer for large screens)
- * 
- * **Usage:**
- * ```
- * val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
- * val navType = adaptiveNavigationType(windowSizeClass)
- * when (navType) {
- *     NavigationSuiteType.BOTTOM_BAR -> BottomNavigation { ... }
- *     NavigationSuiteType.RAIL -> NavigationRail { ... }
- *     NavigationSuiteType.DRAWER -> NavigationDrawer { ... }
- * }
- * ```
- * 
- * @param windowSizeClass Current window size class from currentWindowAdaptiveInfo()
- * @return NavigationSuiteType enum value
- */
-fun adaptiveNavigationType(windowSizeClass: WindowSizeClass): NavigationSuiteType {
-    return when (windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> NavigationSuiteType.BOTTOM_BAR
-        WindowWidthSizeClass.MEDIUM -> NavigationSuiteType.RAIL
-        WindowWidthSizeClass.EXPANDED -> NavigationSuiteType.DRAWER
-        else -> NavigationSuiteType.BOTTOM_BAR
-    }
-}
-
-/**
- * Navigation Suite Types
- * 
- * Enum representing different navigation patterns for adaptive layouts.
- * Maps to Material 3 NavigationSuiteScaffold layout types.
+ * Determines the appropriate navigation pattern based on screen size:
+ * - **BOTTOM_BAR**: Compact screens (phones)
+ * - **RAIL**: Medium screens (tablets in portrait)
+ * - **DRAWER**: Expanded screens (tablets in landscape, desktops)
  */
 enum class NavigationSuiteType {
-    /**
-     * Bottom navigation bar (Compact screens)
-     * - Positioned at bottom of screen
-     * - 3-5 top-level destinations
-     * - Best for phone portrait
-     */
-    BOTTOM_BAR,
-    
-    /**
-     * Navigation rail (Medium screens)
-     * - Vertical rail on left/start edge
-     * - Compact icons with optional labels
-     * - Best for phone landscape, small tablets
-     */
-    RAIL,
-    
-    /**
-     * Navigation drawer (Expanded screens)
-     * - Permanent side drawer
-     * - Full labels with icons
-     * - Best for large tablets, desktops
-     */
-    DRAWER
+    BOTTOM_BAR, RAIL, DRAWER
 }
 
 /**
- * Check if current window is compact (phone portrait)
+ * Returns the recommended navigation type based on window width.
  * 
- * @return true if width < 600dp
+ * Returns:
+ * - **BOTTOM_BAR** for Compact
+ * - **RAIL** for Medium
+ * - **DRAWER** for Expanded
  */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun adaptiveNavigationType(windowAdaptiveInfo: WindowAdaptiveInfo): NavigationSuiteType {
+    val widthDp = windowAdaptiveInfo.windowSizeClass.windowWidthDp
+    return when {
+        widthDp < WIDTH_COMPACT_UPPER_BOUND -> NavigationSuiteType.BOTTOM_BAR
+        widthDp < WIDTH_MEDIUM_UPPER_BOUND -> NavigationSuiteType.RAIL
+        else -> NavigationSuiteType.DRAWER // EXPANDED
+    }
+}
+
+// Composable Helper Functions for Convenience
+
+/**
+ * Checks if the current window is Compact (<600dp width).
+ * 
+ * Usage:
+ * ```
+ * if (isCompactWindow()) {
+ *     // Single column layout
+ * }
+ * ```
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun isCompactWindow(): Boolean {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    return windowSizeClass.widthSizeClass == WindowWidthSizeClass.COMPACT
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    return windowAdaptiveInfo.windowSizeClass.windowWidthDp < WIDTH_COMPACT_UPPER_BOUND
 }
 
 /**
- * Check if current window is medium (phone landscape, small tablet)
- * 
- * @return true if width between 600-839dp
+ * Checks if the current window is Medium (600-839dp width).
  */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun isMediumWindow(): Boolean {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    return windowSizeClass.widthSizeClass == WindowWidthSizeClass.MEDIUM
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val widthDp = windowAdaptiveInfo.windowSizeClass.windowWidthDp
+    return widthDp >= WIDTH_COMPACT_UPPER_BOUND && widthDp < WIDTH_MEDIUM_UPPER_BOUND
 }
 
 /**
- * Check if current window is expanded (large tablet, desktop)
- * 
- * @return true if width >= 840dp
+ * Checks if the current window is Expanded (≥840dp width).
  */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun isExpandedWindow(): Boolean {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    return windowSizeClass.widthSizeClass == WindowWidthSizeClass.EXPANDED
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    return windowAdaptiveInfo.windowSizeClass.windowWidthDp >= WIDTH_MEDIUM_UPPER_BOUND
 }

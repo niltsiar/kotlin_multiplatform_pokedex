@@ -13,6 +13,7 @@ kotlin {
             
             // Compose Multiplatform Adaptive (works on Android, iOS, Desktop, Web)
             implementation(libs.compose.material3.adaptive)
+            implementation(libs.compose.material3.adaptive.layout)
         }
     }
 }
