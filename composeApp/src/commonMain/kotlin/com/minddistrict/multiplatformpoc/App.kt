@@ -13,7 +13,7 @@ import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.pokemonDetailNavigationModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
-import com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.pokemonListNavigationModule
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.material.pokemonListNavigationModule
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
