@@ -21,6 +21,7 @@ kotlin {
             implementation(libs.composeunstyled)
             implementation(libs.composeunstyled.theming)
             implementation(libs.composeunstyled.primitives)
+            implementation(libs.composeunstyled.platformtheme)
 
             // Koin
             implementation(libs.koin.core)

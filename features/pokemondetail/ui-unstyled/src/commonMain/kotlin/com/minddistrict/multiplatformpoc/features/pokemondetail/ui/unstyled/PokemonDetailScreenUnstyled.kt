@@ -65,7 +65,6 @@ import com.minddistrict.multiplatformpoc.core.designsystem.core.Elevation
 import com.minddistrict.multiplatformpoc.core.designsystem.core.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.background
-import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.buildPlatformTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.error
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.onSurface
@@ -700,8 +699,8 @@ private fun Color.luminance(): Float {
 @Preview
 @Composable
 private fun PokemonDetailScreenUnstyledLoadingPreview() {
-    UnstyledTheme(platformTheme = buildPlatformTheme()) {
-        Box(modifier = Modifier.fillMaxSize().background(Theme.currentTheme.colors.background)) {
+    UnstyledTheme() {
+        Box(modifier = Modifier.fillMaxSize().background(Theme[colors.background)) {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Loading,
                 onBackClick = {},
@@ -714,8 +713,8 @@ private fun PokemonDetailScreenUnstyledLoadingPreview() {
 @Preview
 @Composable
 private fun PokemonDetailScreenUnstyledContentPreview() {
-    UnstyledTheme(platformTheme = buildPlatformTheme()) {
-        Box(modifier = Modifier.fillMaxSize().background(Theme.currentTheme.colors.background)) {
+    UnstyledTheme() {
+        Box(modifier = Modifier.fillMaxSize().background(Theme[colors.background)) {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Content(
                     pokemon = PokemonDetail(
@@ -752,8 +751,8 @@ private fun PokemonDetailScreenUnstyledContentPreview() {
 @Preview
 @Composable
 private fun PokemonDetailScreenUnstyledErrorPreview() {
-    UnstyledTheme(platformTheme = buildPlatformTheme()) {
-        Box(modifier = Modifier.fillMaxSize().background(Theme.currentTheme.colors.background)) {
+    UnstyledTheme() {
+        Box(modifier = Modifier.fillMaxSize().background(Theme[colors.background)) {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Error("Network error. Please check your connection."),
                 onBackClick = {},
