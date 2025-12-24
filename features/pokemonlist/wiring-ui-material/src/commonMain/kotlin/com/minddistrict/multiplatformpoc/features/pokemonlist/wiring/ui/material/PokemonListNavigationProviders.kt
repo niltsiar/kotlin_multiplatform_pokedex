@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui
+package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.material
 
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -6,7 +6,7 @@ import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
-import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.PokemonListScreen
+import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material.PokemonListScreen
 import org.koin.compose.koinInject
 import org.koin.dsl.navigation3.navigation
 import org.koin.compose.viewmodel.koinViewModel

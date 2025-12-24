@@ -1,12 +1,27 @@
-package com.minddistrict.multiplatformpoc.features.pokemonlist.ui
+package com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -133,7 +148,7 @@ private fun PokemonListContent(
 
 @Composable
 private fun PokemonCard(
-    pokemon: com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon,
+    pokemon: Pokemon,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -181,7 +196,7 @@ private fun PokemonCardPreview() {
     PokemonTheme {
         Surface {
             PokemonCard(
-                pokemon = com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                pokemon = Pokemon(
                     id = 25,
                     name = "Pikachu",
                     imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
@@ -197,7 +212,7 @@ private fun PokemonCardLongNamePreview() {
     PokemonTheme {
         Surface {
             PokemonCard(
-                pokemon = com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                pokemon = Pokemon(
                     id = 1,
                     name = "Bulbasaur with long name",
                     imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
@@ -249,32 +264,32 @@ private fun PokemonListContentPreview() {
             PokemonListContent(
                 uiState = PokemonListUiState.Content(
                     pokemons = persistentListOf(
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 1,
                             name = "Bulbasaur",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
                         ),
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 4,
                             name = "Charmander",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
                         ),
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 7,
                             name = "Squirtle",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
                         ),
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 25,
                             name = "Pikachu",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
                         ),
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 133,
                             name = "Eevee",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png"
                         ),
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 150,
                             name = "Mewtwo",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png"
@@ -300,12 +315,12 @@ private fun PokemonListContentLoadingMorePreview() {
             PokemonListContent(
                 uiState = PokemonListUiState.Content(
                     pokemons = persistentListOf(
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 1,
                             name = "Bulbasaur",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
                         ),
-                        com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon(
+                        Pokemon(
                             id = 4,
                             name = "Charmander",
                             imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"

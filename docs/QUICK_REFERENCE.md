@@ -365,7 +365,8 @@ viewModel.uiState.test {
 7. ❌ **NEVER export `:data`, `:ui`, or `:wiring`** to iOS (only `:api`, `:presentation`, `:core:*`)
 8. ❌ **NEVER put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
 9. ❌ **NEVER add DI annotations** to production classes (wire in wiring modules)
-10. ❌ **NEVER omit @Preview** for @Composable functions (MANDATORY)
+10. ❌ **NEVER use star imports or FQN classes** (use explicit imports like `import x.y.ClassName`)
+11. ❌ **NEVER omit @Preview** for @Composable functions (MANDATORY)
 
 ## Decision Matrices
 

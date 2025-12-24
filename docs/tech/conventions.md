@@ -469,9 +469,20 @@ kotlin {
 ```
 
 ## Naming
-- Modules: `:features:<feature>:api`, `:features:<feature>:impl`.
-- Files: use clear, purpose-revealing names. Avoid `Utils`, `Helper`.
-- Tests: mirror the feature and layer names, suffix with `Spec` or `Test`.
+- **Modules**: `:features:<feature>:api`, `:features:<feature>:data`, `:features:<feature>:presentation`, `:features:<feature>:ui-<variant>`, `:features:<feature>:wiring-ui-<variant>`.
+- **Packages**: Must match module structure with dashes converted to dots:
+  - `:features:pokemonlist:ui-material` → `com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material`
+  - `:features:pokemonlist:wiring-ui-material` → `com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.material`
+  - `:features:pokemonlist:ui-unstyled` → `com.minddistrict.multiplatformpoc.features.pokemonlist.ui.unstyled`
+  - `:features:pokemonlist:wiring-ui-unstyled` → `com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.unstyled`
+- **Files**: use clear, purpose-revealing names. Avoid `Utils`, `Helper`.
+- **Tests**: mirror the feature and layer names, suffix with `Spec` or `Test`.
+- **Imports**: 
+  - ❌ **NEVER use star imports** (`import com.example.*`)
+  - ❌ **NEVER use FQN (Fully Qualified Names) in code** (e.g., `com.example.MyClass()` inline)
+  - ✅ **ALWAYS use explicit imports** (`import com.example.MyClass`)
+  - ✅ Configured in `.editorconfig`: `ij_kotlin_name_count_to_use_star_import = 2147483647` (effectively disables star imports)
+  - Exception: iOS factory functions may return FQN types to avoid Swift name collisions (see `ios_integration.md`)
 
 ## Alignment with Product Docs
 - When behavior is product-driven, reference [prd.md](../project/prd.md) and [user_flow.md](../project/user_flow.md). Resolve conflicts by preferring PRD for data rules and user_flow for sequence/UX.
