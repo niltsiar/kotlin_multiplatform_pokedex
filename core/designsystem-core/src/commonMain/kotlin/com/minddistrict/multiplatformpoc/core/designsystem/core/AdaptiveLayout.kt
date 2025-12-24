@@ -3,10 +3,10 @@ package com.minddistrict.multiplatformpoc.core.designsystem.core
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowWidthSizeClass
 
 /**
  * Adaptive Layout Utilities (Shared across Material & Unstyled)
@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
  * Uses Compose Multiplatform WindowAdaptiveInfo API (works on Android, iOS, Desktop, Web).
  * 
  * **API Pattern:**
- * - Uses `WindowAdaptiveInfo.windowSizeClass.widthSizeClass` (enum-based API)
- * - Returns `WindowWidthSizeClass.Compact`, `Medium`, or `Expanded`
+ * - Uses `WindowAdaptiveInfo.windowSizeClass.windowWidthSizeClass` (enum-based API)
+ * - Returns `WindowWidthSizeClass.COMPACT`, `MEDIUM`, or `EXPANDED`
  * - NOT the deprecated dp-based `windowWidthDp` property
  * 
  * **Breakpoints (Material 3 Standard):**
@@ -59,10 +59,10 @@ private const val WIDTH_MEDIUM_UPPER_BOUND = 840
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun gridColumns(windowAdaptiveInfo: WindowAdaptiveInfo): Int {
-    return when (windowAdaptiveInfo.windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> 2
-        WindowWidthSizeClass.Medium -> 3
-        WindowWidthSizeClass.Expanded -> 4
+    return when (windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> 2
+        WindowWidthSizeClass.MEDIUM -> 3
+        WindowWidthSizeClass.EXPANDED -> 4
         else -> 2
     }
 }
@@ -77,10 +77,10 @@ fun gridColumns(windowAdaptiveInfo: WindowAdaptiveInfo): Int {
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun adaptiveSpacing(windowAdaptiveInfo: WindowAdaptiveInfo): Dp {
-    return when (windowAdaptiveInfo.windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> 8.dp
-        WindowWidthSizeClass.Medium -> 16.dp
-        WindowWidthSizeClass.Expanded -> 24.dp
+    return when (windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> 8.dp
+        WindowWidthSizeClass.MEDIUM -> 16.dp
+        WindowWidthSizeClass.EXPANDED -> 24.dp
         else -> 8.dp
     }
 }
@@ -95,10 +95,10 @@ fun adaptiveSpacing(windowAdaptiveInfo: WindowAdaptiveInfo): Dp {
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun adaptiveItemSpacing(windowAdaptiveInfo: WindowAdaptiveInfo): Dp {
-    return when (windowAdaptiveInfo.windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> 12.dp
-        WindowWidthSizeClass.Medium -> 16.dp
-        WindowWidthSizeClass.Expanded -> 20.dp
+    return when (windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> 12.dp
+        WindowWidthSizeClass.MEDIUM -> 16.dp
+        WindowWidthSizeClass.EXPANDED -> 20.dp
         else -> 12.dp
     }
 }
@@ -125,10 +125,10 @@ enum class NavigationSuiteType {
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun adaptiveNavigationType(windowAdaptiveInfo: WindowAdaptiveInfo): NavigationSuiteType {
-    return when (windowAdaptiveInfo.windowSizeClass.widthSizeClass) {
-        WindowWidthSizeClass.Compact -> NavigationSuiteType.BOTTOM_BAR
-        WindowWidthSizeClass.Medium -> NavigationSuiteType.RAIL
-        WindowWidthSizeClass.Expanded -> NavigationSuiteType.DRAWER
+    return when (windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> NavigationSuiteType.BOTTOM_BAR
+        WindowWidthSizeClass.MEDIUM -> NavigationSuiteType.RAIL
+        WindowWidthSizeClass.EXPANDED -> NavigationSuiteType.DRAWER
         else -> NavigationSuiteType.BOTTOM_BAR
     }
 }
@@ -149,7 +149,7 @@ fun adaptiveNavigationType(windowAdaptiveInfo: WindowAdaptiveInfo): NavigationSu
 @Composable
 fun isCompactWindow(): Boolean {
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-    return windowAdaptiveInfo.windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    return windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
 }
 
 /**
@@ -159,7 +159,7 @@ fun isCompactWindow(): Boolean {
 @Composable
 fun isMediumWindow(): Boolean {
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-    return windowAdaptiveInfo.windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium
+    return windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.MEDIUM
 }
 
 /**
@@ -169,5 +169,5 @@ fun isMediumWindow(): Boolean {
 @Composable
 fun isExpandedWindow(): Boolean {
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-    return windowAdaptiveInfo.windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    return windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
 }
