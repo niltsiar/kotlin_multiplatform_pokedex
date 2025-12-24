@@ -479,9 +479,16 @@ kotlin {
 - **Tests**: mirror the feature and layer names, suffix with `Spec` or `Test`.
 - **Imports**: 
   - ❌ **NEVER use star imports** (`import com.example.*`)
-  - ❌ **NEVER use FQN (Fully Qualified Names) in code** (e.g., `com.example.MyClass()` inline)
-  - ✅ **ALWAYS use explicit imports** (`import com.example.MyClass`)
+  - ❌ **NEVER use FQN (Fully Qualified Names) in code** - Write `MyClass()` NOT `com.example.MyClass()`
+  - ✅ **ALWAYS use explicit imports at the top of the file** (`import com.example.MyClass`)
   - ✅ Configured in `.editorconfig`: `ij_kotlin_name_count_to_use_star_import = 2147483647` (effectively disables star imports)
+  - **Why**: Improves readability, IDE navigation, and makes dependencies explicit
+  - **Legitimate FQN usage** (ONLY these cases):
+    - Package declarations: `package com.minddistrict.multiplatformpoc.features.pokemonlist`
+    - Import statements: `import androidx.compose.material3.Card`
+    - Gradle namespace: `namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"`
+    - iOS factory functions returning types (avoid Swift name collisions): `fun createViewModel(): com.example.ViewModel`
+    - Documentation links: `[conventions.md](../tech/conventions.md)`
   - Exception: iOS factory functions may return FQN types to avoid Swift name collisions (see `ios_integration.md`)
 
 ## Alignment with Product Docs
