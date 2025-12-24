@@ -101,6 +101,7 @@ compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.mater
 composeunstyled = { module = "com.composables:composeunstyled", version.ref = "composeUnstyled" }
 composeunstyled-theming = { module = "com.composables:composeunstyled-theming", version.ref = "composeUnstyled" }
 composeunstyled-primitives = { module = "com.composables:composeunstyled-primitives", version.ref = "composeUnstyled" }
+composeunstyled-platformtheme = { module = "com.composables:composeunstyled-platformtheme", version.ref = "composeUnstyled" }
 
 # Navigation 3 (Experimental)
 androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "androidx-navigation3" }
