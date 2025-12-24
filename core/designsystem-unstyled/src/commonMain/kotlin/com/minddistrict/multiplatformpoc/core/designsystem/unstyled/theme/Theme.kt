@@ -1,84 +1,142 @@
 package com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import com.composeunstyled.platformtheme.EmojiVariant
+import com.composeunstyled.platformtheme.WebFontOptions
+import com.composeunstyled.platformtheme.buildPlatformTheme
+import com.composeunstyled.theme.ThemeProperty
+import com.composeunstyled.theme.ThemeToken
 
 /**
- * Unstyled Theme System
- * Provides color tokens matching Material 3 Expressive but without Material components
+ * Unstyled Theme System using Compose Unstyled Platform Theme
+ * 
+ * Architecture:
+ * - Uses buildPlatformTheme for platform-native fonts, sizes, and touch feedback
+ * - Pre-defined platform tokens: textStyles (text1-9, heading1-9), indications (bright/dimmed),
+ *   shapes (rounded*), interactiveSizes (sizeDefault/sizeMinimum)
+ * - Custom color palette defined via ThemeProperty/ThemeToken - Pokéball-inspired distinct from Material
+ * - Custom spacing tokens defined via ThemeProperty/ThemeToken - consistent with core
+ * 
+ * Dynamic Theming:
+ * - Automatically switches between light and dark color schemes based on system settings
+ * - Light theme: Pokéball red (#EE1515) primary, light backgrounds (#FFFBFE)
+ * - Dark theme: Pink (#FFB4AB) primary, dark backgrounds (#1C1B1F)
+ * - Theme recomposes when system dark mode preference changes (no manual switching needed)
+ * 
+ * Platform-specific behavior:
+ * - iOS: San Francisco font 12-34sp, 44dp touch targets, 0.25f alpha snap indication
+ * - Android: Roboto font 11-57sp, 48dp touch targets, ripple indication
+ * - Desktop: System fonts 10-68sp, 28dp touch targets
+ * - Web: NotoSans font, 28dp touch targets, 0.08f alpha tween indication
+ * 
+ * Usage:
+ * ```
+ * UnstyledTheme {
+ *     // Platform tokens
+ *     Text("Hello", style = Theme[textStyles][heading5])
+ *     Box(modifier = Modifier
+ *         .indication(Theme[indications][bright])
+ *         .size(Theme[interactiveSizes][sizeDefault])
+ *         .clip(Theme[shapes][roundedMedium])
+ *     )
+ *     
+ *     // Custom colors & spacing (via Theme - automatically light/dark)
+ *     Box(modifier = Modifier
+ *         .background(Theme[colors][primary])
+ *         .padding(Theme[spacing][spacingMd])
+ *     )
+ * }
+ * ```
  */
-data class UnstyledColorScheme(
-    val background: Color,
-    val surface: Color,
-    val surfaceVariant: Color,
-    val onSurface: Color,
-    val onSurfaceVariant: Color,
-    val outline: Color,
-    val outlineVariant: Color,
-    val primary: Color,
-    val onPrimary: Color,
-    val secondary: Color,
-    val onSecondary: Color,
-    val error: Color,
-    val onError: Color,
-)
 
-val LocalUnstyledColorScheme = staticCompositionLocalOf<UnstyledColorScheme> {
-    error("No UnstyledColorScheme provided")
-}
+// Custom Theme Properties for Colors
+val colors = ThemeProperty<Color>("colors")
+val primary = ThemeToken<Color>("primary")
+val background = ThemeToken<Color>("background")
+val surface = ThemeToken<Color>("surface")
+val error = ThemeToken<Color>("error")
+val onPrimary = ThemeToken<Color>("onPrimary")
+val onBackground = ThemeToken<Color>("onBackground")
+val onSurface = ThemeToken<Color>("onSurface")
+val onError = ThemeToken<Color>("onError")
 
-@Composable
-fun UnstyledTheme(
-    darkTheme: Boolean = false,
-    content: @Composable () -> Unit
+// Custom Theme Properties for Spacing
+val spacing = ThemeProperty<Dp>("spacing")
+val spacingXxxs = ThemeToken<Dp>("xxxs")
+val spacingXxs = ThemeToken<Dp>("xxs")
+val spacingXs = ThemeToken<Dp>("xs")
+val spacingSm = ThemeToken<Dp>("sm")
+val spacingMd = ThemeToken<Dp>("md")
+val spacingLg = ThemeToken<Dp>("lg")
+val spacingXl = ThemeToken<Dp>("xl")
+val spacingXxl = ThemeToken<Dp>("xxl")
+val spacingXxxl = ThemeToken<Dp>("xxxl")
+
+/**
+ * Platform Theme with Native Tokens + Custom Properties + Dynamic Theming
+ * 
+ * **Pre-defined tokens** (automatically provided by buildPlatformTheme):
+ * - **textStyles**: text1-9 (body), heading1-9 (headings) with platform fonts/sizes
+ * - **indications**: bright (light bg), dimmed (dark bg) with platform touch feedback
+ * - **shapes**: roundedNone, roundedSmall (4dp), roundedMedium (6dp), roundedLarge (8dp), roundedFull
+ * - **interactiveSizes**: sizeDefault (platform touch target), sizeMinimum (compact target)
+ * 
+ * **Custom properties** (defined above via ThemeProperty/ThemeToken):
+ * - **colors**: Pokéball-inspired color palette (primary, background, surface, error, on* variants)
+ *   - Light theme: Pokéball red (#EE1515) primary, light backgrounds
+ *   - Dark theme: Pink/blue tinted primary, dark backgrounds
+ * - **spacing**: Shared spacing tokens (xxxs through xxxl)
+ * 
+ * **Dynamic theming**:
+ * - Automatically switches between light/dark color schemes based on system settings
+ * - Uses isSystemInDarkTheme() to detect system preference
+ * - Theme recomposes when system theme changes
+ */
+val UnstyledTheme = buildPlatformTheme(
+    webFontOptions = WebFontOptions(
+        emojiVariant = EmojiVariant.Colored
+    )
 ) {
-    val colorScheme = if (darkTheme) {
-        UnstyledColorScheme(
-            background = UnstyledColors.Dark.background,
-            surface = UnstyledColors.Dark.surface,
-            surfaceVariant = UnstyledColors.Dark.surfaceVariant,
-            onSurface = UnstyledColors.Dark.onSurface,
-            onSurfaceVariant = UnstyledColors.Dark.onSurfaceVariant,
-            outline = UnstyledColors.Dark.outline,
-            outlineVariant = UnstyledColors.Dark.outlineVariant,
-            primary = UnstyledColors.Dark.primary,
-            onPrimary = UnstyledColors.Dark.onPrimary,
-            secondary = UnstyledColors.Dark.secondary,
-            onSecondary = UnstyledColors.Dark.onSecondary,
-            error = UnstyledColors.Dark.error,
-            onError = UnstyledColors.Dark.onError,
+    // Dynamic theme switching based on system preference
+    val isDark = isSystemInDarkTheme()
+    
+    // Custom color palette with dynamic light/dark mode
+    properties[colors] = if (isDark) {
+        mapOf(
+            primary to UnstyledColors.Dark.primary,
+            background to UnstyledColors.Dark.background,
+            surface to UnstyledColors.Dark.surface,
+            error to UnstyledColors.Dark.error,
+            onPrimary to UnstyledColors.Dark.onPrimary,
+            onBackground to UnstyledColors.Dark.onSurface,
+            onSurface to UnstyledColors.Dark.onSurface,
+            onError to UnstyledColors.Dark.onError
         )
     } else {
-        UnstyledColorScheme(
-            background = UnstyledColors.Light.background,
-            surface = UnstyledColors.Light.surface,
-            surfaceVariant = UnstyledColors.Light.surfaceVariant,
-            onSurface = UnstyledColors.Light.onSurface,
-            onSurfaceVariant = UnstyledColors.Light.onSurfaceVariant,
-            outline = UnstyledColors.Light.outline,
-            outlineVariant = UnstyledColors.Light.outlineVariant,
-            primary = UnstyledColors.Light.primary,
-            onPrimary = UnstyledColors.Light.onPrimary,
-            secondary = UnstyledColors.Light.secondary,
-            onSecondary = UnstyledColors.Light.onSecondary,
-            error = UnstyledColors.Light.error,
-            onError = UnstyledColors.Light.onError,
+        mapOf(
+            primary to UnstyledColors.Light.primary,
+            background to UnstyledColors.Light.background,
+            surface to UnstyledColors.Light.surface,
+            error to UnstyledColors.Light.error,
+            onPrimary to UnstyledColors.Light.onPrimary,
+            onBackground to UnstyledColors.Light.onSurface,
+            onSurface to UnstyledColors.Light.onSurface,
+            onError to UnstyledColors.Light.onError
         )
     }
-
-    CompositionLocalProvider(
-        LocalUnstyledColorScheme provides colorScheme,
-        content = content
+    
+    // Custom spacing tokens (shared with Material tier)
+    properties[spacing] = mapOf(
+        spacingXxxs to UnstyledSpacing.xxxs,
+        spacingXxs to UnstyledSpacing.xxs,
+        spacingXs to UnstyledSpacing.xs,
+        spacingSm to UnstyledSpacing.sm,
+        spacingMd to UnstyledSpacing.md,
+        spacingLg to UnstyledSpacing.lg,
+        spacingXl to UnstyledSpacing.xl,
+        spacingXxl to UnstyledSpacing.xxl,
+        spacingXxxl to UnstyledSpacing.xxxl
     )
-}
-
-/**
- * Access current Unstyled color scheme
- */
-object UnstyledTheme {
-    val colorScheme: UnstyledColorScheme
-        @Composable
-        get() = LocalUnstyledColorScheme.current
 }

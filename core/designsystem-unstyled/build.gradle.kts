@@ -13,12 +13,13 @@ kotlin {
             // Compose Unstyled
             implementation(libs.composeunstyled)
             implementation(libs.composeunstyled.theming)
+            implementation(libs.composeunstyled.platformtheme)
             implementation(libs.composeunstyled.primitives)
 
             // Compose Multiplatform
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.ui)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
 
             // Immutable Collections
             implementation(libs.kotlinx.collections.immutable)
