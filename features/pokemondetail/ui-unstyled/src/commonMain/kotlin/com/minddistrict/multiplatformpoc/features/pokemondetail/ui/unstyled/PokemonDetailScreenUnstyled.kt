@@ -50,8 +50,11 @@ import com.composeunstyled.platformtheme.heading2
 import com.composeunstyled.platformtheme.heading3
 import com.composeunstyled.platformtheme.heading4
 import com.composeunstyled.platformtheme.indications
+import com.composeunstyled.platformtheme.interactiveSize
+import com.composeunstyled.platformtheme.interactiveSizes
 import com.composeunstyled.platformtheme.roundedMedium
 import com.composeunstyled.platformtheme.shapes
+import com.composeunstyled.platformtheme.sizeDefault
 import com.composeunstyled.platformtheme.text1
 import com.composeunstyled.platformtheme.text2
 import com.composeunstyled.platformtheme.text3
@@ -122,6 +125,7 @@ private fun PokemonDetailContentUnstyled(
             Box(
                 modifier = Modifier
                     .size(40.dp)
+                    .interactiveSize(Theme[interactiveSizes][sizeDefault])  // Accessibility-friendly touch target
                     .clip(Theme[shapes][roundedMedium])
                     .background(Theme[colors][surface])
                     .border(

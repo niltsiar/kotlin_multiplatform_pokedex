@@ -45,8 +45,11 @@ import com.composeunstyled.ProgressIndicator
 import com.composeunstyled.Text
 import com.composeunstyled.platformtheme.bright
 import com.composeunstyled.platformtheme.indications
+import com.composeunstyled.platformtheme.interactiveSize
+import com.composeunstyled.platformtheme.interactiveSizes
 import com.composeunstyled.platformtheme.roundedMedium
 import com.composeunstyled.platformtheme.shapes
+import com.composeunstyled.platformtheme.sizeDefault
 import com.composeunstyled.platformtheme.text1
 import com.composeunstyled.platformtheme.text3
 import com.composeunstyled.platformtheme.textStyles
@@ -247,6 +250,7 @@ private fun PokemonCardUnstyled(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f)
+            .interactiveSize(Theme[interactiveSizes][sizeDefault])  // Accessibility-friendly touch targets
             .shadow(
                 elevation = Elevation.level2,
                 shape = Theme[shapes][roundedMedium],
