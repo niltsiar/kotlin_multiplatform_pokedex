@@ -61,8 +61,8 @@ import com.composeunstyled.platformtheme.heading3
 import com.composeunstyled.platformtheme.heading4
 import com.composeunstyled.platformtheme.textStyles
 import com.composeunstyled.theme.Theme
-import com.minddistrict.multiplatformpoc.core.designsystem.core.Elevation
-import com.minddistrict.multiplatformpoc.core.designsystem.core.PokemonTypeColors
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.Elevation
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.TypeColors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.background
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
@@ -106,36 +106,34 @@ private fun PokemonDetailContentUnstyled(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(theme.colors.background)
+            .background(Theme[colors][background])
     ) {
         // Top app bar (back button + title)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(theme.colors.surface)
-                .padding(theme.spacing.spacingMd),
+                .background(Theme[colors][surface])
+                .padding(Theme[spacing][spacingMd]),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(theme.spacing.spacingSm)
+            horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])
         ) {
             // Back button
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(theme.shapes.roundedMedium)
-                    .background(theme.colors.surface)
+                    .clip(Theme[shapes][roundedMedium])
+                    .background(Theme[colors][surface])
                     .border(
                         width = 1.dp,
-                        color = theme.colors.onSurface.copy(alpha = 0.2f),
-                        shape = theme.shapes.roundedMedium
+                        color = Theme[colors][onSurface].copy(alpha = 0.2f),
+                        shape = Theme[shapes][roundedMedium]
                     )
                     .clickable(
                         onClick = onBackClick,
-                        indication = theme.indications.bright,
+                        indication = Theme[indications][bright],
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                     )
                     .padding(8.dp),
@@ -143,8 +141,8 @@ private fun PokemonDetailContentUnstyled(
             ) {
                 Text(
                     text = "←",
-                    style = theme.textStyles.text1,
-                    color = theme.colors.onSurface
+                    style = Theme[textStyles][text1],
+                    color = Theme[colors][onSurface]
                 )
             }
             
@@ -152,8 +150,8 @@ private fun PokemonDetailContentUnstyled(
             if (uiState is PokemonDetailUiState.Content) {
                 Text(
                     text = uiState.pokemon.name,
-                    style = theme.textStyles.heading3,
-                    color = theme.colors.onSurface
+                    style = Theme[textStyles][heading3],
+                    color = Theme[colors][onSurface]
                 )
             }
         }
@@ -178,7 +176,6 @@ private fun PokemonDetailContentUnstyled(
 
 @Composable
 private fun LoadingContentUnstyled(modifier: Modifier = Modifier) {
-    val theme = Theme.currentTheme
     var angle by remember { mutableFloatStateOf(0f) }
     
     LaunchedEffect(Unit) {
@@ -198,10 +195,32 @@ private fun LoadingContentUnstyled(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        var progress by remember { mutableFloatStateOf(0f) }
+        LaunchedEffect(Unit) {
+            while (true) {
+                animate(
+                    initialValue = 0f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(2000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Reverse,
+                    ),
+                ) { value, _ ->
+                    progress = value
+                }
+            }
+        }
         ProgressIndicator(
-            size = 48.dp,
-            color = theme.colors.onSurface
-        )
+            progress = progress,
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(8.dp),
+            shape = RoundedCornerShape(8.dp),
+            backgroundColor = Theme[colors][surface],
+            contentColor = Theme[colors][onSurface],
+        ) {
+            ProgressBar()
+        }
     }
 }
 
@@ -211,42 +230,40 @@ private fun ErrorContentUnstyled(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(theme.spacing.spacingMd),
-            modifier = Modifier.padding(theme.spacing.spacingLg)
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
+            modifier = Modifier.padding(Theme[spacing][spacingLg])
         ) {
             Text(
                 text = "⚠️",
-                style = theme.textStyles.heading2,
-                color = theme.colors.error
+                style = Theme[textStyles][heading2],
+                color = Theme[colors][error]
             )
             Text(
                 text = message,
-                style = theme.textStyles.text2,
+                style = Theme[textStyles][text2],
                 textAlign = TextAlign.Center,
-                color = theme.colors.onSurface.copy(alpha = 0.7f)
+                color = Theme[colors][onSurface].copy(alpha = 0.7f)
             )
             Box(
                 modifier = Modifier
-                    .clip(theme.shapes.roundedMedium)
-                    .background(theme.colors.error)
+                    .clip(Theme[shapes][roundedMedium])
+                    .background(Theme[colors][error])
                     .clickable(
                         onClick = onRetry,
-                        indication = theme.indications.bright,
+                        indication = Theme[indications][bright],
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                     )
-                    .padding(horizontal = theme.spacing.spacingMd, vertical = theme.spacing.spacingSm)
+                    .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
             ) {
                 Text(
                     text = "Retry",
-                    style = theme.textStyles.text3,
+                    style = Theme[textStyles][text3],
                     color = Color.White
                 )
             }
@@ -259,10 +276,9 @@ private fun PokemonDetailBodyUnstyled(
     pokemon: PokemonDetail,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
     val primaryType = pokemon.types.firstOrNull()?.name ?: "normal"
-    val isDark = theme.colors.background.luminance() < 0.5f
-    val typeColor = PokemonTypeColors.getBackground(primaryType, isDark)
+    val isDark = Theme[colors][background].luminance() < 0.5f
+    val typeColor = TypeColors.getBackground(primaryType, isDark)
     
     LazyColumn(
         modifier = modifier.fillMaxSize()
@@ -282,7 +298,7 @@ private fun PokemonDetailBodyUnstyled(
             TypeBadgesSectionUnstyled(
                 types = pokemon.types,
                 isDark = isDark,
-                modifier = Modifier.padding(horizontal = theme.spacing.spacingMd, vertical = theme.spacing.spacingSm)
+                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
             )
         }
         
@@ -292,7 +308,7 @@ private fun PokemonDetailBodyUnstyled(
                 height = pokemon.height,
                 weight = pokemon.weight,
                 baseExperience = pokemon.baseExperience,
-                modifier = Modifier.padding(horizontal = theme.spacing.spacingMd, vertical = theme.spacing.spacingSm)
+                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
             )
         }
         
@@ -300,7 +316,7 @@ private fun PokemonDetailBodyUnstyled(
         item {
             AbilitiesSectionUnstyled(
                 abilities = pokemon.abilities,
-                modifier = Modifier.padding(horizontal = theme.spacing.spacingMd, vertical = theme.spacing.spacingSm)
+                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
             )
         }
         
@@ -308,13 +324,13 @@ private fun PokemonDetailBodyUnstyled(
         item {
             BaseStatsSectionUnstyled(
                 stats = pokemon.stats,
-                modifier = Modifier.padding(horizontal = theme.spacing.spacingMd, vertical = theme.spacing.spacingSm)
+                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
             )
         }
         
         // Bottom spacing
         item {
-            Spacer(modifier = Modifier.height(theme.spacing.spacingLg))
+            Spacer(modifier = Modifier.height(Theme[spacing][spacingLg]))
         }
     }
 }
@@ -327,8 +343,6 @@ private fun HeroSectionUnstyled(
     typeColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -337,7 +351,7 @@ private fun HeroSectionUnstyled(
                 Brush.verticalGradient(
                     colors = listOf(
                         typeColor.copy(alpha = 0.3f),
-                        theme.colors.background
+                        Theme[colors][background]
                     )
                 )
             )
@@ -347,24 +361,24 @@ private fun HeroSectionUnstyled(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(theme.spacing.spacingLg)
+                .padding(Theme[spacing][spacingLg])
         ) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = name,
                 modifier = Modifier.size(160.dp)
             )
-            Spacer(modifier = Modifier.height(theme.spacing.spacingMd))
+            Spacer(modifier = Modifier.height(Theme[spacing][spacingMd]))
             Text(
                 text = name,
-                style = theme.textStyles.heading2,
+                style = Theme[textStyles][heading2],
                 fontWeight = FontWeight.Bold,
-                color = theme.colors.onSurface
+                color = Theme[colors][onSurface]
             )
             Text(
                 text = "#${id.toString().padStart(3, '0')}",
-                style = theme.textStyles.text2,
-                color = theme.colors.onSurface.copy(alpha = 0.6f)
+                style = Theme[textStyles][text2],
+                color = Theme[colors][onSurface].copy(alpha = 0.6f)
             )
         }
     }
@@ -377,10 +391,8 @@ private fun TypeBadgesSectionUnstyled(
     isDark: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(theme.spacing.spacingSm),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
         modifier = modifier
     ) {
         types.forEach { type ->
@@ -395,20 +407,19 @@ private fun TypeBadgeUnstyled(
     isDark: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    val backgroundColor = PokemonTypeColors.getBackground(type, isDark)
-    val contentColor = PokemonTypeColors.getContent(type, isDark)
+    val backgroundColor = TypeColors.getBackground(type, isDark)
+    val contentColor = TypeColors.getContent(type, isDark)
     
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
-            .padding(horizontal = theme.spacing.spacingMd, vertical = 6.dp)
+            .padding(horizontal = Theme[spacing][spacingMd], vertical = 6.dp)
     ) {
         Text(
             text = type.replaceFirstChar { it.titlecase() },
             color = contentColor,
-            style = theme.textStyles.text5
+            style = Theme[textStyles][text5]
         )
     }
 }
@@ -420,10 +431,8 @@ private fun PhysicalInfoSectionUnstyled(
     baseExperience: Int,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Row(
-        horizontalArrangement = Arrangement.spacedBy(theme.spacing.spacingSm),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
         modifier = modifier.fillMaxWidth()
     ) {
         InfoCardUnstyled(
@@ -454,21 +463,19 @@ private fun InfoCardUnstyled(
     value: String,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Box(
         modifier = modifier
             .shadow(
                 elevation = Elevation.low,
-                shape = theme.shapes.roundedMedium,
+                shape = Theme[shapes][roundedMedium],
                 clip = false
             )
-            .clip(theme.shapes.roundedMedium)
-            .background(theme.colors.surface)
+            .clip(Theme[shapes][roundedMedium])
+            .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
-                color = theme.colors.onSurface.copy(alpha = 0.1f),
-                shape = theme.shapes.roundedMedium
+                color = Theme[colors][onSurface].copy(alpha = 0.1f),
+                shape = Theme[shapes][roundedMedium]
             )
     ) {
         Column(
@@ -476,23 +483,23 @@ private fun InfoCardUnstyled(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(theme.spacing.spacingMd)
+                .padding(Theme[spacing][spacingMd])
         ) {
             Text(
                 text = emoji,
-                style = theme.textStyles.heading3
+                style = Theme[textStyles][heading3]
             )
-            Spacer(modifier = Modifier.height(theme.spacing.spacingXs))
+            Spacer(modifier = Modifier.height(Theme[spacing][spacingXs]))
             Text(
                 text = label,
-                style = theme.textStyles.text6,
-                color = theme.colors.onSurface.copy(alpha = 0.6f)
+                style = Theme[textStyles][text6],
+                color = Theme[colors][onSurface].copy(alpha = 0.6f)
             )
             Text(
                 text = value,
-                style = theme.textStyles.text2,
+                style = Theme[textStyles][text2],
                 fontWeight = FontWeight.Bold,
-                color = theme.colors.onSurface
+                color = Theme[colors][onSurface]
             )
         }
     }
@@ -503,38 +510,36 @@ private fun AbilitiesSectionUnstyled(
     abilities: ImmutableList<Ability>,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Box(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
                 elevation = Elevation.low,
-                shape = theme.shapes.roundedMedium,
+                shape = Theme[shapes][roundedMedium],
                 clip = false
             )
-            .clip(theme.shapes.roundedMedium)
-            .background(theme.colors.surface)
+            .clip(Theme[shapes][roundedMedium])
+            .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
-                color = theme.colors.onSurface.copy(alpha = 0.1f),
-                shape = theme.shapes.roundedMedium
+                color = Theme[colors][onSurface].copy(alpha = 0.1f),
+                shape = Theme[shapes][roundedMedium]
             )
     ) {
         Column(
-            modifier = Modifier.padding(theme.spacing.spacingMd)
+            modifier = Modifier.padding(Theme[spacing][spacingMd])
         ) {
             Text(
                 text = "Abilities",
-                style = theme.textStyles.heading4,
+                style = Theme[textStyles][heading4],
                 fontWeight = FontWeight.Bold,
-                color = theme.colors.onSurface
+                color = Theme[colors][onSurface]
             )
-            Spacer(modifier = Modifier.height(theme.spacing.spacingSm))
+            Spacer(modifier = Modifier.height(Theme[spacing][spacingSm]))
             abilities.forEach { ability ->
                 AbilityRowUnstyled(ability = ability)
                 if (ability != abilities.last()) {
-                    Spacer(modifier = Modifier.height(theme.spacing.spacingSm))
+                    Spacer(modifier = Modifier.height(Theme[spacing][spacingSm]))
                 }
             }
         }
@@ -546,29 +551,27 @@ private fun AbilityRowUnstyled(
     ability: Ability,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = ability.name.replace("-", " ").replaceFirstChar { it.titlecase() },
-            style = theme.textStyles.text2,
-            color = theme.colors.onSurface,
+            style = Theme[textStyles][text2],
+            color = Theme[colors][onSurface],
             modifier = Modifier.weight(1f)
         )
         if (ability.isHidden) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .background(theme.colors.onSurface.copy(alpha = 0.2f))
-                    .padding(horizontal = theme.spacing.spacingSm, vertical = 4.dp)
+                    .background(Theme[colors][onSurface].copy(alpha = 0.2f))
+                    .padding(horizontal = Theme[spacing][spacingSm], vertical = 4.dp)
             ) {
                 Text(
                     text = "Hidden",
-                    style = theme.textStyles.text6,
-                    color = theme.colors.onSurface
+                    style = Theme[textStyles][text6],
+                    color = Theme[colors][onSurface]
                 )
             }
         }
@@ -580,41 +583,39 @@ private fun BaseStatsSectionUnstyled(
     stats: ImmutableList<Stat>,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
-    
     Box(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
                 elevation = Elevation.low,
-                shape = theme.shapes.roundedMedium,
+                shape = Theme[shapes][roundedMedium],
                 clip = false
             )
-            .clip(theme.shapes.roundedMedium)
-            .background(theme.colors.surface)
+            .clip(Theme[shapes][roundedMedium])
+            .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
-                color = theme.colors.onSurface.copy(alpha = 0.1f),
-                shape = theme.shapes.roundedMedium
+                color = Theme[colors][onSurface].copy(alpha = 0.1f),
+                shape = Theme[shapes][roundedMedium]
             )
     ) {
         Column(
-            modifier = Modifier.padding(theme.spacing.spacingMd)
+            modifier = Modifier.padding(Theme[spacing][spacingMd])
         ) {
             Text(
                 text = "Base Stats",
-                style = theme.textStyles.heading4,
+                style = Theme[textStyles][heading4],
                 fontWeight = FontWeight.Bold,
-                color = theme.colors.onSurface
+                color = Theme[colors][onSurface]
             )
-            Spacer(modifier = Modifier.height(theme.spacing.spacingMd))
+            Spacer(modifier = Modifier.height(Theme[spacing][spacingMd]))
             stats.forEachIndexed { index, stat ->
                 StatBarUnstyled(
                     stat = stat,
                     animationDelay = index * 100
                 )
                 if (stat != stats.last()) {
-                    Spacer(modifier = Modifier.height(theme.spacing.spacingSm))
+                    Spacer(modifier = Modifier.height(Theme[spacing][spacingSm]))
                 }
             }
         }
@@ -627,7 +628,6 @@ private fun StatBarUnstyled(
     animationDelay: Int,
     modifier: Modifier = Modifier
 ) {
-    val theme = Theme.currentTheme
     val maxStat = 255f
     val progress = (stat.baseStat / maxStat).coerceIn(0f, 1f)
     
@@ -658,30 +658,32 @@ private fun StatBarUnstyled(
         ) {
             Text(
                 text = statName,
-                style = theme.textStyles.text3,
-                color = theme.colors.onSurface,
+                style = Theme[textStyles][text3],
+                color = Theme[colors][onSurface],
                 modifier = Modifier.width(100.dp)
             )
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = theme.spacing.spacingSm)
+                    .padding(horizontal = Theme[spacing][spacingSm])
             ) {
-                ProgressBar(
+                ProgressIndicator(
                     progress = animatedProgress,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = statColor,
-                    trackColor = theme.colors.onSurface.copy(alpha = 0.1f)
-                )
+                        .height(8.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    backgroundColor = Theme[colors][onSurface].copy(alpha = 0.1f),
+                    contentColor = statColor,
+                ) {
+                    ProgressBar()
+                }
             }
             Text(
                 text = stat.baseStat.toString(),
-                style = theme.textStyles.text3,
+                style = Theme[textStyles][text3],
                 fontWeight = FontWeight.Bold,
-                color = theme.colors.onSurface,
+                color = Theme[colors][onSurface],
                 modifier = Modifier.width(40.dp),
                 textAlign = TextAlign.End
             )
@@ -699,8 +701,8 @@ private fun Color.luminance(): Float {
 @Preview
 @Composable
 private fun PokemonDetailScreenUnstyledLoadingPreview() {
-    UnstyledTheme() {
-        Box(modifier = Modifier.fillMaxSize().background(Theme[colors.background)) {
+    UnstyledTheme {
+        Box(modifier = Modifier.fillMaxSize().background(Theme[colors][background])) {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Loading,
                 onBackClick = {},
@@ -713,8 +715,8 @@ private fun PokemonDetailScreenUnstyledLoadingPreview() {
 @Preview
 @Composable
 private fun PokemonDetailScreenUnstyledContentPreview() {
-    UnstyledTheme() {
-        Box(modifier = Modifier.fillMaxSize().background(Theme[colors.background)) {
+    UnstyledTheme {
+        Box(modifier = Modifier.fillMaxSize().background(Theme[colors][background])) {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Content(
                     pokemon = PokemonDetail(
@@ -751,8 +753,8 @@ private fun PokemonDetailScreenUnstyledContentPreview() {
 @Preview
 @Composable
 private fun PokemonDetailScreenUnstyledErrorPreview() {
-    UnstyledTheme() {
-        Box(modifier = Modifier.fillMaxSize().background(Theme[colors.background)) {
+    UnstyledTheme {
+        Box(modifier = Modifier.fillMaxSize().background(Theme[colors][background])) {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Error("Network error. Please check your connection."),
                 onBackClick = {},

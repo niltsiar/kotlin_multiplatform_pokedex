@@ -24,6 +24,10 @@ kotlin {
 
             // Immutable Collections
             implementation(libs.kotlinx.collections.immutable)
+
+            // Coil3 for image loading
+            implementation(libs.coil3.compose)
+            implementation(libs.coil3.network)
         }
     }
 }
