@@ -32,4 +32,70 @@ object PokemonTypeColors {
     val Bug = Color(0xFFAABB22)
     val Ghost = Color(0xFF6666BB)
     val Steel = Color(0xFFAAAABB)
+    
+    /**
+     * Get background color for a Pokémon type with theme-aware adjustments.
+     * @param type The Pokémon type name (e.g., "fire", "water")
+     * @param isDark Whether dark mode is active
+     * @return Color for the type background
+     */
+    fun getBackground(type: String, isDark: Boolean): Color {
+        val normalizedType = type.lowercase()
+        val baseColor = when (normalizedType) {
+            "normal" -> Normal
+            "fire" -> Fire
+            "water" -> Water
+            "electric" -> Electric
+            "grass" -> Grass
+            "ice" -> Ice
+            "fighting" -> Fighting
+            "poison" -> Poison
+            "ground" -> Ground
+            "flying" -> Flying
+            "psychic" -> Psychic
+            "bug" -> Bug
+            "rock" -> Rock
+            "ghost" -> Ghost
+            "dragon" -> Dragon
+            "dark" -> Dark
+            "steel" -> Steel
+            "fairy" -> Fairy
+            else -> Normal
+        }
+        
+        // Adjust brightness for theme
+        return if (isDark) {
+            // Lighten for dark mode (better contrast on dark backgrounds)
+            baseColor.copy(
+                red = (baseColor.red * 1.2f).coerceIn(0f, 1f),
+                green = (baseColor.green * 1.2f).coerceIn(0f, 1f),
+                blue = (baseColor.blue * 1.2f).coerceIn(0f, 1f)
+            )
+        } else {
+            // Slightly darken for light mode (better contrast on light backgrounds)
+            baseColor.copy(
+                red = (baseColor.red * 0.9f).coerceIn(0f, 1f),
+                green = (baseColor.green * 0.9f).coerceIn(0f, 1f),
+                blue = (baseColor.blue * 0.9f).coerceIn(0f, 1f)
+            )
+        }
+    }
+    
+    /**
+     * Get content (text) color that contrasts well with the type background.
+     * @param type The Pokémon type name
+     * @param isDark Whether dark mode is active
+     * @return Color for text on the type background
+     */
+    fun getContent(type: String, isDark: Boolean): Color {
+        // Most type colors work well with white text
+        return Color.White
+    }
+    
+    /**
+     * Get both background and content colors as a Pair.
+     */
+    fun getColors(type: String, isDark: Boolean): Pair<Color, Color> {
+        return Pair(getBackground(type, isDark), getContent(type, isDark))
+    }
 }

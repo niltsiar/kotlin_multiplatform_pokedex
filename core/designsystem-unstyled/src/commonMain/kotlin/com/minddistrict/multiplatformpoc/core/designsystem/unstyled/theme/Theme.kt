@@ -8,6 +8,7 @@ import com.composeunstyled.platformtheme.WebFontOptions
 import com.composeunstyled.platformtheme.buildPlatformTheme
 import com.composeunstyled.theme.ThemeProperty
 import com.composeunstyled.theme.ThemeToken
+import com.minddistrict.multiplatformpoc.core.designsystem.core.Spacing
 
 /**
  * Unstyled Theme System using Compose Unstyled Platform Theme
@@ -127,16 +128,16 @@ val UnstyledTheme = buildPlatformTheme(
         )
     }
     
-    // Custom spacing tokens (shared with Material tier)
+    // Custom spacing tokens (shared from designsystem-core)
     properties[spacing] = mapOf(
-        spacingXxxs to UnstyledSpacing.xxxs,
-        spacingXxs to UnstyledSpacing.xxs,
-        spacingXs to UnstyledSpacing.xs,
-        spacingSm to UnstyledSpacing.sm,
-        spacingMd to UnstyledSpacing.md,
-        spacingLg to UnstyledSpacing.lg,
-        spacingXl to UnstyledSpacing.xl,
-        spacingXxl to UnstyledSpacing.xxl,
-        spacingXxxl to UnstyledSpacing.xxxl
+        spacingXxxs to Spacing.xxxs,
+        spacingXxs to Spacing.xxs,
+        spacingXs to Spacing.xs,
+        spacingSm to Spacing.sm,
+        spacingMd to Spacing.md,
+        spacingLg to Spacing.lg,
+        spacingXl to Spacing.xl,
+        spacingXxl to Spacing.xxl,
+        spacingXxxl to Spacing.xxxl
     )
 }
