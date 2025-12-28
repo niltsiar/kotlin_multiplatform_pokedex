@@ -2,7 +2,10 @@ package com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.sp
 import com.composeunstyled.platformtheme.EmojiVariant
 import com.composeunstyled.platformtheme.WebFontOptions
 import com.composeunstyled.platformtheme.buildPlatformTheme
@@ -32,6 +35,11 @@ import com.minddistrict.multiplatformpoc.core.designsystem.core.Spacing
  * - Desktop: System fonts 10-68sp, 28dp touch targets
  * - Web: NotoSans font, 28dp touch targets, 0.08f alpha tween indication
  * 
+ * Default properties:
+ * - defaultContentColor: Automatically switches based on light/dark mode
+ * - defaultTextStyle: 16sp with normal weight (platform fonts applied automatically)
+ * - defaultIndication: Platform-native touch feedback (ripple on Android, etc.)
+ * 
  * Usage:
  * ```
  * UnstyledTheme {
@@ -39,7 +47,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.core.Spacing
  *     Text("Hello", style = Theme[textStyles][heading5])
  *     Box(modifier = Modifier
  *         .indication(Theme[indications][bright])
- *         .size(Theme[interactiveSizes][sizeDefault])
+ *         .interactiveSize(Theme[interactiveSizes][sizeDefault])  // Accessibility-friendly touch targets
  *         .clip(Theme[shapes][roundedMedium])
  *     )
  *     
@@ -48,6 +56,9 @@ import com.minddistrict.multiplatformpoc.core.designsystem.core.Spacing
  *         .background(Theme[colors][primary])
  *         .padding(Theme[spacing][spacingMd])
  *     )
+ *     
+ *     // Default content color and text style applied automatically
+ *     Text("Uses defaultTextStyle")  // No explicit style needed
  * }
  * ```
  */
@@ -90,6 +101,11 @@ val spacingXxxl = ThemeToken<Dp>("xxxl")
  *   - Dark theme: Pink/blue tinted primary, dark backgrounds
  * - **spacing**: Shared spacing tokens (xxxs through xxxl)
  * 
+ * **Default properties** (reduces repetitive styling):
+ * - **defaultContentColor**: Switches between onSurface colors based on light/dark mode
+ * - **defaultTextStyle**: 16sp font with normal weight, platform fonts applied automatically
+ * - **Theme name**: "UnstyledTheme" for descriptive error messages during development
+ * 
  * **Dynamic theming**:
  * - Automatically switches between light/dark color schemes based on system settings
  * - Uses isSystemInDarkTheme() to detect system preference
@@ -100,8 +116,24 @@ val UnstyledTheme = buildPlatformTheme(
         emojiVariant = EmojiVariant.Colored
     )
 ) {
+    // Theme name for better error messages during development
+    name = "UnstyledTheme"
+    
     // Dynamic theme switching based on system preference
     val isDark = isSystemInDarkTheme()
+    
+    // Default content color (automatically switches with light/dark mode)
+    defaultContentColor = if (isDark) {
+        UnstyledColors.Dark.onSurface
+    } else {
+        UnstyledColors.Light.onSurface
+    }
+    
+    // Default text style (platform fonts applied automatically by buildPlatformTheme)
+    defaultTextStyle = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal
+    )
     
     // Custom color palette with dynamic light/dark mode
     properties[colors] = if (isDark) {
