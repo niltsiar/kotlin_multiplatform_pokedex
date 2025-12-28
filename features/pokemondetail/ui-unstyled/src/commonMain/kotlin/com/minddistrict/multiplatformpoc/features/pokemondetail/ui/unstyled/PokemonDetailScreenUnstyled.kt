@@ -23,13 +23,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,6 +46,9 @@ import com.composeunstyled.ProgressBar
 import com.composeunstyled.ProgressIndicator
 import com.composeunstyled.Text
 import com.composeunstyled.platformtheme.bright
+import com.composeunstyled.platformtheme.heading2
+import com.composeunstyled.platformtheme.heading3
+import com.composeunstyled.platformtheme.heading4
 import com.composeunstyled.platformtheme.indications
 import com.composeunstyled.platformtheme.roundedMedium
 import com.composeunstyled.platformtheme.shapes
@@ -56,24 +57,21 @@ import com.composeunstyled.platformtheme.text2
 import com.composeunstyled.platformtheme.text3
 import com.composeunstyled.platformtheme.text5
 import com.composeunstyled.platformtheme.text6
-import com.composeunstyled.platformtheme.heading2
-import com.composeunstyled.platformtheme.heading3
-import com.composeunstyled.platformtheme.heading4
 import com.composeunstyled.platformtheme.textStyles
 import com.composeunstyled.theme.Theme
-import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.Elevation
-import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.TypeColors
+import com.minddistrict.multiplatformpoc.core.designsystem.core.Elevation
+import com.minddistrict.multiplatformpoc.core.designsystem.core.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.background
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.error
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.onSurface
-import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.surface
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacing
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingLg
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingMd
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingSm
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingXs
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.surface
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Ability
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Stat
@@ -90,12 +88,12 @@ fun PokemonDetailScreenUnstyled(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     PokemonDetailContentUnstyled(
         uiState = uiState,
         onBackClick = onBackClick,
         onRetry = viewModel::retry,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -109,7 +107,7 @@ private fun PokemonDetailContentUnstyled(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Theme[colors][background])
+            .background(Theme[colors][background]),
     ) {
         // Top app bar (back button + title)
         Row(
@@ -118,7 +116,7 @@ private fun PokemonDetailContentUnstyled(
                 .background(Theme[colors][surface])
                 .padding(Theme[spacing][spacingMd]),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])
+            horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
         ) {
             // Back button
             Box(
@@ -129,45 +127,45 @@ private fun PokemonDetailContentUnstyled(
                     .border(
                         width = 1.dp,
                         color = Theme[colors][onSurface].copy(alpha = 0.2f),
-                        shape = Theme[shapes][roundedMedium]
+                        shape = Theme[shapes][roundedMedium],
                     )
                     .clickable(
                         onClick = onBackClick,
                         indication = Theme[indications][bright],
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     )
                     .padding(8.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "←",
                     style = Theme[textStyles][text1],
-                    color = Theme[colors][onSurface]
+                    color = Theme[colors][onSurface],
                 )
             }
-            
+
             // Title (only show when content loaded)
             if (uiState is PokemonDetailUiState.Content) {
                 Text(
                     text = uiState.pokemon.name,
                     style = Theme[textStyles][heading3],
-                    color = Theme[colors][onSurface]
+                    color = Theme[colors][onSurface],
                 )
             }
         }
-        
+
         // Main content
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
+                .weight(1f),
         ) {
             when (uiState) {
                 is PokemonDetailUiState.Loading -> LoadingContentUnstyled()
                 is PokemonDetailUiState.Content -> PokemonDetailBodyUnstyled(pokemon = uiState.pokemon)
                 is PokemonDetailUiState.Error -> ErrorContentUnstyled(
                     message = uiState.message,
-                    onRetry = onRetry
+                    onRetry = onRetry,
                 )
             }
         }
@@ -177,23 +175,23 @@ private fun PokemonDetailContentUnstyled(
 @Composable
 private fun LoadingContentUnstyled(modifier: Modifier = Modifier) {
     var angle by remember { mutableFloatStateOf(0f) }
-    
+
     LaunchedEffect(Unit) {
         animate(
             initialValue = 0f,
             targetValue = 360f,
             animationSpec = infiniteRepeatable(
                 animation = tween(durationMillis = 1000, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            )
+                repeatMode = RepeatMode.Restart,
+            ),
         ) { value, _ ->
             angle = value
         }
     }
-    
+
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         var progress by remember { mutableFloatStateOf(0f) }
         LaunchedEffect(Unit) {
@@ -232,23 +230,23 @@ private fun ErrorContentUnstyled(
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-            modifier = Modifier.padding(Theme[spacing][spacingLg])
+            modifier = Modifier.padding(Theme[spacing][spacingLg]),
         ) {
             Text(
                 text = "⚠️",
                 style = Theme[textStyles][heading2],
-                color = Theme[colors][error]
+                color = Theme[colors][error],
             )
             Text(
                 text = message,
                 style = Theme[textStyles][text2],
                 textAlign = TextAlign.Center,
-                color = Theme[colors][onSurface].copy(alpha = 0.7f)
+                color = Theme[colors][onSurface].copy(alpha = 0.7f),
             )
             Box(
                 modifier = Modifier
@@ -257,14 +255,14 @@ private fun ErrorContentUnstyled(
                     .clickable(
                         onClick = onRetry,
                         indication = Theme[indications][bright],
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     )
-                    .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
+                    .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
             ) {
                 Text(
                     text = "Retry",
                     style = Theme[textStyles][text3],
-                    color = Color.White
+                    color = Color.White,
                 )
             }
         }
@@ -278,10 +276,10 @@ private fun PokemonDetailBodyUnstyled(
 ) {
     val primaryType = pokemon.types.firstOrNull()?.name ?: "normal"
     val isDark = Theme[colors][background].luminance() < 0.5f
-    val typeColor = TypeColors.getBackground(primaryType, isDark)
-    
+    val typeColor = PokemonTypeColors.getBackground(primaryType, isDark)
+
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         // Hero Section (Image + Name + ID)
         item {
@@ -289,45 +287,57 @@ private fun PokemonDetailBodyUnstyled(
                 name = pokemon.name,
                 id = pokemon.id,
                 imageUrl = pokemon.imageUrl,
-                typeColor = typeColor
+                typeColor = typeColor,
             )
         }
-        
+
         // Type Badges
         item {
             TypeBadgesSectionUnstyled(
                 types = pokemon.types,
                 isDark = isDark,
-                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
+                modifier = Modifier.padding(
+                    horizontal = Theme[spacing][spacingMd],
+                    vertical = Theme[spacing][spacingSm],
+                ),
             )
         }
-        
+
         // Physical Info (Height, Weight, Base XP)
         item {
             PhysicalInfoSectionUnstyled(
                 height = pokemon.height,
                 weight = pokemon.weight,
                 baseExperience = pokemon.baseExperience,
-                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
+                modifier = Modifier.padding(
+                    horizontal = Theme[spacing][spacingMd],
+                    vertical = Theme[spacing][spacingSm],
+                ),
             )
         }
-        
+
         // Abilities
         item {
             AbilitiesSectionUnstyled(
                 abilities = pokemon.abilities,
-                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
+                modifier = Modifier.padding(
+                    horizontal = Theme[spacing][spacingMd],
+                    vertical = Theme[spacing][spacingSm],
+                ),
             )
         }
-        
+
         // Base Stats
         item {
             BaseStatsSectionUnstyled(
                 stats = pokemon.stats,
-                modifier = Modifier.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
+                modifier = Modifier.padding(
+                    horizontal = Theme[spacing][spacingMd],
+                    vertical = Theme[spacing][spacingSm],
+                ),
             )
         }
-        
+
         // Bottom spacing
         item {
             Spacer(modifier = Modifier.height(Theme[spacing][spacingLg]))
@@ -351,34 +361,34 @@ private fun HeroSectionUnstyled(
                 Brush.verticalGradient(
                     colors = listOf(
                         typeColor.copy(alpha = 0.3f),
-                        Theme[colors][background]
-                    )
-                )
-            )
+                        Theme[colors][background],
+                    ),
+                ),
+            ),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Theme[spacing][spacingLg])
+                .padding(Theme[spacing][spacingLg]),
         ) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = name,
-                modifier = Modifier.size(160.dp)
+                modifier = Modifier.size(160.dp),
             )
             Spacer(modifier = Modifier.height(Theme[spacing][spacingMd]))
             Text(
                 text = name,
                 style = Theme[textStyles][heading2],
                 fontWeight = FontWeight.Bold,
-                color = Theme[colors][onSurface]
+                color = Theme[colors][onSurface],
             )
             Text(
                 text = "#${id.toString().padStart(3, '0')}",
                 style = Theme[textStyles][text2],
-                color = Theme[colors][onSurface].copy(alpha = 0.6f)
+                color = Theme[colors][onSurface].copy(alpha = 0.6f),
             )
         }
     }
@@ -393,7 +403,7 @@ private fun TypeBadgesSectionUnstyled(
 ) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
-        modifier = modifier
+        modifier = modifier,
     ) {
         types.forEach { type ->
             TypeBadgeUnstyled(type = type.name, isDark = isDark)
@@ -407,19 +417,19 @@ private fun TypeBadgeUnstyled(
     isDark: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = TypeColors.getBackground(type, isDark)
-    val contentColor = TypeColors.getContent(type, isDark)
-    
+    val backgroundColor = PokemonTypeColors.getBackground(type, isDark)
+    val contentColor = PokemonTypeColors.getContent(type, isDark)
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
-            .padding(horizontal = Theme[spacing][spacingMd], vertical = 6.dp)
+            .padding(horizontal = Theme[spacing][spacingMd], vertical = 6.dp),
     ) {
         Text(
             text = type.replaceFirstChar { it.titlecase() },
             color = contentColor,
-            style = Theme[textStyles][text5]
+            style = Theme[textStyles][text5],
         )
     }
 }
@@ -433,25 +443,25 @@ private fun PhysicalInfoSectionUnstyled(
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         InfoCardUnstyled(
             emoji = "📏",
             label = "Height",
             value = "${height / 10.0} m",
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         InfoCardUnstyled(
             emoji = "⚖️",
             label = "Weight",
             value = "${weight / 10.0} kg",
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         InfoCardUnstyled(
             emoji = "⭐",
             label = "Base XP",
             value = baseExperience.toString(),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -468,38 +478,38 @@ private fun InfoCardUnstyled(
             .shadow(
                 elevation = Elevation.low,
                 shape = Theme[shapes][roundedMedium],
-                clip = false
+                clip = false,
             )
             .clip(Theme[shapes][roundedMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.1f),
-                shape = Theme[shapes][roundedMedium]
-            )
+                shape = Theme[shapes][roundedMedium],
+            ),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Theme[spacing][spacingMd])
+                .padding(Theme[spacing][spacingMd]),
         ) {
             Text(
                 text = emoji,
-                style = Theme[textStyles][heading3]
+                style = Theme[textStyles][heading3],
             )
             Spacer(modifier = Modifier.height(Theme[spacing][spacingXs]))
             Text(
                 text = label,
                 style = Theme[textStyles][text6],
-                color = Theme[colors][onSurface].copy(alpha = 0.6f)
+                color = Theme[colors][onSurface].copy(alpha = 0.6f),
             )
             Text(
                 text = value,
                 style = Theme[textStyles][text2],
                 fontWeight = FontWeight.Bold,
-                color = Theme[colors][onSurface]
+                color = Theme[colors][onSurface],
             )
         }
     }
@@ -516,24 +526,24 @@ private fun AbilitiesSectionUnstyled(
             .shadow(
                 elevation = Elevation.low,
                 shape = Theme[shapes][roundedMedium],
-                clip = false
+                clip = false,
             )
             .clip(Theme[shapes][roundedMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.1f),
-                shape = Theme[shapes][roundedMedium]
-            )
+                shape = Theme[shapes][roundedMedium],
+            ),
     ) {
         Column(
-            modifier = Modifier.padding(Theme[spacing][spacingMd])
+            modifier = Modifier.padding(Theme[spacing][spacingMd]),
         ) {
             Text(
                 text = "Abilities",
                 style = Theme[textStyles][heading4],
                 fontWeight = FontWeight.Bold,
-                color = Theme[colors][onSurface]
+                color = Theme[colors][onSurface],
             )
             Spacer(modifier = Modifier.height(Theme[spacing][spacingSm]))
             abilities.forEach { ability ->
@@ -553,25 +563,25 @@ private fun AbilityRowUnstyled(
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = ability.name.replace("-", " ").replaceFirstChar { it.titlecase() },
             style = Theme[textStyles][text2],
             color = Theme[colors][onSurface],
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         if (ability.isHidden) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .background(Theme[colors][onSurface].copy(alpha = 0.2f))
-                    .padding(horizontal = Theme[spacing][spacingSm], vertical = 4.dp)
+                    .padding(horizontal = Theme[spacing][spacingSm], vertical = 4.dp),
             ) {
                 Text(
                     text = "Hidden",
                     style = Theme[textStyles][text6],
-                    color = Theme[colors][onSurface]
+                    color = Theme[colors][onSurface],
                 )
             }
         }
@@ -589,30 +599,30 @@ private fun BaseStatsSectionUnstyled(
             .shadow(
                 elevation = Elevation.low,
                 shape = Theme[shapes][roundedMedium],
-                clip = false
+                clip = false,
             )
             .clip(Theme[shapes][roundedMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.1f),
-                shape = Theme[shapes][roundedMedium]
-            )
+                shape = Theme[shapes][roundedMedium],
+            ),
     ) {
         Column(
-            modifier = Modifier.padding(Theme[spacing][spacingMd])
+            modifier = Modifier.padding(Theme[spacing][spacingMd]),
         ) {
             Text(
                 text = "Base Stats",
                 style = Theme[textStyles][heading4],
                 fontWeight = FontWeight.Bold,
-                color = Theme[colors][onSurface]
+                color = Theme[colors][onSurface],
             )
             Spacer(modifier = Modifier.height(Theme[spacing][spacingMd]))
             stats.forEachIndexed { index, stat ->
                 StatBarUnstyled(
                     stat = stat,
-                    animationDelay = index * 100
+                    animationDelay = index * 100,
                 )
                 if (stat != stats.last()) {
                     Spacer(modifier = Modifier.height(Theme[spacing][spacingSm]))
@@ -630,42 +640,42 @@ private fun StatBarUnstyled(
 ) {
     val maxStat = 255f
     val progress = (stat.baseStat / maxStat).coerceIn(0f, 1f)
-    
+
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(
             durationMillis = 1000,
-            delayMillis = animationDelay
+            delayMillis = animationDelay,
         ),
-        label = "stat_animation"
+        label = "stat_animation",
     )
-    
+
     val statColor = when {
         stat.baseStat < 50 -> Color(0xFFF44336) // Red
         stat.baseStat < 100 -> Color(0xFFFFEB3B) // Yellow
         else -> Color(0xFF4CAF50) // Green
     }
-    
+
     val statName = stat.name.replace("-", " ")
         .split(" ")
         .joinToString(" ") { it.replaceFirstChar { char -> char.titlecase() } }
-    
+
     Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = statName,
                 style = Theme[textStyles][text3],
                 color = Theme[colors][onSurface],
-                modifier = Modifier.width(100.dp)
+                modifier = Modifier.width(100.dp),
             )
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = Theme[spacing][spacingSm])
+                    .padding(horizontal = Theme[spacing][spacingSm]),
             ) {
                 ProgressIndicator(
                     progress = animatedProgress,
@@ -685,7 +695,7 @@ private fun StatBarUnstyled(
                 fontWeight = FontWeight.Bold,
                 color = Theme[colors][onSurface],
                 modifier = Modifier.width(40.dp),
-                textAlign = TextAlign.End
+                textAlign = TextAlign.End,
             )
         }
     }
@@ -706,7 +716,7 @@ private fun PokemonDetailScreenUnstyledLoadingPreview() {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Loading,
                 onBackClick = {},
-                onRetry = {}
+                onRetry = {},
             )
         }
     }
@@ -726,7 +736,7 @@ private fun PokemonDetailScreenUnstyledContentPreview() {
                         weight = 60,
                         baseExperience = 112,
                         types = persistentListOf(
-                            TypeOfPokemon(name = "electric", slot = 1)
+                            TypeOfPokemon(name = "electric", slot = 1),
                         ),
                         stats = persistentListOf(
                             Stat(name = "hp", baseStat = 35, effort = 0),
@@ -734,17 +744,17 @@ private fun PokemonDetailScreenUnstyledContentPreview() {
                             Stat(name = "defense", baseStat = 40, effort = 0),
                             Stat(name = "special-attack", baseStat = 50, effort = 0),
                             Stat(name = "special-defense", baseStat = 50, effort = 0),
-                            Stat(name = "speed", baseStat = 90, effort = 0)
+                            Stat(name = "speed", baseStat = 90, effort = 0),
                         ),
                         abilities = persistentListOf(
                             Ability(name = "static", isHidden = false, slot = 1),
-                            Ability(name = "lightning-rod", isHidden = true, slot = 3)
+                            Ability(name = "lightning-rod", isHidden = true, slot = 3),
                         ),
-                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-                    )
+                        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+                    ),
                 ),
                 onBackClick = {},
-                onRetry = {}
+                onRetry = {},
             )
         }
     }
@@ -758,7 +768,7 @@ private fun PokemonDetailScreenUnstyledErrorPreview() {
             PokemonDetailContentUnstyled(
                 uiState = PokemonDetailUiState.Error("Network error. Please check your connection."),
                 onBackClick = {},
-                onRetry = {}
+                onRetry = {},
             )
         }
     }

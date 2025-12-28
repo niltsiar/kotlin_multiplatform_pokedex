@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
  * Elevation levels for shadows and depth hierarchy.
  * Follows Material Design elevation principles.
  * 
- * Scale: level0 (0dp, no elevation) → level5 (12dp, highest)
+ * Scale: level0/none (0dp) → level5 (12dp, highest)
  */
 object Elevation {
     val level0: Dp = 0.dp
@@ -18,4 +18,10 @@ object Elevation {
     val level3: Dp = 6.dp
     val level4: Dp = 8.dp
     val level5: Dp = 12.dp
+    
+    // Convenience aliases
+    val none: Dp = level0
+    val low: Dp = level1
+    val medium: Dp = level3
+    val high: Dp = level4
 }
