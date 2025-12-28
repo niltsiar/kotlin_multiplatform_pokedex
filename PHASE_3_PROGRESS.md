@@ -1,12 +1,12 @@
 # Phase 3: Compose Unstyled Migration Progress
 
-Last Updated: December 28, 2025
+Last Updated: December 29, 2025
 
 ## Summary
 
 Phase 3 focuses on migrating from Material Design to Compose Unstyled components while maintaining functionality.
 
-**Status:** ✅ ALL MIGRATIONS COMPLETE - Full build passing
+**Status:** ✅ ALL MIGRATIONS COMPLETE + PLATFORM ENHANCEMENTS - Full build passing with 84/84 tests
 
 ## Completed ✅
 
@@ -40,15 +40,54 @@ Phase 3 focuses on migrating from Material Design to Compose Unstyled components
 **Commits:**
 - `68a97a2` - fix(adaptive): migrate to WindowManager 1.4 isWidthAtLeastBreakpoint API
 
+### 4. Pokemon Detail Unstyled Migration
+- ✅ Migrated PokemonDetailScreenUnstyled.kt to bracket notation `Theme[property][token]`
+- ✅ Replaced all theme access patterns with Theme[] syntax
+- ✅ Fixed ProgressIndicator API to use wrapper pattern with progress parameter
+- ✅ Created TypeColors helper for Pokémon type colors (getBackground/getContent)
+- ✅ Created Elevation helper for consistent elevation values (low/medium/high)
+- ✅ Fixed all preview functions to use UnstyledTheme (removed parentheses)
+- ✅ Added Coil3 dependencies for image loading
+
+**Commits:**
+- `99b295e` - feat(pokemondetail): complete Compose Unstyled v1.49.3 migration
+
+### 5. Design Token Consolidation
+- ✅ Removed duplicate design tokens between designsystem-core and designsystem-unstyled
+- ✅ Added helper methods to core PokemonTypeColors (getBackground, getContent, getColors)
+- ✅ Added convenience aliases to core Elevation (none, low, medium, high)
+- ✅ Deleted 3 duplicate files (Elevation.kt, TypeColors.kt, Dimensions.kt from unstyled)
+- ✅ Single source of truth for all design tokens (DRY principle)
+
+**Commits:**
+- `22b28f4` - refactor(designsystem): consolidate design tokens - remove duplications
+
+### 6. Platform Theme Enhancements (NEW LEARNINGS)
+- ✅ Added theme name (`"UnstyledTheme"`) for better debugging error messages
+- ✅ Set `defaultContentColor` to auto-switch with light/dark mode (onSurface)
+- ✅ Set `defaultTextStyle` (16sp, normal weight) to reduce repetitive styling
+- ✅ Applied `interactiveSize` modifier for accessibility-friendly touch targets:
+  * Android: 48dp touch targets (Material Design guidelines)
+  * iOS: 44dp touch targets (HIG guidelines)
+  * Desktop/Web: 28dp touch targets
+- ✅ Platform fonts applied automatically by buildPlatformTheme
+- ✅ Updated documentation with default properties and accessibility patterns
+
+**Commits:**
+- Latest commit - feat(designsystem): enhance UnstyledTheme with platform-native defaults
+
 ## Phase 3 Complete ✅
 
-All core modules and features have been successfully migrated to Compose Unstyled:
+All core modules and features have been successfully migrated to Compose Unstyled with platform enhancements:
 
-1. ✅ Infrastructure (buildPlatformTheme, theme tokens)
-2. ✅ Pokemon List Unstyled (complete migration with animations)
-3. ✅ AdaptiveLayout (WindowManager 1.4 API)
+1. ✅ Infrastructure (buildPlatformTheme, theme tokens, default properties)
+2. ✅ Pokemon List Unstyled (complete migration with animations + accessibility)
+3. ✅ Pokemon Detail Unstyled (complete migration with type colors + elevation helpers)
+4. ✅ Design Token Consolidation (single source of truth, DRY principle)
+5. ✅ Platform Theme Enhancements (accessibility, debugging, reduced boilerplate)
+6. ✅ AdaptiveLayout (WindowManager 1.4 API)
 
-**Final Build Status:** `BUILD SUCCESSFUL in 694ms`
+**Final Build Status:** `BUILD SUCCESSFUL in 18s` with **84/84 tests passing**
 
 ### Verification Commands
 
@@ -61,12 +100,6 @@ All core modules and features have been successfully migrated to Compose Unstyle
 ./gradlew :composeApp:assembleDebug
 # Result: BUILD SUCCESSFUL in 694ms (397 tasks: 43 executed, 354 up-to-date)
 ```
-
-## Archive: Previous Work
-
-### Pokemon Detail Status
-
-**Note:** Pokemon Detail is NOT being migrated to Unstyled in this phase. The Material variant remains the production implementation.
 
 ## Reference Files
 
@@ -91,6 +124,9 @@ Text(text = "Hello", style = Theme[textStyles][text1])
 // Import platform theme tokens
 import com.composeunstyled.platformtheme.bright
 import com.composeunstyled.platformtheme.text1
+import com.composeunstyled.platformtheme.interactiveSize
+import com.composeunstyled.platformtheme.interactiveSizes
+import com.composeunstyled.platformtheme.sizeDefault
 import com.composeunstyled.theme.Theme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 
@@ -98,6 +134,43 @@ import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 Text(
     text = "Content",
     style = Theme[textStyles][text1],
+    // No color needed - defaultContentColor applied automatically
+)
+
+// Accessibility-friendly touch targets
+Button(
+    onClick = {},
+    modifier = Modifier.interactiveSize(Theme[interactiveSizes][sizeDefault]),
+    // Android: 48dp, iOS: 44dp, Desktop/Web: 28dp
+) {
+    Text("Click me")
+}
+```
+
+### Platform Theme Defaults (NEW)
+```kotlin
+val UnstyledTheme = buildPlatformTheme(
+    webFontOptions = WebFontOptions(emojiVariant = EmojiVariant.Colored)
+) {
+    // Debug-friendly theme name
+    name = "UnstyledTheme"
+    
+    // Auto-switching content color (reduces boilerplate)
+    defaultContentColor = if (isDark) {
+        UnstyledColors.Dark.onSurface
+    } else {
+        UnstyledColors.Light.onSurface
+    }
+    
+    // Default text style (platform fonts auto-applied)
+    defaultTextStyle = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal
+    )
+    
+    // Custom properties
+    properties[colors] = ...
+    properties[spacing] = ...
     color = Theme[colors][onSurface]
 )
 ```
