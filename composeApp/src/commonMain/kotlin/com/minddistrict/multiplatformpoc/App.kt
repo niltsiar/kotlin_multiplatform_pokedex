@@ -1,6 +1,8 @@
 package com.minddistrict.multiplatformpoc
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,10 +22,14 @@ import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.KoinApplication
 import org.koin.dsl.koinConfiguration
 
+/**
+ * Root app composable with Material Design 3 theme.
+ *
+ * TODO Phase 5: Add theme switching between Material and Unstyled design systems.
+ */
 @Composable
 @Preview
 fun App() {
-    // Initialize Koin with all modules directly (idiomatic Koin pattern)
     KoinApplication(
         configuration = koinConfiguration(
             declaration = fun KoinApplication.() {
@@ -39,19 +45,22 @@ fun App() {
         ),
     ) {
         val navigator: Navigator = koinInject()
-
-        // Koin's Navigation 3 integration automatically aggregates all navigation<T> entries
         val entryProvider = koinEntryProvider()
-
+        
         PokemonTheme {
-            Surface(modifier = Modifier.fillMaxSize()) {
-                NavDisplay(
-                    backStack = navigator.backStack,
-                    onBack = { navigator.goBack() },
-                    entryProvider = entryProvider,
-                )
+            Scaffold { paddingValues ->
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    NavDisplay(
+                        backStack = navigator.backStack,
+                        onBack = { navigator.goBack() },
+                        entryProvider = entryProvider,
+                    )
+                }
             }
         }
     }
 }
-

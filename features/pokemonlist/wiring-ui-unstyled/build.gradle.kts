@@ -10,6 +10,9 @@ kotlin {
             implementation(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.presentation)
             implementation(projects.features.pokemonlist.uiUnstyled)
+            
+            // Need access to PokemonDetail route for navigation
+            implementation(projects.features.pokemondetail.api)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
