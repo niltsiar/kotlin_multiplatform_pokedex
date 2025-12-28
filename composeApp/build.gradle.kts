@@ -23,14 +23,21 @@ kotlin {
             implementation(projects.core.di)
             implementation(projects.core.diUi)
             implementation(projects.core.designsystemMaterial)
+            implementation(projects.core.designsystemUnstyled)
             
-            // Feature UI modules - now support iOS Compose
+            // Feature UI modules - Material variants
             implementation(projects.features.pokemonlist.uiMaterial)
             implementation(projects.features.pokemonlist.wiring)
             implementation(projects.features.pokemonlist.wiringUiMaterial)
             implementation(projects.features.pokemondetail.uiMaterial)
             implementation(projects.features.pokemondetail.wiring)
             implementation(projects.features.pokemondetail.wiringUiMaterial)
+            
+            // Feature UI modules - Unstyled variants
+            implementation(projects.features.pokemonlist.uiUnstyled)
+            implementation(projects.features.pokemonlist.wiringUiUnstyled)
+            implementation(projects.features.pokemondetail.uiUnstyled)
+            implementation(projects.features.pokemondetail.wiringUiUnstyled)
             
             // Koin
             implementation(libs.koin.core)

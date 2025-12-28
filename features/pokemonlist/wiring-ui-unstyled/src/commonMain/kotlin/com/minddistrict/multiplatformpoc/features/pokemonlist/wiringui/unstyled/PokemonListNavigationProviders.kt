@@ -2,9 +2,12 @@ package com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.unstyled
 
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.minddistrict.multiplatformpoc.core.navigation.Navigator
+import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.unstyled.PokemonListScreenUnstyled
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
@@ -18,6 +21,7 @@ import org.koin.dsl.navigation3.navigation
 val pokemonListNavigationUnstyledModule = module {
     // Declare navigation entry using Koin's Navigation 3 DSL
     navigation<PokemonList> { route ->
+        val navigator: Navigator = koinInject()
         val viewModel = koinViewModel<PokemonListViewModel>()
         val lifecycleOwner = LocalLifecycleOwner.current
         
@@ -32,9 +36,9 @@ val pokemonListNavigationUnstyledModule = module {
         PokemonListScreenUnstyled(
             viewModel = viewModel,
             onPokemonClick = { pokemon ->
-            // TODO: Navigate to detail screen when unstyled detail is implemented
-            println("Clicked Pokemon: ${pokemon.name}")
-        },
+                // Navigate to detail screen in unstyled world
+                navigator.goTo(PokemonDetail(id = pokemon.id))
+            },
         )
     }
 }
