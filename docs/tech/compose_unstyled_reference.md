@@ -143,8 +143,18 @@ fun App() {
 
 **Purpose**: Native look/feel with platform-specific fonts, sizes, indications.
 
+**NEW: Default Properties** (discovered during implementation):
+- `name`: String identifier for debugging (shows in error messages)
+- `defaultContentColor`: Color applied to all components (reduces boilerplate)
+- `defaultTextStyle`: TextStyle for Text/TextField (platform fonts auto-applied)
+- `defaultIndication`: Touch feedback (platform-native: ripple on Android, etc.)
+- `defaultTextSelectionColors`: Text selection colors
+
 ```kotlin
 import com.composeunstyled.platformtheme.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 val PlatformTheme = buildPlatformTheme(
     webFontOptions = WebFontOptions(
@@ -156,6 +166,19 @@ val PlatformTheme = buildPlatformTheme(
         emojiVariant = EmojiVariant.Colored
     )
 ) {
+    // Debug-friendly theme name (better error messages)
+    name = "MyAppTheme"
+    
+    // Default content color (auto-applied to all Text/Icon)
+    defaultContentColor = Color.Black
+    
+    // Default text style (reduces repetitive styling)
+    defaultTextStyle = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal
+        // Platform fonts applied automatically
+    )
+    
     // Customize platform theme
     properties[customProperty] = mapOf(customToken to customValue)
 }
@@ -166,9 +189,152 @@ val PlatformTheme = buildPlatformTheme(
 | Token Type | Tokens | Description |
 |------------|--------|-------------|
 | **Typography** | `text1` - `text9`, `heading1` - `heading9` | Platform-specific font sizes |
-| **Shapes** | `roundedNone`, `roundedSmall`, `roundedMedium`, `roundedLarge`, `roundedFull` | Platform-optimized corner radii |
+| **Shapes** | `roundedNone`, `roundedSmall` (4dp), `roundedMedium` (6dp), `roundedLarge` (8dp), `roundedFull` (100%) | Platform-optimized corner radii |
 | **Indications** | `bright`, `dimmed` | Platform-specific touch feedback (iOS: 0.25 alpha, Web: 0.08 alpha) |
-| **Interactive Sizes** | `sizeDefault`, `sizeMinimum` | Touch target sizes (Android: 48dp, iOS: 44dp) |
+| **Interactive Sizes** | `sizeDefault`, `sizeMinimum` | Touch target sizes for accessibility |
+
+**Platform-Specific Touch Target Sizes**:
+
+| Platform | sizeDefault | sizeMinimum | Standard |
+|----------|-------------|-------------|----------|
+| Android | 48dp | 32dp | Material Design |
+| iOS | 44dp | 28dp | HIG (Human Interface Guidelines) |
+| Desktop | 28dp | 20dp | Desktop conventions |
+| Web | 28dp | 20dp | Web accessibility |
+
+### Accessibility: Interactive Size Modifier (NEW)
+
+**Purpose**: Ensure clickable elements meet platform accessibility guidelines.
+
+```kotlin
+import com.composeunstyled.platformtheme.interactiveSize
+import com.composeunstyled.platformtheme.interactiveSizes
+import com.composeunstyled.platformtheme.sizeDefault
+import com.composeunstyled.platformtheme.sizeMinimum
+
+// Apply to all clickable elements
+Button(
+    onClick = {},
+    modifier = Modifier.interactiveSize(Theme[interactiveSizes][sizeDefault])
+) {
+    Text("Click me")
+}
+
+// Compact variant for dense UIs
+IconButton(
+    onClick = {},
+    modifier = Modifier.interactiveSize(Theme[interactiveSizes][sizeMinimum])
+) {
+    Icon(Lucide.Settings)
+}
+```
+
+**Benefits**:
+- ✅ Automatic platform-appropriate touch targets
+- ✅ Accessibility compliance (WCAG 2.1 Level AA)
+- ✅ Consistent across all platforms
+- ✅ No manual size management
+
+---
+
+## Helper Patterns (Semantic Wrappers)
+
+**Purpose**: Wrap core design tokens in domain-specific helpers for semantic clarity.
+
+### Why Use Helpers?
+
+**Without helpers** (direct token access):
+```kotlin
+// Hard to understand intent
+Box(
+    modifier = Modifier.background(
+        PokemonTypeColors.Fire.background,
+        shape = RoundedCornerShape(8.dp)
+    )
+)
+```
+
+**With helpers** (semantic wrappers):
+```kotlin
+// Clear intent: "type badge with Fire colors"
+Box(
+    modifier = Modifier.background(
+        TypeColors.getBackground(PokemonType.Fire),
+        shape = RoundedCornerShape(8.dp)
+    )
+)
+```
+
+### Example: TypeColors Helper
+
+```kotlin
+// core/designsystem-unstyled/.../TypeColors.kt
+object TypeColors {
+    fun getBackground(type: PokemonType): Color =
+        PokemonTypeColors.fromType(type).background
+    
+    fun getContent(type: PokemonType): Color =
+        PokemonTypeColors.fromType(type).content
+    
+    fun getColors(type: PokemonType): TypeColorPair =
+        PokemonTypeColors.fromType(type)
+}
+
+// Usage in components
+Box(
+    modifier = Modifier
+        .background(
+            TypeColors.getBackground(pokemon.primaryType),
+            shape = Theme[shapes][roundedSmall]
+        )
+) {
+    Text(
+        text = pokemon.primaryType.name,
+        color = TypeColors.getContent(pokemon.primaryType)
+    )
+}
+```
+
+### Example: Elevation Helper
+
+```kotlin
+// core/designsystem-unstyled/.../Elevation.kt
+object Elevation {
+    val none = 0.dp
+    val low = 2.dp
+    val medium = 4.dp
+    val high = 8.dp
+}
+
+// Usage replaces magic numbers
+Box(
+    modifier = Modifier
+        .shadow(Elevation.medium, shape = Theme[shapes][roundedMedium])
+        .background(Theme[colors][surface])
+) {
+    // Card content
+}
+```
+
+### Benefits
+
+- ✅ **Semantic naming** - Intent is clear ("type badge" not "Fire background color")
+- ✅ **Single source of truth** - Changes propagate automatically
+- ✅ **Type safety** - Compiler catches misuse
+- ✅ **Refactoring friendly** - Rename helper method, not 50 call sites
+- ✅ **Testable** - Mock helpers in tests
+
+### When to Create Helpers
+
+**DO create helpers when**:
+- Same token combination used 3+ times
+- Domain concept (e.g., "type badge", "elevation level")
+- Complex logic (e.g., `getColors` returns pair)
+
+**DON'T create helpers when**:
+- Used only once or twice
+- No semantic meaning (generic padding/margin)
+- Over-abstraction (helpers for everything)
 
 ---
 
@@ -831,6 +997,294 @@ Button(
     Column { /* Card content */ }
 }
 ```
+
+---
+
+## Component Migration Gotchas
+
+### ProgressIndicator Wrapper Pattern
+
+**Problem**: ProgressIndicator doesn't render progress automatically - requires wrapper composable.
+
+❌ **Wrong** (Material 3 pattern):
+```kotlin
+LinearProgressIndicator(
+    progress = 0.5f,
+    modifier = Modifier.fillMaxWidth()
+)
+```
+
+✅ **Correct** (Unstyled pattern):
+```kotlin
+ProgressIndicator(
+    progress = progress,  // Pass progress value
+    modifier = Modifier.fillMaxWidth().height(8.dp),
+    shape = RoundedCornerShape(8.dp),
+    backgroundColor = Theme[colors][surface],
+    contentColor = Theme[colors][primary],
+) {
+    // Wrapper composable - renders the progress fill
+    Box(
+        Modifier
+            .fillMaxWidth(progress)  // Use progress here
+            .fillMaxSize()
+            .background(contentColor, shape)
+    )
+}
+```
+
+### Preview Function Syntax
+
+**Problem**: UnstyledTheme is an object, not a function.
+
+❌ **Wrong**:
+```kotlin
+@Preview
+@Composable
+fun PreviewCard() {
+    UnstyledTheme() {  // Compilation error: UnstyledTheme is not a function
+        CardComponent()
+    }
+}
+```
+
+✅ **Correct**:
+```kotlin
+@Preview
+@Composable
+fun PreviewCard() {
+    UnstyledTheme {  // No parentheses - it's an object
+        CardComponent()
+    }
+}
+```
+
+### Bracket Notation Nested Access
+
+**Problem**: Avoid storing Theme references - access directly.
+
+❌ **Wrong**:
+```kotlin
+@Composable
+fun MyScreen() {
+    val theme = Theme.currentTheme  // Creates reference
+    val colorsMap = theme.properties[colors]  // Nested access breaks
+    val primary = colorsMap?.get(primaryColor) ?: Color.Black
+}
+```
+
+✅ **Correct**:
+```kotlin
+@Composable
+fun MyScreen() {
+    // Direct bracket notation - reads fresh theme
+    val primary = Theme[colors][primaryColor]
+}
+```
+
+### Platform Font Application
+
+**Automatic Behavior**: buildPlatformTheme applies system fonts automatically.
+
+```kotlin
+val UnstyledTheme = buildPlatformTheme(...) {
+    defaultTextStyle = TextStyle(
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal
+        // NO fontFamily needed - platform fonts applied automatically:
+        // Android: Roboto
+        // iOS: SF Pro
+        // Desktop: System font
+    )
+}
+```
+
+**No manual font configuration needed** unless using custom fonts.
+
+---
+
+## Design Token Strategy
+
+### Single Source of Truth Pattern
+
+**Problem**: Duplicate tokens between core and feature modules create maintenance burden.
+
+**Solution**: Keep design tokens in ONE place (core module), delete duplicates.
+
+#### Before (Duplicated Tokens)
+```
+core/designsystem-core/
+  ├── PokemonTypeColors.kt  // Original
+  └── Elevation.kt          // Original
+
+core/designsystem-unstyled/
+  ├── TypeColors.kt         // DUPLICATE (wrapper)
+  └── Elevation.kt          // DUPLICATE
+```
+
+#### After (Single Source)
+```
+core/designsystem-core/
+  ├── PokemonTypeColors.kt  // Enhanced with helper methods
+  └── Elevation.kt          // Enhanced with convenience aliases
+
+core/designsystem-unstyled/
+  └── Theme.kt              // Uses core tokens directly
+```
+
+**Changes Made**:
+1. ✅ Added helper methods to core tokens (getBackground, getContent)
+2. ✅ Added convenience aliases (none, low, medium, high)
+3. ✅ Deleted duplicate files in unstyled module
+4. ✅ Updated imports throughout codebase
+
+**Benefits**:
+- Single update propagates everywhere
+- No sync issues between modules
+- Reduced bundle size
+- DRY principle
+
+### Token Organization
+
+```kotlin
+// core/designsystem-core/src/commonMain/.../tokens/
+├── Colors.kt              // Semantic colors (primary, surface, error)
+├── Typography.kt          // Font sizes, weights
+├── Spacing.kt            // Consistent spacing scale
+├── Shapes.kt             // Corner radii
+├── Elevation.kt          // Shadow/elevation levels
+└── PokemonTypeColors.kt  // Domain-specific colors
+```
+
+**All other modules** import from core - no local token definitions.
+
+---
+
+## Migration Best Practices
+
+### Step-by-Step Migration Strategy
+
+**Phase 1: Bracket Notation** (Foundation)
+```kotlin
+// Replace all theme access patterns
+- val theme = Theme.currentTheme  // DELETE
+- theme.colors[primaryColor]      // DELETE
++ Theme[colors][primaryColor]     // ADD
+```
+
+**Phase 2: Component Updates** (Compatibility)
+```kotlin
+// Fix component API differences
+- LinearProgressIndicator(progress = 0.5f)  // DELETE
++ ProgressIndicator(progress = 0.5f) {      // ADD
++     Box(Modifier.fillMaxWidth(progress)...)  // Wrapper
++ }
+```
+
+**Phase 3: Helper Creation** (Refinement)
+```kotlin
+// Create semantic wrappers
++ object TypeColors {
++     fun getBackground(type: PokemonType): Color
++ }
+
+// Use in components
+- PokemonTypeColors.Fire.background  // DELETE
++ TypeColors.getBackground(Fire)     // ADD
+```
+
+**Phase 4: Token Consolidation** (Cleanup)
+```kotlin
+// Remove duplicates
+- core/designsystem-unstyled/TypeColors.kt   // DELETE
+- core/designsystem-unstyled/Elevation.kt    // DELETE
++ Enhanced core/designsystem-core tokens     // ENHANCE
+```
+
+### Incremental Validation
+
+After each phase:
+```bash
+# 1. Compile check
+./gradlew :features:pokemondetail:ui-unstyled:compileDebugKotlinAndroid
+
+# 2. Run tests
+./gradlew :composeApp:assembleDebug test --continue
+
+# 3. Visual check
+# Run app and verify screens render correctly
+```
+
+### Testing Strategy
+
+**Theme changes DON'T break tests** if using bracket notation:
+
+```kotlin
+// Test continues working after theme migration
+@Test
+fun `PokemonCard displays name correctly`() {
+    composeTestRule.setContent {
+        UnstyledTheme {  // Theme wrapper (updated syntax)
+            PokemonCard(pokemon = samplePokemon)
+        }
+    }
+    
+    composeTestRule
+        .onNodeWithText("Pikachu")
+        .assertIsDisplayed()  // Still passes
+}
+```
+
+**No test updates needed** if:
+- Tests verify behavior, not styling
+- Tests use theme wrapper correctly
+- Tests don't assert on specific colors/sizes
+
+---
+
+## Common Pitfalls
+
+### 1. Forgetting Wrapper Composable in ProgressIndicator
+
+**Symptom**: Progress bar appears but doesn't fill.
+
+**Fix**: Add Box wrapper inside ProgressIndicator that reads progress value.
+
+### 2. Using Parentheses with UnstyledTheme in @Preview
+
+**Symptom**: Compilation error "UnstyledTheme cannot be called".
+
+**Fix**: Remove parentheses - it's an object, not a function.
+
+### 3. Storing Theme Reference
+
+**Symptom**: Theme changes don't reflect in UI.
+
+**Fix**: Use `Theme[property][token]` directly, don't store `Theme.currentTheme`.
+
+### 4. Duplicate Design Tokens
+
+**Symptom**: Tokens out of sync between modules.
+
+**Fix**: Keep tokens in one place (core), delete duplicates, add helpers if needed.
+
+### 5. Missing interactiveSize on Clickable Elements
+
+**Symptom**: Touch targets too small on mobile, fails accessibility audit.
+
+**Fix**: Add `.interactiveSize(Theme[interactiveSizes][sizeDefault])` to all clickable modifiers.
+
+### 6. Forgetting defaultContentColor
+
+**Symptom**: Text appears black in dark mode (wrong color).
+
+**Fix**: Set `defaultContentColor` in buildPlatformTheme to auto-switch with theme.
+
+### 7. Manual Platform Font Configuration
+
+**Symptom**: Fonts don't match platform (Roboto on iOS, SF Pro on Android).
+
+**Fix**: Remove fontFamily from defaultTextStyle - buildPlatformTheme applies platform fonts automatically.
 
 ---
 
