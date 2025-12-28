@@ -9,26 +9,12 @@ kotlin {
             implementation(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.presentation)
 
-            // Core
+            // Core design system
             implementation(projects.core.designsystemUnstyled)
-            implementation(projects.core.designsystemCore)
 
             // Coil for image loading
             implementation(libs.coil3.compose)
             implementation(libs.coil3.network)
-
-            // Compose Unstyled
-            implementation(libs.composeunstyled)
-            implementation(libs.composeunstyled.theming)
-            implementation(libs.composeunstyled.primitives)
-            implementation(libs.composeunstyled.platformtheme)
-
-            // Koin
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-
-            // Immutable Collections
-            implementation(libs.kotlinx.collections.immutable)
         }
     }
 }
