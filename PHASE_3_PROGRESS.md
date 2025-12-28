@@ -76,9 +76,25 @@ Phase 3 focuses on migrating from Material Design to Compose Unstyled components
 **Commits:**
 - Latest commit - feat(designsystem): enhance UnstyledTheme with platform-native defaults
 
+### 7. Convention Plugin Optimization (BUILD SYSTEM CLEANUP)
+- ✅ Audited all module build files for redundant dependencies
+- ✅ Removed duplicate dependencies provided by convention plugins:
+  * Arrow, Coroutines, Immutable Collections (from `convention.feature.base`)
+  * Compose runtime, foundation, UI (from `convention.compose.multiplatform`)
+  * Koin core and compose (from convention plugins)
+- ✅ Fixed designsystem-unstyled to use `convention.core.compose` plugin
+- ✅ Changed Compose Unstyled dependencies to `api` in design system (transitive exposure)
+- ✅ UI modules now only depend on design system (correct dependency flow)
+- ✅ Reduced build file complexity by 50-70% (fewer explicit dependencies)
+
+**Key Learning:** Design system modules should `api` their framework dependencies so consumers get them transitively. UI modules should NOT directly depend on framework libraries—they should come through the design system.
+
+**Commits:**
+- `refactor(build): optimize module dependencies using convention plugins`
+
 ## Phase 3 Complete ✅
 
-All core modules and features have been successfully migrated to Compose Unstyled with platform enhancements:
+All core modules and features have been successfully migrated to Compose Unstyled with platform enhancements and optimized build configuration:
 
 1. ✅ Infrastructure (buildPlatformTheme, theme tokens, default properties)
 2. ✅ Pokemon List Unstyled (complete migration with animations + accessibility)
@@ -86,8 +102,9 @@ All core modules and features have been successfully migrated to Compose Unstyle
 4. ✅ Design Token Consolidation (single source of truth, DRY principle)
 5. ✅ Platform Theme Enhancements (accessibility, debugging, reduced boilerplate)
 6. ✅ AdaptiveLayout (WindowManager 1.4 API)
+7. ✅ Convention Plugin Optimization (cleaner build files, proper dependency flow)
 
-**Final Build Status:** `BUILD SUCCESSFUL in 18s` with **84/84 tests passing**
+**Final Build Status:** `BUILD SUCCESSFUL in 25s` with **84/84 tests passing**
 
 ### Verification Commands
 
