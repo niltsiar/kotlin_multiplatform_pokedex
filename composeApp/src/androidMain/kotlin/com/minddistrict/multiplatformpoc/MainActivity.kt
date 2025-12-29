@@ -11,9 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.tooling.preview.Preview
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.DarkColorScheme
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.LightColorScheme
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.DarkColorScheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.LightColorScheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

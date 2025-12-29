@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.core.designsystem.theme
+package com.minddistrict.multiplatformpoc.core.designsystem.material.theme
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing

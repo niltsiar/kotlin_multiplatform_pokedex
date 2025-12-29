@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.core.designsystem.theme
+package com.minddistrict.multiplatformpoc.core.designsystem.material.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable

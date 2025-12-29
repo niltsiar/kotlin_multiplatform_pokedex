@@ -31,14 +31,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.material.MaterialScope
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.UnstyledScope
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.di.coreModule
 import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
-import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.pokemonDetailNavigationModule
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.material.pokemonDetailNavigationModule
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.unstyled.pokemonDetailNavigationUnstyledModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.material.pokemonListNavigationModule
