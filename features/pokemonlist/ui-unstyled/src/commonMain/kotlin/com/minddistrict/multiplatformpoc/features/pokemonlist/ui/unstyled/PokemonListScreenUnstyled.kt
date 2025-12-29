@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import com.minddistrict.multiplatformpoc.core.designsystem.core.gridColumns
 import androidx.compose.animation.core.LinearEasing
+import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.infiniteRepeatable
@@ -345,7 +346,7 @@ private fun PreviewContentState() {
     UnstyledTheme {
         PokemonListContentUnstyled(
             uiState = PokemonListUiState.Content(
-                pokemons = kotlinx.collections.immutable.persistentListOf(
+                pokemons = persistentListOf(
                     Pokemon(id = 1, name = "Bulbasaur", imageUrl = ""),
                     Pokemon(id = 4, name = "Charmander", imageUrl = ""),
                     Pokemon(id = 7, name = "Squirtle", imageUrl = ""),
@@ -369,7 +370,7 @@ private fun PreviewLoadingMoreState() {
     UnstyledTheme {
         PokemonListContentUnstyled(
             uiState = PokemonListUiState.Content(
-                pokemons = kotlinx.collections.immutable.persistentListOf(
+                pokemons = persistentListOf(
                     Pokemon(id = 1, name = "Bulbasaur", imageUrl = ""),
                     Pokemon(id = 4, name = "Charmander", imageUrl = ""),
                 ),

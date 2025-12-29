@@ -602,9 +602,45 @@ kotlin {
     - Package declarations: `package com.minddistrict.multiplatformpoc.features.pokemonlist`
     - Import statements: `import androidx.compose.material3.Card`
     - Gradle namespace: `namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"`
-    - iOS factory functions returning types (avoid Swift name collisions): `fun createViewModel(): com.example.ViewModel`
     - Documentation links: `[conventions.md](../tech/conventions.md)`
-  - Exception: iOS factory functions may return FQN types to avoid Swift name collisions (see `ios_integration.md`)
+  - **Common FQN violations to avoid**:
+    ```kotlin
+    // ❌ WRONG: FQN in constructor/function calls
+    val textStyle = androidx.compose.ui.text.TextStyle(...)
+    val list = kotlinx.collections.immutable.persistentListOf(...)
+    
+    // ✅ CORRECT: Import + simple name
+    import androidx.compose.ui.text.TextStyle
+    import kotlinx.collections.immutable.persistentListOf
+    
+    val textStyle = TextStyle(...)
+    val list = persistentListOf(...)
+    ```
+    ```kotlin
+    // ❌ WRONG: FQN in return types
+    fun createViewModel(): com.example.MyViewModel = ...
+    
+    // ✅ CORRECT: Import + simple name
+    import com.example.MyViewModel
+    fun createViewModel(): MyViewModel = ...
+    ```
+    ```kotlin
+    // ❌ WRONG: FQN in variable declarations
+    val scope: kotlinx.coroutines.CoroutineScope = ...
+    
+    // ✅ CORRECT: Import + simple name
+    import kotlinx.coroutines.CoroutineScope
+    val scope: CoroutineScope = ...
+    ```
+  - **iOS factory functions**: Use imports and simple class names. Only use FQN if there's an actual Swift name collision:
+    ```kotlin
+    // ✅ PREFERRED: Use imports
+    import com.minddistrict.multiplatformpoc.features.example.presentation.ExampleViewModel
+    fun getExampleViewModel(): ExampleViewModel = ...
+    
+    // ⚠️ ONLY if Swift name collision occurs
+    fun getExampleViewModel(): com.minddistrict.multiplatformpoc.features.example.presentation.ExampleViewModel = ...
+    ```
 
 ## Alignment with Product Docs
 - When behavior is product-driven, reference [prd.md](../project/prd.md) and [user_flow.md](../project/user_flow.md). Resolve conflicts by preferring PRD for data rules and user_flow for sequence/UX.
