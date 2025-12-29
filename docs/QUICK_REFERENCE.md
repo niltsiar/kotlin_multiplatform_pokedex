@@ -275,20 +275,115 @@ beforeTest {
 
 ### Feature Module Pattern
 ```
-:features:<feature>:api           → Public contracts (exported to iOS)
-:features:<feature>:data          → Network + Data layer (NOT exported)
-:features:<feature>:presentation  → ViewModels, UI state (exported to iOS)
-:features:<feature>:ui            → Compose UI screens (NOT exported)
-:features:<feature>:wiring        → DI assembly (NOT exported)
+:features:<feature>:api                  → Public contracts (exported to iOS)
+:features:<feature>:data                 → Network + Data layer (NOT exported)
+:features:<feature>:presentation         → ViewModels, UI state (exported to iOS)
+:features:<feature>:ui-material          → Material Design 3 UI (NOT exported)
+:features:<feature>:ui-unstyled          → Compose Unstyled UI (NOT exported)
+:features:<feature>:wiring               → Business logic DI (exported to iOS)
+:features:<feature>:wiring-ui-material   → Material navigation (NOT exported)
+:features:<feature>:wiring-ui-unstyled   → Unstyled navigation (NOT exported)
 ```
 
 ### Core Modules (Use Sparingly)
 ```
-:core:designsystem   → Material 3 theme, reusable Compose components
-:core:navigation     → Navigation 3 modular architecture
-:core:di             → Koin DI core module
-:core:httpclient     → Ktor HttpClient configuration
-:core:util           → Generic utilities (3+ features use it)
+:core:designsystem-core       → Shared theme utilities
+:core:designsystem-material   → Material 3 theme + MaterialScope
+:core:designsystem-unstyled   → Unstyled theme + UnstyledScope
+:core:navigation              → Navigation 3 modular architecture
+:core:di                      → Koin DI core module
+:core:di-ui                   → Koin UI utilities
+:core:httpclient              → Ktor HttpClient configuration
+```
+
+### Creating a New Feature with Material/Unstyled Variants
+
+**Step 1: Create module structure**
+```bash
+mkdir -p features/<feature>/{api,data,presentation,ui-material,ui-unstyled,wiring,wiring-ui-material,wiring-ui-unstyled}/src/commonMain/kotlin
+```
+
+**Step 2: Define navigation route in :api**
+```kotlin
+// :features:<feature>:api/navigation/<Feature>Entry.kt
+package com.minddistrict.multiplatformpoc.features.<feature>.navigation
+
+data class <Feature>Detail(val id: Int)  // Parametric route
+object <Feature>List                      // Simple route
+```
+
+**Step 3: Implement UI variants**
+```kotlin
+// :features:<feature>:ui-material
+@Composable
+fun <Feature>Screen(...) {
+    // Material Design 3 implementation
+}
+
+// :features:<feature>:ui-unstyled
+@Composable
+fun <Feature>ScreenUnstyled(...) {
+    UnstyledTheme {  // Always wrap in UnstyledTheme
+        // Compose Unstyled implementation
+    }
+}
+```
+
+**Step 4: Create scoped navigation wiring**
+```kotlin
+// :features:<feature>:wiring-ui-material/build.gradle.kts
+commonMain.dependencies {
+    implementation(projects.core.designsystemMaterial)  // For MaterialScope
+    implementation(projects.features.<feature>.uiMaterial)
+}
+
+// Navigation provider
+import com.minddistrict.multiplatformpoc.core.designsystem.material.MaterialScope
+
+val <feature>NavigationModule = module {
+    scope<MaterialScope> {
+        navigation<<Feature>List> { route ->
+            <Feature>Screen(...)
+        }
+    }
+}
+
+// :features:<feature>:wiring-ui-unstyled - similar but with UnstyledScope
+```
+
+**Step 5: Register in App.kt**
+```kotlin
+KoinApplication(
+    configuration = koinConfiguration {
+        modules(
+            coreModule +
+            <feature>Module +                        // Business logic
+            <feature>NavigationModule +              // Material UI
+            <feature>NavigationUnstyledModule +      // Unstyled UI
+            ...
+        )
+    }
+)
+```
+
+**Critical Rules for Multi-Theme Features**:
+- ✅ Scope markers (`MaterialScope`, `UnstyledScope`) MUST come from design system modules
+- ✅ Use `scope<MaterialScope>` in wiring-ui-material modules
+- ✅ Use `scope<UnstyledScope>` in wiring-ui-unstyled modules
+- ✅ Always wrap Unstyled screens in `UnstyledTheme { }`
+- ✅ Load both navigation modules simultaneously in App
+- ❌ Never create scope markers in feature modules (causes circular dependencies)
+- ❌ Never manually create/manage Koin scopes in composables
+
+### Core Modules (Use Sparingly)
+```
+:core:designsystem-core       → Shared theme utilities
+:core:designsystem-material   → Material 3 theme + MaterialScope
+:core:designsystem-unstyled   → Unstyled theme + UnstyledScope
+:core:navigation              → Navigation 3 modular architecture
+:core:di                      → Koin DI core module
+:core:di-ui                   → Koin UI utilities
+:core:httpclient              → Ktor HttpClient configuration
 ```
 
 ## iOS Export Rules
