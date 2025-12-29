@@ -51,8 +51,8 @@ kotlin {
             // Material 3 Adaptive
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptive.layout)
-            implementation(libs.compose.material3.adaptive.navigation3)
-            
+            implementation(libs.compose.material3.adaptive.navigation.suite)
+
             // Window Size Classes
             implementation(libs.androidx.window.core)
         }

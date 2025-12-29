@@ -94,8 +94,8 @@ compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-pre
 # Material 3 Adaptive
 compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "composeMaterial3Adaptive" }
 compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "composeMaterial3Adaptive" }
-compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation-suite", version.ref = "composeMaterial3Adaptive" }
 compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "composeMaterial3Adaptive" }
+compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "composeMaterial3" }
 
 # Compose Unstyled
 composeunstyled = { module = "com.composables:composeunstyled", version.ref = "composeUnstyled" }

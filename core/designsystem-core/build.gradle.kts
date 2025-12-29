@@ -7,9 +7,9 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.ui)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
             
             // Compose Multiplatform Adaptive (works on Android, iOS, Desktop, Web)
             implementation(libs.compose.material3.adaptive)
