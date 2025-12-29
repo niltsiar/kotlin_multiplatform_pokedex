@@ -8,7 +8,12 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.tooling.preview.Preview
+import com.minddistrict.multiplatformpoc.core.designsystem.theme.DarkColorScheme
+import com.minddistrict.multiplatformpoc.core.designsystem.theme.LightColorScheme
+import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,22 +21,18 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.auto(
                 lightScrim = Color.TRANSPARENT,
                 darkScrim = Color.TRANSPARENT,
-                detectDarkMode = { resources.configuration.uiMode and 
-                    Configuration.UI_MODE_NIGHT_MASK == 
-                    Configuration.UI_MODE_NIGHT_YES }
             ),
             navigationBarStyle = SystemBarStyle.auto(
                 lightScrim = Color.TRANSPARENT,
                 darkScrim = Color.TRANSPARENT,
-                detectDarkMode = { resources.configuration.uiMode and 
-                    Configuration.UI_MODE_NIGHT_MASK == 
-                    Configuration.UI_MODE_NIGHT_YES }
             )
         )
         super.onCreate(savedInstanceState)
 
         setContent {
-            App()
+            PokemonTheme {
+                App()
+            }
         }
     }
 }
