@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui
+package com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.material
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -13,7 +13,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.material.MaterialScop
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
-import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.PokemonDetailScreenMaterial
+import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.material.PokemonDetailScreenMaterial
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf

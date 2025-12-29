@@ -37,7 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListUiState
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon

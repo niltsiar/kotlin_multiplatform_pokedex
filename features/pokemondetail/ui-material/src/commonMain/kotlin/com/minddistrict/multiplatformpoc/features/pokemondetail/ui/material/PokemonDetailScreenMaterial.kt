@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.features.pokemondetail.ui
+package com.minddistrict.multiplatformpoc.features.pokemondetail.ui.material
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -53,8 +53,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
-import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTypeColors
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Ability
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Stat
