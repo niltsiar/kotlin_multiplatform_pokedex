@@ -51,9 +51,9 @@ val pokemonDetailNavigationUnstyledModule = module {
             },
         ) { route ->
             val navigator: Navigator = koinInject()
-            // Key ViewModel by route.id to ensure new instance per Pokemon (unstyled variant)
+            // Key ViewModel by route.id to ensure new instance per Pokemon
             val viewModel: PokemonDetailViewModel = koinViewModel(
-                key = "pokemon_detail_unstyled_${route.id}",
+                key = "pokemon_detail_${route.id}",
                 parameters = { parametersOf(route.id) },
             )
             val lifecycleOwner = LocalLifecycleOwner.current

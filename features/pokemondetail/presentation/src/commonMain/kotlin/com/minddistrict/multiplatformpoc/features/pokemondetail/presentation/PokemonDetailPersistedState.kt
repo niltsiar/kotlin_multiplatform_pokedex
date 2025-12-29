@@ -12,6 +12,8 @@ internal data class PokemonDetailPersistedState(
     val pokemonId: Int,
     val lastErrorMessage: String? = null,
     val pokemon: PokemonDetailSnapshot? = null,
+    val scrollPosition: Int = 0,
+    val scrollOffset: Int = 0,
 )
 
 @Serializable
