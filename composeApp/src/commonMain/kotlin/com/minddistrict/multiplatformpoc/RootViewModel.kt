@@ -9,6 +9,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.plus
 
 /**
@@ -47,21 +48,23 @@ class RootViewModel(
     /**
      * Toggle between Material and Unstyled themes.
      * Automatically persisted via SavedStateHandle delegate.
+     * Uses update {} lambda for thread-safe state updates.
      */
     fun toggleTheme() {
         _currentTheme = when (_currentTheme) {
             DesignSystemTheme.MATERIAL -> DesignSystemTheme.UNSTYLED
             DesignSystemTheme.UNSTYLED -> DesignSystemTheme.MATERIAL
         }
-        _currentThemeFlow.value = _currentTheme
+        _currentThemeFlow.update { _currentTheme }
     }
     
     /**
      * Set theme directly (used by intro dialog).
+     * Uses update {} lambda for thread-safe state updates.
      */
     fun setTheme(theme: DesignSystemTheme) {
         _currentTheme = theme
-        _currentThemeFlow.value = theme
+        _currentThemeFlow.update { theme }
     }
     
     /**
