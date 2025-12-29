@@ -30,7 +30,7 @@ Provide users with a fast, intuitive mobile-first Pokédex that enables browsing
         - Tap/click any card to navigate to detail screen
         - View loading state while data fetches
         - Retry on error if network fails
-        - Switch between Material and Unstyled themes via FAB button (educational feature)
+        - Switch between Material and Unstyled themes via navigation items (educational feature)
 
 2. **Pokémon Detail Screen**
     - **Purpose**: Display comprehensive information about a selected Pokémon
@@ -67,15 +67,16 @@ Provide users with a fast, intuitive mobile-first Pokédex that enables browsing
 4. **Theme Switching (Educational Feature)**
     - **Purpose**: Demonstrate design system comparison between Material 3 and Compose Unstyled
     - **Key Elements**:
-        - FAB button in bottom-right corner (theme icon)
+        - Navigation items for "Material" and "Unstyled" in bottom bar (compact) or rail (medium/expanded)
         - Entire app switches atomically (scaffold + content)
-        - State persisted across sessions (DataStore)
+        - State persisted across sessions (SavedStateHandle)
         - First-run modal explains the dual-UI showcase feature
-        - Theme preference accessible from any screen
+        - Theme selection integrated into adaptive navigation
     - **Expected User Actions**:
-        - Tap FAB to switch between Material and Unstyled themes
+        - Tap "Material" or "Unstyled" navigation item to switch themes
         - Observe visual differences in same screens
         - Learn about design system approaches (educational value)
+        - Experience how navigation adapts to window size (bottom bar → rail → drawer)
 
 ## Competitors
 - **Official Pokémon HOME** — Strengths: Official data, cloud sync, team management / Weaknesses: Requires Nintendo account, limited free tier

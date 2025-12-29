@@ -77,7 +77,7 @@ To run the development version of the Android app:
   ```
 
 **Features in Android App:**
-- Dual-theme switcher (FAB button in bottom-right)
+- Dual-theme switcher via navigation items (Material/Unstyled tabs in bottom bar or rail)
 - Adaptive grid layout (2/3/4 columns based on window size)
 - Adaptive navigation (bottom bar → rail → drawer)
 - Pokemon list with infinite scroll
@@ -207,7 +207,8 @@ See [testing_strategy.md](docs/tech/testing_strategy.md) for comprehensive guide
 - Educational showcase for design system comparison
 
 **Theme Switching:**
-- FAB button in bottom-right corner
+- Navigation items in bottom bar (compact) or rail (medium/expanded)
+- Two tabs: "Material" and "Unstyled" for instant comparison
 - Entire app switches atomically (scaffold + content)
 - State persisted across sessions
 - First-run modal explains the feature
