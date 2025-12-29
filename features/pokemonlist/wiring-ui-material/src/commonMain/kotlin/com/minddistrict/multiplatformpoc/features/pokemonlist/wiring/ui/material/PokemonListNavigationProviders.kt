@@ -7,7 +7,7 @@ import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
-import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material.PokemonListScreen
+import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material.PokemonListScreenMaterial
 import org.koin.compose.koinInject
 import org.koin.dsl.navigation3.navigation
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,7 +34,7 @@ val pokemonListNavigationModule = module {
                 }
             }
 
-            PokemonListScreen(
+            PokemonListScreenMaterial(
                 viewModel = viewModel,
                 onPokemonClick = { pokemon ->
                     navigator.goTo(PokemonDetail(pokemon.id))

@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.unstyled
+package com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -9,12 +9,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.ui.NavDisplay
-import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.UnstyledScope
-import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
+import com.minddistrict.multiplatformpoc.core.designsystem.material.MaterialScope
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
-import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.unstyled.PokemonDetailScreenUnstyled
+import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.PokemonDetailScreenMaterial
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -22,13 +21,13 @@ import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
 /**
- * Koin DI module for Pokemon Detail navigation (Compose Unstyled UI).
+ * Koin DI module for Pokemon Detail navigation (Compose platforms: Android, Desktop, iOS Compose).
  *
- * Uses Koin's Navigation 3 integration to declaratively register the PokemonDetailScreenUnstyled.
- * Scoped to UnstyledScope to separate from Material entries.
+ * Uses Koin's Navigation 3 integration to declaratively register the PokemonDetailScreen.
+ * Scoped to MaterialScope to separate from Unstyled entries.
  */
-val pokemonDetailNavigationUnstyledModule = module {
-    scope<UnstyledScope> {
+val pokemonDetailNavigationModule = module {
+    scope<MaterialScope> {
         navigation<PokemonDetail>(
             metadata = NavDisplay.transitionSpec {
                 slideInHorizontally(
@@ -51,9 +50,9 @@ val pokemonDetailNavigationUnstyledModule = module {
             },
         ) { route ->
             val navigator: Navigator = koinInject()
-            // Key ViewModel by route.id to ensure new instance per Pokemon (unstyled variant)
+            // Key ViewModel by route.id to ensure new instance per Pokemon
             val viewModel: PokemonDetailViewModel = koinViewModel(
-                key = "pokemon_detail_unstyled_${route.id}",
+                key = "pokemon_detail_${route.id}",
                 parameters = { parametersOf(route.id) },
             )
             val lifecycleOwner = LocalLifecycleOwner.current
@@ -67,12 +66,10 @@ val pokemonDetailNavigationUnstyledModule = module {
                 }
             }
 
-            UnstyledTheme {
-                PokemonDetailScreenUnstyled(
-                    viewModel = viewModel,
-                    onBackClick = { navigator.goBack() },
-                )
-            }
+            PokemonDetailScreenMaterial(
+                viewModel = viewModel,
+                onBackClick = { navigator.goBack() },
+            )
         }
     }
 }
