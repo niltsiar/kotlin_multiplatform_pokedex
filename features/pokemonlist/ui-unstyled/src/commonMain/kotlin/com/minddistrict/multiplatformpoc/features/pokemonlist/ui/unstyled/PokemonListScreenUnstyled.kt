@@ -7,11 +7,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -180,7 +184,9 @@ private fun PokemonListContentUnstyled(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
                 state = gridState,
-                contentPadding = PaddingValues(Theme[spacing][spacingMd]),
+                contentPadding = WindowInsets.safeDrawing
+                    .add(WindowInsets(left = Theme[spacing][spacingMd], top = Theme[spacing][spacingMd], right = Theme[spacing][spacingMd], bottom = Theme[spacing][spacingMd]))
+                    .asPaddingValues(),
                 horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
                 verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
                 modifier = modifier
