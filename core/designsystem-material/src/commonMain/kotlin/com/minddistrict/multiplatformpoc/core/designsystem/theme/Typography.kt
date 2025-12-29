@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -33,21 +34,21 @@ fun rememberPokemonTypography(): Typography {
     
     return Typography(
         // Display styles - largest, for hero moments
-        displayLarge = androidx.compose.ui.text.TextStyle(
+        displayLarge = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 57.sp,
             lineHeight = 64.sp,
             letterSpacing = (-0.25).sp
         ),
-        displayMedium = androidx.compose.ui.text.TextStyle(
+        displayMedium = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 45.sp,
             lineHeight = 52.sp,
             letterSpacing = 0.sp
         ),
-        displaySmall = androidx.compose.ui.text.TextStyle(
+        displaySmall = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 36.sp,
@@ -56,21 +57,21 @@ fun rememberPokemonTypography(): Typography {
         ),
         
         // Headline styles - for section headings
-        headlineLarge = androidx.compose.ui.text.TextStyle(
+        headlineLarge = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 32.sp,
             lineHeight = 40.sp,
             letterSpacing = 0.sp
         ),
-        headlineMedium = androidx.compose.ui.text.TextStyle(
+        headlineMedium = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 28.sp,
             lineHeight = 36.sp,
             letterSpacing = 0.sp
         ),
-        headlineSmall = androidx.compose.ui.text.TextStyle(
+        headlineSmall = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 24.sp,
@@ -79,21 +80,21 @@ fun rememberPokemonTypography(): Typography {
         ),
         
         // Title styles - for card titles, list headers
-        titleLarge = androidx.compose.ui.text.TextStyle(
+        titleLarge = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
             lineHeight = 28.sp,
             letterSpacing = 0.sp
         ),
-        titleMedium = androidx.compose.ui.text.TextStyle(
+        titleMedium = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             lineHeight = 24.sp,
             letterSpacing = 0.15.sp
         ),
-        titleSmall = androidx.compose.ui.text.TextStyle(
+        titleSmall = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp,
@@ -102,21 +103,21 @@ fun rememberPokemonTypography(): Typography {
         ),
         
         // Body styles - for main content
-        bodyLarge = androidx.compose.ui.text.TextStyle(
+        bodyLarge = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             lineHeight = 24.sp,
             letterSpacing = 0.5.sp
         ),
-        bodyMedium = androidx.compose.ui.text.TextStyle(
+        bodyMedium = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 14.sp,
             lineHeight = 20.sp,
             letterSpacing = 0.25.sp
         ),
-        bodySmall = androidx.compose.ui.text.TextStyle(
+        bodySmall = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Normal,
             fontSize = 12.sp,
@@ -125,21 +126,21 @@ fun rememberPokemonTypography(): Typography {
         ),
         
         // Label styles - for buttons, tabs
-        labelLarge = androidx.compose.ui.text.TextStyle(
+        labelLarge = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp,
             lineHeight = 20.sp,
             letterSpacing = 0.1.sp
         ),
-        labelMedium = androidx.compose.ui.text.TextStyle(
+        labelMedium = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
             lineHeight = 16.sp,
             letterSpacing = 0.5.sp
         ),
-        labelSmall = androidx.compose.ui.text.TextStyle(
+        labelSmall = TextStyle(
             fontFamily = fontFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 11.sp,

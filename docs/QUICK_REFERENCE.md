@@ -443,6 +443,9 @@ viewModel.uiState.test {
 | `private val scope = ...` | `viewModelScope: CoroutineScope` param | `patterns/viewmodel_patterns.md` |
 | `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | `patterns/viewmodel_patterns.md` |
 | `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | `patterns/viewmodel_patterns.md` |
+| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | `tech/conventions.md` |
+| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | `tech/conventions.md` |
+| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | `tech/conventions.md` |
 | Empty use case | Call repository directly from ViewModel | `patterns/architecture_patterns.md` |
 | `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | `patterns/architecture_patterns.md` |
 | @Composable without @Preview | Add `@Preview` with realistic data | `patterns/testing_patterns.md` |
@@ -460,7 +463,12 @@ viewModel.uiState.test {
 7. ❌ **NEVER export `:data`, `:ui`, or `:wiring`** to iOS (only `:api`, `:presentation`, `:core:*`)
 8. ❌ **NEVER put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
 9. ❌ **NEVER add DI annotations** to production classes (wire in wiring modules)
-11. ❌ **NEVER use star imports or FQN in code** (use explicit imports: `import x.y.ClassName`, write `ClassName()` NOT `x.y.ClassName()`)
+10. ❌ **NEVER use star imports or FQN in code**:
+    - ❌ `import com.example.*` — Use explicit imports
+    - ❌ `androidx.compose.ui.text.TextStyle(...)` — Import `TextStyle` first
+    - ❌ `kotlinx.collections.immutable.persistentListOf(...)` — Import `persistentListOf` first
+    - ❌ `val x: com.example.MyClass` — Import `MyClass` first
+    - ✅ Use: `import x.y.ClassName` then write `ClassName()`
 11. ❌ **NEVER omit @Preview** for @Composable functions (MANDATORY)
 
 ## Decision Matrices

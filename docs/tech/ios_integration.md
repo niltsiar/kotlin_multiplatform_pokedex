@@ -967,7 +967,9 @@ val pokemonDetailModule = module {
 
 ```kotlin
 // shared/src/iosMain/kotlin/KoinIos.kt
-fun getPokemonDetailViewModel(pokemonId: Int): com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel {
+import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
+
+fun getPokemonDetailViewModel(pokemonId: Int): PokemonDetailViewModel {
     return KoinPlatform.getKoin().get { parametersOf(pokemonId) }
 }
 ```
@@ -975,7 +977,7 @@ fun getPokemonDetailViewModel(pokemonId: Int): com.minddistrict.multiplatformpoc
 **Key Points**:
 - Helper function accepts parameter (pokemonId)
 - `get { parametersOf(pokemonId) }` passes parameter to Koin factory
-- Return type is fully qualified (avoids Swift name collisions)
+- Uses explicit import for clean return type (FQN only needed if Swift name collision occurs)
 
 #### Swift Side: Wrapper with init Parameter
 
@@ -1142,11 +1144,13 @@ fun initKoin(baseUrl: String) {
     }
 }
 
+import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
+
 /**
  * Helper to get PokemonListViewModel from Koin.
  * Avoids complex Koin Swift API generics.
  */
-fun getPokemonListViewModel(): com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel {
+fun getPokemonListViewModel(): PokemonListViewModel {
     return KoinPlatform.getKoin().get()
 }
 ```
@@ -1521,7 +1525,9 @@ Image(systemName: "exclamationmark.triangle")
 1. **Create ViewModel Helper in Kotlin**
    ```kotlin
    // shared/src/iosMain/kotlin/KoinIos.kt
-   fun getJobListViewModel(): com.minddistrict.multiplatformpoc.features.jobs.presentation.JobListViewModel {
+   import com.minddistrict.multiplatformpoc.features.jobs.presentation.JobListViewModel
+   
+   fun getJobListViewModel(): JobListViewModel {
        return KoinPlatform.getKoin().get()
    }
    ```
