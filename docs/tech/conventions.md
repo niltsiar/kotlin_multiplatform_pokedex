@@ -22,12 +22,14 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 **All features use split-by-layer architecture** for clear separation of concerns and platform-specific UI:
 
 ```
-:features:<feature>:api          → Public contracts (interfaces, domain models, navigation)
-:features:<feature>:data         → Network, DTOs, repositories (KMP - all targets)
-:features:<feature>:presentation → ViewModels, UI state (KMP - all targets, shared with iOS)
-:features:<feature>:ui           → Compose UI screens (Android + JVM + iOS Compose)
-:features:<feature>:wiring       → Business DI assembly (KMP commonMain only; safe to export to `Shared.framework`)
-:features:<feature>:wiring-ui    → Compose UI wiring (Navigation 3 entries, screen registration; NOT exported to `Shared.framework`)
+:features:<feature>:api              → Public contracts (interfaces, domain models, navigation)
+:features:<feature>:data             → Network, DTOs, repositories (KMP - all targets)
+:features:<feature>:presentation     → ViewModels, UI state (KMP - all targets, shared with iOS)
+:features:<feature>:ui-material      → Material Design 3 UI (Android + JVM + iOS Compose)
+:features:<feature>:ui-unstyled      → Compose Unstyled UI (Android + JVM + iOS Compose)
+:features:<feature>:wiring           → Business DI assembly (KMP commonMain; safe to export)
+:features:<feature>:wiring-ui-material   → Material navigation wiring (scoped to MaterialScope)
+:features:<feature>:wiring-ui-unstyled   → Unstyled navigation wiring (scoped to UnstyledScope)
 ```
 
 **Example for Pokemon List feature:**
@@ -48,6 +50,27 @@ Vertical slicing means each feature contains ALL the layers it needs internally:
 :features:pokemonlist:presentation/
   └── src/commonMain/kotlin/
       ├── PokemonListViewModel.kt         (ViewModel - shared across all platforms)
+      └── PokemonListUiState.kt           (UI state - immutable collections)
+
+:features:pokemonlist:ui-material/
+  └── src/commonMain/kotlin/          (Android + JVM + iOS Compose)
+      └── PokemonListScreen.kt          (Material Design 3 UI)
+
+:features:pokemonlist:ui-unstyled/
+  └── src/commonMain/kotlin/          (Android + JVM + iOS Compose)
+      └── PokemonListScreenUnstyled.kt  (Compose Unstyled UI)
+
+:features:pokemonlist:wiring/
+  ├── src/commonMain/kotlin/
+  │   └── PokemonListModule.kt          (Koin module: repos, ViewModels)
+
+:features:pokemonlist:wiring-ui-material/
+  └── src/commonMain/kotlin/
+      └── PokemonListNavigationProviders.kt  (Material navigation - scope<MaterialScope>)
+
+:features:pokemonlist:wiring-ui-unstyled/
+  └── src/commonMain/kotlin/
+      └── PokemonListNavigationProviders.kt  (Unstyled navigation - scope<UnstyledScope>)
       └── PokemonListUiState.kt           (UI state - immutable collections)
 
 :features:pokemonlist:ui/
@@ -271,6 +294,98 @@ kotlin {
 ```
 
 **Key principle**: iOS can consume wiring modules via `:shared` export because iOS targets only use `commonMain` dependencies (repos + ViewModels), never `:ui` module.
+
+### Scope-Based Navigation for Multiple UI Themes
+
+**Pattern**: Use Koin scopes to separate navigation entries when implementing multiple UI themes (Material Design 3 and Compose Unstyled).
+
+**Architecture**:
+1. **Scope markers live in design system modules**:
+   - `MaterialScope` in `:core:designsystem-material`
+   - `UnstyledScope` in `:core:designsystem-unstyled`
+
+2. **Feature wiring-ui modules depend on design system modules**:
+   ```kotlin
+   // :features:pokemonlist:wiring-ui-material/build.gradle.kts
+   commonMain.dependencies {
+       implementation(projects.core.designsystemMaterial)  // For MaterialScope
+       implementation(projects.features.pokemonlist.uiMaterial)
+   }
+   
+   // :features:pokemonlist:wiring-ui-unstyled/build.gradle.kts
+   commonMain.dependencies {
+       implementation(projects.core.designsystemUnstyled)  // For UnstyledScope
+       implementation(projects.features.pokemonlist.uiUnstyled)
+   }
+   ```
+
+3. **Register navigation entries within scopes**:
+   ```kotlin
+   // :features:pokemonlist:wiring-ui-material
+   import com.minddistrict.multiplatformpoc.core.designsystem.material.MaterialScope
+   
+   val pokemonListNavigationModule = module {
+       scope<MaterialScope> {
+           navigation<PokemonList> { route ->
+               PokemonListScreen(...)  // Material Design 3 UI
+           }
+       }
+   }
+   
+   // :features:pokemonlist:wiring-ui-unstyled
+   import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.UnstyledScope
+   
+   val pokemonListNavigationUnstyledModule = module {
+       scope<UnstyledScope> {
+           navigation<PokemonList> { route ->
+               UnstyledTheme {
+                   PokemonListScreenUnstyled(...)  // Unstyled UI
+               }
+           }
+       }
+   }
+   ```
+
+4. **Load both navigation modules in app**:
+   ```kotlin
+   KoinApplication(
+       configuration = koinConfiguration {
+           modules(
+               coreModule +
+               pokemonListModule +
+               pokemonListNavigationModule +        // Material scope
+               pokemonListNavigationUnstyledModule + // Unstyled scope
+               ...
+           )
+       }
+   ) { /* app content */ }
+   ```
+
+5. **Use navigation provider without manual scope management**:
+   ```kotlin
+   @Composable
+   fun MaterialWorld() {
+       PokemonTheme {
+           val navigator: Navigator = koinInject()
+           val entryProvider = koinEntryProvider()  // Koin handles scopes automatically
+           
+           NavDisplay(
+               backStack = navigator.backStack,
+               onBack = { navigator.goBack() },
+               entryProvider = entryProvider,
+           )
+       }
+   }
+   ```
+
+**Critical Rules**:
+- ❌ Do NOT manually create scopes with `getOrCreateScope<T>()`
+- ❌ Do NOT create scope markers in feature modules (causes circular dependencies)
+- ✅ Always put scope markers in design system modules
+- ✅ Let Koin Navigation 3 automatically manage scoped entries
+- ✅ Load both Material and Unstyled navigation modules simultaneously
+
+**Why this works**: Using `scope<T> { navigation<Route> { } }` in modules registers navigation entries within specific scopes. Koin Navigation 3's `koinEntryProvider()` automatically collects and manages these scoped entries without requiring manual scope creation.
 
 ## Repository Boundary and Error Handling
 - Repositories return Arrow `Either<RepoError, T>` and use `Either.catch { ... }.mapLeft { it.toRepoError() }` to map failures.

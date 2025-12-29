@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     id("convention.kmp.android.app")
     id("convention.compose.multiplatform")
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -55,6 +56,9 @@ kotlin {
 
             // Window Size Classes
             implementation(libs.androidx.window.core)
+            
+            // Kotlinx Serialization (required for SavedStateHandle delegate)
+            implementation(libs.kotlinx.serialization.json)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)

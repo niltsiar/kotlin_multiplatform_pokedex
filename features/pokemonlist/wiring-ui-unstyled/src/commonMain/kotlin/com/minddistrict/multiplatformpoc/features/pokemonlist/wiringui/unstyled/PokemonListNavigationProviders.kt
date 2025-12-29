@@ -2,6 +2,8 @@ package com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.unstyled
 
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.UnstyledScope
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
@@ -13,32 +15,34 @@ import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
 /**
- * Koin DI module for Pokemon List navigation (Compose Unstyled UI).
+ * Koin DI module for Pokemon List navigation (Unstyled theme).
  *
- * Uses Koin's Navigation 3 integration to declaratively register the PokemonListScreenUnstyled.
- * The navigation<T> DSL automatically registers this entry, which is collected by koinEntryProvider().
+ * Scoped to UnstyledScope to separate from Material entries.
  */
 val pokemonListNavigationUnstyledModule = module {
-    // Declare navigation entry using Koin's Navigation 3 DSL
-    navigation<PokemonList> { route ->
-        val navigator: Navigator = koinInject()
-        val viewModel = koinViewModel<PokemonListViewModel>()
-        val lifecycleOwner = LocalLifecycleOwner.current
-        
-        // Register ViewModel with lifecycle (implements DefaultLifecycleObserver)
-        DisposableEffect(viewModel) {
-            lifecycleOwner.lifecycle.addObserver(viewModel)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(viewModel)
+    scope<UnstyledScope> {
+        navigation<PokemonList> { route ->
+            val navigator: Navigator = koinInject()
+            val viewModel = koinViewModel<PokemonListViewModel>()
+            val lifecycleOwner = LocalLifecycleOwner.current
+
+            // Register ViewModel with lifecycle (implements DefaultLifecycleObserver)
+            DisposableEffect(viewModel) {
+                lifecycleOwner.lifecycle.addObserver(viewModel)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(viewModel)
+                }
+            }
+
+            UnstyledTheme {
+                PokemonListScreenUnstyled(
+                    viewModel = viewModel,
+                    onPokemonClick = { pokemon ->
+                        // Navigate to detail screen in unstyled world
+                        navigator.goTo(PokemonDetail(id = pokemon.id))
+                    },
+                )
             }
         }
-
-        PokemonListScreenUnstyled(
-            viewModel = viewModel,
-            onPokemonClick = { pokemon ->
-                // Navigate to detail screen in unstyled world
-                navigator.goTo(PokemonDetail(id = pokemon.id))
-            },
-        )
     }
 }

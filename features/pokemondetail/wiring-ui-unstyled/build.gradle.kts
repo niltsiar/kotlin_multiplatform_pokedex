@@ -6,6 +6,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.navigation)
+            implementation(projects.core.designsystemUnstyled)
 
             implementation(projects.features.pokemondetail.api)
             implementation(projects.features.pokemondetail.presentation)

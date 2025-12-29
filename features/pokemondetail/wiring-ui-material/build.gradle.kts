@@ -10,6 +10,9 @@ kotlin {
             implementation(projects.features.pokemondetail.api)
             implementation(projects.features.pokemondetail.presentation)
             implementation(projects.features.pokemondetail.uiMaterial)
+            
+            // MaterialScope marker class from design system
+            implementation(projects.core.designsystemMaterial)
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

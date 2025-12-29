@@ -6,6 +6,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.navigation)
+            implementation(projects.core.designsystemMaterial)  // For MaterialScope
 
             implementation(projects.features.pokemonlist.api)
             implementation(projects.features.pokemonlist.presentation)
