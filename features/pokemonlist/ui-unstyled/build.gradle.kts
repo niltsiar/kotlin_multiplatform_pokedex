@@ -15,6 +15,9 @@ kotlin {
             // Coil for image loading
             implementation(libs.coil3.compose)
             implementation(libs.coil3.network)
+            
+            // Material 3 Adaptive (for WindowAdaptiveInfo)
+            implementation(libs.compose.material3.adaptive)
         }
     }
 }
