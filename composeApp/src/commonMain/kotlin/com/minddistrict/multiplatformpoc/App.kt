@@ -33,11 +33,11 @@ import com.minddistrict.multiplatformpoc.core.di.coreModule
 import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
-import com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.pokemonDetailNavigationModule
-import com.minddistrict.multiplatformpoc.features.pokemondetail.wiringui.unstyled.pokemonDetailNavigationUnstyledModule
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.pokemonDetailNavigationModule
+import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.unstyled.pokemonDetailNavigationUnstyledModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.material.pokemonListNavigationModule
-import com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.unstyled.pokemonListNavigationUnstyledModule
+import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.unstyled.pokemonListNavigationUnstyledModule
 import com.minddistrict.multiplatformpoc.icons.rememberInfo
 import com.minddistrict.multiplatformpoc.icons.rememberSettings
 import org.koin.compose.KoinApplication
