@@ -39,7 +39,7 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.Pokem
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
 
 @Composable
-fun PokemonListScreen(
+fun PokemonListScreenMaterial(
     viewModel: PokemonListViewModel,
     modifier: Modifier = Modifier,
     onPokemonClick: (Pokemon) -> Unit = {}

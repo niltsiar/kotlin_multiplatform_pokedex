@@ -56,7 +56,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun PokemonDetailScreen(
+fun PokemonDetailScreenMaterial(
     viewModel: PokemonDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
