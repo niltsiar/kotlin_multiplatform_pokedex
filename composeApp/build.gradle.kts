@@ -42,6 +42,7 @@ kotlin {
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             
             // Navigation 3
             implementation(libs.androidx.navigation3.ui)
@@ -54,6 +55,9 @@ kotlin {
             
             // Window Size Classes
             implementation(libs.androidx.window.core)
+            
+            // Compose Material Icons (for bottom navigation icons)
+            implementation(compose.materialIconsExtended)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
