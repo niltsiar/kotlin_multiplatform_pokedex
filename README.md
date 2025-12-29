@@ -1,31 +1,72 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM), Server.
+# Pokédex - Kotlin Multiplatform Showcase
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that's common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple's CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
-  - **Now includes iOS targets** for Compose Multiplatform iOS (see [iosAppCompose](#build-and-run-ios-compose-application)).
+A modern, cross-platform Pokédex application demonstrating **dual-UI design systems** (Material Design 3 Expressive + Compose Unstyled) with shared business logic across Android, iOS, Desktop, and Server.
 
-* [/iosApp](./iosApp/iosApp) contains the iOS application using **native SwiftUI**. This is the production iOS app
-  that uses SwiftUI for UI and consumes KMP business logic via the shared framework.
+## ✨ Key Features
 
-* [/iosAppCompose](./iosAppCompose/iosAppCompose) contains the **experimental iOS application using Compose Multiplatform**.
-  This app shares the same Compose UI code with Android and Desktop. See the [README](./iosAppCompose/README.md) for details.
+- **Dual-UI Design Systems**: Runtime theme switching between Material Design 3 and Compose Unstyled
+- **Adaptive Layouts**: Responsive grid columns (2/3/4) and navigation (bottom bar → rail → drawer) based on window size
+- **Cross-Platform**: Single Kotlin codebase for Android, iOS, Desktop (JVM), and Server
+- **Shared Business Logic**: ViewModels, repositories, and domain models 100% shared across platforms
+- **Material 3 Adaptive**: Uses official Material3 Adaptive library for responsive layouts
+- **Type-Safe Navigation**: Navigation Compose 3 with Koin DI integration
+- **PokéAPI Integration**: Real-time data from official PokéAPI v2
 
-* [/server](./server/src/main/kotlin) is for the Ktor server application.
+## 🏗️ Architecture
 
-* [/shared](./shared/src) is for the code that will be shared between all targets in the project.
-  The most important subfolder is [commonMain](./shared/src/commonMain/kotlin). If preferred, you
-  can add code to the platform-specific folders here too.
+This project demonstrates production-ready Kotlin Multiplatform architecture with:
+
+* **[/composeApp](./composeApp/src)** - Compose Multiplatform UI (Android, Desktop, iOS Compose)
+  - [commonMain](./composeApp/src/commonMain/kotlin) - Shared UI code and app entry point
+  - Platform-specific folders for Android/iOS/Desktop customizations
+  - Dual-theme support with runtime switching
+
+* **[/features](./features/)** - Vertical slice feature modules
+  - `:features:<feature>:api` - Public contracts (interfaces, domain models, navigation)
+  - `:features:<feature>:data` - Repositories, DTOs, API services
+  - `:features:<feature>:presentation` - ViewModels and UI state (shared with iOS)
+  - `:features:<feature>:ui-material` - Material Design 3 UI implementation
+  - `:features:<feature>:ui-unstyled` - Compose Unstyled UI implementation
+  - `:features:<feature>:wiring` - Business logic DI (Koin modules)
+  - `:features:<feature>:wiring-ui-material` - Material navigation registration
+  - `:features:<feature>:wiring-ui-unstyled` - Unstyled navigation registration
+
+* **[/core](./core/)** - Shared infrastructure modules
+  - `:core:designsystem-core` - Shared theme utilities
+  - `:core:designsystem-material` - Material 3 Expressive theme
+  - `:core:designsystem-unstyled` - Compose Unstyled theme
+  - `:core:navigation` - Navigation 3 modular architecture
+  - `:core:di` - Koin DI configuration
+  - `:core:httpclient` - Ktor HTTP client setup
+
+* **[/iosApp](./iosApp/iosApp)** - **Production iOS app** using native SwiftUI
+  - Consumes KMP ViewModels via `:shared` framework
+  - Native iOS UI with SwiftUI
+  - Direct Integration pattern for ViewModel usage
+
+* **[/iosAppCompose](./iosAppCompose/iosAppCompose)** - **Experimental iOS app** using Compose Multiplatform
+  - Shares same Compose UI code with Android/Desktop
+  - See the [README](./iosAppCompose/README.md) for details
+
+* **[/server](./server/src/main/kotlin)** - Ktor Backend-for-Frontend (BFF)
+
+* **[/shared](./shared/src)** - iOS umbrella framework
+  - Exports feature APIs and ViewModels to iOS
+  - [commonMain](./shared/src/commonMain/kotlin) - Shared Kotlin code
+
+## 🚀 Quick Start
+
+### Primary Validation (Always Run First)
+
+**Before making changes, always run:**
+```shell
+./gradlew :composeApp:assembleDebug test --continue
+```
+This builds the Android app and runs all 84 tests across all modules (~45 seconds on modern hardware).
 
 ### Build and Run Android Application
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE's toolbar or build it directly from the terminal:
+To run the development version of the Android app:
 - on macOS/Linux
   ```shell
   ./gradlew :composeApp:assembleDebug test --continue
@@ -35,12 +76,16 @@ in your IDE's toolbar or build it directly from the terminal:
   .\gradlew.bat :composeApp:assembleDebug test --continue
   ```
 
-This command builds the Android app and runs all tests across all modules to ensure code quality.
+**Features in Android App:**
+- Dual-theme switcher (FAB button in bottom-right)
+- Adaptive grid layout (2/3/4 columns based on window size)
+- Adaptive navigation (bottom bar → rail → drawer)
+- Pokemon list with infinite scroll
+- Pokemon detail with stats, types, abilities
 
 ### Build and Run Desktop (JVM) Application
 
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
+To run the development version of the desktop app:
 - on macOS/Linux
   ```shell
   ./gradlew :composeApp:run
@@ -49,6 +94,12 @@ in your IDE’s toolbar or run it directly from the terminal:
   ```shell
   .\gradlew.bat :composeApp:run
   ```
+
+**Features in Desktop App:**
+- Same dual-theme switcher as Android
+- Window resizing triggers adaptive layouts (grid columns + navigation style)
+- Full keyboard and mouse support
+- Native window decorations
 
 ### Build and Run Server
 
@@ -87,6 +138,79 @@ To build and run the experimental iOS app using Compose Multiplatform:
 3. Run in simulator (Cmd+R)
 
 See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed information about the Compose iOS implementation.
+
+---
+
+## 📚 Documentation
+
+### Essential Guides
+- **[conventions.md](docs/tech/conventions.md)** - Architecture master reference (START HERE)
+- **[critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
+- **[testing_strategy.md](docs/tech/testing_strategy.md)** - Kotest, MockK, Turbine, property tests (84 tests passing)
+- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Commands, patterns, decision matrices
+
+### Architecture & Patterns
+- **[ios_integration.md](docs/tech/ios_integration.md)** - SwiftUI + KMP ViewModels Direct Integration
+- **[navigation.md](docs/tech/navigation.md)** - Navigation 3 modular architecture
+- **[dependency_injection.md](docs/tech/dependency_injection.md)** - Koin patterns and troubleshooting
+
+### Project Documentation
+- **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
+- **[user_flow.md](docs/project/user_flow.md)** - User journeys and flows
+- **[ui_ux.md](docs/project/ui_ux.md)** - UI/UX guidelines
+
+### Build System
+- **[convention_plugins_guide.md](docs/tech/convention_plugins_guide.md)** - Gradle convention plugins reference
+
+---
+
+## 🧪 Testing
+
+**Test Suite:** 84 tests passing (androidUnitTest + commonTest)
+
+**Coverage:**
+- Repository tests: Success + all error paths (Network, Http, Unknown)
+- ViewModel tests: State transitions with Turbine + TestScope
+- Mapper tests: Property-based tests with Kotest
+- UI tests: @Preview for all @Composable functions
+
+**Property-Based Testing:**
+- 34 property tests (~34,000 scenarios per run)
+- 40% property tests, 60% concrete tests
+- Mappers: 100% property test coverage
+
+**Quick Start Testing:**
+```shell
+# Run all tests
+./gradlew test --continue
+
+# Run specific module tests
+./gradlew :features:pokemonlist:presentation:testDebugUnitTest
+```
+
+See [testing_strategy.md](docs/tech/testing_strategy.md) for comprehensive guide.
+
+---
+
+## 🎨 Design Systems
+
+### Material Design 3 Expressive
+- Custom Pokémon color scheme (coral primary, yellow secondary, grass green tertiary)
+- Google Sans Flex variable font (Android/Desktop), SF Pro (iOS)
+- Emphasized easing curves for motion
+- 18 Pokémon type colors (WCAG AA compliant)
+
+### Compose Unstyled
+- Platform-native theming with automatic light/dark support
+- Headless components with full styling control
+- Same feature set as Material, different visual approach
+- Educational showcase for design system comparison
+
+**Theme Switching:**
+- FAB button in bottom-right corner
+- Entire app switches atomically (scaffold + content)
+- State persisted across sessions
+- First-run modal explains the feature
 
 ---
 
