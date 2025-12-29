@@ -55,9 +55,6 @@ kotlin {
             
             // Window Size Classes
             implementation(libs.androidx.window.core)
-            
-            // Compose Material Icons (for bottom navigation icons)
-            implementation(compose.materialIconsExtended)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
