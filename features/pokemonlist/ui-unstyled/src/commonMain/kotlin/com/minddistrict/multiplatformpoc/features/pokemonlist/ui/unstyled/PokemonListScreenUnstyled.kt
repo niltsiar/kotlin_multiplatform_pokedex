@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import com.minddistrict.multiplatformpoc.core.designsystem.core.gridColumns
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animate
@@ -158,6 +160,9 @@ private fun PokemonListContentUnstyled(
         }
 
         is PokemonListUiState.Content -> {
+            val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+            val columns = gridColumns(windowAdaptiveInfo)
+            
             val gridState = rememberLazyGridState(
                 initialFirstVisibleItemIndex = restoredScrollIndex,
                 initialFirstVisibleItemScrollOffset = restoredScrollOffset,
@@ -172,7 +177,7 @@ private fun PokemonListContentUnstyled(
             }
 
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(columns),
                 state = gridState,
                 contentPadding = PaddingValues(Theme[spacing][spacingMd]),
                 horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),

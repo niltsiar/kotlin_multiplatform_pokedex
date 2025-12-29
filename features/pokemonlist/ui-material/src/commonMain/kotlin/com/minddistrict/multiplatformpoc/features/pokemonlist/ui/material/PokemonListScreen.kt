@@ -18,6 +18,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import com.minddistrict.multiplatformpoc.core.designsystem.core.gridColumns
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -91,6 +93,9 @@ private fun PokemonListContent(
         }
         
         is PokemonListUiState.Content -> {
+            val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+            val columns = gridColumns(windowAdaptiveInfo)
+            
             val gridState = rememberLazyGridState(
                 initialFirstVisibleItemIndex = restoredScrollIndex,
                 initialFirstVisibleItemScrollOffset = restoredScrollOffset,
@@ -105,7 +110,7 @@ private fun PokemonListContent(
             }
             
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(columns),
                 state = gridState,
                 contentPadding = PaddingValues(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
