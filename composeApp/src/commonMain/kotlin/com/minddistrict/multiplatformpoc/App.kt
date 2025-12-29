@@ -5,9 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,6 +20,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
+import com.minddistrict.multiplatformpoc.icons.rememberInfo
+import com.minddistrict.multiplatformpoc.icons.rememberSettings
 import com.minddistrict.multiplatformpoc.core.di.coreModule
 import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
@@ -91,13 +90,13 @@ fun App() {
                     NavigationBarItem(
                         selected = currentTheme == DesignSystemTheme.MATERIAL,
                         onClick = { rootViewModel.setTheme(DesignSystemTheme.MATERIAL) },
-                        icon = { Icon(Icons.Default.Settings, "Material World") },
+                        icon = { Icon(rememberSettings(), "Material World") },
                         label = { Text("Material") }
                     )
                     NavigationBarItem(
                         selected = currentTheme == DesignSystemTheme.UNSTYLED,
                         onClick = { rootViewModel.setTheme(DesignSystemTheme.UNSTYLED) },
-                        icon = { Icon(Icons.Default.Info, "Unstyled World") },
+                        icon = { Icon(rememberInfo(), "Unstyled World") },
                         label = { Text("Unstyled") }
                     )
                 }
