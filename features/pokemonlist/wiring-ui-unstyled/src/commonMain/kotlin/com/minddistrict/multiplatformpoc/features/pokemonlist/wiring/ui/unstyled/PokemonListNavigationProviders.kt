@@ -1,4 +1,4 @@
-package com.minddistrict.multiplatformpoc.features.pokemonlist.wiringui.unstyled
+package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.unstyled
 
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
