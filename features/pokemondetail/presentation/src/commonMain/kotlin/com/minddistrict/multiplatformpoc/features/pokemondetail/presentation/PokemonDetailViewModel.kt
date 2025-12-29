@@ -29,6 +29,10 @@ class PokemonDetailViewModel(
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(restoreUiState())
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
     
+    // Expose scroll position for UI restoration (same pattern as PokemonListViewModel)
+    val restoredScrollIndex: Int get() = persistedState.scrollPosition
+    val restoredScrollOffset: Int get() = persistedState.scrollOffset
+    
     override fun onStart(owner: LifecycleOwner) {
         // Only load if we have no restored content or error.
         if (_uiState.value is PokemonDetailUiState.Loading) {
@@ -54,7 +58,11 @@ class PokemonDetailViewModel(
                         lastErrorMessage = null,
                         pokemon = pokemon.asSnapshot(),
                     )
-                    _uiState.update { PokemonDetailUiState.Content(pokemon = pokemon) }
+                    _uiState.update {
+                        PokemonDetailUiState.Content(
+                            pokemon = pokemon,
+                        )
+                    }
                 }
             )
         }
@@ -64,9 +72,21 @@ class PokemonDetailViewModel(
         loadPokemonDetail()
     }
 
+    /**
+     * Save scroll position to persist across theme switches and process death.
+     */
+    fun saveScrollPosition(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
+        persistedState = persistedState.copy(
+            scrollPosition = firstVisibleItemIndex,
+            scrollOffset = firstVisibleItemScrollOffset,
+        )
+    }
+
     private fun restoreUiState(): PokemonDetailUiState {
         return when {
-            persistedState.pokemon != null -> PokemonDetailUiState.Content(pokemon = persistedState.pokemon!!.asDomain())
+            persistedState.pokemon != null -> PokemonDetailUiState.Content(
+                pokemon = persistedState.pokemon!!.asDomain(),
+            )
             persistedState.lastErrorMessage != null -> PokemonDetailUiState.Error(persistedState.lastErrorMessage!!)
             else -> PokemonDetailUiState.Loading
         }

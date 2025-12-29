@@ -23,11 +23,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,6 +85,8 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.Pok
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.snapshotFlow
 
 @Composable
 fun PokemonDetailScreenUnstyled(
@@ -94,17 +98,25 @@ fun PokemonDetailScreenUnstyled(
 
     PokemonDetailContentUnstyled(
         uiState = uiState,
+        restoredScrollIndex = viewModel.restoredScrollIndex,
+        restoredScrollOffset = viewModel.restoredScrollOffset,
         onBackClick = onBackClick,
-        onRetry = viewModel::retry,
-        modifier = modifier,
+        onRetry = { viewModel.retry() },
+        onScrollPositionChanged = { position, offset ->
+            viewModel.saveScrollPosition(position, offset)
+        },
+        modifier = modifier
     )
 }
 
 @Composable
 private fun PokemonDetailContentUnstyled(
     uiState: PokemonDetailUiState,
+    restoredScrollIndex: Int = 0,
+    restoredScrollOffset: Int = 0,
     onBackClick: () -> Unit,
     onRetry: () -> Unit,
+    onScrollPositionChanged: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -166,7 +178,12 @@ private fun PokemonDetailContentUnstyled(
         ) {
             when (uiState) {
                 is PokemonDetailUiState.Loading -> LoadingContentUnstyled()
-                is PokemonDetailUiState.Content -> PokemonDetailBodyUnstyled(pokemon = uiState.pokemon)
+                is PokemonDetailUiState.Content -> PokemonDetailBodyUnstyled(
+                    pokemon = uiState.pokemon,
+                    scrollPosition = restoredScrollIndex,
+                    scrollOffset = restoredScrollOffset,
+                    onScrollPositionChanged = onScrollPositionChanged,
+                )
                 is PokemonDetailUiState.Error -> ErrorContentUnstyled(
                     message = uiState.message,
                     onRetry = onRetry,
@@ -276,13 +293,32 @@ private fun ErrorContentUnstyled(
 @Composable
 private fun PokemonDetailBodyUnstyled(
     pokemon: PokemonDetail,
+    scrollPosition: Int,
+    scrollOffset: Int,
+    onScrollPositionChanged: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val primaryType = pokemon.types.firstOrNull()?.name ?: "normal"
     val isDark = Theme[colors][background].luminance() < 0.5f
     val typeColor = PokemonTypeColors.getBackground(primaryType, isDark)
 
+    // Restore scroll position from UiState
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = scrollPosition,
+        initialFirstVisibleItemScrollOffset = scrollOffset
+    )
+
+    // Save scroll position as user scrolls (same pattern as PokemonListScreen)
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collectLatest { (index, offset) ->
+            onScrollPositionChanged(index, offset)
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
     ) {
         // Hero Section (Image + Name + ID)
@@ -721,6 +757,7 @@ private fun PokemonDetailScreenUnstyledLoadingPreview() {
                 uiState = PokemonDetailUiState.Loading,
                 onBackClick = {},
                 onRetry = {},
+                onScrollPositionChanged = { _, _ -> },
             )
         }
     }
@@ -759,6 +796,7 @@ private fun PokemonDetailScreenUnstyledContentPreview() {
                 ),
                 onBackClick = {},
                 onRetry = {},
+                onScrollPositionChanged = { _, _ -> },
             )
         }
     }
@@ -773,7 +811,10 @@ private fun PokemonDetailScreenUnstyledErrorPreview() {
                 uiState = PokemonDetailUiState.Error("Network error. Please check your connection."),
                 onBackClick = {},
                 onRetry = {},
+                onScrollPositionChanged = { _, _ -> },
             )
         }
     }
 }
+
+

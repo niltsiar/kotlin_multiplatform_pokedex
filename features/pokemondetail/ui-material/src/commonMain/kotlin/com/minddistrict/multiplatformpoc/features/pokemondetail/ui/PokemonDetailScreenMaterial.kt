@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,8 +33,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +58,8 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.TypeOfPok
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailUiState
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.snapshotFlow
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -62,11 +69,16 @@ fun PokemonDetailScreenMaterial(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     PokemonDetailContent(
         uiState = uiState,
+        restoredScrollIndex = viewModel.restoredScrollIndex,
+        restoredScrollOffset = viewModel.restoredScrollOffset,
         onBackClick = onBackClick,
         onRetry = { viewModel.retry() },
+        onScrollPositionChanged = { position, offset ->
+            viewModel.saveScrollPosition(position, offset)
+        },
         modifier = modifier
     )
 }
@@ -75,8 +87,11 @@ fun PokemonDetailScreenMaterial(
 @Composable
 private fun PokemonDetailContent(
     uiState: PokemonDetailUiState,
+    restoredScrollIndex: Int = 0,
+    restoredScrollOffset: Int = 0,
     onBackClick: () -> Unit,
     onRetry: () -> Unit,
+    onScrollPositionChanged: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -106,7 +121,12 @@ private fun PokemonDetailContent(
         ) {
             when (uiState) {
                 is PokemonDetailUiState.Loading -> LoadingContent()
-                is PokemonDetailUiState.Content -> PokemonDetailContent(pokemon = uiState.pokemon)
+                is PokemonDetailUiState.Content -> PokemonDetailBody(
+                    pokemon = uiState.pokemon,
+                    scrollPosition = restoredScrollIndex,
+                    scrollOffset = restoredScrollOffset,
+                    onScrollPositionChanged = onScrollPositionChanged,
+                )
                 is PokemonDetailUiState.Error -> ErrorContent(
                     message = uiState.message,
                     onRetry = onRetry
@@ -159,16 +179,35 @@ private fun ErrorContent(
 }
 
 @Composable
-private fun PokemonDetailContent(
+private fun PokemonDetailBody(
     pokemon: PokemonDetail,
+    scrollPosition: Int,
+    scrollOffset: Int,
+    onScrollPositionChanged: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
     val primaryType = pokemon.types.firstOrNull()?.name ?: "normal"
     val typeColor = PokemonTypeColors.getBackground(primaryType, isDark)
     
+    // Restore scroll position from UiState
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = scrollPosition,
+        initialFirstVisibleItemScrollOffset = scrollOffset
+    )
+
+    // Save scroll position as user scrolls (same pattern as PokemonListScreen)
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collectLatest { (index, offset) ->
+            onScrollPositionChanged(index, offset)
+        }
+    }
+
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        state = listState,
+        modifier = modifier.fillMaxSize(),
     ) {
         // Hero Section
         item {
@@ -549,7 +588,8 @@ private fun PokemonDetailScreenLoadingPreview() {
             PokemonDetailContent(
                 uiState = PokemonDetailUiState.Loading,
                 onBackClick = {},
-                onRetry = {}
+                onRetry = {},
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }
@@ -587,7 +627,8 @@ private fun PokemonDetailScreenContentPreview() {
                     )
                 ),
                 onBackClick = {},
-                onRetry = {}
+                onRetry = {},
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }
@@ -601,8 +642,11 @@ private fun PokemonDetailScreenErrorPreview() {
             PokemonDetailContent(
                 uiState = PokemonDetailUiState.Error("Network error. Please check your connection."),
                 onBackClick = {},
-                onRetry = {}
+                onRetry = {},
+                onScrollPositionChanged = { _, _ -> }
             )
         }
     }
 }
+
+
