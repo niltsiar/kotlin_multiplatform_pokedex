@@ -1012,7 +1012,7 @@ Break Material screens into small focused components using shared abstractions a
   - `ic_straighten.xml` or `ic_height.xml` (for 📏 ruler)
   - `ic_balance.xml` (for ⚖️ scale)
   - `ic_star.xml` (for ⭐ XP)
-- [ ] Save to `composeApp/src/commonMain/composeResources/drawable/`
+- [ ] Save to `core/designsystem-core/src/commonMain/composeResources/drawable/`
 - [ ] Replace in `PhysicalAttributesCard.kt` (Material):
   - `Text("📏")` → `Icon(painterResource(Res.drawable.ic_straighten), contentDescription = "Height", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(48.dp))`
   - `Text("⚖️")` → `Icon(painterResource(Res.drawable.ic_balance), contentDescription = "Weight", ...)`
