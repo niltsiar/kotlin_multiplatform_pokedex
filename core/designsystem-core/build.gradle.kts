@@ -21,3 +21,7 @@ kotlin {
 android {
     namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"
 }
+
+compose.resources {
+    publicResClass = true
+}
