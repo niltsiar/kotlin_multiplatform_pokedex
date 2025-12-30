@@ -1,5 +1,6 @@
 package com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme
 
+import androidx.compose.animation.core.Easing
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -109,6 +110,12 @@ val motionDuration = ThemeProperty<Int>("motionDuration")
 val durationShort = ThemeToken<Int>("short")
 val durationMedium = ThemeToken<Int>("medium")
 val durationLong = ThemeToken<Int>("long")
+
+// Custom Theme Properties for Motion (easing curves)
+val motionEasing = ThemeProperty<Easing>("motionEasing")
+val easingStandard = ThemeToken<Easing>("standard")
+val easingEmphasizedDecelerate = ThemeToken<Easing>("emphasizedDecelerate")
+val easingEmphasizedAccelerate = ThemeToken<Easing>("emphasizedAccelerate")
 
 /**
  * Platform Theme with Native Tokens + Custom Properties + Dynamic Theming
@@ -221,5 +228,12 @@ val UnstyledTheme = buildPlatformTheme(
         durationShort to UnstyledTokens.motion.durationShort,
         durationMedium to UnstyledTokens.motion.durationMedium,
         durationLong to UnstyledTokens.motion.durationLong
+    )
+    
+    // Custom motion easing tokens (linear/standard easing from UnstyledTokens)
+    properties[motionEasing] = mapOf(
+        easingStandard to UnstyledTokens.motion.easingStandard,
+        easingEmphasizedDecelerate to UnstyledTokens.motion.easingEmphasizedDecelerate,
+        easingEmphasizedAccelerate to UnstyledTokens.motion.easingEmphasizedAccelerate
     )
 }
