@@ -43,8 +43,10 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.unstyl
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.material.pokemonListNavigationModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.unstyled.pokemonListNavigationUnstyledModule
-import com.minddistrict.multiplatformpoc.icons.rememberInfo
-import com.minddistrict.multiplatformpoc.icons.rememberSettings
+import multiplatformpoc.core.designsystem_core.generated.resources.Res
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_info
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_settings
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
@@ -114,7 +116,7 @@ fun App() {
                     onClick = {
                         rootViewModel.setTheme(DesignSystemTheme.MATERIAL)
                     },
-                    icon = { Icon(rememberSettings(), contentDescription = "Material") },
+                    icon = { Icon(painterResource(Res.drawable.ic_settings), contentDescription = "Material") },
                     label = { Text("Material") },
                 )
                 item(
@@ -122,7 +124,7 @@ fun App() {
                     onClick = {
                         rootViewModel.setTheme(DesignSystemTheme.UNSTYLED)
                     },
-                    icon = { Icon(rememberInfo(), contentDescription = "Unstyled") },
+                    icon = { Icon(painterResource(Res.drawable.ic_info), contentDescription = "Unstyled") },
                     label = { Text("Unstyled") },
                 )
             },

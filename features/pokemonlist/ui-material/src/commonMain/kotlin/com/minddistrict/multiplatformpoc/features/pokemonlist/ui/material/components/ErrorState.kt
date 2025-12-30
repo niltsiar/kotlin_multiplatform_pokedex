@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import multiplatformpoc.core.designsystem_core.generated.resources.Res
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_error_outline
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,9 +56,10 @@ fun ErrorState(
             modifier = Modifier.padding(MaterialTheme.tokens.spacing.xl)
         ) {
             // Error icon (emoji instead of Material Icon)
-            Text(
-                text = "⚠️",
-                style = MaterialTheme.typography.displayMedium,
+Icon(
+            painter = painterResource(Res.drawable.ic_error_outline),
+            contentDescription = "Error",
+            tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(64.dp)
             )
             
