@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.UnstyledScope
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.tokens.UnstyledTokens
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
@@ -26,6 +27,7 @@ import org.koin.dsl.navigation3.navigation
  *
  * Uses Koin's Navigation 3 integration to declaratively register the PokemonDetailScreenUnstyled.
  * Scoped to UnstyledScope to separate from Material entries.
+ * Uses Unstyled minimal motion with standard timing curves (no scale effects).
  */
 val pokemonDetailNavigationUnstyledModule = module {
     scope<UnstyledScope> {
@@ -33,21 +35,33 @@ val pokemonDetailNavigationUnstyledModule = module {
             metadata = NavDisplay.transitionSpec {
                 slideInHorizontally(
                     initialOffsetX = { it },
-                    animationSpec = tween(300),
-                ) + fadeIn(animationSpec = tween(300)) togetherWith
-                    slideOutHorizontally(
-                        targetOffsetX = { -it / 3 },
-                        animationSpec = tween(300),
-                    ) + fadeOut(animationSpec = tween(300))
+                    animationSpec = tween(
+                        durationMillis = UnstyledTokens.motion.durationMedium,
+                        easing = UnstyledTokens.motion.easingStandard,
+                    ),
+                ) + fadeIn(
+                    animationSpec = tween(durationMillis = UnstyledTokens.motion.durationMedium),
+                ) togetherWith slideOutHorizontally(
+                    targetOffsetX = { -it / 4 },
+                    animationSpec = tween(durationMillis = UnstyledTokens.motion.durationMedium),
+                ) + fadeOut(
+                    animationSpec = tween(durationMillis = UnstyledTokens.motion.durationMedium),
+                )
             } + NavDisplay.popTransitionSpec {
                 slideInHorizontally(
-                    initialOffsetX = { -it / 3 },
-                    animationSpec = tween(300),
-                ) + fadeIn(animationSpec = tween(300)) togetherWith
-                    slideOutHorizontally(
-                        targetOffsetX = { it },
-                        animationSpec = tween(300),
-                    ) + fadeOut(animationSpec = tween(300))
+                    initialOffsetX = { -it / 4 },
+                    animationSpec = tween(durationMillis = UnstyledTokens.motion.durationShort),
+                ) + fadeIn(
+                    animationSpec = tween(durationMillis = UnstyledTokens.motion.durationShort),
+                ) togetherWith slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(
+                        durationMillis = UnstyledTokens.motion.durationShort,
+                        easing = UnstyledTokens.motion.easingStandard,
+                    ),
+                ) + fadeOut(
+                    animationSpec = tween(durationMillis = UnstyledTokens.motion.durationShort),
+                )
             },
         ) { route ->
             val navigator: Navigator = koinInject()

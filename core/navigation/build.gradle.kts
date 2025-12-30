@@ -1,5 +1,5 @@
 plugins {
-    id("convention.kmp.library")
+    id("convention.core.library")
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
@@ -12,5 +12,13 @@ kotlin {
             api(libs.androidx.navigation3.ui)       // API: EntryProviderScope must be visible
             api(libs.koin.compose.navigation3)      // API: navigation<T> DSL for wiring modules
         }
+        
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)  // BackHandler + OnBackPressedCallback
+        }
     }
+}
+
+android {
+    namespace = "com.minddistrict.multiplatformpoc.core.navigation"
 }
