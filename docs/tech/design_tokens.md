@@ -26,6 +26,7 @@ MaterialTheme.tokens → LocalMaterialTokens → MaterialDesignTokens → Defaul
 ```kotlin
 MaterialTheme.tokens.spacing.medium   // 16.dp
 MaterialTheme.tokens.shapes.large     // 24.dp corner
+MaterialTheme.tokens.elevation.level2 // 3.dp shadow
 MaterialTheme.tokens.motion.durationMedium  // 300ms
 ```
 
@@ -116,8 +117,22 @@ fun MyTheme(content: @Composable () -> Unit) {
 **Design Tokens** (MaterialTheme.tokens):
 - `spacing` - 8dp grid (xxs: 2dp → xxxl: 64dp)
 - `shapes` - Corner radii (small: 8dp → extraLarge: 28dp)
-- `elevation` - Shadow depths (level1: 1dp → level5: 8dp)
+- `elevation` - Shadow depths (level0: 0dp, level1: 1dp, level2: 3dp, level3: 6dp, level4: 8dp, level5: 12dp)
 - `motion` - Durations (short: 200ms, medium: 300ms, long: 400ms) + easing curves
+
+**⚠️ CRITICAL: Always use tokens, never hardcoded `dp` values**
+
+```kotlin
+// ✅ CORRECT - Use elevation tokens
+CardDefaults.cardElevation(
+    defaultElevation = MaterialTheme.tokens.elevation.level2  // 3.dp
+)
+
+// ❌ WRONG - Hardcoded dp values
+CardDefaults.cardElevation(
+    defaultElevation = 2.dp  // Don't hardcode!
+)
+```
 
 **Component Tokens** (MaterialTheme.componentTokens):
 - `card()` - Shape, elevation, colors, pressedScale

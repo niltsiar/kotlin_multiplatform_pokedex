@@ -39,7 +39,7 @@
        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
    )
    elevation = CardDefaults.cardElevation(
-       defaultElevation = 2.dp  // ADD
+       defaultElevation = MaterialTheme.tokens.elevation.level2  // ✅ Use token (3.dp)
    )
    ```
 
