@@ -2,8 +2,11 @@ package com.minddistrict.multiplatformpoc.core.designsystem.unstyled.tokens
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.minddistrict.multiplatformpoc.core.designsystem.core.tokens.BaseTokens
 import com.minddistrict.multiplatformpoc.core.designsystem.core.tokens.ElevationTokens
 import com.minddistrict.multiplatformpoc.core.designsystem.core.tokens.MotionTokens
@@ -66,5 +69,116 @@ object UnstyledTokens {
         override val easingStandard = BaseTokens.motion.easingStandard
         override val easingEmphasizedDecelerate = BaseTokens.motion.easingStandard  // Linear
         override val easingEmphasizedAccelerate = BaseTokens.motion.easingStandard  // Linear
+    }
+    
+    /**
+     * Typography tokens - uses platform default fonts (not custom).
+     * Unstyled theme relies on native platform fonts for optimal integration.
+     * 
+     * Follows Material 3 scale for consistency but with simpler styling:
+     * - No extreme weights (max FontWeight.Medium)
+     * - Tighter letter spacing
+     * - Platform fonts provide the character
+     */
+    object typography {
+        // Display styles - largest, for hero moments
+        val displayLarge = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 57.sp,
+            lineHeight = 64.sp,
+            letterSpacing = 0.sp
+        )
+        val displayMedium = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 45.sp,
+            lineHeight = 52.sp,
+            letterSpacing = 0.sp
+        )
+        val displaySmall = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 36.sp,
+            lineHeight = 44.sp,
+            letterSpacing = 0.sp
+        )
+        
+        // Headline styles - for section headings
+        val headlineLarge = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 32.sp,
+            lineHeight = 40.sp,
+            letterSpacing = 0.sp
+        )
+        val headlineMedium = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 28.sp,
+            lineHeight = 36.sp,
+            letterSpacing = 0.sp
+        )
+        val headlineSmall = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 24.sp,
+            lineHeight = 32.sp,
+            letterSpacing = 0.sp
+        )
+        
+        // Title styles - for card titles, list headers
+        val titleLarge = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 22.sp,
+            lineHeight = 28.sp,
+            letterSpacing = 0.sp
+        )
+        val titleMedium = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            letterSpacing = 0.sp
+        )
+        val titleSmall = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.sp
+        )
+        
+        // Body styles - for main content
+        val bodyLarge = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            letterSpacing = 0.sp
+        )
+        val bodyMedium = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.sp
+        )
+        val bodySmall = TextStyle(
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.sp
+        )
+        
+        // Label styles - for buttons, tabs
+        val labelLarge = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.sp
+        )
+        val labelMedium = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.sp
+        )
+        val labelSmall = TextStyle(
+            fontWeight = FontWeight.Medium,
+            fontSize = 11.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.sp
+        )
     }
 }

@@ -19,10 +19,13 @@ import androidx.compose.animation.core.tween
 
 /**
  * Platform-specific font family.
- * - Android/Desktop: Google Sans Flex variable font
+ * - Android/Desktop: Google Sans (Regular, Medium, Bold)
  * - iOS: System default (San Francisco)
+ * 
+ * Must be called from @Composable context to load font resources.
  */
-expect val PokemonFontFamily: FontFamily
+@Composable
+expect fun pokemonFontFamily(): FontFamily
 
 /**
  * Creates Material 3 Expressive typography scale using the Pokemon font family.
@@ -30,7 +33,7 @@ expect val PokemonFontFamily: FontFamily
  */
 @Composable
 fun rememberPokemonTypography(): Typography {
-    val fontFamily = PokemonFontFamily
+    val fontFamily = pokemonFontFamily()
     
     return Typography(
         // Display styles - largest, for hero moments
