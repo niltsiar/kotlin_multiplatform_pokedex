@@ -126,8 +126,7 @@ internal fun PokemonDetailMaterialContent(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+                )
             )
         },
         contentWindowInsets = WindowInsets.safeDrawing,

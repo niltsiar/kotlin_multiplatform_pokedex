@@ -40,11 +40,12 @@ fun TypeBadge(
     overrideBorderWidth: Dp? = null
 ) {
     val typeColor = PokemonTypeColors.getBackground(type, isDark)
+    val textColor = PokemonTypeColors.getContent(type, isDark)  // Use type-specific text color
     val borderWidth = overrideBorderWidth ?: tokens.borderWidth
     
     BasicText(
         text = type.lowercase().replaceFirstChar { it.uppercase() },
-        style = TextStyle(color = tokens.textColor, fontSize = 14.sp),
+        style = TextStyle(color = textColor, fontSize = 14.sp),
         modifier = modifier
             .clip(tokens.shape)
             .background(typeColor.copy(alpha = tokens.fillAlpha))
