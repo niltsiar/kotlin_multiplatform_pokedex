@@ -89,13 +89,13 @@ private fun AbilityRow(
         if (ability.isHidden) {
             Surface(
                 shape = RoundedCornerShape(MaterialTheme.tokens.spacing.xxs),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Text(
                     text = "Hidden",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.xs, vertical = MaterialTheme.tokens.spacing.xxs)
                 )
             }
