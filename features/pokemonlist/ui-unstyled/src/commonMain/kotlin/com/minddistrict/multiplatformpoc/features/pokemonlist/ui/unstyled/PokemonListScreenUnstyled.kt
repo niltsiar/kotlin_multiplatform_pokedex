@@ -56,15 +56,14 @@ import com.composeunstyled.platformtheme.interactiveSize
 import com.composeunstyled.platformtheme.interactiveSizes
 import com.composeunstyled.platformtheme.shapes
 import com.composeunstyled.platformtheme.sizeDefault
-import com.composeunstyled.platformtheme.text1
-import com.composeunstyled.platformtheme.text3
-import com.composeunstyled.platformtheme.textStyles
 import com.composeunstyled.theme.Theme
 import com.minddistrict.multiplatformpoc.core.designsystem.core.Elevation
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.background
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.bodyMedium
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.error
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.labelSmall
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.onSurface
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.shapeMedium
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacing
@@ -72,6 +71,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacin
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingSm
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingXs
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.surface
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.typography
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListUiState
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
@@ -157,7 +157,7 @@ private fun PokemonListContentUnstyled(
                 ) {
                     Text(
                         text = uiState.message,
-                        style = Theme[textStyles][text3],
+                        style = Theme[typography][bodyMedium],
                         color = Theme[colors][error],
                     )
                 }
@@ -298,14 +298,14 @@ private fun PokemonCardUnstyled(
             // Pokemon Number
             Text(
                 text = "#${pokemon.id.toString().padStart(3, '0')}",
-                style = Theme[textStyles][text1],
+                style = Theme[typography][labelSmall],
                 color = Theme[colors][onSurface].copy(alpha = 0.6f),
             )
 
             // Pokemon Name
             Text(
                 text = pokemon.name.replaceFirstChar { it.uppercase() },
-                style = Theme[textStyles][text3],
+                style = Theme[typography][bodyMedium],
                 color = Theme[colors][onSurface],
             )
         }
