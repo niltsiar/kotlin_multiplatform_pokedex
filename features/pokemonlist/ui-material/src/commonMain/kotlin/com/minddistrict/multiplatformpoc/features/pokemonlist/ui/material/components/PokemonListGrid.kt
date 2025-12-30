@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.min
+import kotlinx.coroutines.launch
 import com.minddistrict.multiplatformpoc.core.designsystem.core.gridColumns
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
@@ -79,31 +80,36 @@ fun PokemonListGrid(
             key = { _, pokemon -> pokemon.id },
         ) { index, pokemon ->
             val alpha = remember { Animatable(0f) }
-            val scale = remember { Animatable(0.92f) }
+            val scale = remember { Animatable(0.8f) }  // Start smaller for smoother effect
             val motionTokens = MaterialTheme.tokens.motion
 
             LaunchedEffect(Unit) {
                 // Only stagger first 8 items (visible viewport)
                 // Items beyond viewport appear instantly when scrolled into view
                 val visibleIndex = min(index, 8)
-                val delay = visibleIndex * 30L  // 30ms stagger = 240ms total for 8 items
+                val delay = visibleIndex * 40L  // 40ms stagger for better visual rhythm
                 
-                alpha.animateTo(
-                    targetValue = 1f,
-                    animationSpec = tween(
-                        durationMillis = motionTokens.durationMedium,
-                        delayMillis = delay.toInt(),
-                        easing = motionTokens.easingEmphasizedDecelerate
-                    ),
-                )
-                scale.animateTo(
-                    targetValue = 1f,
-                    animationSpec = tween(
-                        durationMillis = motionTokens.durationMedium,
-                        delayMillis = delay.toInt(),
-                        easing = motionTokens.easingEmphasizedDecelerate
-                    ),
-                )
+                // Animate both properties simultaneously for smooth coordinated motion
+                launch {
+                    alpha.animateTo(
+                        targetValue = 1f,
+                        animationSpec = tween(
+                            durationMillis = 400,  // Longer duration for smoother fade
+                            delayMillis = delay.toInt(),
+                            easing = motionTokens.easingEmphasizedDecelerate
+                        ),
+                    )
+                }
+                launch {
+                    scale.animateTo(
+                        targetValue = 1f,
+                        animationSpec = tween(
+                            durationMillis = 400,  // Match alpha duration
+                            delayMillis = delay.toInt(),
+                            easing = motionTokens.easingEmphasizedDecelerate
+                        ),
+                    )
+                }
             }
 
             PokemonListCard(
