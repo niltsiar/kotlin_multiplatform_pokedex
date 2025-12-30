@@ -117,6 +117,24 @@ val easingStandard = ThemeToken<Easing>("standard")
 val easingEmphasizedDecelerate = ThemeToken<Easing>("emphasizedDecelerate")
 val easingEmphasizedAccelerate = ThemeToken<Easing>("emphasizedAccelerate")
 
+// Custom Theme Properties for Typography
+val typography = ThemeProperty<TextStyle>("typography")
+val displayLarge = ThemeToken<TextStyle>("displayLarge")
+val displayMedium = ThemeToken<TextStyle>("displayMedium")
+val displaySmall = ThemeToken<TextStyle>("displaySmall")
+val headlineLarge = ThemeToken<TextStyle>("headlineLarge")
+val headlineMedium = ThemeToken<TextStyle>("headlineMedium")
+val headlineSmall = ThemeToken<TextStyle>("headlineSmall")
+val titleLarge = ThemeToken<TextStyle>("titleLarge")
+val titleMedium = ThemeToken<TextStyle>("titleMedium")
+val titleSmall = ThemeToken<TextStyle>("titleSmall")
+val bodyLarge = ThemeToken<TextStyle>("bodyLarge")
+val bodyMedium = ThemeToken<TextStyle>("bodyMedium")
+val bodySmall = ThemeToken<TextStyle>("bodySmall")
+val labelLarge = ThemeToken<TextStyle>("labelLarge")
+val labelMedium = ThemeToken<TextStyle>("labelMedium")
+val labelSmall = ThemeToken<TextStyle>("labelSmall")
+
 /**
  * Platform Theme with Native Tokens + Custom Properties + Dynamic Theming
  * 
@@ -235,5 +253,24 @@ val UnstyledTheme = buildPlatformTheme(
         easingStandard to UnstyledTokens.motion.easingStandard,
         easingEmphasizedDecelerate to UnstyledTokens.motion.easingEmphasizedDecelerate,
         easingEmphasizedAccelerate to UnstyledTokens.motion.easingEmphasizedAccelerate
+    )
+    
+    // Custom typography tokens (platform fonts, minimal styling)
+    properties[typography] = mapOf(
+        displayLarge to UnstyledTokens.typography.displayLarge,
+        displayMedium to UnstyledTokens.typography.displayMedium,
+        displaySmall to UnstyledTokens.typography.displaySmall,
+        headlineLarge to UnstyledTokens.typography.headlineLarge,
+        headlineMedium to UnstyledTokens.typography.headlineMedium,
+        headlineSmall to UnstyledTokens.typography.headlineSmall,
+        titleLarge to UnstyledTokens.typography.titleLarge,
+        titleMedium to UnstyledTokens.typography.titleMedium,
+        titleSmall to UnstyledTokens.typography.titleSmall,
+        bodyLarge to UnstyledTokens.typography.bodyLarge,
+        bodyMedium to UnstyledTokens.typography.bodyMedium,
+        bodySmall to UnstyledTokens.typography.bodySmall,
+        labelLarge to UnstyledTokens.typography.labelLarge,
+        labelMedium to UnstyledTokens.typography.labelMedium,
+        labelSmall to UnstyledTokens.typography.labelSmall
     )
 }
