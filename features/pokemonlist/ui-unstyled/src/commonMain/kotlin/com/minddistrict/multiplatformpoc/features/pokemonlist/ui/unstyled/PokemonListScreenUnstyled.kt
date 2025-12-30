@@ -54,7 +54,6 @@ import com.composeunstyled.platformtheme.bright
 import com.composeunstyled.platformtheme.indications
 import com.composeunstyled.platformtheme.interactiveSize
 import com.composeunstyled.platformtheme.interactiveSizes
-import com.composeunstyled.platformtheme.roundedMedium
 import com.composeunstyled.platformtheme.shapes
 import com.composeunstyled.platformtheme.sizeDefault
 import com.composeunstyled.platformtheme.text1
@@ -67,6 +66,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.backgr
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.error
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.onSurface
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.shapeMedium
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacing
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingMd
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingSm
@@ -265,14 +265,14 @@ private fun PokemonCardUnstyled(
             .interactiveSize(Theme[interactiveSizes][sizeDefault])  // Accessibility-friendly touch targets
             .shadow(
                 elevation = Elevation.level2,
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
             )
-            .clip(Theme[shapes][roundedMedium])
+            .clip(Theme[shapes][shapeMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.12f),
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
             )
             .clickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
