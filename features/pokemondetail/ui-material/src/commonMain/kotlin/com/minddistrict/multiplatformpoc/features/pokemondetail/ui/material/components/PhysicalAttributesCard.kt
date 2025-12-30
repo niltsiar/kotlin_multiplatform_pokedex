@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 
 /**
@@ -78,7 +79,10 @@ private fun InfoCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
         ),
         shape = MaterialTheme.tokens.shapes.large
     ) {
@@ -91,18 +95,20 @@ private fun InfoCard(
         ) {
             Text(
                 text = emoji,
-                style = MaterialTheme.typography.displaySmall
+                style = MaterialTheme.typography.headlineMedium
             )
             Spacer(modifier = Modifier.height(MaterialTheme.tokens.spacing.xs))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

@@ -54,7 +54,7 @@ fun AbilitiesSection(
             Text(
                 text = "Abilities",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(MaterialTheme.tokens.spacing.small))
             abilities.forEach { ability ->
@@ -83,17 +83,19 @@ private fun AbilityRow(
         Text(
             text = ability.name.replace("-", " ").replaceFirstChar { it.titlecase() },
             style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
             modifier = Modifier.weight(1f)
         )
         if (ability.isHidden) {
             Surface(
                 shape = RoundedCornerShape(4.dp),
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Text(
                     text = "Hidden",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.xs, vertical = 4.dp)
                 )
             }
