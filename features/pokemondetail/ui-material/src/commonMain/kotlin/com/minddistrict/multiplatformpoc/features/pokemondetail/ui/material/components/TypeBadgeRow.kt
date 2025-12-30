@@ -1,7 +1,6 @@
 package com.minddistrict.multiplatformpoc.features.pokemondetail.ui.material.components
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.minddistrict.multiplatformpoc.core.designsystem.core.components.TypeBadge
-import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.MaterialComponentTokens
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.componentTokens
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.TypeOfPokemon
 import kotlinx.collections.immutable.ImmutableList
@@ -50,23 +49,24 @@ fun TypeBadgeRow(
         types.forEachIndexed { index, type ->
             val alpha = remember { Animatable(0f) }
             val offsetY = remember { Animatable(20f) }
+            val motionTokens = MaterialTheme.tokens.motion
             
             LaunchedEffect(Unit) {
                 val delay = index * 25L  // 25ms stagger (was 50ms)
                 alpha.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(
-                        durationMillis = 200,  // 200ms duration (was 300ms)
+                        durationMillis = motionTokens.durationShort,
                         delayMillis = delay.toInt(),
-                        easing = EaseOutCubic
+                        easing = motionTokens.easingEmphasizedDecelerate
                     )
                 )
                 offsetY.animateTo(
                     targetValue = 0f,
                     animationSpec = tween(
-                        durationMillis = 200,
+                        durationMillis = motionTokens.durationShort,
                         delayMillis = delay.toInt(),
-                        easing = EaseOutCubic
+                        easing = motionTokens.easingEmphasizedDecelerate
                     )
                 )
             }
@@ -74,7 +74,7 @@ fun TypeBadgeRow(
             TypeBadge(
                 type = type.name,
                 isDark = isDark,
-                tokens = MaterialComponentTokens.badge(),
+                tokens = MaterialTheme.componentTokens.badge(),
                 modifier = Modifier.graphicsLayer {
                     this.alpha = alpha.value
                     translationY = offsetY.value

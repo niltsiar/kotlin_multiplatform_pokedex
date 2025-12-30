@@ -24,3 +24,27 @@ val MaterialTheme.tokens: MaterialDesignTokens
     @Composable
     @ReadOnlyComposable
     get() = LocalMaterialTokens.current
+
+/**
+ * Extension property to access Material component tokens from MaterialTheme.
+ * 
+ * Provides customizable component tokens for:
+ * - Cards (elevation, shapes, colors)
+ * - Badges (shapes, colors, borders)
+ * - Progress bars (motion, colors)
+ * 
+ * Usage:
+ * ```
+ * @Composable
+ * fun MyCard() {
+ *     Card(
+ *         tokens = MaterialTheme.componentTokens.card(),
+ *         content = { }
+ *     )
+ * }
+ * ```
+ */
+val MaterialTheme.componentTokens: MaterialComponentTokens
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalMaterialComponentTokens.current

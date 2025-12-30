@@ -88,7 +88,7 @@ private fun AbilityRow(
         )
         if (ability.isHidden) {
             Surface(
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(MaterialTheme.tokens.spacing.xxs),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Text(
@@ -96,7 +96,7 @@ private fun AbilityRow(
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.xs, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.xs, vertical = MaterialTheme.tokens.spacing.xxs)
                 )
             }
         }

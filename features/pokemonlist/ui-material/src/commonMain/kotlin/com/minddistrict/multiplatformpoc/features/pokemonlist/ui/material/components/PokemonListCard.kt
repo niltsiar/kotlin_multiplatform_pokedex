@@ -58,13 +58,13 @@ fun PokemonListCard(
             isHovered -> 6.dp
             else -> 2.dp
         },
-        animationSpec = tween(durationMillis = 150),
+        animationSpec = tween(durationMillis = MaterialTheme.tokens.motion.durationShort),
         label = "cardElevation"
     )
     
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.98f else 1f,
-        animationSpec = tween(durationMillis = 100),
+        animationSpec = tween(durationMillis = MaterialTheme.tokens.motion.durationShort),
         label = "cardScale"
     )
 

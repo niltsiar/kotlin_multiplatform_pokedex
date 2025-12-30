@@ -100,7 +100,7 @@ private fun InfoCard(
             Spacer(modifier = Modifier.height(MaterialTheme.tokens.spacing.xs))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
