@@ -61,6 +61,52 @@ This document defines the app's icon strategy following Material 3 v1.4.0's depr
 
 ## Implementation Pattern
 
+### Library Resource Configuration (CRITICAL for core modules)
+
+**Problem:** Compose resources in library modules are NOT automatically accessible to consuming modules.
+
+**Solution:** Three-step configuration in library module's `build.gradle.kts`:
+
+```kotlin
+// 1. Add compose.components.resources dependency
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.compose.components.resources)  // REQUIRED!
+        }
+    }
+}
+
+// 2. Enable public Res class
+compose.resources {
+    publicResClass = true  // Default is internal - won't work for library modules!
+}
+
+// 3. Set Android namespace (determines generated package name)
+android {
+    namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"
+}
+```
+
+**Generated Package:** The namespace becomes the package name with dots converted to underscores:
+- Namespace: `com.minddistrict.multiplatformpoc.core.designsystem.core`
+- Generated: `multiplatformpoc.core.designsystem_core.generated.resources`
+
+**Usage in consuming modules:**
+
+```kotlin
+import multiplatformpoc.core.designsystem_core.generated.resources.Res
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_arrow_back
+import org.jetbrains.compose.resources.painterResource
+
+Icon(
+    painter = painterResource(Res.drawable.ic_arrow_back),
+    contentDescription = "Back"
+)
+```
+
+**Reference:** [Compose Multiplatform Resources Documentation](https://kotlinlang.org/docs/multiplatform/compose-multiplatform-resources-usage.html#customizing-accessor-class-generation)
+
 ### Vector Drawable XML Structure
 
 ```xml
@@ -145,6 +191,60 @@ Icon(..., contentDescription = null)
 **Current Workaround:** Emoji icons (📏⚖️⭐)  
 **Reason for Deferral:** UI/UX Design agent will handle holistic screen redesign with proper icon integration  
 **Estimated:** Step 6 implementation (post-January 2026)
+
+## Troubleshooting
+
+### "Unresolved reference 'generated'" Error
+
+**Symptom:** Build fails with `Unresolved reference 'generated'` when importing resources.
+
+**Causes & Solutions:**
+
+1. **Missing dependency:**
+   ```kotlin
+   // Add to library module's build.gradle.kts
+   commonMain.dependencies {
+       implementation(libs.compose.components.resources)
+   }
+   ```
+
+2. **Missing publicResClass:**
+   ```kotlin
+   // Add to library module's build.gradle.kts
+   compose.resources {
+       publicResClass = true
+   }
+   ```
+
+3. **Wrong package name:**
+   - Check Android namespace in build.gradle.kts
+   - Generated package uses underscores: `multiplatformpoc.core.designsystem_core.generated.resources`
+   - NOT dots: `com.minddistrict...core.generated.resources`
+
+4. **Stale build cache:**
+   ```bash
+   ./gradlew clean :core:designsystem-core:build
+   ```
+
+### Resources Not Found at Runtime
+
+**Symptom:** Build succeeds but resources not found when running app.
+
+**Solution:** Ensure consuming module has transitive dependency on resources library:
+```kotlin
+// Usually via transitive dependency from design system modules
+implementation(projects.core.designsystemMaterial)  // Contains api(projects.core.designsystemCore)
+```
+
+### Icons Not Rendering
+
+**Symptom:** Icons appear blank or missing.
+
+**Checklist:**
+- [ ] Verify `android:fillColor` is set (not `@android:color/transparent`)
+- [ ] Check `tint` parameter is applied correctly
+- [ ] Ensure icon file is in correct directory: `composeResources/drawable/`
+- [ ] Verify icon file name matches import: `ic_arrow_back.xml` → `Res.drawable.ic_arrow_back`
 
 ## Testing Checklist
 
