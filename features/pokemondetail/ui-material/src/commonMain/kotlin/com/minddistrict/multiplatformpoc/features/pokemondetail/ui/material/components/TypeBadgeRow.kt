@@ -1,6 +1,7 @@
 package com.minddistrict.multiplatformpoc.features.pokemondetail.ui.material.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -40,8 +41,10 @@ fun TypeBadgeRow(
 ) {
     val isDark = isSystemInDarkTheme()
     
+    val componentTokens = MaterialTheme.tokens
+    
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(componentTokens.spacing.xs),
         modifier = modifier
     ) {
         types.forEachIndexed { index, type ->
@@ -49,14 +52,22 @@ fun TypeBadgeRow(
             val offsetY = remember { Animatable(20f) }
             
             LaunchedEffect(Unit) {
-                val delay = index * 50L
+                val delay = index * 25L  // 25ms stagger (was 50ms)
                 alpha.animateTo(
                     targetValue = 1f,
-                    animationSpec = tween(durationMillis = 300, delayMillis = delay.toInt())
+                    animationSpec = tween(
+                        durationMillis = 200,  // 200ms duration (was 300ms)
+                        delayMillis = delay.toInt(),
+                        easing = EaseOutCubic
+                    )
                 )
                 offsetY.animateTo(
                     targetValue = 0f,
-                    animationSpec = tween(durationMillis = 300, delayMillis = delay.toInt())
+                    animationSpec = tween(
+                        durationMillis = 200,
+                        delayMillis = delay.toInt(),
+                        easing = EaseOutCubic
+                    )
                 )
             }
             

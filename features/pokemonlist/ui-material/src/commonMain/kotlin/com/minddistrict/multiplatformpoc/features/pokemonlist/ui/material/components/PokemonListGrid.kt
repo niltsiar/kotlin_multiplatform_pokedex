@@ -1,11 +1,9 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
@@ -22,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.math.min
 import com.minddistrict.multiplatformpoc.core.designsystem.core.gridColumns
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import com.minddistrict.multiplatformpoc.features.pokemonlist.domain.Pokemon
@@ -29,15 +28,15 @@ import kotlinx.collections.immutable.ImmutableList
 
 /**
  * Material Design 3 adaptive grid for Pokémon list.
- * 
+ *
  * Displays Pokémon in a responsive grid (2/3/4 columns based on window size)
  * with token-based spacing and staggered entrance animations.
- * 
+ *
  * Features:
  * - Adaptive columns using WindowSizeClass
  * - Safe area insets + token-based spacing
  * - Staggered fade + slide animations per item
- * 
+ *
  * @param pokemons List of Pokémon to display
  * @param gridState Scroll state for the grid
  * @param onPokemonClick Callback when a Pokémon is clicked
@@ -58,7 +57,7 @@ fun PokemonListGrid(
 ) {
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
     val columns = gridColumns(windowAdaptiveInfo)
-    
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
         state = gridState,
@@ -68,42 +67,55 @@ fun PokemonListGrid(
                     left = MaterialTheme.tokens.spacing.medium,
                     top = MaterialTheme.tokens.spacing.medium,
                     right = MaterialTheme.tokens.spacing.medium,
-                    bottom = MaterialTheme.tokens.spacing.medium
-                )
+                    bottom = MaterialTheme.tokens.spacing.medium,
+                ),
             )
             .asPaddingValues(),
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.medium),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.medium),
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         itemsIndexed(
             items = pokemons,
-            key = { _, pokemon -> pokemon.id }
+            key = { _, pokemon -> pokemon.id },
         ) { index, pokemon ->
             val alpha = remember { Animatable(0f) }
-            val offsetY = remember { Animatable(20f) }
-            
+            val scale = remember { Animatable(0.92f) }
+
             LaunchedEffect(Unit) {
-                val delay = index * 50L // 50ms stagger
+                // Only stagger first 8 items (visible viewport)
+                // Items beyond viewport appear instantly when scrolled into view
+                val visibleIndex = min(index, 8)
+                val delay = visibleIndex * 30L  // 30ms stagger = 240ms total for 8 items
+                
                 alpha.animateTo(
                     targetValue = 1f,
-                    animationSpec = tween(durationMillis = 300, delayMillis = delay.toInt())
+                    animationSpec = tween(
+                        durationMillis = 250,
+                        delayMillis = delay.toInt(),
+                        easing = EaseOutCubic
+                    ),
                 )
-                offsetY.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 300, delayMillis = delay.toInt())
+                scale.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(
+                        durationMillis = 250,
+                        delayMillis = delay.toInt(),
+                        easing = EaseOutCubic
+                    ),
                 )
             }
-            
+
             PokemonListCard(
                 pokemon = pokemon,
                 onClick = { onPokemonClick(pokemon) },
                 modifier = Modifier.graphicsLayer {
                     this.alpha = alpha.value
-                    translationY = offsetY.value
-                }
+                    scaleX = scale.value
+                    scaleY = scale.value
+                },
             )
-            
+
             // Load more when near end
             LaunchedEffect(index, pokemons.size, isLoadingMore, hasMore) {
                 if (index >= pokemons.size - 4 && !isLoadingMore && hasMore) {

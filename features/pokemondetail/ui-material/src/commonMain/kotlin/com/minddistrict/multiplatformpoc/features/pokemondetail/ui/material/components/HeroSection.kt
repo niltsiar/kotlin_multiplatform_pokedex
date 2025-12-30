@@ -76,12 +76,14 @@ fun HeroSection(
             Spacer(modifier = Modifier.height(MaterialTheme.tokens.spacing.medium))
             Text(
                 text = name,
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = "#${id.toString().padStart(3, '0')}",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

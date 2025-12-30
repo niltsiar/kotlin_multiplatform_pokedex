@@ -97,6 +97,9 @@ compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.
 compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "composeMaterial3Adaptive" }
 compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "composeMaterial3" }
 
+# Material Icons (core filled/outlined/etc, NOT extended)
+compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "composeMultiplatform" }
+
 # Compose Unstyled
 composeunstyled = { module = "com.composables:composeunstyled", version.ref = "composeUnstyled" }
 composeunstyled-theming = { module = "com.composables:composeunstyled-theming", version.ref = "composeUnstyled" }
