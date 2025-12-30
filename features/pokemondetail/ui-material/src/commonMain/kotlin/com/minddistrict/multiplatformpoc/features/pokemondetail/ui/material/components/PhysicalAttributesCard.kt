@@ -82,7 +82,7 @@ private fun InfoCard(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = MaterialTheme.tokens.elevation.level2
         ),
         shape = MaterialTheme.tokens.shapes.large
     ) {
