@@ -582,6 +582,7 @@ kotlin {
 - `tech/navigation.md` — Navigation 3 complete guide
 - `tech/testing_strategy.md` — Testing enforcement, property tests
 - `tech/ios_integration.md` — iOS SwiftUI + KMP patterns
+- `tech/material_icons_strategy.md` — Vector Drawable XML icons, Rounded Filled style
 
 **Project Guides:**
 - `project/prd.md` — Product requirements (PRIMARY REFERENCE)

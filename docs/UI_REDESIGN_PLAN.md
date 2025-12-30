@@ -1005,6 +1005,24 @@ Break Material screens into small focused components using shared abstractions a
 
 ### Tasks
 
+#### 6.0 Replace Stat Card Emoji Icons with Vector Drawable XML
+**TODO:** Replace emoji icons (📏⚖️⭐) in PhysicalAttributesCard with proper Vector Drawable XMLs
+
+- [ ] Download from [fonts.google.com/icons](https://fonts.google.com/icons) (Rounded + Filled):
+  - `ic_straighten.xml` or `ic_height.xml` (for 📏 ruler)
+  - `ic_balance.xml` (for ⚖️ scale)
+  - `ic_star.xml` (for ⭐ XP)
+- [ ] Save to `composeApp/src/commonMain/composeResources/drawable/`
+- [ ] Replace in `PhysicalAttributesCard.kt` (Material):
+  - `Text("📏")` → `Icon(painterResource(Res.drawable.ic_straighten), contentDescription = "Height", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(48.dp))`
+  - `Text("⚖️")` → `Icon(painterResource(Res.drawable.ic_balance), contentDescription = "Weight", ...)`
+  - `Text("⭐")` → `Icon(painterResource(Res.drawable.ic_star), contentDescription = "Base experience", ...)`
+- [ ] Apply same replacements to Unstyled variant
+- [ ] Verify icons use Rounded Filled style matching app theme
+- [ ] Test in light/dark mode for proper tint colors
+
+**Reference:** See [docs/tech/material_icons_strategy.md](../tech/material_icons_strategy.md) for complete icon strategy.
+
 #### 6.1 Create Pokemon List Material Components
 - [ ] Create `features/pokemonlist/ui-material/src/.../components/PokemonListCard.kt`
   - Uses shared `PokemonCard` with `MaterialComponentTokens.card`
@@ -1708,3 +1726,71 @@ open iosApp/iosApp.xcodeproj
 - Additional design system variants (e.g., high contrast)
 - Lottie animations for loading states
 - Theme customization UI in app
+
+---
+
+## Future Performance Optimizations
+
+**Status:** Investigation Required (Post-Step 10)
+
+### NavDisplay entryDecorators Investigation
+
+**Current Implementation:**
+ViewModels are scoped using `key` parameter in `koinViewModel()` calls within navigation providers:
+
+```kotlin
+navigation<PokemonDetail> { route ->
+    val viewModel = koinViewModel<PokemonDetailViewModel>(
+        key = "pokemon_detail_${route.id}"  // ← Manual key scoping
+    ) { parametersOf(route.id) }
+    // ...
+}
+```
+
+**Potential Optimization:**
+Investigate using `NavDisplay.entryDecorators` for ViewModel lifecycle management:
+
+```kotlin
+// Hypothetical pattern (needs research)
+NavDisplay(
+    backStack = navigator.backStack,
+    onBack = { navigator.goBack() },
+    entryProvider = entryProvider,
+    entryDecorators = listOf(
+        // Decorator that manages ViewModel lifecycle per route instance?
+        ViewModelLifecycleDecorator()
+    )
+)
+```
+
+**Questions to Explore:**
+1. **Can entryDecorators eliminate manual key scoping?**
+   - Does Navigation 3 provide built-in route instance tracking?
+   - Would ViewModels automatically scope to route instances?
+
+2. **Performance benefits:**
+   - Reduced recomposition from key string concatenation?
+   - Better ViewModel disposal timing?
+   - Simplified navigation provider code?
+
+3. **API compatibility:**
+   - Is entryDecorators available in current Navigation 3 version?
+   - Does it work with Koin DI integration?
+   - Any gotchas with parametric ViewModels?
+
+**Action Items:**
+1. Review Navigation 3 documentation for `entryDecorators` API
+2. Search for entryDecorators usage examples in Navigation 3 samples
+3. Test prototype with PokemonDetail route (parametric ViewModel)
+4. Measure performance impact (recomposition counts, memory usage)
+5. Compare code complexity vs current key scoping pattern
+6. Document findings in this section
+
+**References:**
+- Current ViewModel pattern: [critical_patterns_quick_ref.md#viewmodel-pattern](tech/critical_patterns_quick_ref.md#viewmodel-pattern)
+- Navigation 3 integration: [navigation.md](tech/navigation.md)
+- Koin Navigation 3 DSL: [koin_di_quick_ref.md](tech/koin_di_quick_ref.md)
+
+**Priority:** Low (optimization, not blocker)  
+**Effort:** Medium (research + testing)  
+**Risk:** Low (isolated to navigation layer)
