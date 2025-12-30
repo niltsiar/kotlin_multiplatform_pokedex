@@ -17,7 +17,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.Mater
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
-import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.material.PokemonDetailScreenMaterial
+import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.material.PokemonDetailMaterialScreen
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -95,7 +95,7 @@ val pokemonDetailNavigationModule = module {
                 }
             }
 
-            PokemonDetailScreenMaterial(
+            PokemonDetailMaterialScreen(
                 viewModel = viewModel,
                 onBackClick = { navigator.goBack() },
             )
