@@ -51,27 +51,25 @@ import com.composeunstyled.ProgressBar
 import com.composeunstyled.ProgressIndicator
 import com.composeunstyled.Text
 import com.composeunstyled.platformtheme.bright
-import com.composeunstyled.platformtheme.heading2
-import com.composeunstyled.platformtheme.heading3
-import com.composeunstyled.platformtheme.heading4
 import com.composeunstyled.platformtheme.indications
 import com.composeunstyled.platformtheme.interactiveSize
 import com.composeunstyled.platformtheme.interactiveSizes
 import com.composeunstyled.platformtheme.shapes
 import com.composeunstyled.platformtheme.sizeDefault
-import com.composeunstyled.platformtheme.text1
-import com.composeunstyled.platformtheme.text2
-import com.composeunstyled.platformtheme.text3
-import com.composeunstyled.platformtheme.text5
-import com.composeunstyled.platformtheme.text6
-import com.composeunstyled.platformtheme.textStyles
 import com.composeunstyled.theme.Theme
 import com.minddistrict.multiplatformpoc.core.designsystem.core.Elevation
 import com.minddistrict.multiplatformpoc.core.designsystem.core.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.background
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.bodyMedium
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.bodySmall
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.displaySmall
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.error
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.headlineMedium
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.labelLarge
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.labelMedium
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.labelSmall
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.onSurface
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.shapeMedium
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacing
@@ -80,6 +78,8 @@ import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacin
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingSm
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingXs
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.surface
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.titleLarge
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.typography
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Ability
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Stat
@@ -159,7 +159,7 @@ private fun PokemonDetailContentUnstyled(
             ) {
                 Text(
                     text = "←",
-                    style = Theme[textStyles][text1],
+                    style = Theme[typography][labelSmall],
                     color = Theme[colors][onSurface],
                 )
             }
@@ -168,7 +168,7 @@ private fun PokemonDetailContentUnstyled(
             if (uiState is PokemonDetailUiState.Content) {
                 Text(
                     text = uiState.pokemon.name,
-                    style = Theme[textStyles][heading3],
+                    style = Theme[typography][headlineMedium],
                     color = Theme[colors][onSurface],
                 )
             }
@@ -264,12 +264,12 @@ private fun ErrorContentUnstyled(
         ) {
             Text(
                 text = "⚠️",
-                style = Theme[textStyles][heading2],
+                style = Theme[typography][displaySmall],
                 color = Theme[colors][error],
             )
             Text(
                 text = message,
-                style = Theme[textStyles][text2],
+                style = Theme[typography][bodySmall],
                 textAlign = TextAlign.Center,
                 color = Theme[colors][onSurface].copy(alpha = 0.7f),
             )
@@ -286,7 +286,7 @@ private fun ErrorContentUnstyled(
             ) {
                 Text(
                     text = "Retry",
-                    style = Theme[textStyles][text3],
+                    style = Theme[typography][bodyMedium],
                     color = Color.White,
                 )
             }
@@ -425,13 +425,13 @@ private fun HeroSectionUnstyled(
             Spacer(modifier = Modifier.height(Theme[spacing][spacingMd]))
             Text(
                 text = name,
-                style = Theme[textStyles][heading2],
+                style = Theme[typography][displaySmall],
                 fontWeight = FontWeight.Bold,
                 color = Theme[colors][onSurface],
             )
             Text(
                 text = "#${id.toString().padStart(3, '0')}",
-                style = Theme[textStyles][text2],
+                style = Theme[typography][bodySmall],
                 color = Theme[colors][onSurface].copy(alpha = 0.6f),
             )
         }
@@ -473,7 +473,7 @@ private fun TypeBadgeUnstyled(
         Text(
             text = type.replaceFirstChar { it.titlecase() },
             color = contentColor,
-            style = Theme[textStyles][text5],
+            style = Theme[typography][labelLarge],
         )
     }
 }
@@ -541,17 +541,17 @@ private fun InfoCardUnstyled(
         ) {
             Text(
                 text = emoji,
-                style = Theme[textStyles][heading3],
+                style = Theme[typography][headlineMedium],
             )
             Spacer(modifier = Modifier.height(Theme[spacing][spacingXs]))
             Text(
                 text = label,
-                style = Theme[textStyles][text6],
+                style = Theme[typography][labelMedium],
                 color = Theme[colors][onSurface].copy(alpha = 0.6f),
             )
             Text(
                 text = value,
-                style = Theme[textStyles][text2],
+                style = Theme[typography][bodySmall],
                 fontWeight = FontWeight.Bold,
                 color = Theme[colors][onSurface],
             )
@@ -585,7 +585,7 @@ private fun AbilitiesSectionUnstyled(
         ) {
             Text(
                 text = "Abilities",
-                style = Theme[textStyles][heading4],
+                style = Theme[typography][titleLarge],
                 fontWeight = FontWeight.Bold,
                 color = Theme[colors][onSurface],
             )
@@ -611,7 +611,7 @@ private fun AbilityRowUnstyled(
     ) {
         Text(
             text = ability.name.replace("-", " ").replaceFirstChar { it.titlecase() },
-            style = Theme[textStyles][text2],
+            style = Theme[typography][bodySmall],
             color = Theme[colors][onSurface],
             modifier = Modifier.weight(1f),
         )
@@ -624,7 +624,7 @@ private fun AbilityRowUnstyled(
             ) {
                 Text(
                     text = "Hidden",
-                    style = Theme[textStyles][text6],
+                    style = Theme[typography][labelMedium],
                     color = Theme[colors][onSurface],
                 )
             }
@@ -658,7 +658,7 @@ private fun BaseStatsSectionUnstyled(
         ) {
             Text(
                 text = "Base Stats",
-                style = Theme[textStyles][heading4],
+                style = Theme[typography][titleLarge],
                 fontWeight = FontWeight.Bold,
                 color = Theme[colors][onSurface],
             )
@@ -712,7 +712,7 @@ private fun StatBarUnstyled(
         ) {
             Text(
                 text = statName,
-                style = Theme[textStyles][text3],
+                style = Theme[typography][bodyMedium],
                 color = Theme[colors][onSurface],
                 modifier = Modifier.width(100.dp),
             )
@@ -735,7 +735,7 @@ private fun StatBarUnstyled(
             }
             Text(
                 text = stat.baseStat.toString(),
-                style = Theme[textStyles][text3],
+                style = Theme[typography][bodyMedium],
                 fontWeight = FontWeight.Bold,
                 color = Theme[colors][onSurface],
                 modifier = Modifier.width(40.dp),
