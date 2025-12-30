@@ -591,6 +591,11 @@ kotlin {
   - `:features:pokemonlist:ui-unstyled` → `com.minddistrict.multiplatformpoc.features.pokemonlist.ui.unstyled`
   - `:features:pokemonlist:wiring-ui-unstyled` → `com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.ui.unstyled`
 - **Files**: use clear, purpose-revealing names. Avoid `Utils`, `Helper`.
+- **NavigationProviders**: Include variant suffix to avoid naming collisions:
+  - Material variant: `<Feature>MaterialNavigationProviders.kt` (e.g., `PokemonListMaterialNavigationProviders.kt`)
+  - Unstyled variant: `<Feature>UnstyledNavigationProviders.kt` (e.g., `PokemonListUnstyledNavigationProviders.kt`)
+  - Rationale: Multiple UI variants in same feature need distinct file names for IDE navigation
+  - Module variable names stay unchanged: `pokemonListNavigationModule`, `pokemonListNavigationUnstyledModule`
 - **Tests**: mirror the feature and layer names, suffix with `Spec` or `Test`.
 - **Imports**: 
   - ❌ **NEVER use star imports** (`import com.example.*`)
@@ -655,6 +660,56 @@ kotlin {
   - Adaptive layout utilities using Material 3 Adaptive components
   - Navigation patterns with NavigationSuiteScaffold for responsive nav (bar/rail/drawer)
 - Both Android and Desktop apps consume designsystem. iOS accesses via :shared umbrella (theme constants only, not Compose UI).
+
+## Design Token System Architecture
+
+The project uses a unified token system with three layers:
+
+1. **Base Tokens** (`core/designsystem-core/tokens/BaseTokens.kt`):
+   - Foundation for all design systems
+   - 8dp spacing grid (xxxs: 2dp → xxxl: 64dp)
+   - Standard shapes, elevations, and motion curves
+   - Single source of truth for shared values
+
+2. **Theme Tokens** (Material/Unstyled):
+   - Delegate to base tokens (e.g., spacing)
+   - Override with theme-specific values (e.g., shapes, motion)
+   - Material: Expressive shapes (28dp), emphasized motion
+   - Unstyled: Minimal shapes (12dp max), linear motion
+
+3. **Component Tokens**:
+   - Theme-specific implementations of component interfaces
+   - Define appearance for cards, badges, progress bars, etc.
+   - Allow per-instance overrides when needed
+
+**Token Delegation Pattern:**
+```kotlin
+// Base provides foundation
+object BaseTokens {
+    object spacing : SpacingTokens { /* 8dp grid */ }
+    object shapes : ShapeTokens { /* standard */ }
+}
+
+// Material delegates spacing, overrides shapes
+object MaterialTokens {
+    val spacing: SpacingTokens = BaseTokens.spacing  // Delegate
+    object shapes : ShapeTokens { /* expressive */ }  // Override
+}
+
+// Unstyled delegates spacing, overrides shapes differently
+object UnstyledTokens {
+    val spacing: SpacingTokens = BaseTokens.spacing  // Delegate
+    object shapes : ShapeTokens { /* minimal */ }     // Override
+}
+```
+
+**Benefits:**
+- Eliminates duplication (spacing defined once)
+- Allows theme customization (shapes vary by theme)
+- Single source of truth for shared values
+- Easy to add new themes (inherit base + customize)
+
+**See also:** [design_tokens.md](design_tokens.md) (to be created in Step 10)
 
 ## Aggregation/Wiring Modules
 - Use wiring modules alongside feature `api` and implementation modules to assemble dependencies and registries without leaking implementation details.
