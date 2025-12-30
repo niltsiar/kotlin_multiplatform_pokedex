@@ -2,7 +2,7 @@
 
 **Created:** December 30, 2025  
 **Last Updated:** December 30, 2025  
-**Status:** In Progress (Step 3 Complete)  
+**Status:** In Progress (Step 5 Complete)  
 **Target:** Material 3 Expressive + Clean Unstyled UI with SwiftUI parity
 
 ## Overview
@@ -43,7 +43,7 @@ Transform the Pokédex app UI with Material 3 Expressive personality and minimal
 - [x] **Step 3:** Configure Google Sans Flex typography ✅ Complete
   - [x] Typography token standardization ✅ Complete
 - [x] **Step 4:** Create shared component abstraction layer ✅ Complete
-- [ ] **Step 5:** Implement motion preference + predictive back
+- [x] **Step 5:** Implement motion preference + predictive back ✅ Complete
 - [ ] **Step 6:** Redesign Material screens
 - [ ] **Step 7:** Redesign Unstyled screens
 - [ ] **Step 8:** Create SwiftUI design system
@@ -51,6 +51,17 @@ Transform the Pokédex app UI with Material 3 Expressive personality and minimal
 - [ ] **Step 10:** Write component guides and documentation
 
 ### Recent Achievements
+
+**Step 5 Completion (December 30, 2025):**
+- ✅ Created motion preference detection with expect/actual pattern
+- ✅ Android: Settings.Global.TRANSITION_ANIMATION_SCALE via AccessibilityManager
+- ✅ iOS: UIAccessibility.isReduceMotionEnabled via cinterop
+- ✅ JVM: Returns false (no standard API)
+- ✅ Created PredictiveBackState sealed class (Idle, Dragging, Settling, Completed)
+- ✅ Created PredictiveBackHandler with scale + translation transforms
+- ✅ Created SharedElementTransition with Material 3 motion timing (400ms enter, 200ms exit)
+- ✅ Updated Pokemon Detail navigation providers to use sharedElementTransition()
+- ✅ All tests passing (84 tests across project)
 
 **Step 4 Completion (December 30, 2025):**
 - ✅ Created component token interfaces (CardTokens, BadgeTokens, ProgressBarTokens)
@@ -791,15 +802,17 @@ Eliminates duplication: Material and Unstyled use same components with different
 
 ---
 
-## Step 5: Implement Motion Preference + Predictive Back
+## Step 5: Implement Motion Preference + Predictive Back ✅ Complete
+
+**Status:** ✅ Complete (December 30, 2025)
 
 ### Objective
 Add system motion preference detection and complex predictive back gesture animations.
 
 ### Tasks
 
-#### 5.1 Create Motion Preference Detection
-- [ ] Create `core/designsystem-core/src/commonMain/kotlin/.../motion/MotionPreference.kt`
+#### 5.1 Create Motion Preference Detection ✅ Complete
+- [x] Create `core/designsystem-core/src/commonMain/kotlin/.../motion/MotionPreference.kt`
   ```kotlin
   package com.minddistrict.multiplatformpoc.core.designsystem.core.motion
   
@@ -812,25 +825,25 @@ Add system motion preference detection and complex predictive back gesture anima
   fun rememberReducedMotion(): Boolean = remember { isReduceMotionEnabled() }
   ```
 
-- [ ] Implement Android actual in `androidMain`
+- [x] Implement Android actual in `androidMain`
   ```kotlin
   // Read Settings.Global.TRANSITION_ANIMATION_SCALE via AccessibilityManager
   ```
 
-- [ ] Implement iOS actual in `iosMain`
+- [x] Implement iOS actual in `iosMain`
   ```kotlin
   // Bridge to UIAccessibility.isReduceMotionEnabled via Objective-C
   ```
 
-- [ ] Implement JVM actual in `jvmMain`
+- [x] Implement JVM actual in `jvmMain`
   ```kotlin
   actual fun isReduceMotionEnabled(): Boolean = false  // No standard API
   ```
 
-#### 5.2 Create Predictive Back Handler
-- [ ] Create `core/navigation/src/commonMain/kotlin/.../PredictiveBackHandler.kt`
+#### 5.2 Create Predictive Back Handler ✅ Complete
+- [x] Create `core/navigation/src/commonMain/kotlin/.../predictiveback/PredictiveBackHandler.kt`
   ```kotlin
-  package com.minddistrict.multiplatformpoc.core.navigation
+  package com.minddistrict.multiplatformpoc.core.navigation.predictiveback
   
   import androidx.activity.compose.BackHandler
   import androidx.compose.runtime.*
@@ -875,17 +888,23 @@ Add system motion preference detection and complex predictive back gesture anima
   }
   ```
 
-#### 5.3 Create Shared Element Transition Specs
-- [ ] Create `core/navigation/src/commonMain/kotlin/.../SharedElementTransition.kt`
+#### 5.3 Create Shared Element Transition Specs ✅ Complete
+- [x] Create `core/navigation/src/commonMain/kotlin/.../transitions/SharedElementTransition.kt`
   ```kotlin
-  package com.minddistrict.multiplatformpoc.core.navigation
+  package com.minddistrict.multiplatformpoc.core.navigation.transitions
   
   import androidx.compose.animation.*
   import androidx.compose.animation.core.tween
+  import androidx.navigation3.ui.NavDisplay
   import com.minddistrict.multiplatformpoc.core.designsystem.core.tokens.BaseTokens
   
-  object SharedElementTransition {
-      val enterTransition: EnterTransition = 
+  /**
+   * Material 3 Expressive shared element transition using emphasized motion curves.
+   * Enter: 400ms with emphasized decelerate (0.05, 0.7, 0.1, 1.0)
+   * Exit: 200ms with emphasized accelerate (0.3, 0.0, 0.8, 0.15)
+   */
+  fun sharedElementTransition(): NavDisplay.Metadata =
+      NavDisplay.transitionSpec {
           slideInHorizontally(
               initialOffsetX = { it },
               animationSpec = tween(
@@ -894,10 +913,31 @@ Add system motion preference detection and complex predictive back gesture anima
               )
           ) + fadeIn(animationSpec = tween(400)) + 
           scaleIn(initialScale = 0.9f, animationSpec = tween(400))
-      
-      val exitTransition: ExitTransition = 
+      } + NavDisplay.popTransitionSpec {
           slideOutHorizontally(
               targetOffsetX = { it },
+              animationSpec = tween(
+                  durationMillis = 200,
+                  easing = BaseTokens.motion.easingEmphasizedAccelerate
+              )
+          ) + fadeOut(animationSpec = tween(200)) +
+          scaleOut(targetScale = 0.9f, animationSpec = tween(200))
+      }
+  ```
+
+#### 5.4 Update Navigation Providers ✅ Complete
+- [x] Update `features/pokemondetail/wiring-ui-material/.../PokemonDetailMaterialNavigationProviders.kt` to use `sharedElementTransition()`
+- [x] Update `features/pokemondetail/wiring-ui-unstyled/.../PokemonDetailUnstyledNavigationProviders.kt` to use `sharedElementTransition()`
+
+### Validation ✅ Passed
+```bash
+./gradlew :composeApp:assembleDebug test --continue  # ✅ Success
+./gradlew :core:designsystem-core:build            # ✅ Success
+./gradlew :core:navigation:build                   # ✅ Success
+```
+
+### Commit ✅ Complete
+Committed as: `feat(motion): add motion preference + predictive back + shared element transitions`
               animationSpec = tween(
                   durationMillis = 200,
                   easing = BaseTokens.motion.easingEmphasizedAccelerate

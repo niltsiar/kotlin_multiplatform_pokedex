@@ -3,13 +3,17 @@ package com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.ui.mater
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.ui.NavDisplay
 import com.minddistrict.multiplatformpoc.core.designsystem.material.MaterialScope
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.MaterialTokens
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
@@ -25,6 +29,7 @@ import org.koin.dsl.navigation3.navigation
  *
  * Uses Koin's Navigation 3 integration to declaratively register the PokemonDetailScreen.
  * Scoped to MaterialScope to separate from Unstyled entries.
+ * Uses Material 3 Expressive motion with emphasized timing curves.
  */
 val pokemonDetailNavigationModule = module {
     scope<MaterialScope> {
@@ -32,21 +37,45 @@ val pokemonDetailNavigationModule = module {
             metadata = NavDisplay.transitionSpec {
                 slideInHorizontally(
                     initialOffsetX = { it },
-                    animationSpec = tween(300),
-                ) + fadeIn(animationSpec = tween(300)) togetherWith
-                    slideOutHorizontally(
-                        targetOffsetX = { -it / 3 },
-                        animationSpec = tween(300),
-                    ) + fadeOut(animationSpec = tween(300))
+                    animationSpec = tween(
+                        durationMillis = MaterialTokens.motion.durationLong,
+                        easing = MaterialTokens.motion.easingEmphasizedDecelerate,
+                    ),
+                ) + fadeIn(
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationLong),
+                ) + scaleIn(
+                    initialScale = 0.9f,
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationLong),
+                ) togetherWith slideOutHorizontally(
+                    targetOffsetX = { -it / 4 },
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationLong),
+                ) + fadeOut(
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationLong),
+                ) + scaleOut(
+                    targetScale = 0.9f,
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationLong),
+                )
             } + NavDisplay.popTransitionSpec {
                 slideInHorizontally(
-                    initialOffsetX = { -it / 3 },
-                    animationSpec = tween(300),
-                ) + fadeIn(animationSpec = tween(300)) togetherWith
-                    slideOutHorizontally(
-                        targetOffsetX = { it },
-                        animationSpec = tween(300),
-                    ) + fadeOut(animationSpec = tween(300))
+                    initialOffsetX = { -it / 4 },
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationShort),
+                ) + fadeIn(
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationShort),
+                ) + scaleIn(
+                    initialScale = 0.9f,
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationShort),
+                ) togetherWith slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(
+                        durationMillis = MaterialTokens.motion.durationShort,
+                        easing = MaterialTokens.motion.easingEmphasizedAccelerate,
+                    ),
+                ) + fadeOut(
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationShort),
+                ) + scaleOut(
+                    targetScale = 0.9f,
+                    animationSpec = tween(durationMillis = MaterialTokens.motion.durationShort),
+                )
             },
         ) { route ->
             val navigator: Navigator = koinInject()
