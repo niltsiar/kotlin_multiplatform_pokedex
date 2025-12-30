@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,9 +25,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import multiplatformpoc.core.designsystem_core.generated.resources.Res
 import multiplatformpoc.core.designsystem_core.generated.resources.ic_arrow_back
 import multiplatformpoc.core.designsystem_core.generated.resources.ic_error_outline
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_refresh
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +39,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
@@ -190,13 +192,28 @@ private fun ErrorState(
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(64.dp)
             )
+            
+            Text(
+                text = "Unable to Load Pokémon",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Button(onClick = onRetry) {
+            
+            FilledTonalButton(onClick = onRetry) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_refresh),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp).padding(end = 8.dp)
+                )
                 Text("Retry")
             }
         }
