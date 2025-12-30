@@ -1,7 +1,8 @@
 # UI Redesign Implementation Plan
 
 **Created:** December 30, 2025  
-**Status:** Not Started  
+**Last Updated:** December 30, 2025  
+**Status:** In Progress (Step 3 Complete)  
 **Target:** Material 3 Expressive + Clean Unstyled UI with SwiftUI parity
 
 ## Overview
@@ -37,9 +38,10 @@ Transform the Pokédex app UI with Material 3 Expressive personality and minimal
 
 ## Progress Tracker
 
-- [x] **Step 1:** Fix NavigationProvider naming + Create core token foundation
-- [x] **Step 2:** Implement theme token systems with delegation
-- [ ] **Step 3:** Configure Google Sans Flex typography
+- [x] **Step 1:** Fix NavigationProvider naming + Create core token foundation ✅ Complete
+- [x] **Step 2:** Implement theme token systems with delegation ✅ Complete
+- [x] **Step 3:** Configure Google Sans Flex typography ✅ Complete
+  - [x] Typography token standardization ✅ Complete
 - [ ] **Step 4:** Create shared component abstraction layer
 - [ ] **Step 5:** Implement motion preference + predictive back
 - [ ] **Step 6:** Redesign Material screens
@@ -48,26 +50,56 @@ Transform the Pokédex app UI with Material 3 Expressive personality and minimal
 - [ ] **Step 9:** Add comprehensive unit tests
 - [ ] **Step 10:** Write component guides and documentation
 
+### Recent Achievements
+
+**Step 3 Completion (December 30, 2025):**
+- ✅ Created Material 3 Expressive typography scale with Google Sans fonts
+- ✅ Implemented @Composable pokemonFontFamily() for platform-specific font loading
+- ✅ Android/Desktop: Google Sans (Regular 400, Medium 500, Bold 700) from composeResources
+- ✅ iOS: FontFamily.Default (San Francisco system font)
+- ✅ Defined 15 custom typography tokens matching Material 3 scale
+- ✅ Replaced all platform textStyles tokens with custom typography tokens
+- ✅ Fixed build errors from import concatenation issues
+- ✅ Typography token standardization complete across both themes
+
 ---
 
-## Step 1: Fix NavigationProvider Naming + Core Token Foundation
+## Step 1: Fix NavigationProvider Naming + Core Token Foundation ✅ Complete
+
+**Status:** ✅ Complete (December 30, 2025)
 
 ### Objective
 Fix file naming collisions and create the foundation for unified token system.
 
 ### Tasks
 
-#### 1.1 Rename NavigationProvider Files
-- [ ] Rename `features/pokemonlist/wiring-ui-material/.../PokemonListNavigationProviders.kt` → `PokemonListMaterialNavigationProviders.kt`
-- [ ] Rename `features/pokemonlist/wiring-ui-unstyled/.../PokemonListNavigationProviders.kt` → `PokemonListUnstyledNavigationProviders.kt`
-- [ ] Rename `features/pokemondetail/wiring-ui-material/.../PokemonDetailNavigationProviders.kt` → `PokemonDetailMaterialNavigationProviders.kt`
-- [ ] Rename `features/pokemondetail/wiring-ui-unstyled/.../PokemonDetailNavigationProviders.kt` → `PokemonDetailUnstyledNavigationProviders.kt`
+#### 1.1 Rename NavigationProvider Files ✅ Complete
+- [x] Rename `features/pokemonlist/wiring-ui-material/.../PokemonListNavigationProviders.kt` → `PokemonListMaterialNavigationProviders.kt`
+- [x] Rename `features/pokemonlist/wiring-ui-unstyled/.../PokemonListNavigationProviders.kt` → `PokemonListUnstyledNavigationProviders.kt`
+- [x] Rename `features/pokemondetail/wiring-ui-material/.../PokemonDetailNavigationProviders.kt` → `PokemonDetailMaterialNavigationProviders.kt`
+- [x] Rename `features/pokemondetail/wiring-ui-unstyled/.../PokemonDetailNavigationProviders.kt` → `PokemonDetailUnstyledNavigationProviders.kt`
 
-#### 1.2 Update Imports
-- [ ] Update `composeApp/src/commonMain/kotlin/.../App.kt` to import renamed files (module variable names stay unchanged)
+#### 1.2 Update Imports ✅ Complete
+- [x] Update `composeApp/src/commonMain/kotlin/.../App.kt` to import renamed files (module variable names stay unchanged)
 
-#### 1.3 Create Core Token Interfaces
-- [ ] Create `core/designsystem-core/src/commonMain/kotlin/.../tokens/ThemeTokens.kt`
+#### 1.3 Create Core Token Interfaces ✅ Complete
+- [x] Created `core/designsystem-core/src/commonMain/kotlin/.../tokens/ThemeTokens.kt`
+- [x] Created `core/designsystem-core/src/commonMain/kotlin/.../tokens/BaseTokens.kt`
+- [x] Implemented 8dp spacing grid system
+- [x] Implemented standard shapes, elevation, and motion tokens
+
+#### 1.4 Update Conventions Documentation ✅ Complete
+- [x] Updated `docs/tech/conventions.md` with NavigationProvider naming pattern
+- [x] Added token system architecture section to conventions
+
+### Validation ✅ Passed
+```bash
+./gradlew :composeApp:assembleDebug --continue  # ✅ Success
+./gradlew :core:designsystem-core:build         # ✅ Success
+```
+
+### Commit ✅ Complete
+Committed as: `refactor(navigation): fix NavigationProvider naming + create token foundation`
   ```kotlin
   package com.minddistrict.multiplatformpoc.core.designsystem.core.tokens
   
@@ -193,15 +225,56 @@ Establishes foundation for unified token system"
 
 ---
 
-## Step 2: Implement Theme Token Systems with Delegation
+## Step 2: Implement Theme Token Systems with Delegation ✅ Complete
+
+**Status:** ✅ Complete (December 30, 2025)
 
 ### Objective
 Create Material and Unstyled token systems that delegate to base tokens and replace hardcoded values.
 
 ### Tasks
 
-#### 2.1 Create Material Tokens
-- [ ] Create `core/designsystem-material/src/commonMain/kotlin/.../tokens/MaterialTokens.kt`
+#### 2.1 Create Material Tokens ✅ Complete
+- [x] Created `core/designsystem-material/src/commonMain/kotlin/.../tokens/MaterialTokens.kt`
+- [x] Implemented Material 3 Expressive shapes (28dp max)
+- [x] Implemented emphasized motion with decelerate/accelerate easing
+- [x] Delegated spacing to BaseTokens (8dp grid)
+- [x] Integrated tokens via CompositionLocal pattern (LocalMaterialTokens)
+- [x] Created MaterialTheme.tokens extension property
+
+#### 2.2 Create Unstyled Tokens ✅ Complete
+- [x] Created `core/designsystem-unstyled/src/commonMain/kotlin/.../tokens/UnstyledTokens.kt`
+- [x] Implemented minimal shapes (12dp max)
+- [x] Implemented flat elevation (4dp max)
+- [x] Implemented linear motion (standard easing only)
+- [x] Delegated spacing to BaseTokens (8dp grid)
+- [x] Integrated tokens via bracket notation pattern (Theme[tokens][value])
+- [x] Exposed motion tokens (duration + easing)
+
+#### 2.3 Replace Hardcoded Values in Material Screens ✅ Complete
+- [x] Refactored `features/pokemonlist/ui-material/.../PokemonListScreenMaterial.kt`
+- [x] Refactored `features/pokemondetail/ui-material/.../PokemonDetailScreenMaterial.kt`
+- [x] Replaced hardcoded spacing with MaterialTheme.tokens references
+- [x] Replaced hardcoded shapes with MaterialTheme.shapes references
+
+#### 2.4 Unstyled Theme Integration ✅ Complete
+- [x] Exposed shapes, elevation, motion properties in Unstyled theme
+- [x] Created custom shape tokens (shapeExtraSmall, shapeSmall, shapeMedium, shapeLarge, shapeExtraLarge)
+- [x] Fixed shape token mismatch (replaced platform roundedMedium with custom shapeMedium)
+
+### Validation ✅ Passed
+```bash
+./gradlew :core:designsystem-material:build      # ✅ Success
+./gradlew :core:designsystem-unstyled:build      # ✅ Success
+./gradlew :composeApp:assembleDebug              # ✅ Success
+```
+
+### Commits ✅ Complete
+- `feat(tokens): implement Material and Unstyled token systems with delegation`
+- `refactor(tokens): integrate tokens via Material CompositionLocal pattern`
+- `refactor(tokens): integrate tokens via Unstyled bracket notation pattern`
+- `fix(tokens): expose motion tokens in Unstyled theme`
+- `fix(tokens): replace platform shape tokens with custom tokens`
   ```kotlin
   package com.minddistrict.multiplatformpoc.core.designsystem.material.tokens
   
@@ -326,55 +399,70 @@ Token delegation eliminates duplication while allowing customization"
 
 ---
 
-## Step 3: Configure Google Sans Flex Typography
+## Step 3: Configure Google Sans Flex Typography ✅ Complete
+
+**Status:** ✅ Complete (December 30, 2025)
 
 ### Objective
 Set up Google Sans Flex variable font for Android/Desktop and San Francisco for iOS.
 
 ### Tasks
 
-#### 3.1 Add Font Resources
-- [ ] Download Google Sans Flex variable font from Google Fonts
-- [ ] Add `google_sans_flex_variable.ttf` to `core/designsystem-material/src/commonMain/composeResources/font/`
+#### 3.1 Add Font Resources ✅ Complete
+- [x] Downloaded Google Sans fonts from Google Fonts
+- [x] Added `GoogleSans-Regular.ttf`, `GoogleSans-Medium.ttf`, `GoogleSans-Bold.ttf` to `core/designsystem-material/src/commonMain/composeResources/font/`
+- Note: Used static fonts (Regular 400, Medium 500, Bold 700) instead of variable font for better compatibility
 
-#### 3.2 Create Platform Font Abstraction
-- [ ] Create `core/designsystem-material/src/commonMain/kotlin/.../typography/PlatformFontFamily.kt`
-  ```kotlin
-  package com.minddistrict.multiplatformpoc.core.designsystem.material.typography
-  
-  import androidx.compose.ui.text.font.FontFamily
-  
-  expect fun googleSansFlex(): FontFamily
-  ```
+#### 3.2 Create Platform Font Abstraction ✅ Complete
+- [x] Created `core/designsystem-material/src/commonMain/kotlin/.../theme/Font.kt` with `expect fun pokemonFontFamily()`
+- [x] Created `core/designsystem-material/src/androidMain/kotlin/.../theme/Font.kt` (Android implementation)
+- [x] Created `core/designsystem-material/src/jvmMain/kotlin/.../theme/Font.kt` (Desktop implementation)
+- [x] Created `core/designsystem-material/src/iosMain/kotlin/.../theme/Font.kt` (iOS implementation using FontFamily.Default)
+- [x] Used `@Composable` pattern with `org.jetbrains.compose.resources.Font` for Res resources
+- Note: Naming changed from `googleSansFlex()` to `pokemonFontFamily()` for better semantics
 
-- [ ] Create `core/designsystem-material/src/androidMain/kotlin/.../typography/PlatformFontFamily.android.kt`
-  ```kotlin
-  package com.minddistrict.multiplatformpoc.core.designsystem.material.typography
-  
-  import androidx.compose.ui.text.font.Font
-  import androidx.compose.ui.text.font.FontFamily
-  import com.minddistrict.multiplatformpoc.core.designsystem.material.Res
-  
-  actual fun googleSansFlex(): FontFamily = FontFamily(
-      Font(Res.font.google_sans_flex_variable)
-  )
-  ```
+#### 3.3 Update Material Typography ✅ Complete
+- [x] Created `core/designsystem-material/src/commonMain/kotlin/.../theme/Typography.kt`
+- [x] Implemented Material 3 Expressive typography scale (15 text styles)
+- [x] Applied `pokemonFontFamily()` to all text styles
+- [x] Font weights: Regular (400), Medium (500), Bold (700)
+- [x] Line heights and letter spacing match Material 3 spec
 
-- [ ] Create `core/designsystem-material/src/jvmMain/kotlin/.../typography/PlatformFontFamily.jvm.kt` (same as Android)
+#### 3.4 Create Unstyled Typography ✅ Complete
+- [x] Created `core/designsystem-unstyled/src/commonMain/kotlin/.../tokens/UnstyledTokens.kt` typography object
+- [x] Implemented 15 text styles matching Material 3 scale structure
+- [x] Uses FontFamily.Default (no custom fonts for minimal theme)
+- [x] Tighter letter spacing and max FontWeight.Medium for minimal aesthetic
 
-- [ ] Create `core/designsystem-material/src/iosMain/kotlin/.../typography/PlatformFontFamily.ios.kt`
-  ```kotlin
-  package com.minddistrict.multiplatformpoc.core.designsystem.material.typography
-  
-  import androidx.compose.ui.text.font.FontFamily
-  
-  actual fun googleSansFlex(): FontFamily = FontFamily.Default  // San Francisco
-  ```
+#### 3.5 Typography Token Standardization ✅ Complete
+- [x] Exposed typography via Material CompositionLocal (MaterialTheme.typography)
+- [x] Exposed typography via Unstyled bracket notation (Theme[typography][tokenName])
+- [x] Created 15 custom typography tokens: displayLarge/Medium/Small, headlineLarge/Medium/Small, titleLarge/Medium/Small, bodyLarge/Medium/Small, labelLarge/Medium/Small
+- [x] Replaced all platform textStyles tokens in Unstyled screens:
+  - text1 → labelSmall
+  - text2 → bodySmall
+  - text3 → bodyMedium
+  - text5 → labelLarge
+  - text6 → labelMedium
+  - heading2 → displaySmall
+  - heading3 → headlineMedium
+  - heading4 → titleLarge
+- [x] Fixed import concatenation issues from sed replacements
+- [x] Verified Material screens already using MaterialTheme.typography correctly
 
-#### 3.3 Update Material Typography
-- [ ] Update `core/designsystem-material/src/commonMain/kotlin/.../MaterialTypography.kt`
-  - Import `googleSansFlex()`
-  - Apply to all text styles in Material 3 Expressive scale
+### Validation ✅ Passed
+```bash
+./gradlew :core:designsystem-material:build           # ✅ Success
+./gradlew :features:pokemonlist:ui-unstyled:build     # ✅ Success
+./gradlew :features:pokemondetail:ui-unstyled:build   # ✅ Success
+./gradlew :composeApp:assembleDebug                   # ✅ Success
+```
+
+### Commits ✅ Complete
+- `feat(typography): add Google Sans fonts and Material 3 Expressive scale`
+- `refactor(typography): create @Composable pokemonFontFamily() for platform fonts`
+- `feat(typography): add Unstyled typography tokens with minimal aesthetic`
+- `refactor(unstyled): replace platform typography tokens with custom tokens`
   - Verify scale: Display (57/45/36sp), Headline (32/28/24sp), Title (22/16/14sp), Body (16/14/12sp), Label (14/12/11sp)
 
 ### Validation
