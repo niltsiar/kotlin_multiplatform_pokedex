@@ -37,6 +37,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.PokemonDetail
