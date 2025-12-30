@@ -262,6 +262,52 @@ beforeTest {
 - [PokemonDetailViewModel.kt](../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) (delegate pattern)
 - [DI Patterns Guide](patterns/di_patterns.md#savedstatehandle-in-viewmodels)
 
+## Library Resources Quick Reference
+
+**Problem:** Compose resources in library modules (like `:core:designsystem-core`) are NOT automatically accessible.
+
+**Solution (3 steps in library module's build.gradle.kts):**
+
+```kotlin
+// 1. Add dependency
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.compose.components.resources)  // CRITICAL!
+        }
+    }
+}
+
+// 2. Enable public Res class
+compose.resources {
+    publicResClass = true  // Default internal won't work!
+}
+
+// 3. Android namespace determines package
+android {
+    namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"
+}
+```
+
+**Generated package name:** Namespace with dots → underscores:
+- Input: `com.minddistrict.multiplatformpoc.core.designsystem.core`
+- Output: `multiplatformpoc.core.designsystem_core.generated.resources`
+
+**Usage:**
+```kotlin
+import multiplatformpoc.core.designsystem_core.generated.resources.Res
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_icon_name
+import org.jetbrains.compose.resources.painterResource
+
+Icon(
+    painter = painterResource(Res.drawable.ic_icon_name),
+    contentDescription = "Description",
+    tint = MaterialTheme.colorScheme.onSurface
+)
+```
+
+**See:** [material_icons_strategy.md](tech/material_icons_strategy.md) for complete guide
+
 ## Module Structure Reference
 
 ### Current Modules

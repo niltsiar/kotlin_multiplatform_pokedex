@@ -2,6 +2,8 @@
 
 **Style:** Rounded Filled (default weight)
 
+> 📖 **Complete Documentation:** See [docs/tech/material_icons_strategy.md](docs/tech/material_icons_strategy.md) for implementation patterns, troubleshooting, and library resource configuration.
+
 ## Steps
 
 1. Go to: https://fonts.google.com/icons
