@@ -53,7 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.MaterialTokens
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTheme
 import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.PokemonTypeColors
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Ability
@@ -165,8 +165,8 @@ private fun ErrorContent(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(MaterialTokens.spacing.medium),
-            modifier = Modifier.padding(MaterialTokens.spacing.xl)
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.medium),
+            modifier = Modifier.padding(MaterialTheme.tokens.spacing.xl)
         ) {
             Text(
                 text = "⚠️",
@@ -231,7 +231,7 @@ private fun PokemonDetailBody(
             TypeBadgesSection(
                 types = pokemon.types,
                 isDark = isDark,
-                modifier = Modifier.padding(horizontal = MaterialTokens.spacing.medium, vertical = MaterialTokens.spacing.xs)
+                modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.medium, vertical = MaterialTheme.tokens.spacing.xs)
             )
         }
         
@@ -241,7 +241,7 @@ private fun PokemonDetailBody(
                 height = pokemon.height,
                 weight = pokemon.weight,
                 baseExperience = pokemon.baseExperience,
-                modifier = Modifier.padding(horizontal = MaterialTokens.spacing.medium, vertical = MaterialTokens.spacing.xs)
+                modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.medium, vertical = MaterialTheme.tokens.spacing.xs)
             )
         }
         
@@ -249,7 +249,7 @@ private fun PokemonDetailBody(
         item {
             AbilitiesSection(
                 abilities = pokemon.abilities,
-                modifier = Modifier.padding(horizontal = MaterialTokens.spacing.medium, vertical = MaterialTokens.spacing.xs)
+                modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.medium, vertical = MaterialTheme.tokens.spacing.xs)
             )
         }
         
@@ -257,13 +257,13 @@ private fun PokemonDetailBody(
         item {
             BaseStatsSection(
                 stats = pokemon.stats,
-                modifier = Modifier.padding(horizontal = MaterialTokens.spacing.medium, vertical = MaterialTokens.spacing.xs)
+                modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.medium, vertical = MaterialTheme.tokens.spacing.xs)
             )
         }
         
         // Bottom spacing
         item {
-            Spacer(modifier = Modifier.height(MaterialTokens.spacing.xl))
+            Spacer(modifier = Modifier.height(MaterialTheme.tokens.spacing.xl))
         }
     }
 }
@@ -294,14 +294,14 @@ private fun HeroSection(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(MaterialTokens.spacing.xl)
+                .padding(MaterialTheme.tokens.spacing.xl)
         ) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = name,
                 modifier = Modifier.size(160.dp)
             )
-            Spacer(modifier = Modifier.height(MaterialTokens.spacing.medium))
+            Spacer(modifier = Modifier.height(MaterialTheme.tokens.spacing.medium))
             Text(
                 text = name,
                 style = MaterialTheme.typography.displaySmall,
@@ -324,7 +324,7 @@ private fun TypeBadgesSection(
     modifier: Modifier = Modifier
 ) {
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(MaterialTokens.spacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.xs),
         modifier = modifier
     ) {
         types.forEach { type ->
@@ -343,7 +343,7 @@ private fun TypeBadge(
     val contentColor = PokemonTypeColors.getContent(type, isDark)
     
     Surface(
-        shape = MaterialTokens.shapes.medium,
+        shape = MaterialTheme.tokens.shapes.medium,
         color = backgroundColor,
         modifier = modifier
     ) {
@@ -351,7 +351,7 @@ private fun TypeBadge(
             text = type.replaceFirstChar { it.titlecase() },
             color = contentColor,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(horizontal = MaterialTokens.spacing.medium, vertical = 6.dp)
+            modifier = Modifier.padding(horizontal = MaterialTheme.tokens.spacing.medium, vertical = 6.dp)
         )
     }
 }
@@ -364,7 +364,7 @@ private fun PhysicalInfoSection(
     modifier: Modifier = Modifier
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(MaterialTokens.spacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.xs),
         modifier = modifier.fillMaxWidth()
     ) {
         InfoCard(
