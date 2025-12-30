@@ -1,9 +1,21 @@
 # Base Agent Prompt (Shared Core)
 
-Last Updated: December 20, 2025
+Last Updated: December 30, 2025
 
 Purpose: Single source of truth for shared rules and workflows across all agent modes (AGENTS.md, Copilot, Junie, and
 role prompts). Role prompts MUST reference this file and only add role-specific deltas.
+
+## ⚠️ CRITICAL: Message Length Warning
+
+**KEEP RESPONSES SHORT. TOKEN BUDGETS ARE LIMITED.**
+
+**Rules for ALL agents:**
+- ✅ **Link to docs**, don't paste them
+- ✅ **Be concise** - 2-3 sentences max
+- ✅ **Use bullet points**, not paragraphs
+- ❌ **NO verbose explanations**
+- ❌ **NO duplicate information**
+- ❌ **NO long code blocks** (use file paths + line numbers)
 
 ## How to Use
 

@@ -25,7 +25,10 @@ This document defines the app's icon strategy following Material 3 v1.4.0's depr
 
 **Family:** Material Symbols - Rounded  
 **Weight:** Filled (default)  
+**Viewport:** 960x960 (Material Symbols format)
 **Rationale:** Provides friendly, approachable aesthetic with solid filled shapes matching Pokémon brand personality and modern Material 3 design.
+
+**Cross-Platform Adjustments:** Material Symbols use 960x960 viewport. If rendering issues occur in Compose Multiplatform, we convert individual icons to 24x24 viewport (e.g., ic_arrow_back). Most icons work fine with 960x960 viewport when using hex color values instead of resource references.
 
 ### Icon Source
 

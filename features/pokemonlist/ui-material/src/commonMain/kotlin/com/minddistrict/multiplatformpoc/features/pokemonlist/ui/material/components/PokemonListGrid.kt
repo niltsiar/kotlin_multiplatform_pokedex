@@ -1,7 +1,6 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.ui.material.components
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.WindowInsets
@@ -81,6 +80,7 @@ fun PokemonListGrid(
         ) { index, pokemon ->
             val alpha = remember { Animatable(0f) }
             val scale = remember { Animatable(0.92f) }
+            val motionTokens = MaterialTheme.tokens.motion
 
             LaunchedEffect(Unit) {
                 // Only stagger first 8 items (visible viewport)
@@ -91,17 +91,17 @@ fun PokemonListGrid(
                 alpha.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(
-                        durationMillis = 250,
+                        durationMillis = motionTokens.durationMedium,
                         delayMillis = delay.toInt(),
-                        easing = EaseOutCubic
+                        easing = motionTokens.easingEmphasizedDecelerate
                     ),
                 )
                 scale.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(
-                        durationMillis = 250,
+                        durationMillis = motionTokens.durationMedium,
                         delayMillis = delay.toInt(),
-                        easing = EaseOutCubic
+                        easing = motionTokens.easingEmphasizedDecelerate
                     ),
                 )
             }

@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.minddistrict.multiplatformpoc.core.designsystem.core.components.AnimatedStatBar
 import com.minddistrict.multiplatformpoc.core.designsystem.core.motion.rememberReducedMotion
-import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.MaterialComponentTokens
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.componentTokens
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.Stat
 import kotlinx.collections.immutable.ImmutableList
@@ -93,12 +93,17 @@ private fun StatRow(
     modifier: Modifier = Modifier
 ) {
     val alpha = remember { Animatable(if (reducedMotion) 1f else 0f) }
+    val motionTokens = MaterialTheme.tokens.motion
     
     LaunchedEffect(Unit) {
         if (!reducedMotion) {
             alpha.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 300, delayMillis = animationDelay)
+                animationSpec = tween(
+                    durationMillis = motionTokens.durationMedium,
+                    delayMillis = animationDelay,
+                    easing = motionTokens.easingEmphasizedDecelerate
+                )
             )
         }
     }
@@ -121,7 +126,7 @@ private fun StatRow(
             AnimatedStatBar(
                 value = stat.baseStat,
                 maxValue = 255,
-                tokens = MaterialComponentTokens.progressBar(),
+                tokens = MaterialTheme.componentTokens.progressBar(),
                 reducedMotion = reducedMotion,
                 modifier = Modifier
                     .weight(1f)

@@ -4,7 +4,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.DefaultMaterialComponentTokens
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.DefaultMaterialTokens
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.LocalMaterialComponentTokens
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.LocalMaterialTokens
 
 /**
@@ -33,8 +35,11 @@ fun PokemonTheme(
     
     val typography = rememberPokemonTypography()
     
-    // Provide Material design tokens through CompositionLocal
-    CompositionLocalProvider(LocalMaterialTokens provides DefaultMaterialTokens()) {
+    // Provide Material design tokens and component tokens through CompositionLocal
+    CompositionLocalProvider(
+        LocalMaterialTokens provides DefaultMaterialTokens(),
+        LocalMaterialComponentTokens provides DefaultMaterialComponentTokens()
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = typography,
