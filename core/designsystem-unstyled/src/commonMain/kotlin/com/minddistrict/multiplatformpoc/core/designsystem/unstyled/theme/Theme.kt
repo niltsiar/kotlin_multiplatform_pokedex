@@ -104,6 +104,12 @@ val elevationLevel3 = ThemeToken<Dp>("level3")
 val elevationLevel4 = ThemeToken<Dp>("level4")
 val elevationLevel5 = ThemeToken<Dp>("level5")
 
+// Custom Theme Properties for Motion (durations)
+val motionDuration = ThemeProperty<Int>("motionDuration")
+val durationShort = ThemeToken<Int>("short")
+val durationMedium = ThemeToken<Int>("medium")
+val durationLong = ThemeToken<Int>("long")
+
 /**
  * Platform Theme with Native Tokens + Custom Properties + Dynamic Theming
  * 
@@ -208,5 +214,12 @@ val UnstyledTheme = buildPlatformTheme(
         elevationLevel3 to UnstyledTokens.elevation.level3,
         elevationLevel4 to UnstyledTokens.elevation.level4,
         elevationLevel5 to UnstyledTokens.elevation.level5
+    )
+    
+    // Custom motion duration tokens (linear motion from UnstyledTokens)
+    properties[motionDuration] = mapOf(
+        durationShort to UnstyledTokens.motion.durationShort,
+        durationMedium to UnstyledTokens.motion.durationMedium,
+        durationLong to UnstyledTokens.motion.durationLong
     )
 }
