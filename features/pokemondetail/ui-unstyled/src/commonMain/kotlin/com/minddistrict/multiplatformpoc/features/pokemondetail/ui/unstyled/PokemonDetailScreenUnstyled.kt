@@ -57,7 +57,6 @@ import com.composeunstyled.platformtheme.heading4
 import com.composeunstyled.platformtheme.indications
 import com.composeunstyled.platformtheme.interactiveSize
 import com.composeunstyled.platformtheme.interactiveSizes
-import com.composeunstyled.platformtheme.roundedMedium
 import com.composeunstyled.platformtheme.shapes
 import com.composeunstyled.platformtheme.sizeDefault
 import com.composeunstyled.platformtheme.text1
@@ -74,6 +73,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.backgr
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.colors
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.error
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.onSurface
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.shapeMedium
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacing
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingLg
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.spacingMd
@@ -142,12 +142,12 @@ private fun PokemonDetailContentUnstyled(
                 modifier = Modifier
                     .size(40.dp)
                     .interactiveSize(Theme[interactiveSizes][sizeDefault])  // Accessibility-friendly touch target
-                    .clip(Theme[shapes][roundedMedium])
+                    .clip(Theme[shapes][shapeMedium])
                     .background(Theme[colors][surface])
                     .border(
                         width = 1.dp,
                         color = Theme[colors][onSurface].copy(alpha = 0.2f),
-                        shape = Theme[shapes][roundedMedium],
+                        shape = Theme[shapes][shapeMedium],
                     )
                     .clickable(
                         onClick = onBackClick,
@@ -275,7 +275,7 @@ private fun ErrorContentUnstyled(
             )
             Box(
                 modifier = Modifier
-                    .clip(Theme[shapes][roundedMedium])
+                    .clip(Theme[shapes][shapeMedium])
                     .background(Theme[colors][error])
                     .clickable(
                         onClick = onRetry,
@@ -521,15 +521,15 @@ private fun InfoCardUnstyled(
         modifier = modifier
             .shadow(
                 elevation = Elevation.low,
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
                 clip = false,
             )
-            .clip(Theme[shapes][roundedMedium])
+            .clip(Theme[shapes][shapeMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.1f),
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
             ),
     ) {
         Column(
@@ -569,15 +569,15 @@ private fun AbilitiesSectionUnstyled(
             .fillMaxWidth()
             .shadow(
                 elevation = Elevation.low,
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
                 clip = false,
             )
-            .clip(Theme[shapes][roundedMedium])
+            .clip(Theme[shapes][shapeMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.1f),
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
             ),
     ) {
         Column(
@@ -642,15 +642,15 @@ private fun BaseStatsSectionUnstyled(
             .fillMaxWidth()
             .shadow(
                 elevation = Elevation.low,
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
                 clip = false,
             )
-            .clip(Theme[shapes][roundedMedium])
+            .clip(Theme[shapes][shapeMedium])
             .background(Theme[colors][surface])
             .border(
                 width = 1.dp,
                 color = Theme[colors][onSurface].copy(alpha = 0.1f),
-                shape = Theme[shapes][roundedMedium],
+                shape = Theme[shapes][shapeMedium],
             ),
     ) {
         Column(
