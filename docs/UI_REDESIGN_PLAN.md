@@ -37,7 +37,7 @@ Transform the Pokédex app UI with Material 3 Expressive personality and minimal
 
 ## Progress Tracker
 
-- [ ] **Step 1:** Fix NavigationProvider naming + Create core token foundation
+- [x] **Step 1:** Fix NavigationProvider naming + Create core token foundation
 - [ ] **Step 2:** Implement theme token systems with delegation
 - [ ] **Step 3:** Configure Google Sans Flex typography
 - [ ] **Step 4:** Create shared component abstraction layer
