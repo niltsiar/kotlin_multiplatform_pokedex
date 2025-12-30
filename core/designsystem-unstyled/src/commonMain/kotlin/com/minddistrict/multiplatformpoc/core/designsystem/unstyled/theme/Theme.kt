@@ -2,6 +2,7 @@ package com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -11,7 +12,7 @@ import com.composeunstyled.platformtheme.WebFontOptions
 import com.composeunstyled.platformtheme.buildPlatformTheme
 import com.composeunstyled.theme.ThemeProperty
 import com.composeunstyled.theme.ThemeToken
-import com.minddistrict.multiplatformpoc.core.designsystem.core.Spacing
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.tokens.UnstyledTokens
 
 /**
  * Unstyled Theme System using Compose Unstyled Platform Theme
@@ -85,6 +86,23 @@ val spacingLg = ThemeToken<Dp>("lg")
 val spacingXl = ThemeToken<Dp>("xl")
 val spacingXxl = ThemeToken<Dp>("xxl")
 val spacingXxxl = ThemeToken<Dp>("xxxl")
+
+// Custom Theme Properties for Shapes
+val shapes = ThemeProperty<Shape>("shapes")
+val shapeExtraSmall = ThemeToken<Shape>("extraSmall")
+val shapeSmall = ThemeToken<Shape>("small")
+val shapeMedium = ThemeToken<Shape>("medium")
+val shapeLarge = ThemeToken<Shape>("large")
+val shapeExtraLarge = ThemeToken<Shape>("extraLarge")
+
+// Custom Theme Properties for Elevation
+val elevation = ThemeProperty<Dp>("elevation")
+val elevationLevel0 = ThemeToken<Dp>("level0")
+val elevationLevel1 = ThemeToken<Dp>("level1")
+val elevationLevel2 = ThemeToken<Dp>("level2")
+val elevationLevel3 = ThemeToken<Dp>("level3")
+val elevationLevel4 = ThemeToken<Dp>("level4")
+val elevationLevel5 = ThemeToken<Dp>("level5")
 
 /**
  * Platform Theme with Native Tokens + Custom Properties + Dynamic Theming
@@ -160,16 +178,35 @@ val UnstyledTheme = buildPlatformTheme(
         )
     }
     
-    // Custom spacing tokens (shared from designsystem-core)
+    // Custom spacing tokens (from UnstyledTokens → BaseTokens 8dp grid)
     properties[spacing] = mapOf(
-        spacingXxxs to Spacing.xxxs,
-        spacingXxs to Spacing.xxs,
-        spacingXs to Spacing.xs,
-        spacingSm to Spacing.sm,
-        spacingMd to Spacing.md,
-        spacingLg to Spacing.lg,
-        spacingXl to Spacing.xl,
-        spacingXxl to Spacing.xxl,
-        spacingXxxl to Spacing.xxxl
+        spacingXxxs to UnstyledTokens.spacing.xxxs,
+        spacingXxs to UnstyledTokens.spacing.xxs,
+        spacingXs to UnstyledTokens.spacing.xs,
+        spacingSm to UnstyledTokens.spacing.small,
+        spacingMd to UnstyledTokens.spacing.medium,
+        spacingLg to UnstyledTokens.spacing.large,
+        spacingXl to UnstyledTokens.spacing.xl,
+        spacingXxl to UnstyledTokens.spacing.xxl,
+        spacingXxxl to UnstyledTokens.spacing.xxxl
+    )
+    
+    // Custom shape tokens (minimal corner radii from UnstyledTokens)
+    properties[shapes] = mapOf(
+        shapeExtraSmall to UnstyledTokens.shapes.extraSmall,
+        shapeSmall to UnstyledTokens.shapes.small,
+        shapeMedium to UnstyledTokens.shapes.medium,
+        shapeLarge to UnstyledTokens.shapes.large,
+        shapeExtraLarge to UnstyledTokens.shapes.extraLarge
+    )
+    
+    // Custom elevation tokens (flat elevation from UnstyledTokens)
+    properties[elevation] = mapOf(
+        elevationLevel0 to UnstyledTokens.elevation.level0,
+        elevationLevel1 to UnstyledTokens.elevation.level1,
+        elevationLevel2 to UnstyledTokens.elevation.level2,
+        elevationLevel3 to UnstyledTokens.elevation.level3,
+        elevationLevel4 to UnstyledTokens.elevation.level4,
+        elevationLevel5 to UnstyledTokens.elevation.level5
     )
 }

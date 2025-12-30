@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.MaterialTokens
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.collectLatest
@@ -118,10 +118,10 @@ private fun PokemonListContent(
                 columns = GridCells.Fixed(columns),
                 state = gridState,
                 contentPadding = WindowInsets.safeDrawing
-                    .add(WindowInsets(left = MaterialTokens.spacing.medium, top = MaterialTokens.spacing.medium, right = MaterialTokens.spacing.medium, bottom = MaterialTokens.spacing.medium))
+                    .add(WindowInsets(left = MaterialTheme.tokens.spacing.medium, top = MaterialTheme.tokens.spacing.medium, right = MaterialTheme.tokens.spacing.medium, bottom = MaterialTheme.tokens.spacing.medium))
                     .asPaddingValues(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTokens.spacing.medium),
-                verticalArrangement = Arrangement.spacedBy(MaterialTokens.spacing.medium),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.tokens.spacing.medium),
                 modifier = modifier.fillMaxSize()
             ) {
                 itemsIndexed(
@@ -146,7 +146,7 @@ private fun PokemonListContent(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(MaterialTokens.spacing.medium),
+                                .padding(MaterialTheme.tokens.spacing.medium),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator()
@@ -173,7 +173,7 @@ private fun PokemonCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(MaterialTokens.spacing.xs),
+                .padding(MaterialTheme.tokens.spacing.xs),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -182,7 +182,7 @@ private fun PokemonCard(
                 contentDescription = pokemon.name,
                 modifier = Modifier
                     .size(96.dp)
-                    .padding(MaterialTokens.spacing.xs)
+                    .padding(MaterialTheme.tokens.spacing.xs)
             )
             
             Text(

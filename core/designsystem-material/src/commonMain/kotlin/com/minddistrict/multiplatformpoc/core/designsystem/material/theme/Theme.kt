@@ -3,6 +3,9 @@ package com.minddistrict.multiplatformpoc.core.designsystem.material.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.DefaultMaterialTokens
+import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.LocalMaterialTokens
 
 /**
  * Pokemon theme wrapper that applies Material 3 Expressive design system.
@@ -30,9 +33,12 @@ fun PokemonTheme(
     
     val typography = rememberPokemonTypography()
     
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = typography,
-        content = content
-    )
+    // Provide Material design tokens through CompositionLocal
+    CompositionLocalProvider(LocalMaterialTokens provides DefaultMaterialTokens()) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = typography,
+            content = content
+        )
+    }
 }
