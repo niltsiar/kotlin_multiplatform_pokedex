@@ -1,8 +1,17 @@
 # Quick Reference Guide
 
-Last Updated: December 20, 2025
+Last Updated: December 30, 2025
 
 > Fast lookup for commands, tables, API references, and common patterns.
+
+## 🎨 Icon Implementation Knowledge Base
+
+**NEW: Complete icon implementation guide** - [ICON_KNOWLEDGE_BASE.md](ICON_KNOWLEDGE_BASE.md)
+- Material 3 v1.4.0 icon strategy (Vector Drawable XML)
+- Library resource configuration patterns
+- Troubleshooting guide for "Unresolved reference 'generated'" errors
+- Copy-paste ready implementation examples
+- Current icon inventory (✅ implemented + ⏳ deferred)
 
 ## Agent Selector (Quick)
 
