@@ -54,9 +54,9 @@ fun PokemonListCard(
     
     val elevation by animateDpAsState(
         targetValue = when {
-            isPressed -> 1.dp
-            isHovered -> 6.dp
-            else -> 2.dp
+            isPressed -> MaterialTheme.tokens.elevation.level1
+            isHovered -> MaterialTheme.tokens.elevation.level3
+            else -> MaterialTheme.tokens.elevation.level2
         },
         animationSpec = tween(durationMillis = MaterialTheme.tokens.motion.durationShort),
         label = "cardElevation"
