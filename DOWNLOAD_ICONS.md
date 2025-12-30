@@ -22,13 +22,13 @@
 
 5. Move all 5 files to:
    ```
-   composeApp/src/commonMain/composeResources/drawable/
+   core/designsystem-core/src/commonMain/composeResources/drawable/
    ```
 
 ## Verify
 
 ```bash
-ls composeApp/src/commonMain/composeResources/drawable/ic_*.xml
+ls core/designsystem-core/src/commonMain/composeResources/drawable/ic_*.xml
 ```
 
 Should show 5 files.

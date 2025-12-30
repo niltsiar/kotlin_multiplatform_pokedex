@@ -32,7 +32,7 @@ This document defines the app's icon strategy following Material 3 v1.4.0's depr
 **Primary:** [Google Fonts Material Symbols](https://fonts.google.com/icons)
 - Download Vector Drawable XML from "Android" tab
 - Select "Rounded" family + "Filled" weight (default)
-- Save to `composeApp/src/commonMain/composeResources/drawable/`
+- Save to `core/designsystem-core/src/commonMain/composeResources/drawable/`
 
 **Alternative:** [Composables.com Material Symbols](https://composables.com/icons/icon-libraries/material-symbols)
 - Browse searchable icon catalog (select Rounded Filled style)
