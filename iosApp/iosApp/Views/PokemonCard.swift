@@ -21,6 +21,7 @@ import Shared
  * ```
  */
 struct PokemonCard: View {
+    @Environment(\.pokemonTheme) var theme
     let pokemon: Pokemon
     let onTap: () -> Void
     
@@ -30,7 +31,7 @@ struct PokemonCard: View {
         Button(action: {
             onTap()
         }) {
-            VStack(spacing: 8) {
+            VStack(spacing: theme.spacing.xs) {
                 // Pokemon sprite image
                 AsyncImage(url: URL(string: pokemon.imageUrl)) { phase in
                     switch phase {
@@ -61,18 +62,18 @@ struct PokemonCard: View {
                 
                 // Pokemon name (title case)
                 Text(pokemon.name.capitalized)
-                    .font(.headline)
+                    .font(theme.typography.headline)
                     .foregroundColor(.primary)
                     .lineLimit(1)
             }
-            .padding(12)
-            .background(Color(UIColor.systemBackground))
-            .cornerRadius(12)
+            .padding(theme.spacing.sm)
+            .background(theme.colors.surface)
+            .cornerRadius(theme.shapes.xl)
             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        .animation(theme.motion.spring, value: isPressed)
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in
