@@ -29,7 +29,7 @@ struct ErrorStateView: View {
             
             Button(action: onRetry) {
                 Text("Retry")
-                    .font(theme.typography.button)
+                    .font(theme.typography.label)
                     .foregroundColor(.white)
                     .padding(.horizontal, theme.spacing.xl)
                     .padding(.vertical, theme.spacing.sm)
