@@ -20,9 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.minddistrict.multiplatformpoc.core.designsystem.material.tokens.tokens
 import multiplatformpoc.core.designsystem_core.generated.resources.Res
-import multiplatformpoc.core.designsystem_core.generated.resources.ic_balance
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_height
 import multiplatformpoc.core.designsystem_core.generated.resources.ic_star
-import multiplatformpoc.core.designsystem_core.generated.resources.ic_straighten
+import multiplatformpoc.core.designsystem_core.generated.resources.ic_weight
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -54,14 +54,14 @@ fun PhysicalAttributesCard(
         modifier = modifier.fillMaxWidth()
     ) {
         InfoCard(
-            iconRes = Res.drawable.ic_straighten,
+            iconRes = Res.drawable.ic_height,
             label = "Height",
             value = "${height / 10.0} m",
             contentDescription = "Height",
             modifier = Modifier.weight(1f)
         )
         InfoCard(
-            iconRes = Res.drawable.ic_balance,
+            iconRes = Res.drawable.ic_weight,
             label = "Weight",
             value = "${weight / 10.0} kg",
             contentDescription = "Weight",
