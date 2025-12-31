@@ -2,65 +2,63 @@ import SwiftUI
 import Shared
 
 /**
- * Type badge displaying a Pokémon type with colored background.
- * Matches TypeBadge from Compose Multiplatform.
+ * Pokémon type badge component.
  * 
- * Usage:
- * ```swift
- * TypeBadgeView(type: "fire")
- * ```
+ * Displays a type name with color-coded background matching the type.
+ * Uses PokemonType color system for consistent coloring.
  */
 struct TypeBadgeView: View {
-    @Environment(\.pokemonTheme) var theme
+    let typeName: String
+    
     @Environment(\.colorScheme) var colorScheme
     
-    let type: String
-    
-    var pokemonType: PokemonType {
-        PokemonType(string: type) ?? .normal
+    private var pokemonType: PokemonType? {
+        PokemonType(string: typeName)
     }
     
     var body: some View {
-        Text(type.capitalized)
-            .font(theme.typography.label)
-            .foregroundColor(pokemonType.contentColor)
-            .padding(.horizontal, theme.spacing.md)
-            .padding(.vertical, theme.spacing.xs)
-            .background(pokemonType.backgroundColor(isDark: colorScheme == .dark))
-            .cornerRadius(theme.shapes.lg)
+        Text(typeName.capitalized)
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundColor(pokemonType?.contentColor ?? .white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                pokemonType?.backgroundColor(isDark: colorScheme == .dark) ?? Color.gray
+            )
+            .clipShape(Capsule())
     }
 }
 
 // MARK: - Preview
 
 #Preview("Fire") {
-    TypeBadgeView(type: "fire")
+    TypeBadgeView(typeName: "fire")
         .padding()
 }
 
 #Preview("Water") {
-    TypeBadgeView(type: "water")
+    TypeBadgeView(typeName: "water")
         .padding()
 }
 
 #Preview("Grass") {
-    TypeBadgeView(type: "grass")
+    TypeBadgeView(typeName: "grass")
         .padding()
 }
 
 #Preview("Multiple Types") {
     HStack(spacing: 8) {
-        TypeBadgeView(type: "fire")
-        TypeBadgeView(type: "flying")
+        TypeBadgeView(typeName: "fire")
+        TypeBadgeView(typeName: "flying")
     }
     .padding()
 }
 
 #Preview("Dark Mode") {
     VStack(spacing: 12) {
-        TypeBadgeView(type: "fire")
-        TypeBadgeView(type: "water")
-        TypeBadgeView(type: "psychic")
+        TypeBadgeView(typeName: "fire")
+        TypeBadgeView(typeName: "water")
+        TypeBadgeView(typeName: "psychic")
     }
     .padding()
     .preferredColorScheme(.dark)
