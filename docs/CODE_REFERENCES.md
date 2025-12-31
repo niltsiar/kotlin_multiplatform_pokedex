@@ -1,6 +1,6 @@
 # Code Reference Index
 
-**Last Updated:** December 22, 2025
+**Last Updated:** December 31, 2025
 
 **Purpose:** Central mapping document linking documentation patterns to actual implementation files. Use these canonical references instead of embedding code examples in documentation.
 
@@ -111,7 +111,23 @@
 ---
 
 ## Navigation Patterns
+### Scoped Navigation (Multi-Theme Support)
 
+#### Material Navigation Provider
+- **Route**: [PokemonList](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
+- **Provider**: [PokemonListMaterialNavigationProviders.kt](../features/pokemonlist/wiring-ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/ui/material/PokemonListMaterialNavigationProviders.kt)
+- **Demonstrates**:
+  - scope<MaterialScope> { } for theme separation
+  - navigation<Route> DSL within scope
+  - Material Design 3 screen wiring
+
+#### Unstyled Navigation Provider
+- **Route**: [PokemonList](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
+- **Provider**: [PokemonListUnstyledNavigationProviders.kt](../features/pokemonlist/wiring-ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/ui/unstyled/PokemonListUnstyledNavigationProviders.kt)
+- **Demonstrates**:
+  - scope<UnstyledScope> { } for theme separation
+  - UnstyledTheme { } wrapper
+  - Shared navigation with different UI
 ### Simple Route (No Parameters)
 - **Route**: [PokemonListEntry.kt](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
 - **Provider**: [PokemonListNavigationProviders.kt](../features/pokemonlist/wiring-ui/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiringui/PokemonListNavigationProviders.kt)
@@ -181,7 +197,52 @@
 
 ## UI Patterns (Compose)
 
-### List Screen
+### Material Design 3 Screens
+
+#### Material List Screen
+- **Implementation**: [PokemonListMaterialScreen.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
+- **Components**: [PokemonListCard.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListCard.kt), [PokemonListGrid.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListGrid.kt)
+- **Demonstrates**:
+  - Material 3 Card with elevation states
+  - Staggered entrance animations
+  - Adaptive grid (2/3/4 columns)
+  - Material Symbols icons
+  - Shimmer loading skeleton
+
+#### Material Detail Screen
+- **Implementation**: [PokemonDetailMaterialScreen.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
+- **Components**: [HeroSection.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/HeroSection.kt), [TypeBadgeRow.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/TypeBadgeRow.kt), [AnimatedStatBar.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/BaseStatsSection.kt)
+- **Demonstrates**:
+  - 256dp hero image with gradient
+  - Badge animations (25ms stagger)
+  - Material Symbols (height, weight, star)
+  - Animated stat bars (50ms stagger)
+  - Multiple preview states
+
+### Unstyled (Minimal) Screens
+
+#### Unstyled List Screen
+- **Implementation**: [PokemonListUnstyledScreen.kt](../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt)
+- **Components**: [PokemonListCardUnstyled.kt](../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/components/PokemonListCardUnstyled.kt), [PokemonListGridUnstyled.kt](../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/components/PokemonListGridUnstyled.kt)
+- **Demonstrates**:
+  - Border-only cards (no fill)
+  - Flat elevation (1dp)
+  - Enhanced hover effects (brightness 1.15, border 0.5 alpha, scale 1.02)
+  - .clickable() with interaction tracking
+  - Theme[property][token] syntax
+  - Clean minimal spacing
+
+#### Unstyled Detail Screen
+- **Implementation**: [PokemonDetailUnstyledScreen.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailUnstyledScreen.kt)
+- **Components**: [HeroSectionUnstyled.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/HeroSectionUnstyled.kt), [TypeBadgeRowUnstyled.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/TypeBadgeRowUnstyled.kt), [BaseStatsSectionUnstyled.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/BaseStatsSectionUnstyled.kt)
+- **Demonstrates**:
+  - 256dp flat hero image
+  - Border-only type badges
+  - Flat physical attribute cards
+  - Monochrome stat bars
+  - Linear motion (no emphasized easing)
+
+### Legacy List Screen (Pre-Redesign)
 - **Implementation**: [PokemonListScreen.kt](../features/pokemonlist/ui/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/PokemonListScreen.kt)
 - **Demonstrates**:
   - LazyVerticalGrid layout
