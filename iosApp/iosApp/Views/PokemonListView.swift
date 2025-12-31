@@ -17,6 +17,8 @@ import Shared
  */
 
 struct PokemonListView: View {
+    @Environment(\.pokemonTheme) var theme
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @StateObject private var owner = IosViewModelStoreOwner()
     
     // Computed property delegates to generic viewModel() (ViewModelStore cached)
@@ -121,7 +123,7 @@ struct PokemonListView: View {
                                     .padding()
                                 Spacer()
                             }
-                            .gridCellColumns(adaptiveColumnCount(for: geometry.size.width))
+                            .gridCellColumns(adaptiveColumnCount())
                         }
                     }
                     .padding(20)  // Consistent padding matching Compose Unstyled
@@ -140,24 +142,27 @@ struct PokemonListView: View {
         }
     }
     
-    // MARK: - Adaptive Grid Logic (2/3/4 columns based on width)
+    // MARK: - iOS-Native Adaptive Grid Logic
     
-    /// Returns adaptive grid columns based on window width
-    /// - Compact (< 600pt): 2 columns
-    /// - Medium (600-900pt): 3 columns
-    /// - Expanded (> 900pt): 4 columns
+    /// Returns adaptive grid columns using iOS device idioms and size classes
+    /// - iPhone portrait: 2 columns
+    /// - iPhone landscape: 3 columns
+    /// - iPad portrait: 3 columns
+    /// - iPad landscape: 4 columns
     private func adaptiveColumns(for width: CGFloat) -> [GridItem] {
-        let count = adaptiveColumnCount(for: width)
-        return Array(repeating: GridItem(.flexible(), spacing: 20), count: count)
+        let count = adaptiveColumnCount()
+        return Array(repeating: GridItem(.flexible(), spacing: theme.spacing.lg), count: count)
     }
     
-    private func adaptiveColumnCount(for width: CGFloat) -> Int {
-        if width < 600 {
-            return 2  // Compact - phones in portrait
-        } else if width < 900 {
-            return 3  // Medium - phones in landscape, small tablets
+    private func adaptiveColumnCount() -> Int {
+        let deviceIdiom = UIDevice.current.userInterfaceIdiom
+        
+        if deviceIdiom == .pad {
+            // iPad: 3 columns in portrait/compact, 4 in landscape/regular
+            return horizontalSizeClass == .regular ? 4 : 3
         } else {
-            return 4  // Expanded - large tablets, desktop
+            // iPhone: 2 columns in portrait/compact, 3 in landscape/regular
+            return horizontalSizeClass == .regular ? 3 : 2
         }
     }
 }

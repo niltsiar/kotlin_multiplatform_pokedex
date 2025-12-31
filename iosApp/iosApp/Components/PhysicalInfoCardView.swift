@@ -11,24 +11,26 @@ struct PhysicalInfoCardView: View {
     let label: String
     let value: String
     
+    @Environment(\.pokemonTheme) var theme
+    
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: theme.spacing.xs) {
             Image(systemName: icon)
                 .font(.system(size: 28))
                 .foregroundColor(.blue)
             
             Text(label)
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
+                .font(theme.typography.caption)
+                .foregroundColor(theme.colors.secondary)
             
             Text(value)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primary)
+                .font(theme.typography.body)
+                .foregroundColor(theme.colors.onSurface)
         }
         .frame(maxWidth: .infinity)
-        .padding(16)
-        .background(Color(red: 0.95, green: 0.95, blue: 0.95))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(theme.spacing.md)
+        .background(theme.colors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: theme.shapes.lg))
     }
 }
 

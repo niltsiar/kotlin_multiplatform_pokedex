@@ -10,31 +10,33 @@ struct ErrorStateView: View {
     let message: String
     let onRetry: () -> Void
     
+    @Environment(\.pokemonTheme) var theme
+    
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: theme.spacing.md) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 50))
                 .foregroundColor(.orange)
             
             Text("Oops!")
-                .font(.system(size: 22, weight: .bold))
+                .font(theme.typography.title)
             
             Text(message)
-                .font(.system(size: 16))
-                .foregroundColor(.secondary)
+                .font(theme.typography.body)
+                .foregroundColor(theme.colors.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, theme.spacing.md)
             
             Button(action: onRetry) {
                 Text("Retry")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(theme.typography.button)
                     .foregroundColor(.white)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, theme.spacing.xl)
+                    .padding(.vertical, theme.spacing.sm)
                     .background(Color.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.shapes.md))
             }
-            .padding(.top, 8)
+            .padding(.top, theme.spacing.xs)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)

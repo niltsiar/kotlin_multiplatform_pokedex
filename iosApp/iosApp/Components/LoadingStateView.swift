@@ -9,13 +9,15 @@ import SwiftUI
 struct LoadingStateView: View {
     var message: String = "Loading Pokémon..."
     
+    @Environment(\.pokemonTheme) var theme
+    
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: theme.spacing.md) {
             ProgressView()
                 .scaleEffect(1.5)
             Text(message)
-                .font(.system(size: 16))
-                .foregroundColor(.secondary)
+                .font(theme.typography.body)
+                .foregroundColor(theme.colors.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)
