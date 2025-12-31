@@ -11,6 +11,7 @@ struct StatBarView: View {
     let value: Int32
     let maxValue: Int32 = 255
     
+    @Environment(\.pokemonTheme) private var theme
     @State private var animatedProgress: CGFloat = 0
     
     private var progress: CGFloat {
@@ -35,27 +36,27 @@ struct StatBarView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: theme.spacing.xxs) {
             HStack {
                 Text(displayName)
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .font(theme.typography.caption)
+                    .foregroundColor(theme.colors.secondary)
                     .frame(width: 100, alignment: .leading)
                 
                 Text("\(value)")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primary)
+                    .font(theme.typography.body)
+                    .foregroundColor(theme.colors.onSurface)
                     .frame(width: 40, alignment: .trailing)
                 
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         // Background bar
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color(red: 0.9, green: 0.9, blue: 0.9))
+                        RoundedRectangle(cornerRadius: theme.shapes.xs)
+                            .fill(theme.colors.surface)
                             .frame(height: 8)
                         
                         // Progress bar with animation
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: theme.shapes.xs)
                             .fill(barColor)
                             .frame(width: geometry.size.width * animatedProgress, height: 8)
                     }
@@ -64,7 +65,7 @@ struct StatBarView: View {
             }
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.4)) {
+            withAnimation(.easeOut(duration: theme.motion.durationMedium)) {
                 animatedProgress = progress
             }
         }

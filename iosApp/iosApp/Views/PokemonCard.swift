@@ -19,6 +19,7 @@ struct PokemonCard: View {
     let pokemon: Pokemon
     let onTap: () -> Void
     
+    @Environment(\.pokemonTheme) var theme
     @State private var isPressed = false
     
     var body: some View {
