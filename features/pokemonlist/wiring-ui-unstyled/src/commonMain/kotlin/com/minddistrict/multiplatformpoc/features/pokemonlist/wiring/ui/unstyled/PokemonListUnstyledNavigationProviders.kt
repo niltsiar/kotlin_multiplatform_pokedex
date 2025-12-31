@@ -8,7 +8,7 @@ import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
-import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.unstyled.PokemonListScreenUnstyled
+import com.minddistrict.multiplatformpoc.features.pokemonlist.ui.unstyled.PokemonListUnstyledScreen
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module
@@ -35,7 +35,7 @@ val pokemonListNavigationUnstyledModule = module {
             }
 
             UnstyledTheme {
-                PokemonListScreenUnstyled(
+                PokemonListUnstyledScreen(
                     viewModel = viewModel,
                     onPokemonClick = { pokemon ->
                         // Navigate to detail screen in unstyled world

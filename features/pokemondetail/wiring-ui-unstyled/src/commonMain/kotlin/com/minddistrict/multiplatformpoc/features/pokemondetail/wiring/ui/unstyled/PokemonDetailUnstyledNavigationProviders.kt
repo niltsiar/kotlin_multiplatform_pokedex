@@ -15,7 +15,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.tokens.Unsty
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.navigation.PokemonDetail
 import com.minddistrict.multiplatformpoc.features.pokemondetail.presentation.PokemonDetailViewModel
-import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.unstyled.PokemonDetailScreenUnstyled
+import com.minddistrict.multiplatformpoc.features.pokemondetail.ui.unstyled.PokemonDetailUnstyledScreen
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -82,7 +82,7 @@ val pokemonDetailNavigationUnstyledModule = module {
             }
 
             UnstyledTheme {
-                PokemonDetailScreenUnstyled(
+                PokemonDetailUnstyledScreen(
                     viewModel = viewModel,
                     onBackClick = { navigator.goBack() },
                 )
