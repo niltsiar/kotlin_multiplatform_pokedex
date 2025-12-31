@@ -8,20 +8,14 @@ import Shared
  * - AsyncImage for sprite loading with SF Symbol placeholder/error
  * - Formatted Pokédex number (#001, #025, etc.)
  * - Title case Pokemon name
- * - Tap scale animation (1.0 → 0.95 → 1.0)
- * - Haptic feedback on tap
+ * - CONSISTENT SIZE using aspectRatio (1:1 square)
+ * - Tap scale animation with haptic feedback
  * - iOS semantic colors for dark mode support
  * - VoiceOver accessibility
  * 
- * Usage:
- * ```swift
- * PokemonCard(pokemon: pokemon) {
- *     // Handle tap - navigate to detail
- * }
- * ```
+ * CRITICAL: Uses .aspectRatio(1, contentMode: .fit) to ensure all cards have exact same size
  */
 struct PokemonCard: View {
-    @Environment(\.pokemonTheme) var theme
     let pokemon: Pokemon
     let onTap: () -> Void
     
@@ -31,7 +25,7 @@ struct PokemonCard: View {
         Button(action: {
             onTap()
         }) {
-            VStack(spacing: theme.spacing.xs) {
+            VStack(spacing: 8) {
                 // Pokemon sprite image
                 AsyncImage(url: URL(string: pokemon.imageUrl)) { phase in
                     switch phase {
@@ -39,37 +33,40 @@ struct PokemonCard: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 96, height: 96)
+                            .frame(maxWidth: .infinity, maxHeight: 96)
                     case .failure:
                         // Show SF Symbol on load failure
                         Image(systemName: "photo.fill")
                             .font(.system(size: 40))
                             .foregroundColor(.secondary)
-                            .frame(width: 96, height: 96)
+                            .frame(maxWidth: .infinity, maxHeight: 96)
                     case .empty:
                         // Show loading placeholder
                         ProgressView()
-                            .frame(width: 96, height: 96)
+                            .frame(maxWidth: .infinity, maxHeight: 96)
                     @unknown default:
                         EmptyView()
                     }
                 }
+                .frame(height: 96)
                 
                 // Pokédex number (e.g., #025)
                 Text("#\(String(format: "%03d", pokemon.id))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(theme.typography.caption)
+                    .foregroundColor(theme.colors.secondary)
                 
                 // Pokemon name (title case)
                 Text(pokemon.name.capitalized)
                     .font(theme.typography.headline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(theme.colors.onSurface)
                     .lineLimit(1)
             }
             .padding(theme.spacing.sm)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)  // CRITICAL: Ensures consistent size
             .background(theme.colors.surface)
-            .cornerRadius(theme.shapes.xl)
-            .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .clipShape(RoundedRectangle(cornerRadius: theme.shapes.xl))
+            .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.95 : 1.0)

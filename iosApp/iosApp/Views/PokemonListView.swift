@@ -2,18 +2,18 @@ import SwiftUI
 import Shared
 
 /**
- * Main Pokemon list screen displaying a grid of Pokemon cards.
+ * Main Pokemon list screen displaying an adaptive grid of Pokemon cards.
  * 
  * Features:
- * - 2-column grid layout (fixed columns, iOS native feel)
+ * - ADAPTIVE GRID: 2/3/4 columns based on window width
+ * - CONSISTENT CARD SIZING: All cards exactly same size using aspectRatio
  * - Infinite scroll (loads more at 4-item threshold)
  * - Three UI states: Loading, Content, Error
  * - Scroll position preservation on navigation return
  * - Navigation to detail screen
  * - AsyncStream lifecycle management via .task
  * 
- * This view integrates with the KMP PokemonListViewModel directly,
- * observing StateFlow updates and triggering data loads.
+ * Professional redesign matching Compose Unstyled quality.
  */
 
 struct PokemonListView: View {
@@ -43,7 +43,7 @@ struct PokemonListView: View {
                     ?? viewModel.restoredLastSelectedPokemonId?.intValue
             }
 
-            // Directly call ViewModel lifecycle method (aligned with official Android KMP ViewModel guide)
+            // Directly call ViewModel lifecycle method
             viewModel.onStart(owner: Shared.DummyLifecycleOwner())
         }
         .onDisappear {
@@ -62,134 +62,106 @@ struct PokemonListView: View {
     private var content: some View {
         switch uiState {
         case is PokemonListUiStateLoading:
-            loadingView
+            LoadingStateView()
             
         case let content as PokemonListUiStateContent:
             gridView(content: content)
             
         case let error as PokemonListUiStateError:
-            errorView(message: error.message)
+            ErrorStateView(message: error.message) {
+                viewModel.loadInitialPage()
+            }
             
         default:
             EmptyView()
         }
     }
     
-    // MARK: - Loading State
-    
-    private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.5)
-            Text("Loading Pokémon...")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Loading Pokémon")
-    }
-    
-    // MARK: - Grid Content
+    // MARK: - Adaptive Grid Content
     
     private func gridView(content: PokemonListUiStateContent) -> some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 16),
-                        GridItem(.flexible(), spacing: 16)
-                    ],
-                    spacing: 16
-                ) {
-                    // Pokemon cards
-                    ForEach(Array(content.pokemons.enumerated()), id: \.element.id) { index, pokemon in
-                        PokemonCard(pokemon: pokemon) {
-                            // Save scroll position before navigating
-                            let id = Int(pokemon.id)
-                            scrollPosition = id
+        GeometryReader { geometry in
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVGrid(
+                        columns: adaptiveColumns(for: geometry.size.width),
+                        spacing: 20  // Consistent spacing matching Compose Unstyled
+                    ) {
+                        // Pokemon cards
+                        ForEach(Array(content.pokemons.enumerated()), id: \.element.id) { index, pokemon in
+                            PokemonCard(pokemon: pokemon) {
+                                // Save scroll position before navigating
+                                let id = Int(pokemon.id)
+                                scrollPosition = id
 
-                            // Persist selection + anchor for full state restoration.
-                            viewModel.onPokemonSelected(pokemonId: Int32(id))
-                            viewModel.onScrollAnchorPokemonIdChanged(pokemonId: Int32(id))
+                                // Persist selection + anchor for full state restoration.
+                                viewModel.onPokemonSelected(pokemonId: Int32(id))
+                                viewModel.onScrollAnchorPokemonIdChanged(pokemonId: Int32(id))
 
-                            // Navigate to detail
-                            navigationPath.append(id)
+                                // Navigate to detail
+                                navigationPath.append(id)
+                            }
+                            .id(Int(pokemon.id))
+                            .onAppear {
+                                // Trigger infinite scroll when approaching end (4 items threshold)
+                                let pokemonCount = Int(content.pokemons.count)
+                                if index >= pokemonCount - 4 &&
+                                   !content.isLoadingMore &&
+                                   content.hasMore {
+                                    viewModel.loadNextPage()
+                                }
+                            }
                         }
-                        .id(Int(pokemon.id))
-                        .onAppear {
-                            // Trigger infinite scroll when approaching end (4 items threshold)
-                            let pokemonCount = Int(content.pokemons.count)
-                            if index >= pokemonCount - 4 &&
-                               !content.isLoadingMore &&
-                               content.hasMore {
-                                viewModel.loadNextPage()
+                        
+                        // Bottom loading indicator during pagination
+                        if content.isLoadingMore {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                    .padding()
+                                Spacer()
+                            }
+                            .gridCellColumns(adaptiveColumnCount(for: geometry.size.width))
+                        }
+                    }
+                    .padding(20)  // Consistent padding matching Compose Unstyled
+                }
+                .onAppear {
+                    // Restore scroll position when returning from detail
+                    if let position = scrollPosition {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation {
+                                proxy.scrollTo(position, anchor: .center)
                             }
                         }
                     }
-                    
-                    // Bottom loading indicator during pagination
-                    if content.isLoadingMore {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                                .padding()
-                            Spacer()
-                        }
-                        .gridCellColumns(2)
-                    }
-                }
-                .padding(16)
-            }
-            .onAppear {
-                // Restore scroll position when returning from detail
-                if let position = scrollPosition {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation {
-                            proxy.scrollTo(position, anchor: .center)
-                        }
-                    }
                 }
             }
         }
     }
     
-    // MARK: - Error State
+    // MARK: - Adaptive Grid Logic (2/3/4 columns based on width)
     
-    private func errorView(message: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 50))
-                .foregroundColor(.orange)
-            
-            Text("Oops!")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Text(message)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            Button(action: {
-                viewModel.loadInitialPage()
-            }) {
-                Text("Retry")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 12)
-                    .background(Color.blue)
-                    .cornerRadius(8)
-            }
-            .padding(.top, 8)
+    /// Returns adaptive grid columns based on window width
+    /// - Compact (< 600pt): 2 columns
+    /// - Medium (600-900pt): 3 columns
+    /// - Expanded (> 900pt): 4 columns
+    private func adaptiveColumns(for width: CGFloat) -> [GridItem] {
+        let count = adaptiveColumnCount(for: width)
+        return Array(repeating: GridItem(.flexible(), spacing: 20), count: count)
+    }
+    
+    private func adaptiveColumnCount(for width: CGFloat) -> Int {
+        if width < 600 {
+            return 2  // Compact - phones in portrait
+        } else if width < 900 {
+            return 3  // Medium - phones in landscape, small tablets
+        } else {
+            return 4  // Expanded - large tablets, desktop
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Error: \(message). Retry button available.")
     }
 }
+
 
 // MARK: - Previews
 

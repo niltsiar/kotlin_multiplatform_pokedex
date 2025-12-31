@@ -13,32 +13,25 @@ import SwiftUI
  * ```
  */
 struct PokemonTheme {
-    var spacing: Spacing
-    var shapes: Shapes
-    var typography: Typography
-    var colors: Colors
-    var motion: Motion
+    var spacing: PokemonTheme.Spacing
+    var shapes: PokemonTheme.Shapes
+    var typography: PokemonTheme.Typography
+    var colors: PokemonTheme.Colors
+    var motion: PokemonTheme.Motion
     
     static let `default` = PokemonTheme(
-        spacing: .standard,
-        shapes: .rounded,
-        typography: .system,
-        colors: .light,
-        motion: .emphasized
+        spacing: PokemonTheme.Spacing.standard,
+        shapes: PokemonTheme.Shapes.rounded,
+        typography: PokemonTheme.Typography.system,
+        colors: PokemonTheme.Colors.light,
+        motion: PokemonTheme.Motion.emphasized
     )
 }
 
-// MARK: - Environment Key
-
-private struct PokemonThemeKey: EnvironmentKey {
-    static let defaultValue = PokemonTheme.default
-}
+// MARK: - Modern Environment Value (iOS 17+)
 
 extension EnvironmentValues {
-    var pokemonTheme: PokemonTheme {
-        get { self[PokemonThemeKey.self] }
-        set { self[PokemonThemeKey.self] = newValue }
-    }
+    @Entry var pokemonTheme: PokemonTheme = PokemonTheme.default
 }
 
 // MARK: - View Extension

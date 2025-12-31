@@ -6,6 +6,7 @@ import SwiftUI
  */
 extension PokemonTheme {
     struct Shapes {
+        let xxs: CGFloat = 4    // MaterialTokens.shapes.shapeXxs (extra small)
         let xs: CGFloat = 8     // MaterialTokens.shapes.shapeXs
         let sm: CGFloat = 12    // MaterialTokens.shapes.shapeSm
         let md: CGFloat = 16    // MaterialTokens.shapes.shapeMd
