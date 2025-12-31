@@ -69,14 +69,17 @@ Transform the Pokédex app UI with Material 3 Expressive personality and minimal
 
 **Step 7 Completion (December 31, 2025):**
 - ✅ Fixed 15 compilation errors across 7 files in 5 systematic waves:
-  - Wave 1: Component API usage (gridColumns function call, PokemonTypeColors.getBackground, domain constructors)
+  - Wave 1: Component API usage (gridColumns, PokemonTypeColors.getBackground, domain constructors)
   - Wave 2: Preview domain constructors (24 instances: TypeOfPokemon+slot, Stat baseStat+effort, Ability+slot)
   - Wave 3: Build cache corruption (resolved via clean build)
   - Wave 4: Theme import corrections (removed wrong platformtheme.shapes, added correct token imports)
   - Wave 5: Navigation provider naming (PokemonListUnstyledScreen not PokemonListScreenUnstyled)
+- ✅ UX improvements:
+  - Fixed missing .clickable() modifier on PokemonListCardUnstyled (navigation now works)
+  - Enhanced hover effects: brightness 1.15, border opacity 0.5, scale 1.02 grow
 - ✅ Verified Unstyled theme supports full token system via Theme[property][token] syntax
-- ✅ All 8 Unstyled components working (PokemonListCardUnstyled, GridUnstyled, LoadingStateUnstyled, ErrorStateUnstyled, HeroSectionUnstyled, TypeBadgeRowUnstyled, PhysicalAttributesCardUnstyled, AbilitiesSectionUnstyled, BaseStatsSectionUnstyled)
-- ✅ BUILD SUCCESSFUL in 14s with ALL 84 tests passing
+- ✅ All 8 Unstyled components working with correct domain class usage
+- ✅ BUILD SUCCESSFUL with ALL 84 tests passing
 - Key learning: Unstyled components scaffolded in Phase 2 but never compiled - contained latent errors
 
 **Step 6 Completion (December 31, 2025):**
