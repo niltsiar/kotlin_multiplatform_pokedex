@@ -1,6 +1,6 @@
 # Pokédex App - UI/UX Design Document
 
-Last Updated: November 26, 2025
+Last Updated: January 4, 2026
 
 ## Brand Essence & Personality
 
@@ -11,6 +11,119 @@ Last Updated: November 26, 2025
 - **Instant Gratification**: Fast, smooth, and responsive — no waiting
 - **Collection Pride**: Users feel accomplishment as they browse through the 'dex
 - **Friendly Expertise**: Data is comprehensive but never overwhelming
+
+---
+
+## Dual Design System Implementation
+
+**Educational Feature:** The app showcases **two distinct UI themes** running simultaneously in production to compare design system approaches:
+
+### Material Design 3 Expressive (Primary Theme)
+
+**Philosophy:** Bold, playful, attention-grabbing — maximalist aesthetic celebrating color and motion.
+
+**Key Characteristics:**
+- **Shapes:** 28dp corner radius (expressive, rounded)
+- **Elevation:** Up to 12dp shadows for depth and hierarchy
+- **Motion:** Emphasized easing curves (400ms decelerate, 300ms accelerate)
+- **Typography:** Google Sans Flex variable font with dynamic weight animations (400→700 on press)
+- **Component Styling:** Filled badges, elevated cards, chunky progress bars (8dp height)
+- **Color:** Full saturation type colors, tonal surfaces, dynamic color theming
+- **Personality:** Playful, energetic, kid-friendly, "fun and expressive"
+
+**Visual Identity:**
+- Cards with 28dp corners and 3dp elevation (hovering effect)
+- Filled type badges with white text (high contrast)
+- Bold stat bars with emphasized motion curves
+- Button press animations: scale 0.95x + font weight 400→700
+
+**When to Use Material:**
+- Consumer-facing apps prioritizing delight and engagement
+- Apps targeting younger audiences (8-25)
+- Brands with playful, energetic personalities
+- Products where visual hierarchy needs strong emphasis
+
+### Compose Unstyled (Alternative Theme)
+
+**Philosophy:** Minimal, understated, content-focused — letting data speak for itself.
+
+**Key Characteristics:**
+- **Shapes:** 12dp max corner radius (subtle, refined)
+- **Elevation:** Flat with max 4dp at highest level (minimal shadows)
+- **Motion:** Linear easing with shorter durations (300ms standard)
+- **Typography:** System fonts (San Francisco on iOS, Roboto on Android)
+- **Component Styling:** Outline badges, flat cards, slim progress bars (6dp height)
+- **Color:** Muted tones, high contrast text, border-focused instead of fill
+- **Personality:** Professional, direct, "gets out of the way"
+
+**Visual Identity:**
+- Cards with 12dp corners and 2dp shadow (subtle depth)
+- Outline type badges with type color text (dynamic contrast)
+- Minimal stat bars with linear motion
+- Button press animations: scale 0.98x (subtle feedback)
+
+**When to Use Unstyled:**
+- Professional tools and productivity apps
+- Data-heavy interfaces (dashboards, analytics)
+- Brands prioritizing content over chrome
+- Apps targeting older audiences (25-45)
+- Scenarios where accessibility/readability is paramount
+
+### Side-by-Side Comparison
+
+| Aspect | Material 3 Expressive | Compose Unstyled |
+|--------|----------------------|------------------|
+| **Corner Radius** | 28dp (playful) | 12dp (minimal) |
+| **Elevation** | 3-12dp (shadows) | 2-4dp (flat) |
+| **Motion Duration** | 400ms | 300ms |
+| **Motion Easing** | Emphasized curves | Linear |
+| **Typography** | Google Sans Flex (variable) | System fonts |
+| **Type Badges** | Filled with white text | Outline with type color |
+| **Stat Bars** | 8dp height, chunky | 6dp height, slim |
+| **Card Scale (pressed)** | 0.95x (bouncy) | 0.98x (subtle) |
+| **Font Weight (pressed)** | 400→700 dynamic | Static weight |
+| **Visual Weight** | Bold, attention-grabbing | Minimal, content-focused |
+| **Personality** | Playful explorer | Professional reference |
+
+### Theme Switching Mechanism
+
+**Navigation-Based Selection:**
+- Bottom navigation bar (compact): "Material" and "Unstyled" items
+- Navigation rail (medium): Icon-based theme selection
+- Navigation drawer (expanded): Text-based theme selection
+- **Entire UI switches atomically** — scaffold + all screens at once
+- **State persisted** via SavedStateHandle across app restarts
+- **First-run modal** explains the dual-UI showcase feature
+
+**Implementation Architecture:**
+- **Scope-based navigation:** `scope<MaterialScope>` vs `scope<UnstyledScope>`
+- **Token delegation:** Both themes share BaseTokens.spacing (8dp grid)
+- **Component abstraction:** PokemonCard, TypeBadge, AnimatedStatBar accept token interfaces
+- **Automatic aggregation:** `koinEntryProvider()` collects all scoped entries
+
+**See:** [component_library.md](../tech/component_library.md) for component implementation details
+
+### Educational Value
+
+**Why Two Themes?**
+
+This dual implementation serves as a **living comparison study** for developers and designers:
+
+1. **Design System Comparison:** See Material 3 vs minimal aesthetics side-by-side
+2. **Token Architecture:** Demonstrates token delegation and component abstraction
+3. **Performance Impact:** Compare animation overhead (400ms emphasized vs 300ms linear)
+4. **User Preference:** Study which aesthetic users prefer for different tasks
+5. **Accessibility:** Compare readability and cognitive load between maximalist and minimalist designs
+
+**User Benefit:**
+- Choose aesthetic based on personal preference
+- Switch themes for different contexts (play mode vs reference mode)
+- Experience how design choices affect emotional engagement
+
+**Developer Benefit:**
+- Real-world example of component abstraction
+- Pattern for supporting multiple design systems with shared business logic
+- Study impact of motion, elevation, and typography on perceived quality
 
 ---
 
