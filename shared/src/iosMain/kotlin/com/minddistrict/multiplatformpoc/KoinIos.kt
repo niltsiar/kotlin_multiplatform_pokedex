@@ -1,6 +1,7 @@
 package com.minddistrict.multiplatformpoc
 
 import com.minddistrict.multiplatformpoc.core.di.coreModule
+import com.minddistrict.multiplatformpoc.core.di.httpClientModule
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
 import com.minddistrict.multiplatformpoc.features.pokemonlist.wiring.pokemonListModule
 import org.koin.core.context.startKoin
@@ -30,6 +31,7 @@ fun initKoin(baseUrl: String) {
     startKoin {
         modules(
             coreModule(baseUrl),
+            httpClientModule(),
             pokemonListModule,
             pokemonDetailModule
             // Note: Platform navigation modules (Android/JVM) are NOT included for iOS
@@ -47,4 +49,3 @@ fun initKoin(baseUrl: String) {
  * ```
  */
 fun getKoin() = KoinPlatform.getKoin()
-

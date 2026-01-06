@@ -11,6 +11,8 @@ kotlin {
             // iOS + KMP ViewModel infrastructure (used by both Shared.framework and ComposeApp.framework)
             api(libs.androidx.lifecycle.viewmodel)
             api(libs.androidx.lifecycle.runtime)
+
+            implementation(projects.core.httpclient)
         }
     }
 }

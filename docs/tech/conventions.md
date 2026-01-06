@@ -172,26 +172,31 @@ For features with complex business logic orchestrating multiple repositories:
 
 ### HttpClient Configuration
 
-Each feature CAN share a root HttpClient instance (configured in app or a thin :core:httpclient module), but API services are feature-specific:
+We provide a **single shared HttpClient** from `:core:di` and let every feature resolve it via DI. Each feature still owns its own API service, DTOs, and repositories.
 
 ```kotlin
-// Optional: :core:httpclient - ONLY provides HttpClient instance
-fun createHttpClient(): HttpClient = HttpClient {
-    install(ContentNegotiation) { json() }
-    install(Logging)
+// :core:di/AppModules.kt
+fun httpClientModule() = module {
+    single<HttpClient> { createHttpClient() }
 }
 
 // :features:pokemonlist:wiring
 val pokemonListModule = module {
-    factory<PokemonListApiService> {
+    factory {
         PokemonListApiService(httpClient = get())
+    }
+    factory<PokemonListRepository> {
+        PokemonListRepository(apiService = get())
     }
 }
 
 // :features:pokemondetail:wiring
 val pokemonDetailModule = module {
-    factory<PokemonDetailApiService> {
+    factory {
         PokemonDetailApiService(httpClient = get())
+    }
+    factory<PokemonDetailRepository> {
+        PokemonDetailRepository(apiService = get())
     }
 }
 ```

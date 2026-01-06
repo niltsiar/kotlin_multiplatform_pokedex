@@ -186,6 +186,7 @@ class PokemonListViewModel(
         SupervisorJob() + Dispatchers.Main.immediate
     )
 ) : ViewModel(viewModelScope),
+    DefaultLifecycleObserver,
     UiStateHolder<PokemonListUiState, PokemonListUiEvent> {
     
     private val _uiState = MutableStateFlow<PokemonListUiState>(
