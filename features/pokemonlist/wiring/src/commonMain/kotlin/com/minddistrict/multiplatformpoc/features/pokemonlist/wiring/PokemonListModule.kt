@@ -1,11 +1,9 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.wiring
 
-import com.minddistrict.multiplatformpoc.core.httpclient.createHttpClient
 import com.minddistrict.multiplatformpoc.features.pokemonlist.PokemonListRepository
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListApiService
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListRepository as createPokemonListRepository
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
-import io.ktor.client.HttpClient
 import androidx.lifecycle.SavedStateHandle
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -14,18 +12,11 @@ import org.koin.dsl.module
  * Koin DI module for Pokemon List feature.
  * 
  * Provides all dependencies needed for the Pokemon List feature:
- * - HttpClient (singleton, shared across all API services)
- * - PokemonListApiService
- * - PokemonListRepository
- * - PokemonListViewModel
- */
-val pokemonListModule = module {
-    /**
-     * Provides a singleton HttpClient instance for making API requests.
-     * Configured with content negotiation and logging.
+     * - PokemonListApiService
+     * - PokemonListRepository
+     * - PokemonListViewModel
      */
-    single<HttpClient> { createHttpClient() }
-    
+val pokemonListModule = module {
     /**
      * Provides the API service for Pokemon List endpoints.
      */

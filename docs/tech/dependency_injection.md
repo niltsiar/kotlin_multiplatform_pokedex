@@ -34,44 +34,38 @@ References
 // core/di/src/commonMain/.../AppModules.kt
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import com.minddistrict.multiplatformpoc.core.navigation.Navigator
-import com.minddistrict.multiplatformpoc.core.navigation.EntryProviderInstaller
-import com.minddistrict.multiplatformpoc.features.pokemonlist.navigation.PokemonList
+import io.ktor.client.HttpClient
+import com.minddistrict.multiplatformpoc.core.httpclient.createHttpClient
 
-/**
- * Core application module providing base dependencies.
- * 
- * Idiomatic Koin pattern: modules are defined as top-level functions/properties.
- */
 fun coreModule(baseUrl: String) = module {
     // Provide baseUrl as a named dependency (runtime parameter)
     single(qualifier = named("baseUrl")) { baseUrl }
-    
-    // Provide Navigator singleton with start destination
-    single { Navigator(PokemonList) }
+}
+
+fun httpClientModule() = module {
+    single<HttpClient> { createHttpClient() }
 }
 ```
 
 **Key Points**:
-- `coreModule()` is a **function** that takes runtime parameters and returns a Koin module
-- `navigationUiModule` is a **property** (val) providing Navigator singleton
-- Navigation installers collected directly in App.kt using public const qualifiers
-- No aggregation module needed — simpler, more explicit
-- Runtime parameters (like `baseUrl`) are provided as named dependencies or constructor params
-- Modules are composed with `+` operator in `KoinApplication`
+- `coreModule()` is a **function** that takes runtime parameters (e.g., `baseUrl`) and exposes them as named dependencies.
+- `httpClientModule()` is a **function** that exposes the shared `HttpClient` singleton (configured in `:core:httpclient`).
+- `navigationUiModule` (in `:core:diui`) provides the Navigator/back stack wiring.
+- Runtime parameters (like `baseUrl`) are provided as named dependencies or constructor params.
+- Modules are composed with the `+` operator in `KoinApplication`.
 
 ## Providing and Binding Dependencies (no annotations on classes)
 
 Use Koin's DSL in wiring modules. Classes remain DI-agnostic (no annotations).
 
 ```kotlin
-// Example: Providing dependencies in a wiring module
+// Shared module: singleton HttpClient configured once
+val httpClientModule = module {
+    single<HttpClient> { createHttpClient() }
+}
+
+// Feature wiring module keeps only feature-specific bindings
 val featureModule = module {
-    // Singleton: Same instance shared across app
-    single<HttpClient> {
-        createHttpClient()
-    }
-    
     // Factory: New instance each time
     factory<ApiService> {
         ApiService(client = get(), baseUrl = get(named("baseUrl")))
@@ -85,9 +79,10 @@ val featureModule = module {
     }
     
     // ViewModel with dependencies
-    factory<ProfileViewModel> {
+    viewModel {
         ProfileViewModel(
-            repository = get()
+            repository = get(),
+            savedStateHandle = SavedStateHandle(),
         )
     }
 }
@@ -213,12 +208,7 @@ import com.minddistrict.multiplatformpoc.features.pokemonlist.data.PokemonListRe
 import com.minddistrict.multiplatformpoc.features.pokemonlist.presentation.PokemonListViewModel
 
 val pokemonListModule: Module = module {
-    // HttpClient singleton for this feature
-    single<HttpClient> {
-        createHttpClient()
-    }
-    
-    // API service factory
+    // API service factory (shared HttpClient provided by httpClientModule)
     factory<PokemonListApiService> {
         PokemonListApiService(
             client = get(),

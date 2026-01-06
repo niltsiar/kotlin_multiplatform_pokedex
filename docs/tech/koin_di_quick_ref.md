@@ -153,12 +153,13 @@ kotlin {
 ### Defining a Module
 
 ```kotlin
+// Shared module (core) exposes singleton HttpClient
+val httpClientModule = module {
+    single<HttpClient> { createHttpClient() }
+}
+
+// Feature module focuses on feature-specific bindings
 val myModule = module {
-    // Singleton - one instance shared across app
-    single<HttpClient> {
-        createHttpClient()
-    }
-    
     // Factory - new instance on each request
     factory<MyRepository> {
         MyRepositoryImpl(api = get())
@@ -169,7 +170,7 @@ val myModule = module {
     
     // Get named dependency
     factory<ApiService> {
-        ApiService(apiKey = get(named("apiKey")))
+        ApiService(apiKey = get(named("apiKey")), client = get())
     }
 }
 ```
@@ -263,10 +264,6 @@ fun App() {
 ```kotlin
 // features/pokemonlist/wiring/src/commonMain/.../PokemonListModule.kt
 val pokemonListModule = module {
-    single<HttpClient> {
-        createHttpClient()
-    }
-    
     factory<PokemonListApiService> {
         PokemonListApiService(
             client = get(),
@@ -577,10 +574,12 @@ class MyRepository(private val api: ApiService)  // Pure Kotlin
 ### 2. Use Factory for Stateless Services
 
 ```kotlin
-val module = module {
+val networkModule = module {
     // Singleton for stateful/expensive resources
     single<HttpClient> { createHttpClient() }
-    
+}
+
+val featureModule = module {
     // Factory for stateless services (new instance each time)
     factory<ProfileRepository> { ProfileRepository(get()) }
     factory<ProfileViewModel> { ProfileViewModel(get()) }

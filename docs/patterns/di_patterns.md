@@ -110,8 +110,8 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.module
 
 val jobsDataModule = module {
-    // API service
-    single<JobApiService> {
+    // API service (shared HttpClient is provided by core httpClientModule)
+    factory<JobApiService> {
         JobApiService(httpClient = get())
     }
     
@@ -198,7 +198,7 @@ import com.example.features.pokemonlist.presentation.PokemonListViewModel
 import org.koin.dsl.module
 
 val pokemonListDataModule = module {
-    single<PokemonListApiService> {
+    factory<PokemonListApiService> {
         PokemonListApiService(httpClient = get())
     }
     
@@ -477,9 +477,12 @@ val jobsModule = module {
 ### Shared Business Logic (commonMain)
 
 ```kotlin
+val sharedNetworkModule = module {
+    single<HttpClient> { createHttpClient() }
+}
+
 // All platforms share the same business logic wiring
 val sharedModule = module {
-    single<HttpClient> { createHttpClient() }
     factory<PokemonRepository> { PokemonRepository(api = get()) }
     factory<UserRepository> { UserRepository(api = get()) }
 }

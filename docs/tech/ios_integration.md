@@ -933,7 +933,9 @@ class PokemonDetailViewModel(
     private val pokemonId: Int,
     private val repository: PokemonDetailRepository,
     viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-) : ViewModel(viewModelScope), UiStateHolder<PokemonDetailUiState, PokemonDetailUiEvent> {
+) : ViewModel(viewModelScope),
+    DefaultLifecycleObserver,
+    UiStateHolder<PokemonDetailUiState, PokemonDetailUiEvent> {
     
     fun loadPokemon() {
         viewModelScope.launch {

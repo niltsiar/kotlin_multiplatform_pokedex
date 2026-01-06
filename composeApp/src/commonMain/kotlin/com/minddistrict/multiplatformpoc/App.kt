@@ -35,6 +35,7 @@ import com.minddistrict.multiplatformpoc.core.designsystem.material.theme.Pokemo
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.UnstyledScope
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
 import com.minddistrict.multiplatformpoc.core.di.coreModule
+import com.minddistrict.multiplatformpoc.core.di.httpClientModule
 import com.minddistrict.multiplatformpoc.core.diui.navigationUiModule
 import com.minddistrict.multiplatformpoc.core.navigation.Navigator
 import com.minddistrict.multiplatformpoc.features.pokemondetail.wiring.pokemonDetailModule
@@ -70,6 +71,7 @@ fun App() {
                 modules(
                     rootModule +
                         coreModule(baseUrl = "https://pokeapi.co/api/v2") +
+                        httpClientModule() +
                         pokemonListModule +
                         pokemonDetailModule +
                         // Load BOTH Material and Unstyled navigation modules
