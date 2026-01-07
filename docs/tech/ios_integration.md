@@ -921,6 +921,84 @@ let type: Type_ = pokemonDetail.types.first!
 
 ---
 
+### 3. Composable Properties Must Be Functions
+
+**Problem**: iOS runtime fails to recognize `internal val` properties that return composable lambdas in interfaces.
+
+**Symptom**: Runtime exception in iOS (not compile-time) when accessing composable properties like `val card: @Composable () -> CardTokens`.
+
+**Root Cause**: Kotlin/Native iOS interop doesn't properly handle `internal val` properties with composable function types in interfaces.
+
+**Solution**: Use `@Composable fun` methods instead of `val` properties with composable lambdas.
+
+#### Example (from commit a456a5af6cdf8a7c06ae1f84adbc208b8900c801)
+
+```kotlin
+// ❌ BREAKS on iOS - val with composable lambda type
+interface MaterialComponentTokens {
+    val card: @Composable () -> CardTokens
+    val badge: @Composable () -> BadgeTokens
+}
+
+internal class DefaultMaterialComponentTokens : MaterialComponentTokens {
+    override val card: @Composable () -> CardTokens = {
+        object : CardTokens {
+            override val shape = MaterialTheme.tokens.shapes.extraLarge
+            // ... properties
+        }
+    }
+}
+```
+
+```kotlin
+// ✅ WORKS on iOS - @Composable fun
+interface MaterialComponentTokens {
+    @Composable
+    fun card(): CardTokens
+    
+    @Composable
+    fun badge(): BadgeTokens
+}
+
+internal class DefaultMaterialComponentTokens : MaterialComponentTokens {
+    @Composable
+    override fun card(): CardTokens = object : CardTokens {
+        override val shape = MaterialTheme.tokens.shapes.extraLarge
+        // ... properties
+    }
+}
+```
+
+**Key Differences**:
+- Interface declares `@Composable fun` not `val`
+- Implementation overrides with `@Composable override fun`
+- Return the tokens directly (not wrapped in lambda)
+- Call site changes from `tokens.card()` to `tokens.card()`
+
+**When This Applies**:
+- ✅ Any interface with composable properties
+- ✅ Token providers, theme interfaces
+- ✅ Any code shared with iOS (`commonMain`)
+- ❌ Not needed for Android-only code (`androidMain`)
+
+**Impact on Callsites**:
+```kotlin
+// Before
+val cardTokens = MaterialTheme.componentTokens.card()  // Invoke lambda
+
+// After
+val cardTokens = MaterialTheme.componentTokens.card()  // Call function (same syntax!)
+```
+
+**Why This Matters**: 
+- Runtime exceptions in iOS are harder to debug than compile errors
+- Affects any shared design system or token architecture
+- Must be tested on actual iOS builds, not just Android
+
+**Lesson Learned**: When working with composables in shared code (especially in interfaces), prefer `@Composable fun` over `val` properties with composable lambdas for iOS compatibility.
+
+---
+
 ### 2. Parametric ViewModels with Koin
 
 **Pattern**: ViewModels with constructor parameters (e.g., `pokemonId`, `userId`)

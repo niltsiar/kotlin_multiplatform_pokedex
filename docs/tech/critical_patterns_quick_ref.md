@@ -496,6 +496,62 @@ class FeatureDataConventionPlugin : Plugin<Project> {
 
 ---
 
+## iOS Composable Interop Pattern
+
+**Rule**: Interfaces with composable members MUST use `@Composable fun` methods, NOT `val` properties with composable lambdas.
+
+### Required Elements
+
+1. **Interface**: Declare `@Composable fun` methods
+2. **Implementation**: Override with `@Composable override fun`
+3. **Return directly**: Don't wrap in lambda `{ }`
+4. **Applies to `commonMain`** shared with iOS
+
+### Canonical Example
+
+```kotlin
+// ✅ CORRECT - Works on iOS
+interface MaterialComponentTokens {
+    @Composable
+    fun card(): CardTokens
+    
+    @Composable
+    fun badge(): BadgeTokens
+}
+
+internal class DefaultMaterialComponentTokens : MaterialComponentTokens {
+    @Composable
+    override fun card(): CardTokens = object : CardTokens {
+        override val shape = MaterialTheme.tokens.shapes.extraLarge
+        override val elevation = MaterialTheme.tokens.elevation.level2
+    }
+    
+    @Composable
+    override fun badge(): BadgeTokens = object : BadgeTokens {
+        override val shape = MaterialTheme.tokens.shapes.large
+        override val fillAlpha = 1f
+    }
+}
+
+// Usage (same syntax either way)
+val cardTokens = MaterialTheme.componentTokens.card()
+```
+
+### Common Violations
+
+| ❌ Anti-Pattern | ✅ Correct Pattern |
+|----------------|-------------------|
+| `val card: @Composable () -> CardTokens` | `@Composable fun card(): CardTokens` |
+| `override val card: @Composable () -> CardTokens = { ... }` | `@Composable override fun card(): CardTokens = ...` |
+| Lambda wrapper in implementation | Direct return of token object |
+| Only testing on Android | Must test on iOS builds |
+
+**Why This Matters**: iOS runtime fails to recognize `internal val` properties with composable lambdas in interfaces. This causes **runtime exceptions** (not compile errors), making it critical to follow this pattern in `commonMain` code.
+
+**Reference**: Fixed in commit `a456a5af6cdf8a7c06ae1f84adbc208b8900c801` for `MaterialComponentTokens`.
+
+---
+
 ## Usage Guidelines
 
 ### For Documentation Authors
