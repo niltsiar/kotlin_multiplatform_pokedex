@@ -36,15 +36,17 @@ class PokemonDetailViewModelTest : StringSpec({
     
     lateinit var mockRepository: PokemonDetailRepository
     
-    val testPokemonId = 25
+    val testPokemonUrl = "https://pokeapi.co/api/v2/pokemon/25/"
     
     beforeTest {
         mockRepository = mockk(relaxed = true)
     }
+    
+    fun pokemonUrl(id: Int) = "https://pokeapi.co/api/v2/pokemon/$id/"
 
-    fun createViewModel(pokemonId: Int = testPokemonId): PokemonDetailViewModel = PokemonDetailViewModel(
+    fun createViewModel(pokemonUrl: String = testPokemonUrl): PokemonDetailViewModel = PokemonDetailViewModel(
         repository = mockRepository,
-        pokemonId = pokemonId,
+        pokemonUrl = pokemonUrl,
         savedStateHandle = SavedStateHandle(),
         viewModelScope = testScope,
     )
@@ -71,7 +73,7 @@ class PokemonDetailViewModelTest : StringSpec({
             imageUrl = "https://example.com/25.png"
         )
         
-        coEvery { mockRepository.getDetail(testPokemonId) } returns Either.Right(pokemon)
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns Either.Right(pokemon)
         
         val vm = createViewModel()
         
@@ -85,7 +87,7 @@ class PokemonDetailViewModelTest : StringSpec({
         state.pokemon.id shouldBe 25
         state.pokemon.name shouldBe "Pikachu"
         
-        coVerify(exactly = 1) { mockRepository.getDetail(testPokemonId) }
+        coVerify(exactly = 1) { mockRepository.getDetailByUrl(testPokemonUrl) }
     }
     
     "loadPokemonDetail should emit Content on success" {
@@ -101,7 +103,7 @@ class PokemonDetailViewModelTest : StringSpec({
             imageUrl = "https://example.com/1.png"
         )
         
-        coEvery { mockRepository.getDetail(testPokemonId) } returns Either.Right(pokemon)
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns Either.Right(pokemon)
         
         val viewModel = createViewModel()
         
@@ -120,11 +122,11 @@ class PokemonDetailViewModelTest : StringSpec({
             cancelAndIgnoreRemainingEvents()
         }
         
-        coVerify(atLeast = 1) { mockRepository.getDetail(testPokemonId) }
+        coVerify(atLeast = 1) { mockRepository.getDetailByUrl(testPokemonUrl) }
     }
     
     "loadPokemonDetail should emit Error on Network failure" {
-        coEvery { mockRepository.getDetail(testPokemonId) } returns Either.Left(RepoError.Network)
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns Either.Left(RepoError.Network)
         
         val viewModel = createViewModel()
         
@@ -143,7 +145,7 @@ class PokemonDetailViewModelTest : StringSpec({
     }
     
     "loadPokemonDetail should emit Error on Http 404" {
-        coEvery { mockRepository.getDetail(testPokemonId) } returns 
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns 
             Either.Left(RepoError.Http(404, "Not found"))
         
         val viewModel = createViewModel()
@@ -163,7 +165,7 @@ class PokemonDetailViewModelTest : StringSpec({
     }
     
     "loadPokemonDetail should emit Error on Http 500" {
-        coEvery { mockRepository.getDetail(testPokemonId) } returns 
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns 
             Either.Left(RepoError.Http(500, "Internal server error"))
         
         val viewModel = createViewModel()
@@ -183,7 +185,7 @@ class PokemonDetailViewModelTest : StringSpec({
     }
     
     "loadPokemonDetail should emit Error on Unknown error" {
-        coEvery { mockRepository.getDetail(testPokemonId) } returns 
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns 
             Either.Left(RepoError.Unknown(RuntimeException("Unexpected")))
         
         val viewModel = createViewModel()
@@ -216,7 +218,7 @@ class PokemonDetailViewModelTest : StringSpec({
         )
         
         // First call fails
-        coEvery { mockRepository.getDetail(testPokemonId) } returns Either.Left(RepoError.Network)
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns Either.Left(RepoError.Network)
         
         val viewModel = createViewModel()
         
@@ -226,7 +228,7 @@ class PokemonDetailViewModelTest : StringSpec({
         viewModel.uiState.value.shouldBeInstanceOf<PokemonDetailUiState.Error>()
         
         // Second call succeeds
-        coEvery { mockRepository.getDetail(testPokemonId) } returns Either.Right(pokemon)
+        coEvery { mockRepository.getDetailByUrl(testPokemonUrl) } returns Either.Right(pokemon)
         viewModel.retry()
         testDispatcher.scheduler.advanceUntilIdle()
         
@@ -234,11 +236,12 @@ class PokemonDetailViewModelTest : StringSpec({
         state.shouldBeInstanceOf<PokemonDetailUiState.Content>()
         state.pokemon.name shouldBe "Pikachu"
         
-        coVerify(exactly = 2) { mockRepository.getDetail(testPokemonId) }
+        coVerify(exactly = 2) { mockRepository.getDetailByUrl(testPokemonUrl) }
     }
     
-    "loadPokemonDetail should use correct pokemonId from constructor" {
+    "loadPokemonDetail should use correct pokemonUrl from constructor" {
         val differentPokemonId = 150
+        val differentUrl = pokemonUrl(differentPokemonId)
         
         val pokemon = PokemonDetail(
             id = differentPokemonId,
@@ -252,9 +255,9 @@ class PokemonDetailViewModelTest : StringSpec({
             imageUrl = "https://example.com/150.png"
         )
         
-        coEvery { mockRepository.getDetail(differentPokemonId) } returns Either.Right(pokemon)
+        coEvery { mockRepository.getDetailByUrl(differentUrl) } returns Either.Right(pokemon)
         
-        val vm = createViewModel(pokemonId = differentPokemonId)
+        val vm = createViewModel(pokemonUrl = differentUrl)
         
         vm.uiState.test {
             awaitItem() shouldBe PokemonDetailUiState.Loading
@@ -269,7 +272,7 @@ class PokemonDetailViewModelTest : StringSpec({
             cancelAndIgnoreRemainingEvents()
         }
         
-        coVerify(atLeast = 1) { mockRepository.getDetail(differentPokemonId) }
+        coVerify(atLeast = 1) { mockRepository.getDetailByUrl(differentUrl) }
     }
     
     // Property-based tests with proper flow testing
@@ -282,6 +285,7 @@ class PokemonDetailViewModelTest : StringSpec({
             Arb.int(1..5000),
             Arb.int(0..500)
         ) { id, name, height, weight, baseExp ->
+            val url = pokemonUrl(id)
             val pokemon = PokemonDetail(
                 id = id,
                 name = name,
@@ -294,9 +298,9 @@ class PokemonDetailViewModelTest : StringSpec({
                 imageUrl = "https://example.com/$id.png"
             )
             
-            coEvery { mockRepository.getDetail(id) } returns Either.Right(pokemon)
+            coEvery { mockRepository.getDetailByUrl(url) } returns Either.Right(pokemon)
             
-            val vm = createViewModel(pokemonId = id)
+            val vm = createViewModel(pokemonUrl = url)
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -322,9 +326,10 @@ class PokemonDetailViewModelTest : StringSpec({
             Arb.int(1..1000),
             arbRepoError()
         ) { pokemonId, error ->
-            coEvery { mockRepository.getDetail(pokemonId) } returns Either.Left(error)
+            val url = pokemonUrl(pokemonId)
+            coEvery { mockRepository.getDetailByUrl(url) } returns Either.Left(error)
             
-            val vm = createViewModel(pokemonId = pokemonId)
+            val vm = createViewModel(pokemonUrl = url)
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -348,10 +353,11 @@ class PokemonDetailViewModelTest : StringSpec({
             Arb.int(1..1000),
             arbRepoError()
         ) { pokemonId, initialError ->
+            val url = pokemonUrl(pokemonId)
             // First call fails
-            coEvery { mockRepository.getDetail(pokemonId) } returns Either.Left(initialError)
+            coEvery { mockRepository.getDetailByUrl(url) } returns Either.Left(initialError)
             
-            val vm = createViewModel(pokemonId = pokemonId)
+            val vm = createViewModel(pokemonUrl = url)
             
             vm.loadPokemonDetail()
                 testDispatcher.scheduler.advanceUntilIdle()
@@ -370,7 +376,7 @@ class PokemonDetailViewModelTest : StringSpec({
                 abilities = persistentListOf(),
                 imageUrl = "https://example.com/$pokemonId.png"
             )
-            coEvery { mockRepository.getDetail(pokemonId) } returns Either.Right(pokemon)
+            coEvery { mockRepository.getDetailByUrl(url) } returns Either.Right(pokemon)
             
             vm.retry()
             testDispatcher.scheduler.advanceUntilIdle()
@@ -386,10 +392,11 @@ class PokemonDetailViewModelTest : StringSpec({
             Arb.int(1..1000),
             Arb.int(400..599)
         ) { pokemonId, httpCode ->
+            val url = pokemonUrl(pokemonId)
             val error = RepoError.Http(httpCode, "Test error")
-            coEvery { mockRepository.getDetail(pokemonId) } returns Either.Left(error)
+            coEvery { mockRepository.getDetailByUrl(url) } returns Either.Left(error)
             
-            val vm = createViewModel(pokemonId = pokemonId)
+            val vm = createViewModel(pokemonUrl = url)
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -406,8 +413,9 @@ class PokemonDetailViewModelTest : StringSpec({
         }
     }
     
-    "property: ViewModel always uses pokemonId from constructor" {
+    "property: ViewModel always uses pokemonUrl from constructor" {
         checkAll(Arb.int(1..1000)) { pokemonId ->
+            val url = pokemonUrl(pokemonId)
             val pokemon = PokemonDetail(
                 id = pokemonId,
                 name = "TestPokemon",
@@ -420,9 +428,9 @@ class PokemonDetailViewModelTest : StringSpec({
                 imageUrl = "https://example.com/$pokemonId.png"
             )
             
-            coEvery { mockRepository.getDetail(pokemonId) } returns Either.Right(pokemon)
+            coEvery { mockRepository.getDetailByUrl(url) } returns Either.Right(pokemon)
             
-            val vm = createViewModel(pokemonId = pokemonId)
+            val vm = createViewModel(pokemonUrl = url)
             
             vm.uiState.test {
                 skipItems(1) // Skip Loading
@@ -430,8 +438,8 @@ class PokemonDetailViewModelTest : StringSpec({
                 vm.loadPokemonDetail()
                 testDispatcher.scheduler.advanceUntilIdle()
                 
-                // Verify correct ID was used
-                coVerify(atLeast = 1) { mockRepository.getDetail(pokemonId) }
+                // Verify correct URL was used
+                coVerify(atLeast = 1) { mockRepository.getDetailByUrl(url) }
                 
                 val state = awaitItem()
                 state.shouldBeInstanceOf<PokemonDetailUiState.Content>()

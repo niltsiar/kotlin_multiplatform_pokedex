@@ -18,10 +18,10 @@ internal class PokemonDetailRepositoryImpl(
     private val apiService: PokemonDetailApiService
 ) : PokemonDetailRepository {
     
-    override suspend fun getDetail(id: Int): Either<RepoError, PokemonDetail> =
+    override suspend fun getDetailByUrl(url: String): Either<RepoError, PokemonDetail> =
         withContext(Dispatchers.IO) {
             catch({
-                val dto = apiService.getPokemonDetail(id)
+                val dto = apiService.getPokemonDetailByUrl(url)
                 Either.Right(dto.asDomain())
             }) { throwable ->
                 Either.Left(throwable.toRepoError())
@@ -29,12 +29,10 @@ internal class PokemonDetailRepositoryImpl(
         }
 }
 
-// Factory function - public for wiring module
 fun PokemonDetailRepository(
     apiService: PokemonDetailApiService
 ): PokemonDetailRepository = PokemonDetailRepositoryImpl(apiService)
 
-// Error mapping using Ktor's multiplatform exceptions
 private fun Throwable.toRepoError(): RepoError = when (this) {
     is ClientRequestException -> RepoError.Http(response.status.value, message)
     is ServerResponseException -> RepoError.Http(response.status.value, message)

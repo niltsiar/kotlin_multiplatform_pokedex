@@ -2,7 +2,7 @@ package com.minddistrict.multiplatformpoc.features.pokemondetail.navigation
 
 /**
  * Navigation route for Pokémon Detail screen.
- * Data class carries the pokemon ID as a parameter.
+ * Data class carries the pokemon detail URL from the API response.
  */
-data class PokemonDetail(val id: Int)
+data class PokemonDetail(val url: String)
 

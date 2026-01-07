@@ -2,90 +2,82 @@ package com.minddistrict.multiplatformpoc.features.pokemonlist.data.mappers
 
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.dto.PokemonListDto
 import com.minddistrict.multiplatformpoc.features.pokemonlist.data.dto.PokemonSummaryDto
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldStartWith
+import io.kotest.matchers.shouldNotBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.boolean
 import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
-import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import io.kotest.property.forAll
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 
 class PokemonMappersTest : StringSpec({
     
-    // Property-based tests for extractIdFromUrl
-    
-    "property: extractIdFromUrl works for any valid Pokemon ID" {
-        checkAll(Arb.int(1..10000)) { id ->
-            val urlWithSlash = "https://pokeapi.co/api/v2/pokemon/$id/"
-            val urlWithoutSlash = "https://pokeapi.co/api/v2/pokemon/$id"
-            
-            extractIdFromUrl(urlWithSlash) shouldBe id
-            extractIdFromUrl(urlWithoutSlash) shouldBe id
-        }
-    }
-    
-    "property: extractIdFromUrl throws for invalid URLs" {
+    "mapping: PokemonSummaryDto.toDomain preserves name and URL" {
         checkAll(
-            Arb.string(1..20)
-                .filter { !it.contains('/') }
-                .filter { it.toIntOrNull() == null }  // Exclude pure numbers which are valid IDs
-        ) { invalidSegment ->
-            shouldThrow<IllegalArgumentException> {
-                extractIdFromUrl(invalidSegment)
-            }
-        }
-    }
-    
-    "extractIdFromUrl should throw on invalid URL without ID" {
-        shouldThrow<IllegalArgumentException> {
-            extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/")
-        }
-    }
-    
-    "extractIdFromUrl should throw on completely invalid URL" {
-        shouldThrow<IllegalArgumentException> {
-            extractIdFromUrl("invalid-url")
-        }
-    }
-    
-    "extractIdFromUrl should throw on URL with non-numeric ID" {
-        shouldThrow<IllegalArgumentException> {
-            extractIdFromUrl("https://pokeapi.co/api/v2/pokemon/abc/")
-        }
-    }
-    
-    // Property-based tests for toDomain mapping
-    
-    "property: toDomain always capitalizes first letter of name" {
-        checkAll(
-            Arb.string(1..50)
-                .filter { it.isNotEmpty() }
-                .filter { it.first().isLetter() }  // Only test with letters (digits can't be uppercase)
-        ) { name ->
+            arbPokemonName(),
+            Arb.int(1..10000)
+        ) { name, id ->
             val dto = PokemonSummaryDto(
-                name = name.lowercase(),
+                name = name,
+                url = "https://pokeapi.co/api/v2/pokemon/$id/"
+            )
+            
+            val domain = dto.toDomain()
+            domain.detailUrl shouldBe dto.url
+        }
+    }
+    
+    "mapping: PokemonSummaryDto.toDomain capitalizes first character of name" {
+        checkAll(arbPokemonName()) { name ->
+            val dto = PokemonSummaryDto(
+                name = name,
                 url = "https://pokeapi.co/api/v2/pokemon/1/"
             )
             
             val domain = dto.toDomain()
+            domain.name shouldBe name.replaceFirstChar { it.uppercase() }
+        }
+    }
+    
+    "mapping: Pokemon.id property extracts ID from detailUrl correctly" {
+        checkAll(Arb.int(1..10000)) { expectedId ->
+            val dto = PokemonSummaryDto(
+                name = "pokemon",
+                url = "https://pokeapi.co/api/v2/pokemon/$expectedId/"
+            )
             
-            if (name.isNotEmpty()) {
-                domain.name.first().isUpperCase() shouldBe true
-                domain.name.drop(1) shouldBe name.lowercase().drop(1)
+            val domain = dto.toDomain()
+            domain.id shouldBe expectedId
+        }
+    }
+    
+    "property: Pokemon.id extraction works for any URL format" {
+        forAll(
+            Arb.int(1..10000)
+        ) { id ->
+            // Test various URL formats
+            val urls = listOf(
+                "https://pokeapi.co/api/v2/pokemon/$id/",
+                "http://pokeapi.co/api/v2/pokemon/$id/",
+                "https://pokeapi.co/api/v2/pokemon/$id"
+            )
+            
+            urls.all { url ->
+                val dto = PokemonSummaryDto("pokemon", url)
+                val domain = dto.toDomain()
+                domain.id == id
             }
         }
     }
     
-    "property: toDomain generates correct image URL for any ID" {
+    "mapping: Pokemon.imageUrl generates correct sprite URL from ID" {
         checkAll(Arb.int(1..10000)) { id ->
             val dto = PokemonSummaryDto(
                 name = "pokemon",
@@ -93,88 +85,109 @@ class PokemonMappersTest : StringSpec({
             )
             
             val domain = dto.toDomain()
-            
             domain.imageUrl shouldBe "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
         }
     }
     
-    "property: toDomain preserves ID regardless of name" {
-        checkAll(Arb.int(1..10000), Arb.string(1..50)) { id, name ->
-            val dto = PokemonSummaryDto(
-                name = name,
-                url = "https://pokeapi.co/api/v2/pokemon/$id/"
+    "mapping: PokemonListDto.toDomain maps all pokemons" {
+        checkAll(
+            Arb.list(
+                Arb.int(1..10000),
+                1..50
             )
-            
-            val domain = dto.toDomain()
-            
-            domain.id shouldBe id
-        }
-    }
-    
-    // Property-based tests for PokemonListDto mapping
-    
-    "property: PokemonListDto.toDomain preserves hasMore flag correctly" {
-        checkAll(Arb.int(0..10000), Arb.boolean()) { count, hasNext ->
-            val dto = PokemonListDto(
-                count = count,
-                next = if (hasNext) "https://pokeapi.co/api/v2/pokemon?offset=20" else null,
-                previous = null,
-                results = emptyList()
-            )
-            
-            val page = dto.toDomain()
-            
-            page.hasMore shouldBe hasNext
-        }
-    }
-    
-    "property: PokemonListDto.toDomain maps all results correctly" {
-        checkAll(Arb.list(Arb.int(1..1000), 0..20)) { ids ->
-            val results = ids.mapIndexed { index, id ->
+        ) { ids ->
+            val pokemonSummaries = ids.mapIndexed { idx, id ->
                 PokemonSummaryDto(
-                    name = "pokemon$index",
+                    name = "pokemon$idx",
                     url = "https://pokeapi.co/api/v2/pokemon/$id/"
                 )
             }
             
             val dto = PokemonListDto(
-                count = results.size,
+                count = ids.size,
                 next = null,
                 previous = null,
-                results = results
+                results = pokemonSummaries
             )
             
-            val page = dto.toDomain()
-            
-            page.pokemons.size shouldBe results.size
-            page.pokemons.forEachIndexed { index, pokemon ->
-                pokemon.id shouldBe ids[index]
-                pokemon.name shouldBe "Pokemon$index"
+            val domain = dto.toDomain()
+            domain.pokemons.size shouldBe ids.size
+            domain.pokemons.forEachIndexed { idx, pokemon ->
+                pokemon.id shouldBe ids[idx]
             }
         }
     }
     
-    "PokemonListDto.toDomain should map all pokemons" {
-        val dto = PokemonListDto(
-            count = 1292,
-            next = "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
+    "mapping: PokemonPage.hasMore reflects nextUrl presence" {
+        val nextUrl = "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20"
+        
+        val dtoWithNext = PokemonListDto(
+            count = 100,
+            next = nextUrl,
             previous = null,
-            results = listOf(
-                PokemonSummaryDto("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
-                PokemonSummaryDto("ivysaur", "https://pokeapi.co/api/v2/pokemon/2/"),
-                PokemonSummaryDto("venusaur", "https://pokeapi.co/api/v2/pokemon/3/")
-            )
+            results = emptyList()
         )
         
-        val page = dto.toDomain()
+        val dtoWithoutNext = PokemonListDto(
+            count = 100,
+            next = null,
+            previous = null,
+            results = emptyList()
+        )
         
-        page.pokemons.size shouldBe 3
-        page.pokemons[0].name shouldBe "Bulbasaur"
-        page.pokemons[1].name shouldBe "Ivysaur"
-        page.pokemons[2].name shouldBe "Venusaur"
+        dtoWithNext.toDomain().hasMore.shouldBeTrue()
+        dtoWithoutNext.toDomain().hasMore.shouldBeFalse()
     }
     
-    "PokemonListDto.toDomain should handle empty results" {
+    "mapping: PokemonPage.hasPrevious reflects previousUrl presence" {
+        val previousUrl = "https://pokeapi.co/api/v2/pokemon?offset=0&limit=20"
+        
+        val dtoWithPrevious = PokemonListDto(
+            count = 100,
+            next = null,
+            previous = previousUrl,
+            results = emptyList()
+        )
+        
+        val dtoWithoutPrevious = PokemonListDto(
+            count = 100,
+            next = null,
+            previous = null,
+            results = emptyList()
+        )
+        
+        dtoWithPrevious.toDomain().hasPrevious.shouldBeTrue()
+        dtoWithoutPrevious.toDomain().hasPrevious.shouldBeFalse()
+    }
+    
+    "property: PokemonPage pagination properties match DTO" {
+        forAll(
+            Arb.boolean(),
+            Arb.boolean(),
+            Arb.list(Arb.int(1..10000), 0..100)
+        ) { hasNext, hasPrevious, ids ->
+            val nextUrl = if (hasNext) "https://pokeapi.co/api/v2/pokemon?offset=${ids.size}&limit=20" else null
+            val previousUrl = if (hasPrevious) "https://pokeapi.co/api/v2/pokemon?offset=0&limit=20" else null
+            
+            val pokemonSummaries = ids.mapIndexed { idx, id ->
+                PokemonSummaryDto("pokemon$idx", "https://pokeapi.co/api/v2/pokemon/$id/")
+            }
+            
+            val dto = PokemonListDto(
+                count = ids.size * 2,
+                next = nextUrl,
+                previous = previousUrl,
+                results = pokemonSummaries
+            )
+            
+            val domain = dto.toDomain()
+            (domain.nextUrl != null) == hasNext &&
+            (domain.previousUrl != null) == hasPrevious &&
+            domain.pokemons.size == ids.size
+        }
+    }
+    
+    "mapping: empty PokemonListDto maps to empty domain list" {
         val dto = PokemonListDto(
             count = 0,
             next = null,
@@ -182,119 +195,45 @@ class PokemonMappersTest : StringSpec({
             results = emptyList()
         )
         
-        val page = dto.toDomain()
+        val domain = dto.toDomain()
+        domain.pokemons.shouldBe(emptyList())
+        domain.hasMore.shouldBeFalse()
+        domain.hasPrevious.shouldBeFalse()
+    }
+    
+    "mapping: PokemonPage nextUrl and previousUrl preserve original URLs" {
+        val nextUrl = "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20"
+        val previousUrl = "https://pokeapi.co/api/v2/pokemon?offset=0&limit=20"
         
-        page.pokemons.size shouldBe 0
-        page.hasMore shouldBe false
-    }
-    
-    // Enhanced round-trip tests with property-based testing
-    
-    "property: JSON round-trip preserves PokemonSummaryDto for any valid data" {
-        checkAll(Arb.int(1..10000), Arb.string(1..100).filter { it.isNotBlank() }) { id, name ->
-            val original = PokemonSummaryDto(
-                name = name,
-                url = "https://pokeapi.co/api/v2/pokemon/$id/"
+        val dto = PokemonListDto(
+            count = 100,
+            next = nextUrl,
+            previous = previousUrl,
+            results = listOf(
+                PokemonSummaryDto("pokemon1", "https://pokeapi.co/api/v2/pokemon/1/")
             )
-            
-            val json = Json.encodeToString(original)
-            val decoded = Json.decodeFromString<PokemonSummaryDto>(json)
-            
-            decoded shouldBe original
-        }
-    }
-    
-    "property: JSON round-trip preserves PokemonListDto with varying list sizes" {
-        checkAll(
-            Arb.int(0..10000), // count
-            Arb.list(Arb.int(1..1000), 0..50), // pokemon IDs
-            Arb.string(0..200).orNull(), // next
-            Arb.string(0..200).orNull()  // previous
-        ) { count, ids, next, previous ->
-            val results = ids.mapIndexed { index, id ->
-                PokemonSummaryDto(
-                    name = "pokemon$index",
-                    url = "https://pokeapi.co/api/v2/pokemon/$id/"
-                )
-            }
-            
-            val original = PokemonListDto(
-                count = count,
-                next = next,
-                previous = previous,
-                results = results
-            )
-            
-            val json = Json.encodeToString(original)
-            val decoded = Json.decodeFromString<PokemonListDto>(json)
-            
-            decoded shouldBe original
-            decoded.results.size shouldBe results.size
-        }
-    }
-    
-    "property: DTO to domain to DTO maintains consistency" {
-        forAll(Arb.int(1..10000), Arb.string(1..50).filter { it.isNotBlank() }) { id, name ->
-            val dto1 = PokemonSummaryDto(
-                name = name.lowercase(),
-                url = "https://pokeapi.co/api/v2/pokemon/$id/"
-            )
-            
-            val domain = dto1.toDomain()
-            
-            // Create another DTO with same data
-            val dto2 = PokemonSummaryDto(
-                name = name.lowercase(),
-                url = "https://pokeapi.co/api/v2/pokemon/$id/"
-            )
-            
-            val domain2 = dto2.toDomain()
-            
-            // Same input should produce same output
-            domain == domain2
-        }
-    }
-    
-    // Original round-trip tests (kept for specific edge cases)
-    
-    "round-trip: JSON to PokemonSummaryDto to JSON preserves data" {
-        val json = """{"name":"pikachu","url":"https://pokeapi.co/api/v2/pokemon/25/"}"""
-        
-        val dto = Json.decodeFromString<PokemonSummaryDto>(json)
-        val encodedJson = Json.encodeToString(dto)
-        
-        // Decode again to verify round-trip
-        val decoded = Json.decodeFromString<PokemonSummaryDto>(encodedJson)
-        decoded shouldBe dto
-        decoded.name shouldBe "pikachu"
-        decoded.url shouldBe "https://pokeapi.co/api/v2/pokemon/25/"
-    }
-    
-    "round-trip: PokemonSummaryDto to JSON to PokemonSummaryDto is equal" {
-        val dto = PokemonSummaryDto(
-            name = "bulbasaur",
-            url = "https://pokeapi.co/api/v2/pokemon/1/"
         )
         
-        val json = Json.encodeToString(dto)
-        val decoded = Json.decodeFromString<PokemonSummaryDto>(json)
-        
-        decoded shouldBe dto
+        val domain = dto.toDomain()
+        domain.nextUrl shouldBe nextUrl
+        domain.previousUrl shouldBe previousUrl
     }
     
-    "round-trip: PokemonListDto with null fields through JSON" {
+    "mapping: PokemonListDto with null URLs maps correctly" {
         val dto = PokemonListDto(
-            count = 20,
+            count = 0,
             next = null,
             previous = null,
             results = emptyList()
         )
         
-        val json = Json.encodeToString(dto)
-        val decoded = Json.decodeFromString<PokemonListDto>(json)
-        
-        decoded shouldBe dto
-        decoded.next shouldBe null
-        decoded.previous shouldBe null
+        val domain = dto.toDomain()
+        domain.nextUrl.shouldBeNull()
+        domain.previousUrl.shouldBeNull()
     }
 })
+
+private fun arbPokemonName(): Arb<String> = 
+    Arb.string(3..20)
+        .filter { it.all { c -> c.isLetterOrDigit() || c == ' ' || c == '-' } }
+        .filter { it.isNotBlank() }

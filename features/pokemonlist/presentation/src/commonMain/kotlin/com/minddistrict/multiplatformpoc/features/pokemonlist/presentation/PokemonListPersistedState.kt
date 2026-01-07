@@ -22,19 +22,16 @@ internal data class PokemonListPersistedState(
 
 @Serializable
 internal data class PokemonSnapshot(
-    val id: Int,
     val name: String,
-    val imageUrl: String,
+    val detailUrl: String,
 )
 
 internal fun PokemonSnapshot.asDomain(): Pokemon = Pokemon(
-    id = id,
     name = name,
-    imageUrl = imageUrl,
+    detailUrl = detailUrl,
 )
 
 internal fun Pokemon.asSnapshot(): PokemonSnapshot = PokemonSnapshot(
-    id = id,
     name = name,
-    imageUrl = imageUrl,
+    detailUrl = detailUrl,
 )

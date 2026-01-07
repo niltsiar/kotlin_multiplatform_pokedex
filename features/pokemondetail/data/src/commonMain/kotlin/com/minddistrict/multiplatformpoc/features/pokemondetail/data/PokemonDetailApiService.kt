@@ -6,21 +6,18 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 
 interface PokemonDetailApiService {
-    suspend fun getPokemonDetail(id: Int): PokemonDetailDto
+    suspend fun getPokemonDetailByUrl(url: String): PokemonDetailDto
 }
 
 internal class PokemonDetailApiServiceImpl(
-    private val httpClient: HttpClient,
-    private val baseUrl: String = "https://pokeapi.co/api/v2"
+    private val httpClient: HttpClient
 ) : PokemonDetailApiService {
     
-    override suspend fun getPokemonDetail(id: Int): PokemonDetailDto {
-        return httpClient.get("$baseUrl/pokemon/$id/").body()
+    override suspend fun getPokemonDetailByUrl(url: String): PokemonDetailDto {
+        return httpClient.get(url).body()
     }
 }
 
-// Factory function - public for wiring module
 fun PokemonDetailApiService(
-    httpClient: HttpClient,
-    baseUrl: String = "https://pokeapi.co/api/v2"
-): PokemonDetailApiService = PokemonDetailApiServiceImpl(httpClient, baseUrl)
+    httpClient: HttpClient
+): PokemonDetailApiService = PokemonDetailApiServiceImpl(httpClient)

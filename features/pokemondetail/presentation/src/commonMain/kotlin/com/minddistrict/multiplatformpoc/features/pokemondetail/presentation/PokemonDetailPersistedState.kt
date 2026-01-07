@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class PokemonDetailPersistedState(
-    val pokemonId: Int,
+    val pokemonUrl: String,
     val lastErrorMessage: String? = null,
     val pokemon: PokemonDetailSnapshot? = null,
     val scrollPosition: Int = 0,

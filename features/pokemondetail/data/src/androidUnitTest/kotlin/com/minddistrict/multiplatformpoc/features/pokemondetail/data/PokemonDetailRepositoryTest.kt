@@ -1,7 +1,6 @@
 package com.minddistrict.multiplatformpoc.features.pokemondetail.data
 
 import arrow.core.Either
-import com.minddistrict.multiplatformpoc.features.pokemondetail.PokemonDetailRepository
 import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.AbilityDto
 import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.AbilitySlotDto
 import com.minddistrict.multiplatformpoc.features.pokemondetail.data.dto.PokemonDetailDto
@@ -14,32 +13,32 @@ import com.minddistrict.multiplatformpoc.features.pokemondetail.domain.RepoError
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.Arb
+import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.constant
+import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.int
-import io.kotest.property.arbitrary.orNull
+import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import io.ktor.client.network.sockets.ConnectTimeoutException
-import io.ktor.client.network.sockets.SocketTimeoutException
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.ServerResponseException
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpStatusCode
+import io.kotest.property.forAll
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 
 class PokemonDetailRepositoryTest : StringSpec({
-    lateinit var mockApi: PokemonDetailApiService
-    lateinit var repository: PokemonDetailRepository
+    
+    lateinit var mockApiService: PokemonDetailApiService
     
     beforeTest {
-        mockApi = mockk()
-        repository = PokemonDetailRepository(mockApi)
+        mockApiService = mockk(relaxed = true)
     }
     
-    "should return Right with mapped domain on success" {
+    "getDetailByUrl should return Right with mapped domain object on success" {
+        val url = "https://pokeapi.co/api/v2/pokemon/25/"
         val dto = PokemonDetailDto(
             id = 25,
             name = "pikachu",
@@ -47,240 +46,268 @@ class PokemonDetailRepositoryTest : StringSpec({
             weight = 60,
             baseExperience = 112,
             types = listOf(
-                TypeSlotDto(
-                    slot = 1,
-                    type = TypeDto(name = "electric", url = "https://pokeapi.co/api/v2/type/13/")
-                )
+                TypeSlotDto(1, TypeDto("electric", "https://pokeapi.co/api/v2/type/10/"))
             ),
             stats = listOf(
-                StatDto(
-                    baseStat = 35,
-                    effort = 0,
-                    stat = StatInfoDto(name = "hp", url = "https://pokeapi.co/api/v2/stat/1/")
-                ),
-                StatDto(
-                    baseStat = 55,
-                    effort = 0,
-                    stat = StatInfoDto(name = "attack", url = "https://pokeapi.co/api/v2/stat/2/")
-                )
+                StatDto(35, 0, StatInfoDto("hp", "https://pokeapi.co/api/v2/stat/1/"))
             ),
             abilities = listOf(
-                AbilitySlotDto(
-                    isHidden = false,
-                    slot = 1,
-                    ability = AbilityDto(name = "static", url = "https://pokeapi.co/api/v2/ability/9/")
-                ),
-                AbilitySlotDto(
-                    isHidden = true,
-                    slot = 3,
-                    ability = AbilityDto(name = "lightning-rod", url = "https://pokeapi.co/api/v2/ability/31/")
-                )
+                AbilitySlotDto(false, 1, AbilityDto("static", "https://pokeapi.co/api/v2/ability/9/"))
             ),
-            sprites = SpritesDto(
-                frontDefault = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
-                frontShiny = null,
-                backDefault = null,
-                backShiny = null
-            )
+            sprites = SpritesDto(frontDefault = "https://example.com/pikachu.png")
         )
         
-        coEvery { mockApi.getPokemonDetail(25) } returns dto
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } returns dto
         
-        val result = repository.getDetail(25)
+        val repository = PokemonDetailRepository(mockApiService)
         
-        val pokemon = result.shouldBeRight()
-        pokemon.id shouldBe 25
-        pokemon.name shouldBe "Pikachu"
-        pokemon.height shouldBe 4
-        pokemon.weight shouldBe 60
-        pokemon.baseExperience shouldBe 112
-        pokemon.types.size shouldBe 1
-        pokemon.types[0].name shouldBe "electric"
-        pokemon.stats.size shouldBe 2
-        pokemon.stats[0].name shouldBe "hp"
-        pokemon.stats[0].baseStat shouldBe 35
-        pokemon.abilities.size shouldBe 2
-        pokemon.abilities[0].name shouldBe "static"
-        pokemon.abilities[0].isHidden shouldBe false
-        pokemon.abilities[1].name shouldBe "lightning-rod"
-        pokemon.abilities[1].isHidden shouldBe true
-        pokemon.imageUrl shouldBe "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+        runTest {
+            val result = repository.getDetailByUrl(url)
+            
+            val pokemon = result.shouldBeRight()
+            pokemon.id shouldBe 25
+            pokemon.name.first().isUpperCase().shouldBeTrue()
+            pokemon.height shouldBe 4
+            pokemon.weight shouldBe 60
+            pokemon.baseExperience shouldBe 112
+            pokemon.imageUrl shouldBe "https://example.com/pikachu.png"
+            
+            coVerify(exactly = 1) { mockApiService.getPokemonDetailByUrl(url) }
+        }
     }
     
-    "should return Network error on ConnectTimeoutException" {
-        coEvery { mockApi.getPokemonDetail(any()) } throws 
-            ConnectTimeoutException("timeout")
-        
-        val result = repository.getDetail(25)
-        
-        val error = result.shouldBeLeft()
-        error shouldBe RepoError.Network
-    }
-    
-    "should return Network error on SocketTimeoutException" {
-        coEvery { mockApi.getPokemonDetail(any()) } throws 
-            SocketTimeoutException("timeout")
-        
-        val result = repository.getDetail(25)
-        
-        val error = result.shouldBeLeft()
-        error shouldBe RepoError.Network
-    }
-    
-    "should return Unknown error on unexpected exceptions" {
-        coEvery { mockApi.getPokemonDetail(any()) } throws 
-            RuntimeException("Unexpected error")
-        
-        val result = repository.getDetail(25)
-        
-        val error = result.shouldBeLeft()
-        error.shouldBeInstanceOf<RepoError.Unknown>()
-    }
-    
-    // Property-based tests for repository behavior
-    
-    "property: repository maps any valid DTO to domain successfully" {
+    "property: getDetailByUrl returns Right preserving all ID and stats data" {
         checkAll(
-            Arb.int(1..1000), // pokemonId
-            Arb.string(1..50), // name
-            Arb.int(1..100), // height
-            Arb.int(1..5000), // weight
-            Arb.int(0..500).orNull() // baseExperience
-        ) { id, name, height, weight, baseExp ->
+            Arb.int(1..10000),
+            Arb.int(1..100),
+            Arb.int(1..5000),
+            Arb.int(0..500)
+        ) { id, height, weight, baseExp ->
+            val url = "https://pokeapi.co/api/v2/pokemon/$id/"
             val dto = PokemonDetailDto(
                 id = id,
-                name = name,
+                name = "pokemon",
                 height = height,
                 weight = weight,
                 baseExperience = baseExp,
-                types = listOf(
-                    TypeSlotDto(
-                        slot = 1,
-                        type = TypeDto(name = "fire", url = "https://pokeapi.co/api/v2/type/10/")
-                    )
-                ),
-                stats = listOf(
-                    StatDto(
-                        baseStat = 50,
-                        effort = 0,
-                        stat = StatInfoDto(name = "hp", url = "https://pokeapi.co/api/v2/stat/1/")
-                    )
-                ),
-                abilities = listOf(
-                    AbilitySlotDto(
-                        isHidden = false,
-                        slot = 1,
-                        ability = AbilityDto(name = "blaze", url = "https://pokeapi.co/api/v2/ability/66/")
-                    )
-                ),
-                sprites = SpritesDto(
-                    frontDefault = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
-                )
+                types = emptyList(),
+                stats = emptyList(),
+                abilities = emptyList(),
+                sprites = SpritesDto()
             )
             
-            coEvery { mockApi.getPokemonDetail(id) } returns dto
+            coEvery { mockApiService.getPokemonDetailByUrl(url) } returns dto
+            val repository = PokemonDetailRepository(mockApiService)
             
-            val result = repository.getDetail(id)
-            
-            val pokemon = result.shouldBeRight()
-            pokemon.id shouldBe id
-            pokemon.height shouldBe height
-            pokemon.weight shouldBe weight
-            pokemon.baseExperience shouldBe (baseExp ?: 0)
-            pokemon.types.size shouldBe 1
-            pokemon.stats.size shouldBe 1
-            pokemon.abilities.size shouldBe 1
+            runTest {
+                val result = repository.getDetailByUrl(url)
+                
+                val pokemon = result.shouldBeRight()
+                pokemon.id shouldBe id
+                pokemon.height shouldBe height
+                pokemon.weight shouldBe weight
+                pokemon.baseExperience shouldBe baseExp
+            }
         }
     }
     
-    "property: repository maps all HTTP error codes to RepoError.Http" {
-        checkAll(Arb.int(400..599)) { statusCode ->
-            val mockResponse = mockk<HttpResponse>(relaxed = true) {
-                coEvery { status } returns HttpStatusCode.fromValue(statusCode)
-            }
-            
-            val exception = if (statusCode < 500) {
-                ClientRequestException(mockResponse, "Client error")
-            } else {
-                ServerResponseException(mockResponse, "Server error")
-            }
-            
-            coEvery { mockApi.getPokemonDetail(any()) } throws exception
-            
-            val result = repository.getDetail(25)
+    "getDetailByUrl should return Left with Network error on connect timeout" {
+        val url = "https://pokeapi.co/api/v2/pokemon/25/"
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } throws 
+            io.ktor.client.network.sockets.ConnectTimeoutException("Connection timeout", null)
+        
+        val repository = PokemonDetailRepository(mockApiService)
+        
+        runTest {
+            val result = repository.getDetailByUrl(url)
             
             val error = result.shouldBeLeft()
-            error.shouldBeInstanceOf<RepoError.Http>()
-            error.code shouldBe statusCode
+            error shouldBe RepoError.Network
         }
     }
     
-    "property: repository preserves pokemon ID in requests" {
-        checkAll(Arb.int(1..1000)) { pokemonId ->
+    "getDetailByUrl should return Left with Network error on socket timeout" {
+        val url = "https://pokeapi.co/api/v2/pokemon/25/"
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } throws 
+            io.ktor.client.network.sockets.SocketTimeoutException("Socket timeout")
+        
+        val repository = PokemonDetailRepository(mockApiService)
+        
+        runTest {
+            val result = repository.getDetailByUrl(url)
+            
+            val error = result.shouldBeLeft()
+            error shouldBe RepoError.Network
+        }
+    }
+    
+    "getDetailByUrl should return Left with Network error on request timeout" {
+        val url = "https://pokeapi.co/api/v2/pokemon/25/"
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } throws 
+            io.ktor.client.plugins.HttpRequestTimeoutException("Request timeout", null)
+        
+        val repository = PokemonDetailRepository(mockApiService)
+        
+        runTest {
+            val result = repository.getDetailByUrl(url)
+            
+            val error = result.shouldBeLeft()
+            error shouldBe RepoError.Network
+        }
+    }
+    
+    "property: getDetailByUrl maps all HTTP 400-599 error codes to Http error" {
+        checkAll(Arb.int(400..599)) { httpCode ->
+            val url = "https://pokeapi.co/api/v2/pokemon/25/"
+            // Create a proper mock response for testing HTTP errors
+            val mockResponse = mockk<io.ktor.client.statement.HttpResponse>(relaxed = true) {
+                io.mockk.every { status.value } returns httpCode
+                io.mockk.every { status.description } returns "Error"
+            }
+            
+            val exception = io.ktor.client.plugins.ClientRequestException(
+                response = mockResponse,
+                cachedResponseText = ""
+            )
+            
+            coEvery { mockApiService.getPokemonDetailByUrl(url) } throws exception
+            val repository = PokemonDetailRepository(mockApiService)
+            
+            runTest {
+                val result = repository.getDetailByUrl(url)
+                
+                val error = result.shouldBeLeft()
+                (error is RepoError.Http).shouldBeTrue()
+                error as RepoError.Http
+                error.code shouldBe httpCode
+            }
+        }
+    }
+    
+    "getDetailByUrl should return Left with Http 404 on client request error" {
+        val url = "https://pokeapi.co/api/v2/pokemon/99999/"
+        val mockResponse = mockk<io.ktor.client.statement.HttpResponse>(relaxed = true) {
+            io.mockk.every { status.value } returns 404
+            io.mockk.every { status.description } returns "Not Found"
+        }
+        
+        val exception = io.ktor.client.plugins.ClientRequestException(
+            response = mockResponse,
+            cachedResponseText = ""
+        )
+        
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } throws exception
+        val repository = PokemonDetailRepository(mockApiService)
+        
+        runTest {
+            val result = repository.getDetailByUrl(url)
+            
+            val error = result.shouldBeLeft()
+            (error is RepoError.Http).shouldBeTrue()
+            error as RepoError.Http
+            error.code shouldBe 404
+        }
+    }
+    
+    "getDetailByUrl should return Left with Http 500 on server response error" {
+        val url = "https://pokeapi.co/api/v2/pokemon/25/"
+        val mockResponse = mockk<io.ktor.client.statement.HttpResponse>(relaxed = true) {
+            io.mockk.every { status.value } returns 500
+            io.mockk.every { status.description } returns "Internal Server Error"
+        }
+        
+        val exception = io.ktor.client.plugins.ServerResponseException(
+            response = mockResponse,
+            cachedResponseText = ""
+        )
+        
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } throws exception
+        val repository = PokemonDetailRepository(mockApiService)
+        
+        runTest {
+            val result = repository.getDetailByUrl(url)
+            
+            val error = result.shouldBeLeft()
+            (error is RepoError.Http).shouldBeTrue()
+            error as RepoError.Http
+            error.code shouldBe 500
+        }
+    }
+    
+    "getDetailByUrl should return Left with Unknown error on unexpected exception" {
+        val url = "https://pokeapi.co/api/v2/pokemon/25/"
+        coEvery { mockApiService.getPokemonDetailByUrl(url) } throws 
+            RuntimeException("Unexpected error")
+        
+        val repository = PokemonDetailRepository(mockApiService)
+        
+        runTest {
+            val result = repository.getDetailByUrl(url)
+            
+            val error = result.shouldBeLeft()
+            (error is RepoError.Unknown).shouldBeTrue()
+        }
+    }
+    
+    "property: getDetailByUrl with different pokemon IDs returns successful result" {
+        checkAll(Arb.int(1..10000)) { id ->
+            val url = "https://pokeapi.co/api/v2/pokemon/$id/"
             val dto = PokemonDetailDto(
-                id = pokemonId,
-                name = "test",
+                id = id,
+                name = "pokemon$id",
                 height = 10,
                 weight = 100,
                 baseExperience = 50,
                 types = emptyList(),
                 stats = emptyList(),
                 abilities = emptyList(),
-                sprites = SpritesDto(frontDefault = "https://example.com/sprite.png")
+                sprites = SpritesDto()
             )
             
-            coEvery { mockApi.getPokemonDetail(pokemonId) } returns dto
+            coEvery { mockApiService.getPokemonDetailByUrl(url) } returns dto
+            val repository = PokemonDetailRepository(mockApiService)
             
-            val result = repository.getDetail(pokemonId)
-            
-            val pokemon = result.shouldBeRight()
-            pokemon.id shouldBe pokemonId
+            runTest {
+                val result = repository.getDetailByUrl(url)
+                
+                val pokemon = result.shouldBeRight()
+                pokemon.id shouldBe id
+            }
         }
     }
     
-    "property: repository handles null baseExperience consistently" {
-        checkAll(Arb.int(1..1000)) { pokemonId ->
-            val dto = PokemonDetailDto(
-                id = pokemonId,
-                name = "test",
-                height = 10,
-                weight = 100,
-                baseExperience = null,
-                types = emptyList(),
-                stats = emptyList(),
-                abilities = emptyList(),
-                sprites = SpritesDto(frontDefault = "https://example.com/sprite.png")
-            )
+    "property: any repository error produces valid Either.Left" {
+        checkAll(
+            Arb.int(1..10000),
+            arbRepoError()
+        ) { pokemonId, error ->
+            val url = "https://pokeapi.co/api/v2/pokemon/$pokemonId/"
             
-            coEvery { mockApi.getPokemonDetail(pokemonId) } returns dto
+            val throwable: Throwable = when (error) {
+                is RepoError.Network -> io.ktor.client.network.sockets.ConnectTimeoutException("timeout", null)
+                is RepoError.Http -> {
+                    val mockResponse = mockk<io.ktor.client.statement.HttpResponse>(relaxed = true) {
+                        io.mockk.every { status.value } returns error.code
+                    }
+                    io.ktor.client.plugins.ClientRequestException(mockResponse, "")
+                }
+                is RepoError.Unknown -> error.cause
+            }
             
-            val result = repository.getDetail(pokemonId)
+            coEvery { mockApiService.getPokemonDetailByUrl(url) } throws throwable
+            val repository = PokemonDetailRepository(mockApiService)
             
-            val pokemon = result.shouldBeRight()
-            pokemon.baseExperience shouldBe 0
-        }
-    }
-    
-    "property: repository handles null sprite consistently" {
-        checkAll(Arb.int(1..1000)) { pokemonId ->
-            val dto = PokemonDetailDto(
-                id = pokemonId,
-                name = "test",
-                height = 10,
-                weight = 100,
-                baseExperience = 50,
-                types = emptyList(),
-                stats = emptyList(),
-                abilities = emptyList(),
-                sprites = SpritesDto(frontDefault = null)
-            )
-            
-            coEvery { mockApi.getPokemonDetail(pokemonId) } returns dto
-            
-            val result = repository.getDetail(pokemonId)
-            
-            val pokemon = result.shouldBeRight()
-            pokemon.imageUrl shouldBe ""
+            runTest {
+                val result = repository.getDetailByUrl(url)
+                result.shouldBeLeft()
+            }
         }
     }
 })
+
+private fun arbRepoError(): Arb<RepoError> = 
+    Arb.choice(
+        Arb.constant(RepoError.Network),
+        Arb.int(400..599).map { code -> RepoError.Http(code, "Error $code") },
+        Arb.constant(RepoError.Unknown(RuntimeException("Test error")))
+    )

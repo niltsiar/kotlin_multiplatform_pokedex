@@ -38,8 +38,7 @@ val pokemonListNavigationUnstyledModule = module {
                 PokemonListUnstyledScreen(
                     viewModel = viewModel,
                     onPokemonClick = { pokemon ->
-                        // Navigate to detail screen in unstyled world
-                        navigator.goTo(PokemonDetail(id = pokemon.id))
+                        navigator.goTo(PokemonDetail(url = pokemon.detailUrl))
                     },
                 )
             }

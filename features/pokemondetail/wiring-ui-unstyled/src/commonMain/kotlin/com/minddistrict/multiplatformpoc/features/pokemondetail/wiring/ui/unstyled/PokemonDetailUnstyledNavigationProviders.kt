@@ -65,16 +65,16 @@ val pokemonDetailNavigationUnstyledModule = module {
             },
         ) { route ->
             val navigator: Navigator = koinInject()
-            // Key ViewModel by route.id to ensure new instance per Pokemon
+            // Key ViewModel by route.url to ensure new instance per Pokemon
             val viewModel: PokemonDetailViewModel = koinViewModel(
-                key = "pokemon_detail_${route.id}",
-                parameters = { parametersOf(route.id) },
+                key = "pokemon_detail_${route.url}",
+                parameters = { parametersOf(route.url) },
             )
             val lifecycleOwner = LocalLifecycleOwner.current
             
             // Register ViewModel with lifecycle (implements DefaultLifecycleObserver)
-            // Key by route.id to properly dispose when navigating to different Pokemon
-            DisposableEffect(route.id) {
+            // Key by route.url to properly dispose when navigating to different Pokemon
+            DisposableEffect(route.url) {
                 lifecycleOwner.lifecycle.addObserver(viewModel)
                 onDispose {
                     lifecycleOwner.lifecycle.removeObserver(viewModel)
