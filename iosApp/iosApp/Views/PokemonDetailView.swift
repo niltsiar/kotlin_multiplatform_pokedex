@@ -224,13 +224,13 @@ struct PokemonDetailView: View {
 
 #Preview("Loading") {
     NavigationStack {
-        PokemonDetailView(pokemonId: 25)
+        PokemonDetailView(pokemonUrl: "https://pokeapi.co/api/v2/pokemon/25/")
     }
 }
 
 #Preview("Dark Mode") {
     NavigationStack {
-        PokemonDetailView(pokemonId: 25)
+        PokemonDetailView(pokemonUrl: "https://pokeapi.co/api/v2/pokemon/25/")
     }
     .preferredColorScheme(.dark)
 }
