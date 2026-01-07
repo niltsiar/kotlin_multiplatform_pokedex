@@ -97,9 +97,8 @@ struct PokemonCard: View {
 #Preview("Pikachu") {
     PokemonCard(
         pokemon: Pokemon(
-            id: 25,
             name: "pikachu",
-            imageUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+            detailUrl: "https://pokeapi.co/api/v2/pokemon/25/"
         ),
         onTap: {}
     )
@@ -110,9 +109,8 @@ struct PokemonCard: View {
 #Preview("Bulbasaur") {
     PokemonCard(
         pokemon: Pokemon(
-            id: 1,
             name: "bulbasaur",
-            imageUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+            detailUrl: "https://pokeapi.co/api/v2/pokemon/1/"
         ),
         onTap: {}
     )
@@ -123,9 +121,8 @@ struct PokemonCard: View {
 #Preview("Long Name") {
     PokemonCard(
         pokemon: Pokemon(
-            id: 144,
             name: "articuno",
-            imageUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/144.png"
+            detailUrl: "https://pokeapi.co/api/v2/pokemon/144/"
         ),
         onTap: {}
     )
@@ -136,9 +133,8 @@ struct PokemonCard: View {
 #Preview("Dark Mode") {
     PokemonCard(
         pokemon: Pokemon(
-            id: 25,
             name: "pikachu",
-            imageUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+            detailUrl: "https://pokeapi.co/api/v2/pokemon/25/"
         ),
         onTap: {}
     )

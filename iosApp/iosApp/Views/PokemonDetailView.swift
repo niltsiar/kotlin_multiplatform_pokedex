@@ -20,14 +20,14 @@ import Shared
  * - Content padding: 20pt (horizontal)
  */
 struct PokemonDetailView: View {
-    let pokemonId: Int
+    let pokemonUrl: String
     
     @Environment(\.pokemonTheme) var theme
     @StateObject private var owner = IosViewModelStoreOwner()
     
-    // Computed property delegates to generic viewModel(intParam:)
+    // Computed property delegates to generic viewModel(stringParam:)
     private var viewModel: PokemonDetailViewModel {
-        owner.viewModel(intParam: pokemonId)
+        owner.viewModel(stringParam: pokemonUrl)
     }
     
     @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()

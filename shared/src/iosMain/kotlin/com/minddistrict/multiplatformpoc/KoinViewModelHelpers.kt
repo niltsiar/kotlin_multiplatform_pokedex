@@ -67,6 +67,31 @@ fun getViewModelWithInt(
 }
 
 /**
+ * Get any parametric ViewModel with String parameter.
+ * 
+ * @param viewModelStore The ViewModelStore to cache ViewModels
+ * @param viewModelClass The ObjCClass representing the ViewModel type from Swift
+ * @param stringParam The string parameter (e.g., pokemonUrl)
+ * @return The cached or newly created ViewModel
+ */
+fun getViewModelWithString(
+    viewModelStore: ViewModelStore,
+    viewModelClass: ObjCClass,
+    stringParam: String
+): ViewModel {
+    val kClass = getOriginalKotlinClass(viewModelClass)
+        ?: error("Cannot get Kotlin class for ${viewModelClass}")
+    
+    val key = "${kClass.simpleName}:${stringParam.hashCode()}"
+    
+    return viewModelStore.get(key) ?: run {
+        val vm = createViewModelWithString(kClass, stringParam)
+        viewModelStore.put(key, vm)
+        vm
+    }
+}
+
+/**
  * Create a non-parametric ViewModel via Koin.
  */
 private fun createViewModel(kClass: KClass<*>): ViewModel {
@@ -81,6 +106,15 @@ private fun createViewModel(kClass: KClass<*>): ViewModel {
 private fun createViewModelWithInt(kClass: KClass<*>, intParam: Int): ViewModel {
     return KoinPlatform.getKoin().get(kClass) {
         parametersOf(intParam, SavedStateHandle())
+    } as ViewModel
+}
+
+/**
+ * Create a parametric ViewModel with String parameter via Koin.
+ */
+private fun createViewModelWithString(kClass: KClass<*>, stringParam: String): ViewModel {
+    return KoinPlatform.getKoin().get(kClass) {
+        parametersOf(stringParam, SavedStateHandle())
     } as ViewModel
 }
 
