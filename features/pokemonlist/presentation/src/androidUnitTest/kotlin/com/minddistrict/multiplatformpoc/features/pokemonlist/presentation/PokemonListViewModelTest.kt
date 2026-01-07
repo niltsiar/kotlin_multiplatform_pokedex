@@ -53,8 +53,12 @@ class PokemonListViewModelTest : StringSpec({
     }
     
     "loadInitialPage should emit Content on success" {
-        val pokemon = Pokemon(1, "Bulbasaur", "https://example.com/1.png")
-        val page = PokemonPage(listOf(pokemon), hasMore = true)
+        val pokemon = Pokemon("Bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/")
+        val page = PokemonPage(
+            pokemons = listOf(pokemon),
+            nextUrl = "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
+            previousUrl = null
+        )
         
         coEvery { mockRepository.loadPage(20, 0) } returns Either.Right(page)
 
@@ -103,12 +107,14 @@ class PokemonListViewModelTest : StringSpec({
     
     "loadNextPage should append Pokemon to existing list" {
         val firstPage = PokemonPage(
-            listOf(Pokemon(1, "Bulbasaur", "https://example.com/1.png")),
-            hasMore = true
+            pokemons = listOf(Pokemon("Bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/")),
+            nextUrl = "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
+            previousUrl = null
         )
         val secondPage = PokemonPage(
-            listOf(Pokemon(2, "Ivysaur", "https://example.com/2.png")),
-            hasMore = false
+            pokemons = listOf(Pokemon("Ivysaur", "https://pokeapi.co/api/v2/pokemon/2/")),
+            nextUrl = null,
+            previousUrl = "https://pokeapi.co/api/v2/pokemon?offset=0&limit=20"
         )
         
         coEvery { mockRepository.loadPage(20, 0) } returns Either.Right(firstPage)
@@ -146,9 +152,10 @@ class PokemonListViewModelTest : StringSpec({
             Arb.boolean()
         ) { ids, hasMore ->
             val pokemons = ids.map { id ->
-                Pokemon(id, "Pokemon$id", "https://example.com/$id.png")
+                Pokemon("Pokemon$id", "https://pokeapi.co/api/v2/pokemon/$id/")
             }
-            val page = PokemonPage(pokemons, hasMore)
+            val nextUrl = if (hasMore) "https://pokeapi.co/api/v2/pokemon?offset=${ids.size}&limit=20" else null
+            val page = PokemonPage(pokemons, nextUrl, null)
             
             coEvery { mockRepository.loadPage(any(), any()) } returns Either.Right(page)
             
@@ -207,9 +214,9 @@ class PokemonListViewModelTest : StringSpec({
             Arb.list(arbPokemonName(), 1..50)
         ) { ids, names ->
             val pokemons = ids.zip(names).map { (id, name) ->
-                Pokemon(id, name, "https://example.com/$id.png")
+                Pokemon(name, "https://pokeapi.co/api/v2/pokemon/$id/")
             }
-            val page = PokemonPage(pokemons, hasMore = true)
+            val page = PokemonPage(pokemons, nextUrl = "https://pokeapi.co/api/v2/pokemon?offset=20", previousUrl = null)
             
             coEvery { mockRepository.loadPage(any(), any()) } returns Either.Right(page)
             

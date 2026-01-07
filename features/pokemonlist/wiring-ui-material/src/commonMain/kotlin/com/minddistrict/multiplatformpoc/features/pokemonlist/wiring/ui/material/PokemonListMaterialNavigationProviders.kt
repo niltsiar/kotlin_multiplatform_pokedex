@@ -37,7 +37,7 @@ val pokemonListNavigationModule = module {
             PokemonListMaterialScreen(
                 viewModel = viewModel,
                 onPokemonClick = { pokemon ->
-                    navigator.goTo(PokemonDetail(pokemon.id))
+                    navigator.goTo(PokemonDetail(pokemon.detailUrl))
                 },
             )
         }

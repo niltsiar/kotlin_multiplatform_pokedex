@@ -28,14 +28,22 @@ internal class PokemonListRepositoryImpl(
                 Either.Left(throwable.toRepoError())
             }
         }
+    
+    override suspend fun loadPageByUrl(url: String): Either<RepoError, PokemonPage> =
+        withContext(Dispatchers.IO) {
+            catch({
+                val dto = apiService.getPokemonListByUrl(url)
+                Either.Right(dto.toDomain())
+            }) { throwable ->
+                Either.Left(throwable.toRepoError())
+            }
+        }
 }
 
-// Factory function - public for wiring module
 fun PokemonListRepository(
     apiService: PokemonListApiService
 ): PokemonListRepository = PokemonListRepositoryImpl(apiService)
 
-// Error mapping using Ktor's multiplatform exceptions
 private fun Throwable.toRepoError(): RepoError = when (this) {
     is ClientRequestException -> RepoError.Http(response.status.value, message)
     is ServerResponseException -> RepoError.Http(response.status.value, message)

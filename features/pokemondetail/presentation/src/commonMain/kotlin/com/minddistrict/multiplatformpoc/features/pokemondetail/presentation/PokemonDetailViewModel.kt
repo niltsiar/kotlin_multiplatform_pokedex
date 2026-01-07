@@ -19,12 +19,12 @@ import kotlinx.coroutines.launch
 
 class PokemonDetailViewModel(
     private val repository: PokemonDetailRepository,
-    private val pokemonId: Int,
+    private val pokemonUrl: String,
     private val savedStateHandle: SavedStateHandle,
     viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 ) : ViewModel(viewModelScope), DefaultLifecycleObserver {
     
-    private var persistedState by savedStateHandle.saved { PokemonDetailPersistedState(pokemonId = pokemonId) }
+    private var persistedState by savedStateHandle.saved { PokemonDetailPersistedState(pokemonUrl = pokemonUrl) }
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(restoreUiState())
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
@@ -44,7 +44,7 @@ class PokemonDetailViewModel(
         viewModelScope.launch {
             _uiState.update { PokemonDetailUiState.Loading }
             
-            repository.getDetail(pokemonId).fold(
+            repository.getDetailByUrl(pokemonUrl).fold(
                 ifLeft = { error ->
                     val message = error.toUiMessage()
                     persistedState = persistedState.copy(

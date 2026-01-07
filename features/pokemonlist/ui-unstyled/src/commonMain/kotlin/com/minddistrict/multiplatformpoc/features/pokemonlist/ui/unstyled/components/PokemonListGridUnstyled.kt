@@ -105,10 +105,10 @@ private fun PokemonListGridUnstyledPreview() {
     UnstyledTheme {
         PokemonListGridUnstyled(
             pokemon = persistentListOf(
-                Pokemon(1, "Bulbasaur", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-                Pokemon(4, "Charmander", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png"),
-                Pokemon(7, "Squirtle", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png"),
-                Pokemon(25, "Pikachu", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")
+                Pokemon("Bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
+                Pokemon("Charmander", "https://pokeapi.co/api/v2/pokemon/4/"),
+                Pokemon("Squirtle", "https://pokeapi.co/api/v2/pokemon/7/"),
+                Pokemon("Pikachu", "https://pokeapi.co/api/v2/pokemon/25/")
             ),
             onPokemonClick = {},
             onLoadMore = {}

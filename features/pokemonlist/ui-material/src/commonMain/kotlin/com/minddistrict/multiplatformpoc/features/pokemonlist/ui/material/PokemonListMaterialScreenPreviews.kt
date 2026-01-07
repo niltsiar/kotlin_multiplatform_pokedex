@@ -22,9 +22,8 @@ private fun PokemonListCardPreview() {
         Surface {
             PokemonListCard(
                 pokemon = Pokemon(
-                    id = 25,
                     name = "Pikachu",
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+                    detailUrl = "https://pokeapi.co/api/v2/pokemon/25/"
                 ),
                 onClick = {}
             )
@@ -39,9 +38,8 @@ private fun PokemonListCardLongNamePreview() {
         Surface {
             PokemonListCard(
                 pokemon = Pokemon(
-                    id = 1,
                     name = "Bulbasaur with long name",
-                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                    detailUrl = "https://pokeapi.co/api/v2/pokemon/1/"
                 ),
                 onClick = {}
             )
@@ -92,34 +90,28 @@ private fun PokemonListContentPreview() {
                 uiState = PokemonListUiState.Content(
                     pokemons = persistentListOf(
                         Pokemon(
-                            id = 1,
                             name = "Bulbasaur",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/1/"
                         ),
                         Pokemon(
-                            id = 4,
                             name = "Charmander",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/4/"
                         ),
                         Pokemon(
-                            id = 7,
                             name = "Squirtle",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/7/"
                         ),
                         Pokemon(
-                            id = 25,
                             name = "Pikachu",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/25/"
                         ),
                         Pokemon(
-                            id = 133,
                             name = "Eevee",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/133/"
                         ),
                         Pokemon(
-                            id = 150,
                             name = "Mewtwo",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/150/"
                         )
                     ),
                     isLoadingMore = false,
@@ -144,14 +136,12 @@ private fun PokemonListContentLoadingMorePreview() {
                 uiState = PokemonListUiState.Content(
                     pokemons = persistentListOf(
                         Pokemon(
-                            id = 1,
                             name = "Bulbasaur",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/1/"
                         ),
                         Pokemon(
-                            id = 4,
                             name = "Charmander",
-                            imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+                            detailUrl = "https://pokeapi.co/api/v2/pokemon/4/"
                         )
                     ),
                     isLoadingMore = true,

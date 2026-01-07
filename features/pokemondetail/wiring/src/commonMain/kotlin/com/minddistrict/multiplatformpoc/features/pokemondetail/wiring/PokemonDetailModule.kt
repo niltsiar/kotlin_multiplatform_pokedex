@@ -14,7 +14,7 @@ import org.koin.dsl.module
  * Provides all dependencies needed for the Pokemon Detail feature:
      * - PokemonDetailApiService
      * - PokemonDetailRepository
-     * - PokemonDetailViewModel (parameterized by pokemonId)
+     * - PokemonDetailViewModel (parameterized by pokemonUrl)
      */
 val pokemonDetailModule = module {
     /**
@@ -37,17 +37,17 @@ val pokemonDetailModule = module {
     
     /**
      * Provides the ViewModel for Pokemon Detail screen.
-     * Takes pokemonId as a parameter via Koin's parametersOf.
+     * Takes pokemonUrl as a parameter via Koin's parametersOf.
      * 
      * Note: On Desktop/JVM, SavedStateHandle is created inline since Koin's Android-specific
      * parameter resolution doesn't work on non-Android platforms.
      * 
-     * Usage: val viewModel: PokemonDetailViewModel = koinViewModel(parameters = { parametersOf(pokemonId) })
+     * Usage: val viewModel: PokemonDetailViewModel = koinViewModel(parameters = { parametersOf(pokemonUrl) })
      */
-    viewModel { (pokemonId: Int) ->
+    viewModel { (pokemonUrl: String) ->
         createPokemonDetailViewModel(
             repository = get(),
-            pokemonId = pokemonId,
+            pokemonUrl = pokemonUrl,
             savedStateHandle = SavedStateHandle(),
         )
     }
@@ -55,10 +55,10 @@ val pokemonDetailModule = module {
 
 private fun createPokemonDetailViewModel(
     repository: PokemonDetailRepository,
-    pokemonId: Int,
+    pokemonUrl: String,
     savedStateHandle: SavedStateHandle,
 ): PokemonDetailViewModel = PokemonDetailViewModel(
     repository = repository,
-    pokemonId = pokemonId,
+    pokemonUrl = pokemonUrl,
     savedStateHandle = savedStateHandle,
 )

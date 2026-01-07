@@ -54,10 +54,10 @@ private fun PokemonListUnstyledScreenContentPreview() {
         PokemonListContentUnstyled(
             uiState = PokemonListUiState.Content(
                 pokemons = persistentListOf(
-                    Pokemon(1, "Bulbasaur", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png"),
-                    Pokemon(4, "Charmander", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png"),
-                    Pokemon(7, "Squirtle", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png"),
-                    Pokemon(25, "Pikachu", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png")
+                    Pokemon("Bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
+                    Pokemon("Charmander", "https://pokeapi.co/api/v2/pokemon/4/"),
+                    Pokemon("Squirtle", "https://pokeapi.co/api/v2/pokemon/7/"),
+                    Pokemon("Pikachu", "https://pokeapi.co/api/v2/pokemon/25/")
                 ),
                 hasMore = true,
                 isLoadingMore = false
@@ -78,8 +78,8 @@ private fun PokemonListUnstyledScreenLoadingMorePreview() {
         PokemonListContentUnstyled(
             uiState = PokemonListUiState.Content(
                 pokemons = persistentListOf(
-                    Pokemon(1, "Bulbasaur", ""),
-                    Pokemon(4, "Charmander", "")
+                    Pokemon("Bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
+                    Pokemon("Charmander", "https://pokeapi.co/api/v2/pokemon/4/")
                 ),
                 hasMore = true,
                 isLoadingMore = true
