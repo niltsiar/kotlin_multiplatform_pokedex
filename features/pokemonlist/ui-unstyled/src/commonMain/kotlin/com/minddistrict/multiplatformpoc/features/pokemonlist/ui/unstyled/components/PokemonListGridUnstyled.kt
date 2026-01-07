@@ -1,7 +1,11 @@
 package com.minddistrict.multiplatformpoc.features.pokemonlist.ui.unstyled.components
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,6 +18,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 import com.composeunstyled.theme.Theme
 import com.minddistrict.multiplatformpoc.core.designsystem.core.gridColumns
 import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.UnstyledTheme
@@ -62,6 +67,20 @@ fun PokemonListGridUnstyled(
     
     val windowInfo = currentWindowAdaptiveInfo()
     val columns = gridColumns(windowInfo)
+    val density = LocalDensity.current
+    val edgeSpacing = Theme[spacing][spacingLg]
+    val contentPadding = with(density) {
+        WindowInsets.safeDrawing
+            .add(
+                WindowInsets(
+                    left = edgeSpacing.roundToPx(),
+                    top = 0, // allow content to start just below status bar inset only
+                    right = edgeSpacing.roundToPx(),
+                    bottom = edgeSpacing.roundToPx(),
+                ),
+            )
+            .asPaddingValues()
+    }
     
     LaunchedEffect(gridState) {
         snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
@@ -82,10 +101,11 @@ fun PokemonListGridUnstyled(
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
         state = gridState,
-        contentPadding = PaddingValues(Theme[spacing][spacingLg]),  // 20dp for clean spacing
-        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Theme[spacing][spacingLg]),
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Theme[spacing][spacingLg]),
-        modifier = modifier.fillMaxSize()
+        contentPadding = contentPadding,
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg]),
+        modifier = modifier
+            .fillMaxSize()
     ) {
         itemsIndexed(
             items = pokemon,
