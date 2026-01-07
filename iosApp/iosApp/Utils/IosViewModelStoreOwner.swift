@@ -28,6 +28,11 @@ import Shared
 ///         owner.viewModel(intParam: pokemonId)
 ///     }
 ///     
+///     // Parametric ViewModel with String parameter
+///     private var detailViewModel: PokemonDetailViewModel {
+///         owner.viewModel(stringParam: pokemonUrl)
+///     }
+///     
 ///     var body: some View {
 ///         // ... use viewModel
 ///         .onAppear {
@@ -71,6 +76,21 @@ class IosViewModelStoreOwner: ObservableObject {
             viewModelStore: viewModelStore,
             viewModelClass: T.self,
             intParam: Int32(intParam)
+        ) as! T
+    }
+    
+    /// Retrieve any parametric ViewModel with a String parameter.
+    ///
+    /// Uses ObjCClass to pass type information to Kotlin.
+    /// ViewModelStore caches by "ClassName:hashCode" key.
+    ///
+    /// - Parameter stringParam: The string parameter (e.g., pokemonUrl)
+    /// - Returns: The requested ViewModel instance
+    func viewModel<T: Shared.Lifecycle_viewmodelViewModel>(stringParam: String) -> T {
+        return Shared.KoinViewModelHelpersKt.getViewModelWithString(
+            viewModelStore: viewModelStore,
+            viewModelClass: T.self,
+            stringParam: stringParam
         ) as! T
     }
     

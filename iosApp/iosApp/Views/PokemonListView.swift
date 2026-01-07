@@ -26,7 +26,7 @@ struct PokemonListView: View {
         owner.viewModel()
     }
     
-    @State private var navigationPath: [Int] = []
+    @State private var navigationPath: [String] = []
     @State private var scrollPosition: Int?
     @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
     
@@ -34,8 +34,8 @@ struct PokemonListView: View {
         NavigationStack(path: $navigationPath) {
             content
                 .navigationTitle("Pokémon")
-                .navigationDestination(for: Int.self) { pokemonId in
-                    PokemonDetailView(pokemonId: pokemonId)
+                .navigationDestination(for: String.self) { pokemonUrl in
+                    PokemonDetailView(pokemonUrl: pokemonUrl)
                 }
         }
         .onAppear {
@@ -100,8 +100,8 @@ struct PokemonListView: View {
                                 viewModel.onPokemonSelected(pokemonId: Int32(id))
                                 viewModel.onScrollAnchorPokemonIdChanged(pokemonId: Int32(id))
 
-                                // Navigate to detail
-                                navigationPath.append(id)
+                                // Navigate to detail using URL
+                                navigationPath.append(pokemon.detailUrl)
                             }
                             .id(Int(pokemon.id))
                             .onAppear {
