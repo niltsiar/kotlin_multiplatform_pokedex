@@ -1,0 +1,26 @@
+# Kotlin Multiplatform Pokedex
+
+## Quick Start
+- [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md): Build, test, commit commands
+- [critical_patterns_compact.md](docs/tech/critical_patterns_compact.md): 6 core patterns
+
+## Architecture
+- [conventions.md](docs/tech/conventions.md): Master architecture reference
+- [navigation.md](docs/tech/navigation.md): Navigation 3 modular architecture
+- [critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md): 6 core patterns (full)
+
+## Implementation
+- [testing_strategy.md](docs/tech/testing_strategy.md): Kotest, MockK, property tests
+- [ios_integration.md](docs/tech/ios_integration.md): SwiftUI + KMP ViewModels
+- [dependency_injection.md](docs/tech/dependency_injection.md): Koin patterns
+
+## Agent Routing
+- [AGENTS.md](AGENTS.md): Agent routing table and mode selection
+- [base_agent_prompt.md](docs/agent-prompts/base_agent_prompt.md): Shared patterns
+- [docs/README.md](docs/README.md): Complete documentation index
+
+## For AI Agents
+- Use link-first approach: Reference docs, don't paste them
+- Start with compact guides, load full docs incrementally
+- Follow patterns in critical_patterns_compact.md
+- Validate with: `./gradlew :composeApp:assembleDebug test --continue`
