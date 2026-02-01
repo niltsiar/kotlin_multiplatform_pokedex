@@ -1,0 +1,66 @@
+name: Documentation Validation
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'AGENTS.md'
+      - '.opencode/**'
+      - '.github/copilot-instructions.md'
+      - '.junie/guidelines.md'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'AGENTS.md'
+      - '.opencode/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install dependencies
+        run: |
+          pip install tiktoken
+          npm install -g markdown-link-check
+      
+      - name: Check Delta Headers
+        run: |
+          echo "Checking DELTA file headers..."
+          ./scripts/validate-deltas.sh
+      
+      - name: Check Token Budgets
+        run: |
+          echo "Analyzing token budgets..."
+          python3 scripts/check-tokens.py
+      
+      - name: Check Links
+        run: |
+          echo "Checking for broken links..."
+          markdown-link-check docs/**/*.md AGENTS.md llms.txt .github/copilot-instructions.md || true
+      
+      - name: Generate Report
+        run: |
+          echo "# Documentation Validation Report" > validation-report.md
+          echo "Generated: $(date)" >> validation-report.md
+          echo "" >> validation-report.md
+          echo "## Summary" >> validation-report.md
+          echo "- Delta files: $(ls docs/agent-prompts/*DELTA.md 2>/dev/null | wc -l) found" >> validation-report.md
+          echo "- Skills: $(ls .opencode/skills/*/SKILL.md 2>/dev/null | wc -l) found" >> validation-report.md
+          cat validation-report.md
+      
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-validation-report
+          path: validation-report.md
+        if: always()
