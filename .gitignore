@@ -20,3 +20,4 @@ node_modules/
 !.junie
 !.github
 server/bin/
+scripts/__pycache__/
