@@ -199,12 +199,12 @@ checkAll(Arb.int(0..100)) { value ->
 
 | Document | Purpose |
 |----------|---------|
-| [testing_strategy.md](../../docs/tech/testing_strategy.md) | Complete testing strategy guide |
-| [critical_patterns_quick_ref.md](../../docs/tech/critical_patterns_quick_ref.md) | Testing pattern reference |
-| [conventions.md](../../docs/tech/conventions.md) | Architecture and module structure |
-| [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) | Quick commands reference |
+| [testing_strategy.md](../../../docs/tech/testing_strategy.md) | Complete testing strategy guide |
+| [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) | Testing pattern reference |
+| [conventions.md](../../../docs/tech/conventions.md) | Architecture and module structure |
+| [QUICK_REFERENCE.md](../../../docs/QUICK_REFERENCE.md) | Quick commands reference |
 
 **Implementation Examples:**
-- [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) - ViewModel test with Turbine
-- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) - Property tests examples
-- [PokemonListRepositoryTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt) - Repository test with MockK
+- [PokemonListViewModelTest.kt](../../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) - ViewModel test with Turbine
+- [PokemonDetailViewModelTest.kt](../../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) - Property tests examples
+- [PokemonListRepositoryTest.kt](../../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt) - Repository test with MockK

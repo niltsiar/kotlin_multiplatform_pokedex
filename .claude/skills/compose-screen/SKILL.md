@@ -403,19 +403,19 @@ AnimatedStatBar(tokens = MaterialTheme.componentTokens.progressBar())
 | Critical patterns | 6 core patterns (ViewModel, Either, Impl+Factory) | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
 | Navigation 3 | Modular navigation architecture | [navigation.md](../../../docs/tech/navigation.md) |
 | Testing strategy | @Preview requirements and UI testing | [testing_strategy.md](../../../docs/tech/testing_strategy.md) |
-| Animation guides | Creative UI animations and motion | [ui-ux-designer skill](../../ui-ux-designer/SKILL.md) |
+| Animation guides | Creative UI animations and motion | [ui-ux-designer skill](../ui-ux-designer/SKILL.md) |
 | Product requirements | Feature acceptance criteria | [prd.md](../../../docs/project/prd.md) |
 
 ### Reference Implementations
 
 **Pokemon List (Material):**
-- [PokemonListMaterialScreen.kt](features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
-- [PokemonListMaterialScreenPreviews.kt](features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreenPreviews.kt)
+- [PokemonListMaterialScreen.kt](../../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
+- [PokemonListMaterialScreenPreviews.kt](../../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreenPreviews.kt)
 
 **Pokemon List (Unstyled):**
-- [PokemonListUnstyledScreen.kt](features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt)
-- [PokemonListUnstyledScreenPreviews.kt](features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreenPreviews.kt)
+- [PokemonListUnstyledScreen.kt](../../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt)
+- [PokemonListUnstyledScreenPreviews.kt](../../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreenPreviews.kt)
 
 **Pokemon Detail (Material with animations):**
-- [PokemonDetailMaterialScreen.kt](features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
-- [PokemonDetailMaterialScreenPreviews.kt](features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreenPreviews.kt)
+- [PokemonDetailMaterialScreen.kt](../../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
+- [PokemonDetailMaterialScreenPreviews.kt](../../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreenPreviews.kt)
