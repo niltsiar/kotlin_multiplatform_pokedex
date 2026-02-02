@@ -61,10 +61,10 @@ Located in `.claude/skills/`
 
 ## Documentation
 
-- Full skill guide: `docs/SKILL_USAGE.md`
-- Doc index: `docs/README.md`
-- AI discovery: `llms.txt`
-- Architecture: `docs/tech/conventions.md`
+- Full skill guide: [docs/SKILL_USAGE.md](docs/SKILL_USAGE.md)
+- Doc index: [docs/README.md](docs/README.md)
+- AI discovery: [llms.txt](llms.txt)
+- Architecture: [docs/tech/conventions.md](docs/tech/conventions.md)
 
 ## Validation
 
