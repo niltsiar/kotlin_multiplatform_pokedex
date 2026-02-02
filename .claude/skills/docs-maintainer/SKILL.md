@@ -78,9 +78,9 @@ To ensure all documentation links are functional:
    <!-- Before: Broken link -->
    See [old-pattern.md](old-pattern.md) for details
 
-   <!-- After: Fixed link -->
-   See [critical_patterns_quick_ref.md](../tech/critical_patterns_quick_ref.md) for details
-   ```
+    <!-- After: Fixed link -->
+    See [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) for details
+    ```
 
 4. **Search for orphaned references**: Use grep to find files that reference removed content:
    ```bash
@@ -109,8 +109,8 @@ To eliminate documentation duplication:
    Pass viewModelScope to constructor, use onStart() for initialization...
 
    <!-- Duplicated file - replace with link -->
-   ## ViewModel Pattern
-   See [conventions.md](../tech/conventions.md#presentation-layer) for complete ViewModel pattern guidance.
+    ## ViewModel Pattern
+    See [conventions.md](../../../docs/tech/conventions.md#presentation-layer) for complete ViewModel pattern guidance.
    ```
 
 4. **Update cross-references**: Ensure all related documents link to the canonical source
@@ -148,13 +148,13 @@ To eliminate documentation duplication:
 **Link-First Examples:**
 ```markdown
 <!-- Architecture reference -->
-See [conventions.md](../tech/conventions.md) for architecture rules
+See [conventions.md](../../../docs/tech/conventions.md) for architecture rules
 
 <!-- Pattern reference -->
-Follow the [ViewModel Pattern](critical_patterns_quick_ref.md#viewmodel-pattern)
+Follow the [ViewModel Pattern](../../../docs/tech/critical_patterns_quick_ref.md#viewmodel-pattern)
 
 <!-- Skill reference -->
-Switch to [Compose Screen skill](../../compose-screen/SKILL.md)
+Switch to [Compose Screen skill](../compose-screen/SKILL.md)
 
 <!-- Implementation reference -->
 Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...PokemonListViewModel.kt)
