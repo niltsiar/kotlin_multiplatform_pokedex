@@ -305,7 +305,7 @@ Create previews for all UI states to enable visual testing:
 |-------|---------|----------------|
 | `kmp-mobile-expert` | Shared ViewModel, repository, and iOS bridging implementation | Implementing shared business logic |
 | `compose-screen` | Compose Multiplatform UI implementation (Android/Desktop) | Building Compose screens |
-| `frontend-ui-ux` | Visual design and animations | Creating custom animations or design systems |
+| `ui-ux-designer` | Visual design and animations | Creating custom animations or design systems |
 
 ### Reference Implementations
 
