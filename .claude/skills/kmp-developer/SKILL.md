@@ -25,7 +25,7 @@ Do NOT use this skill for:
 
 ## Essential Workflows
 
-### 1. Implement New Feature (Vertical Slice)
+### Workflow 1: Implement New Feature (Vertical Slice)
 
 To add a complete feature module:
 
@@ -107,7 +107,7 @@ To add a complete feature module:
 
 10. Validate: `./gradlew :composeApp:assembleDebug test --continue`
 
-### 2. Fix Bug in Existing Feature
+### Workflow 2: Fix Bug in Existing Feature
 
 To diagnose and fix bugs:
 
@@ -136,7 +136,7 @@ To diagnose and fix bugs:
 
 6. Add regression test for the bug fix
 
-### 3. Add or Update Tests
+### Workflow 3: Add or Update Tests
 
 To maintain test coverage requirements (100% for mappers, 30-40% property tests):
 
@@ -242,4 +242,4 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 | User flows | User journeys and sequences | [user_flow.md](../../../docs/project/user_flow.md) |
 
 **Reference Implementation**: `pokemonlist` feature demonstrates all patterns:
-- [API](features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/PokemonListRepository.kt) • [Data](features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt) • [Presentation](features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) • [UI](features/pokemonlist/ui/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/PokemonListScreen.kt) • [Wiring](features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
+- [API](../../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/PokemonListRepository.kt) • [Data](../../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt) • [Presentation](../../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) • [UI](../../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt) • [Wiring](../../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)

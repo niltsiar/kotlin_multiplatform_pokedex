@@ -351,7 +351,7 @@ Optional module for complex business logic:
 
 ---
 
-## Critical Anti-Patterns
+## Critical Guardrails
 
 | Anti-Pattern | Correct Pattern | Why It Matters |
 |--------------|-----------------|----------------|

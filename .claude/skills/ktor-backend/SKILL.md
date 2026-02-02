@@ -24,7 +24,7 @@ Do NOT use this skill for:
 
 ## Essential Workflows
 
-### 1. Create New REST Endpoint
+### Workflow 1: Create New REST Endpoint
 
 To add a new Ktor endpoint following API conventions:
 
@@ -104,7 +104,7 @@ To add a new Ktor endpoint following API conventions:
    .claude/skills/ktor-backend/scripts/validate-endpoint.sh server/src/main/kotlin/com/minddistrict/multiplatformpoc/routes/PokemonRoutes.kt
    ```
 
-### 2. Add API Versioning
+### Workflow 2: Add API Versioning
 
 To implement API versioning strategy:
 
@@ -150,7 +150,7 @@ To implement API versioning strategy:
    }
    ```
 
-### 3. Set Up OpenAPI Documentation
+### Workflow 3: Set Up OpenAPI Documentation
 
 To add Swagger/OpenAPI documentation:
 
@@ -272,8 +272,8 @@ data class ErrorResponse(
 ### Reference Implementation
 
 **Current server setup:**
-- [Application.kt](server/src/main/kotlin/com/minddistrict/multiplatformpoc/Application.kt) - Basic Ktor server with Netty
-- [server/build.gradle.kts](server/build.gradle.kts) - Server build configuration
+- [Application.kt](../../../server/src/main/kotlin/com/minddistrict/multiplatformpoc/Application.kt) - Basic Ktor server with Netty
+- [server/build.gradle.kts](../../../server/build.gradle.kts) - Server build configuration
 
 **Examples to reference:**
 - Ktor routing: `Application.kt` shows basic `route()` and `get()` usage
