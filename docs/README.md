@@ -1,20 +1,30 @@
 # Documentation Index - AI Discovery
 
+**Last Updated:** February 2, 2026
+
 > **Quick Navigation**: This index helps AI agents and developers find the right documentation quickly.
 
 ## Start Here (< 1K tokens)
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Essential commands and workflows
+- [SKILL_QUICK_REFERENCE.md](SKILL_QUICK_REFERENCE.md) - Quick skill reference card
 - [tech/critical_patterns_compact.md](tech/critical_patterns_compact.md) - 6 core patterns (quick reference)
 
 ## Architecture & Patterns (1-3K tokens)
 - [tech/conventions.md](tech/conventions.md) - Master architecture reference (START HERE for new developers)
 - [tech/critical_patterns_quick_ref.md](tech/critical_patterns_quick_ref.md) - 6 core patterns (full guide)
 - [tech/navigation.md](tech/navigation.md) - Navigation 3 modular architecture
+- [tech/domain.md](tech/domain.md) - Domain layer guidelines
+- [tech/api_services.md](tech/api_services.md) - API service patterns
+- [tech/utility_organization.md](tech/utility_organization.md) - Utility module organization
+- [tech/predictive_back_notes.md](tech/predictive_back_notes.md) - Predictive back gesture notes
 
 ## Platform-Specific Guides
 - [tech/ios_integration.md](tech/ios_integration.md) - SwiftUI + KMP ViewModels Direct Integration
+- [tech/ios_official_pattern_guide.md](tech/ios_official_pattern_guide.md) - iOS official pattern quick reference
+- [tech/desktop_viewmodel_savedstate.md](tech/desktop_viewmodel_savedstate.md) - Desktop ViewModel + SavedStateHandle
 - [tech/testing_strategy.md](tech/testing_strategy.md) - Kotest, MockK, Turbine, property tests
 - [tech/dependency_injection.md](tech/dependency_injection.md) - Koin patterns and troubleshooting
+- [tech/compose_unstyled_reference.md](tech/compose_unstyled_reference.md) - Compose Unstyled reference
 
 ## Skills & Agent Routing
 - [AGENTS.md](../AGENTS.md) - Agent routing table and mode selection
@@ -24,6 +34,7 @@
 - [project/prd.md](project/prd.md) - Product requirements and acceptance criteria
 - [project/user_flow.md](project/user_flow.md) - User journeys and flows
 - [project/ui_ux.md](project/ui_ux.md) - UI/UX guidelines
+- [project/onboarding.md](project/onboarding.md) - Onboarding flow documentation
 
 ## Complete Document Catalog
 

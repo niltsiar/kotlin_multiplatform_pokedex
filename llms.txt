@@ -1,5 +1,7 @@
 # Kotlin Multiplatform Pokedex
 
+**Last Updated:** February 2, 2026
+
 ## Quick Start
 - [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md): Build, test, commit commands
 - [critical_patterns_compact.md](docs/tech/critical_patterns_compact.md): 6 core patterns
@@ -16,7 +18,6 @@
 
 ## Agent Routing
 - [AGENTS.md](AGENTS.md): Agent routing table and mode selection
-- [base_agent_prompt.md](docs/agent-prompts/base_agent_prompt.md): Shared patterns
 - [docs/README.md](docs/README.md): Complete documentation index
 
 ## For AI Agents
