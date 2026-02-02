@@ -1,6 +1,6 @@
 # ViewModel Patterns - Extended Examples
 
-Last Updated: December 20, 2025
+Last Updated: February 2, 2026
 
 > **Core Rules**: See [ViewModel Pattern](../tech/critical_patterns_quick_ref.md#viewmodel-pattern) for canonical pattern definition.
 
@@ -18,105 +18,15 @@ This guide provides extended examples and edge cases for the ViewModel pattern.
 
 ## Core Pattern Summary
 
-**ALL ViewModels MUST follow this pattern** (see [canonical rules](../tech/critical_patterns_quick_ref.md#viewmodel-pattern)):
+See [canonical ViewModel Pattern definition](../tech/critical_patterns_quick_ref.md#viewmodel-pattern) for complete rules and reference implementation.
+
+**Key requirements:**
 1. Extend `androidx.lifecycle.ViewModel`
 2. Implement `DefaultLifecycleObserver` for lifecycle awareness
 3. Pass `viewModelScope` as constructor parameter to superclass (NOT stored as field)
 4. NEVER perform work in `init` block
 5. Override `onStart(owner: LifecycleOwner)` for initialization logic
 6. Use `kotlinx.collections.immutable` types in UI state
-
-## Basic ViewModel Pattern
-
-```kotlin
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-
-class PokemonListViewModel(
-    private val repository: PokemonListRepository,
-    private val savedStateHandle: SavedStateHandle,
-    viewModelScope: CoroutineScope = CoroutineScope(
-        SupervisorJob() + Dispatchers.Main.immediate
-    )
-) : ViewModel(viewModelScope),  // ← Pass to superclass constructor
-    DefaultLifecycleObserver,   // ← Lifecycle awareness
-    UiStateHolder<PokemonListUiState, PokemonListUiEvent> {
-    
-    private val _uiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
-    override val uiState: StateFlow<PokemonListUiState> = _uiState
-    
-    // ⚠️ NEVER perform work in init {}
-    
-    // Lifecycle-aware initialization replaces repeatOnLifecycle pattern
-    override fun onStart(owner: LifecycleOwner) {
-        super.onStart(owner)
-        loadInitialPage()
-    }
-    
-    private fun loadInitialPage() {
-        viewModelScope.launch {
-            _uiState.value = PokemonListUiState.Loading
-            repository.loadPage(limit = 20, offset = 0).fold(
-                ifLeft = { error ->
-                    _uiState.value = PokemonListUiState.Error(error.toUiMessage())
-                },
-                ifRight = { page ->
-                    _uiState.value = PokemonListUiState.Content(
-                        pokemons = page.pokemons,
-                        hasMore = page.hasMore,
-                        isLoadingMore = false
-                    )
-                }
-            )
-        }
-    }
-    
-    override fun onUiEvent(event: PokemonListUiEvent) {
-        when (event) {
-            is PokemonListUiEvent.LoadMore -> loadNextPage()
-            is PokemonListUiEvent.Retry -> loadInitialPage()
-        }
-    }
-    
-    private fun loadNextPage() {
-        // Pagination logic
-    }
-}
-
-// UI State with immutable collections
-sealed interface PokemonListUiState {
-    data object Loading : PokemonListUiState
-    data class Content(
-        val pokemons: ImmutableList<Pokemon>,
-        val hasMore: Boolean,
-        val isLoadingMore: Boolean
-    ) : PokemonListUiState
-    data class Error(val message: String) : PokemonListUiState
-}
-
-// UI Events
-sealed interface HomeUiEvent {
-    data object Refresh : HomeUiEvent
-    data class ItemClicked(val id: String) : HomeUiEvent
-}
-
-// UiStateHolder interface
-interface UiStateHolder<S, E> {
-    val uiState: StateFlow<S>
-    fun onUiEvent(event: E)
-}
-```
 
 ## Parametric ViewModel (With ID/Parameters)
 
