@@ -9,8 +9,8 @@
 ## ViewModel Pattern
 
 ### Standard ViewModel (Simple List)
-- **Implementation**: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt)
-- **Tests**: [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt)
+- **Implementation**: [PokemonListViewModel.kt](../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt)
+- **Tests**: [PokemonListViewModelTest.kt](../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt)
 - **Demonstrates**:
   - DefaultLifecycleObserver implementation
   - SavedStateHandle with `by saved` delegate
@@ -21,8 +21,8 @@
   - Pagination with infinite scroll
 
 ### Parametric ViewModel (Detail Screen)
-- **Implementation**: [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt)
-- **Tests**: [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt)
+- **Implementation**: [PokemonDetailViewModel.kt](../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt)
+- **Tests**: [PokemonDetailViewModelTest.kt](../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt)
 - **Demonstrates**:
   - Parametric ViewModel (accepts ID parameter)
   - Koin parametersOf usage
@@ -35,9 +35,9 @@
 ## Repository Pattern (Either Boundary)
 
 ### Standard Repository
-- **API Interface**: [PokemonListRepository.kt](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/PokemonListRepository.kt)
-- **Implementation**: [PokemonListRepositoryImpl.kt](../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt)
-- **Tests**: [PokemonListRepositoryTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt)
+- **API Interface**: [PokemonListRepository.kt](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/PokemonListRepository.kt)
+- **Implementation**: [PokemonListRepositoryImpl.kt](../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt)
+- **Tests**: [PokemonListRepositoryTest.kt](../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt)
 - **Demonstrates**:
   - Either<RepoError, T> return types
   - Either.catch { } error handling
@@ -46,9 +46,9 @@
   - Pagination parameters
 
 ### Parametric Repository
-- **API Interface**: [PokemonDetailRepository.kt](../../features/pokemondetail/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/PokemonDetailRepository.kt)
-- **Implementation**: [PokemonDetailRepositoryImpl.kt](../../features/pokemondetail/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/data/PokemonDetailRepositoryImpl.kt)
-- **Tests**: [PokemonDetailRepositoryTest.kt](../../features/pokemondetail/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/data/PokemonDetailRepositoryTest.kt)
+- **API Interface**: [PokemonDetailRepository.kt](../features/pokemondetail/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/PokemonDetailRepository.kt)
+- **Implementation**: [PokemonDetailRepositoryImpl.kt](../features/pokemondetail/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/data/PokemonDetailRepositoryImpl.kt)
+- **Tests**: [PokemonDetailRepositoryTest.kt](../features/pokemondetail/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/data/PokemonDetailRepositoryTest.kt)
 - **Demonstrates**:
   - Complex nested DTOs
   - Error mapping
@@ -59,7 +59,7 @@
 ## Testing Patterns
 
 ### Repository Tests
-- **Example**: [PokemonListRepositoryTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt)
+- **Example**: [PokemonListRepositoryTest.kt](../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt)
 - **Demonstrates**:
   - Kotest StringSpec
   - MockK for API service mocking
@@ -69,7 +69,7 @@
   - 18/18 tests passing
 
 ### ViewModel Tests (with Turbine)
-- **Example**: [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt)
+- **Example**: [PokemonListViewModelTest.kt](../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt)
 - **Demonstrates**:
   - TestScope injection pattern
   - Turbine for StateFlow testing
@@ -79,7 +79,7 @@
   - NO Dispatchers.setMain needed
 
 ### Parametric ViewModel Tests
-- **Example**: [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt)
+- **Example**: [PokemonDetailViewModelTest.kt](../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt)
 - **Demonstrates**:
   - Koin parametersOf testing
   - Complex state verification
@@ -87,8 +87,8 @@
   - Lifecycle integration tests
 
 ### Property-Based Tests
-- **Repository Example**: [PokemonListRepositoryTest.kt#L91-L113](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt#L91-L113)
-- **ViewModel Example**: [PokemonListViewModelTest.kt#L235-L260](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt#L235-L260)
+- **Repository Example**: [PokemonListRepositoryTest.kt#L91-L113](../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt#L91-L113)
+- **ViewModel Example**: [PokemonListViewModelTest.kt#L235-L260](../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt#L235-L260)
 - **Demonstrates**:
   - Kotest checkAll with Arb generators
   - HTTP code range testing (400-599)
@@ -100,8 +100,8 @@
 ## Mapper Patterns
 
 ### DTO to Domain Mapping
-- **Implementation**: [PokemonMappers.kt](../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonMappers.kt)
-- **Tests**: [PokemonMappersTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonMappersTest.kt)
+- **Implementation**: [PokemonMappers.kt](../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/mappers/PokemonMappers.kt)
+- **Tests**: [PokemonMappersTest.kt](../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/mappers/PokemonMappersTest.kt)
 - **Demonstrates**:
   - Extension function mappers
   - Property-based testing for data preservation
@@ -114,22 +114,22 @@
 ### Scoped Navigation (Multi-Theme Support)
 
 #### Material Navigation Provider
-- **Route**: [PokemonList](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
-- **Provider**: [PokemonListMaterialNavigationProviders.kt](../../features/pokemonlist/wiring-ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/ui/material/PokemonListMaterialNavigationProviders.kt)
+- **Route**: [PokemonList](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
+- **Provider**: [PokemonListMaterialNavigationProviders.kt](../features/pokemonlist/wiring-ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/ui/material/PokemonListMaterialNavigationProviders.kt)
 - **Demonstrates**:
   - scope<MaterialScope> { } for theme separation
   - navigation<Route> DSL within scope
   - Material Design 3 screen wiring
 
 #### Unstyled Navigation Provider
-- **Route**: [PokemonList](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
-- **Provider**: [PokemonListUnstyledNavigationProviders.kt](../../features/pokemonlist/wiring-ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/ui/unstyled/PokemonListUnstyledNavigationProviders.kt)
+- **Route**: [PokemonList](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
+- **Provider**: [PokemonListUnstyledNavigationProviders.kt](../features/pokemonlist/wiring-ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/ui/unstyled/PokemonListUnstyledNavigationProviders.kt)
 - **Demonstrates**:
   - scope<UnstyledScope> { } for theme separation
   - UnstyledTheme { } wrapper
   - Shared navigation with different UI
 ### Simple Route (No Parameters)
-- **Route**: [PokemonListEntry.kt](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
+- **Route**: [PokemonListEntry.kt](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/navigation/PokemonListEntry.kt)
 - **Navigation Providers**: See Material/Unstyled providers above for theme-specific implementations
 - **Demonstrates**:
   - Plain data class route
@@ -138,10 +138,10 @@
   - koinViewModel() for ViewModels
 
 ### Parametric Route (With ID)
-- **Route**: [PokemonDetail.kt](../../features/pokemondetail/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/navigation/PokemonDetail.kt)
+- **Route**: [PokemonDetailEntry.kt](../features/pokemondetail/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/navigation/PokemonDetailEntry.kt)
 - **Providers**: 
-  - [PokemonDetailMaterialNavigationProviders.kt](../../features/pokemondetail/wiring-ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/wiring/ui/material/PokemonDetailMaterialNavigationProviders.kt) — Material theme
-  - [PokemonDetailUnstyledNavigationProviders.kt](../../features/pokemondetail/wiring-ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/wiring/ui/unstyled/PokemonDetailUnstyledNavigationProviders.kt) — Unstyled theme
+  - [PokemonDetailMaterialNavigationProviders.kt](../features/pokemondetail/wiring-ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/wiring/ui/material/PokemonDetailMaterialNavigationProviders.kt) — Material theme
+  - [PokemonDetailUnstyledNavigationProviders.kt](../features/pokemondetail/wiring-ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/wiring/ui/unstyled/PokemonDetailUnstyledNavigationProviders.kt) — Unstyled theme
 - **Demonstrates**:
   - Route with parameter
   - ViewModel scoping with key
@@ -154,7 +154,7 @@
 ## DI Patterns (Koin)
 
 ### Data Module (Repositories)
-- **Example**: [PokemonListModule.kt](../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
+- **Example**: [PokemonListModule.kt](../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
 - **Demonstrates**:
   - module { } DSL
   - factory<Interface> { }
@@ -162,14 +162,14 @@
   - Platform-specific source sets
 
 ### Presentation Module (ViewModels)
-- **Example**: [PokemonListModule.kt](../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
+- **Example**: [PokemonListModule.kt](../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)
 - **Demonstrates**:
   - viewModel<T> { } DSL
   - SavedStateHandle injection
   - parametersOf for parametric ViewModels
 
 ### iOS Helpers
-- **Example**: [KoinIos.kt](../../features/pokemonlist/wiring/src/iosMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/KoinIos.kt)
+- **Example**: [KoinIos.kt](../shared/src/iosMain/kotlin/com/minddistrict/multiplatformpoc/KoinIos.kt)
 - **Demonstrates**:
   - KoinPlatform.getKoin() wrapper functions
   - Int32 parameter conversion
@@ -202,8 +202,8 @@
 ### Material Design 3 Screens
 
 #### Material List Screen
-- **Implementation**: [PokemonListMaterialScreen.kt](../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
-- **Components**: [PokemonListCard.kt](../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListCard.kt), [PokemonListGrid.kt](../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListGrid.kt)
+- **Implementation**: [PokemonListMaterialScreen.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
+- **Components**: [PokemonListCard.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListCard.kt), [PokemonListGrid.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListGrid.kt)
 - **Demonstrates**:
   - Material 3 Card with elevation states
   - Staggered entrance animations
@@ -212,8 +212,8 @@
   - Shimmer loading skeleton
 
 #### Material Detail Screen
-- **Implementation**: [PokemonDetailMaterialScreen.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
-- **Components**: [HeroSection.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/HeroSection.kt), [TypeBadgeRow.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/TypeBadgeRow.kt), [AnimatedStatBar.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/BaseStatsSection.kt)
+- **Implementation**: [PokemonDetailMaterialScreen.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
+- **Components**: [HeroSection.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/HeroSection.kt), [TypeBadgeRow.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/TypeBadgeRow.kt), [AnimatedStatBar.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/BaseStatsSection.kt)
 - **Demonstrates**:
   - 256dp hero image with gradient
   - Badge animations (25ms stagger)
@@ -224,8 +224,8 @@
 ### Unstyled (Minimal) Screens
 
 #### Unstyled List Screen
-- **Implementation**: [PokemonListUnstyledScreen.kt](../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt)
-- **Components**: [PokemonListCardUnstyled.kt](../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/components/PokemonListCardUnstyled.kt), [PokemonListGridUnstyled.kt](../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/components/PokemonListGridUnstyled.kt)
+- **Implementation**: [PokemonListUnstyledScreen.kt](../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt)
+- **Components**: [PokemonListCardUnstyled.kt](../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/components/PokemonListCardUnstyled.kt), [PokemonListGridUnstyled.kt](../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/components/PokemonListGridUnstyled.kt)
 - **Demonstrates**:
   - Border-only cards (no fill)
   - Flat elevation (1dp)
@@ -235,8 +235,8 @@
   - Clean minimal spacing
 
 #### Unstyled Detail Screen
-- **Implementation**: [PokemonDetailUnstyledScreen.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailUnstyledScreen.kt)
-- **Components**: [HeroSectionUnstyled.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/HeroSectionUnstyled.kt), [TypeBadgeRowUnstyled.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/TypeBadgeRowUnstyled.kt), [BaseStatsSectionUnstyled.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/BaseStatsSectionUnstyled.kt)
+- **Implementation**: [PokemonDetailUnstyledScreen.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailUnstyledScreen.kt)
+- **Components**: [HeroSectionUnstyled.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/HeroSectionUnstyled.kt), [TypeBadgeRowUnstyled.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/TypeBadgeRowUnstyled.kt), [BaseStatsSectionUnstyled.kt](../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/components/BaseStatsSectionUnstyled.kt)
 - **Demonstrates**:
   - 256dp flat hero image
   - Border-only type badges
@@ -245,7 +245,7 @@
   - Linear motion (no emphasized easing)
 
 ### Legacy List Screen (Pre-Redesign)
-- **Implementation**: [PokemonListScreen.kt](../../features/pokemonlist/ui/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/PokemonListScreen.kt)
+- **Implementation**: [PokemonListMaterialScreen.kt](../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
 - **Demonstrates**:
   - LazyVerticalGrid layout
   - collectAsStateWithLifecycle()
@@ -254,7 +254,7 @@
   - @Preview with realistic data
 
 ### Detail Screen
-- **Implementation**: [PokemonDetailScreen.kt](../../features/pokemondetail/ui/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/PokemonDetailScreen.kt)
+- **Implementation**: [PokemonDetailMaterialScreen.kt](../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
 - **Demonstrates**:
   - Scaffold with TopAppBar
   - Stateful vs Stateless composables
@@ -267,14 +267,14 @@
 ## Error Handling Patterns
 
 ### Sealed Error Hierarchy
-- **Example**: [RepoError.kt](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/RepoError.kt)
+- **Example**: [RepoError.kt](../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/domain/RepoError.kt)
 - **Demonstrates**:
   - Sealed interface design
   - Network, Http, Unknown variants
   - UI message mapping
 
 ### Error Mapping
-- **Example**: [PokemonListRepositoryImpl.kt#L25-L35](../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt#L25-L35)
+- **Example**: [PokemonListRepositoryImpl.kt#L25-L35](../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt#L25-L35)
 - **Demonstrates**:
   - Either.catch { } pattern
   - .mapLeft { it.toRepoError() }
