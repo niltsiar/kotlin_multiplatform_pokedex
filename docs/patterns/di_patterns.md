@@ -1,6 +1,6 @@
 # Dependency Injection Patterns (Koin)
 
-Last Updated: November 26, 2025
+Last Updated: February 2, 2026
 
 > **Canonical Reference**: See [Impl+Factory Pattern](../tech/critical_patterns_quick_ref.md#implfactory-pattern) for core rules.
 
@@ -12,40 +12,38 @@ Last Updated: November 26, 2025
 
 ## Impl + Factory Pattern (MANDATORY)
 
-Every interface MUST follow this pattern:
+Every interface MUST follow this pattern. See [canonical Impl+Factory Pattern definition](../tech/critical_patterns_quick_ref.md#implfactory-pattern) for complete rules and reference implementation.
 
-```kotlin
-// :features:jobs:api - Public contract
-interface JobRepository {
-    suspend fun getJobs(): Either<RepoError, List<Job>>
-    suspend fun getById(id: String): Either<RepoError, Job>
-}
-
-// :features:jobs:data - Internal implementation
-internal class JobRepositoryImpl(
-    private val api: JobApiService
-) : JobRepository {
-    override suspend fun getJobs(): Either<RepoError, List<Job>> =
-        Either.catch {
-            api.getJobs().jobs.map { it.asDomain() }
-        }.mapLeft { it.toRepoError() }
-    
-    override suspend fun getById(id: String): Either<RepoError, Job> =
-        Either.catch {
-            api.getJob(id).asDomain()
-        }.mapLeft { it.toRepoError() }
-}
-
-// Public factory function (Impl + Factory pattern)
-fun JobRepository(api: JobApiService): JobRepository = 
-    JobRepositoryImpl(api)
-```
+**Pattern Summary:**
+1. Define interface in `:api` module (public contract)
+2. Implement as `internal class` in `:data` module (hidden implementation)
+3. Provide public factory function that returns interface type
+4. Wire in Koin module using factory function, not direct implementation
 
 **Why this pattern:**
 - ✅ Enables Gradle compilation avoidance
 - ✅ Hides implementation details
 - ✅ Simplifies testing (no mocking framework needed for interfaces)
 - ✅ Clean boundary between public API and internal implementation
+
+**Example structure:**
+```kotlin
+// :features:jobs:api - Public contract
+interface JobRepository {
+    suspend fun getJobs(): Either<RepoError, List<Job>>
+}
+
+// :features:jobs:data - Internal implementation (see canonical guide for full example)
+internal class JobRepositoryImpl(...) : JobRepository { ... }
+
+// Public factory function (in :data module)
+fun JobRepository(api: JobApiService): JobRepository = JobRepositoryImpl(api)
+
+// Koin wiring (in :wiring module)
+val jobsModule = module {
+    factory<JobRepository> { JobRepository(api = get()) }
+}
+```
 
 ## SavedStateHandle in ViewModels
 
