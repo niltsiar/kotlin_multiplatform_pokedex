@@ -156,9 +156,9 @@ private fun PokemonListContentPreview() {
 }
 ```
 
-## Implementation Workflow
+## Essential Workflows
 
-### 1. Create Feature UI Structure
+### Workflow 1: Create Feature UI Structure
 
 Create module directories following split-by-layer pattern:
 
@@ -179,7 +179,7 @@ features/<feature>/ui-unstyled/src/commonMain/kotlin/<pkg>/
 └── components/                          # Unstyled components
 ```
 
-### 2. Define Screen Contract
+### Workflow 2: Define Screen Contract
 
 Identify required parameters and callbacks:
 
@@ -194,7 +194,7 @@ fun <Feature>MaterialScreen(
 )
 ```
 
-### 3. Create UI State Handler
+### Workflow 3: Create UI State Handler
 
 Handle all UI states in main content composable:
 
@@ -214,7 +214,7 @@ internal fun <Feature>MaterialContent(
 }
 ```
 
-### 4. Implement Reusable Components
+### Workflow 4: Implement Reusable Components
 
 Create isolated components with @Preview:
 
@@ -254,7 +254,7 @@ private fun <Feature>CardPreview() {
 }
 ```
 
-### 5. Implement Main Screen
+### Workflow 5: Implement Main Screen
 
 Wire ViewModel state to content:
 
@@ -276,7 +276,7 @@ fun <Feature>MaterialScreen(
 }
 ```
 
-### 6. Add All @Preview Variations
+### Workflow 6: Add All @Preview Variations
 
 Preview all states and edge cases:
 
@@ -331,7 +331,7 @@ private fun <Feature>ContentPreview() {
 }
 ```
 
-### 7. Validate Implementation
+### Workflow 7: Validate Implementation
 
 Run primary validation command:
 
@@ -339,7 +339,7 @@ Run primary validation command:
 ./gradlew :composeApp:assembleDebug test --continue
 ```
 
-## Critical Anti-Patterns
+## Critical Guardrails
 
 1. **NEVER skip @Preview annotations** - Every @Composable function must have preview for IDE validation and visual testing
 
@@ -403,7 +403,7 @@ AnimatedStatBar(tokens = MaterialTheme.componentTokens.progressBar())
 | Critical patterns | 6 core patterns (ViewModel, Either, Impl+Factory) | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
 | Navigation 3 | Modular navigation architecture | [navigation.md](../../../docs/tech/navigation.md) |
 | Testing strategy | @Preview requirements and UI testing | [testing_strategy.md](../../../docs/tech/testing_strategy.md) |
-| Animation guides | Creative UI animations and motion | [ui-ux-designer skill](../ui-ux-designer/SKILL.md) |
+| Animation guides | Creative UI animations and motion | [ui-ux-designer](../ui-ux-designer/SKILL.md) |
 | Product requirements | Feature acceptance criteria | [prd.md](../../../docs/project/prd.md) |
 
 ### Reference Implementations
