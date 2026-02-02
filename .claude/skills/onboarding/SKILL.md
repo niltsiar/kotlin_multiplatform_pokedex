@@ -18,7 +18,7 @@ Use this skill for:
   - "app walkthrough"
 
 - **Exclusions**:
-  - General UI/UX design → Use `frontend-ui-ux` skill
+  - General UI/UX design → Use `ui-ux-designer` skill
   - Navigation flows → Use user flow planning
   - Product requirements → Use Product Design Mode
   - Static help/documentation → Use Documentation Mode
@@ -81,7 +81,7 @@ Use this skill for:
 | `docs/project/user_flow.md` | User journeys and flows |
 | `docs/project/prd.md` | Product requirements and acceptance criteria |
 | `docs/project/ui_ux.md` | UI/UX guidelines |
-| `.claude/skills/frontend-ui-ux/SKILL.md` | General UI/UX design principles |
+| `../ui-ux-designer/SKILL.md` | General UI/UX design principles |
 | `resources/onboarding-flow-template.md` | Ready-to-use onboarding template |
 
 ## Success Metrics

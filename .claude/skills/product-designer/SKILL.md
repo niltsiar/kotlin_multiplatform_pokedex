@@ -18,7 +18,7 @@ Use this skill when:
 
 **Exclusion Scenarios (DO NOT use):**
 - Implementation details (use technical implementation skills)
-- UI/UX visual design specifications (use frontend-ui-ux skill)
+- UI/UX visual design specifications (use ui-ux-designer skill)
 - Test planning strategies (use testing-strategy skill)
 - Code architecture decisions (use technical patterns documentation)
 - Backend API specifications (use backend-development skill)
