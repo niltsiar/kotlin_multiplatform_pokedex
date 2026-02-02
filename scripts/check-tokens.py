@@ -34,9 +34,7 @@ def main():
     
     files = [
         "AGENTS.md",
-        "docs/agent-prompts/base_agent_prompt.md",
-        ".github/copilot-instructions.md",
-        ".junie/guidelines.md"
+        "llms.txt"
     ]
     
     print("Token Budget Analysis")
