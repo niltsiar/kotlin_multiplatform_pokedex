@@ -1,6 +1,6 @@
 # iOS ViewModel Pattern - Quick Reference
 
-**Last Updated**: December 22, 2025  
+**Last Updated**: February 2, 2026  
 **Status**: ✅ Production Pattern  
 **Reference**: [Official Android KMP ViewModel Guide](https://developer.android.com/kotlin/multiplatform/viewmodel)
 
@@ -78,4 +78,4 @@ struct PokemonDetailView: View {
 ## See Also
 
 - [Complete iOS Integration Guide](ios_integration.md)
-- [KMP Mobile Expert Agent](../agent-prompts/kmp_mobile_expert_agent_system_prompt_DELTA.md)
+- [KMP Mobile Expert Skill](../../.claude/skills/kmp-mobile-expert/SKILL.md) - For ViewModels, repositories, and iOS integration

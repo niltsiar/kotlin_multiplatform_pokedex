@@ -189,7 +189,7 @@ Icon(..., contentDescription = null)
 **Icons:** straighten/height, balance, star_outline  
 **Locations:**
 - PhysicalAttributesCard.kt (Material variant)
-- PokemonDetailScreenUnstyled.kt (Unstyled variant)
+- PokemonDetailUnstyledScreen.kt (Unstyled variant)
 
 **Current Workaround:** Emoji icons (📏⚖️⭐)  
 **Reason for Deferral:** UI/UX Design agent will handle holistic screen redesign with proper icon integration  

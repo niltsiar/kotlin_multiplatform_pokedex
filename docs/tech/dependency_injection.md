@@ -1,6 +1,6 @@
 # Dependency Injection Guidelines
 
-**Last Updated:** November 26, 2025
+**Last Updated:** February 2, 2026
 
 Purpose: Establish consistent DI patterns using Koin for Kotlin Multiplatform with runtime injection, type-safe DSL, and vertical-slice feature modules.
 
@@ -698,12 +698,6 @@ class ModuleCheckTest : StringSpec({
     }
 })
 ```
-
-## Migration from Metro
-
-If you're migrating from Metro to Koin, refer to:
-- Migration Guide: [.junie/metro_to_koin_migration.md](../../metro_to_koin_migration.md)
-- Pattern comparison and step-by-step migration instructions included
 
 ## Notes
 - Koin performs dependency resolution at runtime (unlike Metro's compile-time validation)

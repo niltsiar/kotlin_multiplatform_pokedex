@@ -1,6 +1,6 @@
 # Convention Plugins Guide
 
-**Last Updated:** November 27, 2025
+**Last Updated:** February 2, 2026
 
 > **Purpose**: Complete guide to convention plugins in this Kotlin Multiplatform project. Covers architecture, available plugins, usage patterns, and implementation details.
 
@@ -12,7 +12,7 @@
 
 1. [Overview](#overview)
 2. [Architecture](#architecture)
-3. [Available Plugins](#available-plugins)
+3. [Available Plugins](#available-plugins-final)
 4. [Usage Guide](#usage-guide)
 5. [Creating New Modules](#creating-new-modules)
 6. [Implementation Details](#implementation-details)
@@ -780,8 +780,8 @@ versionCatalogs {
 - **Project conventions**: [conventions.md](conventions.md)
 - **Koin DI patterns**: [koin_di_quick_ref.md](koin_di_quick_ref.md)
 - **Version catalog**: `gradle/libs.versions.toml`
-- **Copilot instructions**: `.github/copilot-instructions.md`
 - **Agent instructions**: `AGENTS.md`
+- **Documentation index**: `docs/README.md`
 
 ---
 

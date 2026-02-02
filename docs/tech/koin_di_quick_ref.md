@@ -1,6 +1,6 @@
 # Koin DI Quick Reference
 
-Last Updated: November 26, 2025
+Last Updated: February 2, 2026
 
 **Purpose**: Quick reference for Koin dependency injection patterns in Kotlin Multiplatform projects.
 
@@ -674,7 +674,6 @@ val pokemonListModule = module {
 - **Compose Integration**: [insert-koin.io/docs/reference/koin-compose](https://insert-koin.io/docs/reference/koin-compose/compose/)
 - **Testing**: [insert-koin.io/docs/reference/koin-test](https://insert-koin.io/docs/reference/koin-test/test/)
 - **Full Guide**: [dependency_injection.md](dependency_injection.md)
-- **Migration Guide**: [../../metro_to_koin_migration.md](../../metro_to_koin_migration.md)
 
 ---
 

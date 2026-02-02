@@ -189,5 +189,5 @@ However, **this approach is more complex** and still doesn't provide automatic `
 ## Related Files
 
 - [`composeApp/src/jvmMain/kotlin/main.kt`](../../composeApp/src/jvmMain/kotlin/com/minddistrict/multiplatformpoc/main.kt) - ProvideDesktopLifecycle setup
-- [`features/pokemondetail/wiring-ui/src/jvmMain/`](../../features/pokemondetail/wiring-ui/src/jvmMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/wiringui/PokemonDetailNavigationProviders.kt) - Desktop ViewModel usage
+- [`features/pokemondetail/wiring-ui-material/src/commonMain/`](../../features/pokemondetail/wiring-ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/wiring/ui/material/PokemonDetailMaterialNavigationProviders.kt) - Desktop Material theme navigation
 - [`shared/src/iosMain/kotlin/KoinIos.kt`](../../shared/src/iosMain/kotlin/com/minddistrict/multiplatformpoc/KoinIos.kt) - iOS ViewModel pattern
