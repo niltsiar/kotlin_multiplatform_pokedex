@@ -539,7 +539,7 @@ actual fun platformHttpClient(): HttpClient = HttpClient(Darwin)
 - Wiring modules improve build speed by leveraging Gradle Compilation Avoidance
 - App modules depend on wiring; wiring depends on `api` + `data` + `presentation`
 - Other features depend only on `api`
-- See: [Pragmatic Modularization](https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611)
+- See: [Gradle Compilation Avoidance](https://docs.gradle.org/current/userguide/build_cache_concepts.html#compilation_awareness)
 
 ## iOS Umbrella (shared module)
 - The `:shared` module is an umbrella framework for the iOS app

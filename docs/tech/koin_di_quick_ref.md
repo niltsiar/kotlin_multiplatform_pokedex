@@ -670,9 +670,9 @@ val pokemonListModule = module {
 
 ## 📚 Additional Resources
 
-- **Official Documentation**: [insert-koin.io/docs](https://insert-koin.io/docs)
+- **Official Documentation**: [insert-koin.io](https://insert-koin.io)
 - **Compose Integration**: [insert-koin.io/docs/reference/koin-compose](https://insert-koin.io/docs/reference/koin-compose/compose/)
-- **Testing**: [insert-koin.io/docs/reference/koin-test](https://insert-koin.io/docs/reference/koin-test/test/)
+- **Testing**: [insert-koin.io/docs/reference/koin-test/testing](https://insert-koin.io/docs/reference/koin-test/testing)
 - **Full Guide**: [dependency_injection.md](dependency_injection.md)
 
 ---
