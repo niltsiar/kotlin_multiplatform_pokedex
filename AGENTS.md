@@ -1,5 +1,7 @@
 # AGENTS.md
 
+**Last Updated:** February 2, 2026
+
 ## Quick Start
 
 ```bash
