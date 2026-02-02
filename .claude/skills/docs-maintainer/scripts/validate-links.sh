@@ -10,7 +10,7 @@ fi
 
 echo "🔍 Validating documentation links..."
 
-# Check all markdown files in docs/ and root-level docs
-markdown-link-check docs/**/*.md AGENTS.md llms.txt || exit 1
+# Check all markdown files in docs/, skills, and root-level docs
+markdown-link-check docs/**/*.md AGENTS.md llms.txt .claude/skills/**/*.md || exit 1
 
 echo "✅ All links validated successfully!"
