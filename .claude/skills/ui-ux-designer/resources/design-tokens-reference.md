@@ -303,7 +303,7 @@ val colors = if (isDarkMode) darkColorScheme() else lightColorScheme()
 
 ## Reference Links
 
-- [Material 3 Design Tokens](https://m3.material.io/styles/color/the-color-system/tokens)
+- [Material 3 Design Tokens](https://m3.material.io/foundations/design-tokens/overview)
 - [Material 3 Motion](https://m3.material.io/styles/motion/easing-and-duration)
 - [Material 3 Typography](https://m3.material.io/styles/typography/type-scale-tokens)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
