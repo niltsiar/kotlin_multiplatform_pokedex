@@ -1,10 +1,12 @@
 # Skill Usage Guide
 
+Last Updated: February 2, 2026
+
 ## Quick Start
 
 ### For OpenCode Users
 
-Skills are located in `.opencode/skills/` and auto-load when you use the `skill()` tool or `@mention` them.
+Skills are located in `.claude/skills/` and auto-load when you use the `@mention` syntax.
 
 ```bash
 # Use a skill
@@ -18,9 +20,9 @@ skill("kmp-developer")
 
 | Skill | Use When | Location |
 |-------|----------|----------|
-| **kmp-developer** | General development, features, bugs | `.opencode/skills/kmp-developer/` |
-| **kmp-mobile-expert** | ViewModels, repositories, iOS | `.opencode/skills/kmp-mobile-expert/` |
-| **compose-screen** | Compose UI screens | `.opencode/skills/compose-screen/` |
+| **kmp-developer** | General development, features, bugs | `.claude/skills/kmp-developer/` |
+| **kmp-mobile-expert** | ViewModels, repositories, iOS | `.claude/skills/kmp-mobile-expert/` |
+| **compose-screen** | Compose UI screens | `.claude/skills/compose-screen/` |
 
 ## Skill Structure
 
@@ -81,7 +83,7 @@ python3 scripts/check-tokens.py
 ## Migration from Agent Prompts
 
 **Old way**: Load agent prompt from `docs/agent-prompts/`
-**New way**: Use skill from `.opencode/skills/`
+**New way**: Use skill from `.claude/skills/`
 
 Skills are more focused, task-specific, and include:
 - Mode detection for different scenarios
@@ -92,7 +94,7 @@ Skills are more focused, task-specific, and include:
 ## Troubleshooting
 
 ### Skill not loading?
-- Check skill is in `.opencode/skills/<name>/SKILL.md`
+- Check skill is in `.claude/skills/<name>/SKILL.md`
 - Verify YAML frontmatter has `name` and `description`
 - Ensure description is specific (includes trigger keywords)
 
@@ -112,7 +114,7 @@ Follow the pilot pattern:
 
 ## References
 
-- [docs/AGENTS.md](docs/AGENTS.md) - Agent routing
-- [docs/README.md](docs/README.md) - Documentation index
-- [.opencode/skills/](.opencode/skills/) - All skills
-- [llms.txt](llms.txt) - AI discovery index
+- [AGENTS.md](../AGENTS.md) - Agent routing
+- [README.md](README.md) - Documentation index
+- `.claude/skills/` - All skills (11 skill directories)
+- [llms.txt](../llms.txt) - AI discovery index

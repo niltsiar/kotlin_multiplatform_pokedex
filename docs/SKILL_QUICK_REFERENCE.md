@@ -1,5 +1,7 @@
 # Skill Quick Reference Card
 
+Last Updated: February 2, 2026
+
 ## 🚀 One-Page Cheat Sheet for KMP Skills
 
 ### When to Use Which Skill
@@ -30,15 +32,15 @@
 
 ### File Locations
 
-- **Skills**: `.opencode/skills/<skill-name>/SKILL.md`
-- **Validation**: `./scripts/validate-deltas.sh`
+- **Skills**: `.claude/skills/<skill-name>/SKILL.md`
+- **Validation**: `./.claude/skills/docs-maintainer/scripts/validate-links.sh`
 - **Token Check**: `python3 scripts/check-tokens.py`
-- **Full Guide**: `docs/SKILL_USAGE_GUIDE.md`
+- **Full Guide**: `docs/SKILL_USAGE.md`
 
 ### Getting Help
 
 1. **Quick help**: Ask the skill directly
-2. **Full guide**: Read `docs/SKILL_USAGE_GUIDE.md`
+2. **Full guide**: Read `docs/SKILL_USAGE.md`
 3. **Patterns**: Check `docs/tech/critical_patterns_compact.md`
 4. **Architecture**: See `docs/tech/conventions.md`
 
