@@ -133,6 +133,7 @@ To eliminate documentation duplication:
 | NEVER add content without checking for canonical source first | Duplication creates debt |
 | ALWAYS use relative paths for internal links | Absolute paths break on move |
 | NEVER remove content without checking references | Causes broken links across docs |
+| ALWAYS use markdown hyperlinks `[text](path)` NOT code spans `` `path` `` | Code spans are not clickable or validated |
 
 ## Quick Reference
 
@@ -174,7 +175,7 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 |----------|---------|------|
 | [conventions.md](../../../docs/tech/conventions.md) | Master architecture and conventions reference |
 | [AGENTS.md](../../../AGENTS.md) | Agent routing table and mode selection |
-| [conventions.md](../../../docs/tech/conventions.md) | Master architecture and conventions reference |
+| [llms.txt](../../../llms.txt) | AI discovery index |
 | [docs/README.md](../../../docs/README.md) | Documentation index for AI discovery |
 | [QUICK_REFERENCE.md](../../../docs/QUICK_REFERENCE.md) | Essential commands and workflows |
 | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) | 6 core patterns reference |
