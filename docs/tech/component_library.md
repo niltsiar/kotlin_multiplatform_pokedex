@@ -84,7 +84,7 @@ PokemonCard(
 ### Preview References
 
 - Material: [PokemonListMaterialScreen.kt](../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt) — `@Preview` functions with realistic data
-- Unstyled: [PokemonListUnstyledScreen.kt](../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListScreenUnstyled.kt) — Minimal theme previews
+- Unstyled: [PokemonListUnstyledScreen.kt](../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt) — Minimal theme previews
 
 ---
 
@@ -164,7 +164,7 @@ TypeBadge(
 ### Preview References
 
 - Material: [PokemonDetailMaterialScreen.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt) — Type badges with filled styling
-- Unstyled: [PokemonDetailUnstyledScreen.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailScreenUnstyled.kt) — Outline badges with type colors
+- Unstyled: [PokemonDetailUnstyledScreen.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailUnstyledScreen.kt) — Outline badges with type colors
 
 ---
 
@@ -256,7 +256,7 @@ AnimatedStatBar(
 ### Preview References
 
 - Material: [PokemonDetailMaterialScreen.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt) — Animated stats with emphasized motion
-- Unstyled: [PokemonDetailUnstyledScreen.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailScreenUnstyled.kt) — Linear stat bars
+- Unstyled: [PokemonDetailUnstyledScreen.kt](../../features/pokemondetail/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/unstyled/PokemonDetailUnstyledScreen.kt) — Linear stat bars
 
 ---
 
