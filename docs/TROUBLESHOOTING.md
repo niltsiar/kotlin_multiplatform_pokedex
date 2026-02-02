@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-**Last Updated:** December 31, 2025
+**Last Updated:** February 2, 2026
 
 **Purpose:** Common issues encountered during development and their solutions. Based on real problems solved during Steps 1-7 of Phase 2 redesign.
 
@@ -65,8 +65,6 @@ android {
 **Generated package name:** Namespace with dots → underscores:
 - Input: `com.minddistrict.multiplatformpoc.core.designsystem.core`
 - Output: `multiplatformpoc.core.designsystem_core.generated.resources`
-
-**Reference:** [ICON_KNOWLEDGE_BASE.md](ICON_KNOWLEDGE_BASE.md)
 
 ---
 
@@ -385,9 +383,7 @@ Result: BUILD SUCCESSFUL, 84 tests passing"
 ## Related Documentation
 
 - [CODE_REFERENCES.md](CODE_REFERENCES.md) - Canonical implementation examples
-- [ICON_KNOWLEDGE_BASE.md](ICON_KNOWLEDGE_BASE.md) - Resource configuration
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Common commands
-- [UI_REDESIGN_PLAN.md](UI_REDESIGN_PLAN.md) - Step-by-step progress
 
 ---
 

@@ -1,6 +1,6 @@
 # Quick Reference Guide
 
-Last Updated: December 31, 2025
+Last Updated: February 2, 2026
 
 > Fast lookup for commands, tables, API references, and common patterns.
 
@@ -19,35 +19,26 @@ Last Updated: December 31, 2025
 **Next: Step 9** - Comprehensive unit tests
 
 **Documentation:**
-- Full plan: [UI_REDESIGN_PLAN.md](UI_REDESIGN_PLAN.md)
 - Implementation references: [CODE_REFERENCES.md](CODE_REFERENCES.md)
 - Troubleshooting: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- Icon strategy: [ICON_KNOWLEDGE_BASE.md](ICON_KNOWLEDGE_BASE.md)
-
-## 🎨 Icon Implementation Knowledge Base
-
-**NEW: Complete icon implementation guide** - [ICON_KNOWLEDGE_BASE.md](ICON_KNOWLEDGE_BASE.md)
-- Material 3 v1.4.0 icon strategy (Vector Drawable XML)
-- Library resource configuration patterns
-- Troubleshooting guide for "Unresolved reference 'generated'" errors
-- Copy-paste ready implementation examples
-- Current icon inventory (✅ implemented + ⏳ deferred)
 
 ## Agent Selector (Quick)
 
-Use these specialized modes for faster task routing:
+Use these specialized skills for faster task routing (located in `.claude/skills/`):
 
-- Product Design Mode → [docs/agent-prompts/product_designer_agent_system_prompt_DELTA.md](agent-prompts/product_designer_agent_system_prompt_DELTA.md)
-- UI/UX Design Mode → [docs/agent-prompts/uiux_agent_system_prompt_DELTA.md](agent-prompts/uiux_agent_system_prompt_DELTA.md)
-- Screen Implementation Mode → [docs/agent-prompts/ui_ux_system_agent_for_generic_screen_DELTA.md](agent-prompts/ui_ux_system_agent_for_generic_screen_DELTA.md)
-- SwiftUI Screen Agent → [docs/agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md](agent-prompts/ui_ux_system_agent_for_swiftui_screen_DELTA.md)
-- Onboarding Design Mode → [docs/agent-prompts/onboarding_agent_system_prompt_DELTA.md](agent-prompts/onboarding_agent_system_prompt_DELTA.md)
-- User Flow Planning Mode → [docs/agent-prompts/user_flow_agent_system_prompt_DELTA.md](agent-prompts/user_flow_agent_system_prompt_DELTA.md)
-- Testing Strategy Mode → [docs/agent-prompts/testing_agent_system_prompt_DELTA.md](agent-prompts/testing_agent_system_prompt_DELTA.md)
-- Backend Development Mode → [docs/agent-prompts/backend_agent_system_prompt_DELTA.md](agent-prompts/backend_agent_system_prompt_DELTA.md)
-- Documentation Management Mode → [docs/agent-prompts/documentation_agent_system_prompt_DELTA.md](agent-prompts/documentation_agent_system_prompt_DELTA.md)
+| Skill | Use When |
+|-------|----------|
+| **@product-designer** | Writing PRD, defining acceptance criteria |
+| **@ui-ux-designer** | Visual design, animations, design systems |
+| **@compose-screen** | Building Compose UI screens |
+| **@swiftui-screen** | Building SwiftUI screens with KMP ViewModels |
+| **@onboarding** | Designing onboarding flows |
+| **@user-flows** | Mapping user journeys |
+| **@testing-strategy** | Planning tests, test coverage |
+| **@ktor-backend** | Creating API endpoints |
+| **@docs-maintainer** | Updating documentation |
 
-Tip: For a browsable list with brief purposes, see [docs/agent-prompts/README.md](agent-prompts/README.md). For detailed routing and sync guardrails, see [AGENTS.md](../AGENTS.md).
+For detailed routing and skill usage, see [SKILL_USAGE.md](SKILL_USAGE.md) and [AGENTS.md](../AGENTS.md).
 
 ## Essential Commands
 
@@ -287,8 +278,8 @@ beforeTest {
 ```
 
 **Reference Implementations:**
-- [PokemonListViewModel.kt](../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) (delegate pattern)
-- [PokemonDetailViewModel.kt](../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) (delegate pattern)
+- [PokemonListViewModel.kt](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) (delegate pattern)
+- [PokemonDetailViewModel.kt](../../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) (delegate pattern)
 - [DI Patterns Guide](patterns/di_patterns.md#savedstatehandle-in-viewmodels)
 
 ## Library Resources Quick Reference
@@ -665,6 +656,6 @@ kotlin {
 - `project/ui_ux.md` — UI/UX guidelines
 
 **Main Documentation:**
-- `AGENTS.md` — Autonomous agent workflows
-- `.github/copilot-instructions.md` — GitHub Copilot context
-- `.junie/guidelines.md` — Junie AI assistant reference
+- `AGENTS.md` — Agent routing and skill selection
+- `llms.txt` — AI discovery index
+- `docs/README.md` — Complete documentation index
