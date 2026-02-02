@@ -288,4 +288,4 @@ When reviewing test code, check for:
 **References**:
 - Kotest Type Matchers: https://kotest.io/docs/assertions/core-matchers.html#type-matchers
 - Kotlin Contracts: https://kotlinlang.org/docs/whatsnew13.html#contracts
-- Arrow Kotest Matchers: https://arrow-kt.io/learn/testing/kotest/
+- Arrow Documentation: https://arrow-kt.io/learn/quickstart/

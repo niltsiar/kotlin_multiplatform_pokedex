@@ -258,7 +258,7 @@ val jobsModule = module {
 ### Wiring modules and Gradle Compilation Avoidance
 - Wiring modules are created specifically to improve build speed by leveraging Gradle's Compilation Avoidance. See:
   - Gradle blog: https://blog.gradle.org/our-approach-to-faster-compilation
-  - Aggregation Module pattern: https://proandroiddev.com/pragmatic-modularization-the-case-for-wiring-modules-c936d3af3611
+  - [Compilation Avoidance Documentation](https://docs.gradle.org/current/userguide/build_cache_concepts.html#compilation_awareness)
 - Dependency edges:
   - App modules depend on wiring modules.
   - Wiring depends on feature layer modules (`:data`, `:presentation`, `:ui`) and `:api`.
