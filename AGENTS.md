@@ -1,6 +1,6 @@
 # AGENTS.md
 
-**Last Updated:** February 2, 2026
+**Last Updated:** February 4, 2026
 
 ## Quick Start
 
@@ -8,39 +8,137 @@
 ./gradlew :composeApp:assembleDebug test --continue
 ```
 
-## Skills (11 Total)
+## Decision Tree for Skill Selection
+
+**What are you building?**
+
+### Feature Implementation
+```
+Implementing a new feature?
+├── Architecture guidance needed? → @kmp-architecture
+├── Creating ViewModel? → @kmp-presentation
+├── Setting up Repository? → @kmp-data-layer
+├── API service configuration? → @kmp-api-services
+├── Domain model design? → @kmp-domain
+├── DI configuration? → @kmp-di
+├── Building UI?
+│   ├── Compose (Material) → @compose-screen
+│   ├── Compose (Unstyled) → @compose-screen + @kmp-compose-unstyled
+│   └── SwiftUI → @swiftui-screen
+├── Adding navigation? → @kmp-navigation
+└── Testing strategy? → @kmp-testing-strategy
+```
+
+### Platform-Specific Work
+```
+Working on platform-specific code?
+├── iOS integration (SwiftUI + KMP) → @kmp-ios
+├── Desktop-specific (JVM) → @kmp-desktop
+├── Navigation implementation → @kmp-navigation
+└── Gradle/Build configuration → @kmp-gradle
+```
+
+### Testing
+```
+Writing or fixing tests?
+├── Test strategy & philosophy → @kmp-testing-strategy
+├── Test implementation patterns → @kmp-testing-patterns
+├── Property-based testing (Kotest) → @kmp-testing-patterns
+└── Test failures & debugging → @kmp-testing-strategy + docs/TROUBLESHOOTING.md
+```
+
+### Design Systems
+```
+Working on UI/Design?
+├── Design tokens & components → @kmp-design-systems
+├── Compose Unstyled patterns → @kmp-compose-unstyled
+├── Visual design & animations → @ui-ux-designer
+├── Icon strategy → @kmp-design-systems
+└── Critical patterns quick ref → @kmp-critical-patterns
+```
+
+### Product & Planning
+```
+Product planning?
+├── Writing PRD → @product-designer
+├── User flows & journeys → @user-flows
+├── Onboarding flows → @onboarding
+└── UI/UX guidelines → @ui-ux-designer
+```
+
+### Backend
+```
+Backend development?
+├── Ktor API endpoints → @ktor-backend
+├── API service patterns → @kmp-api-services
+└── Repository patterns → @kmp-data-layer
+```
+
+### Build & Workflow
+```
+Build issues or workflow questions?
+├── Build commands & validation → @kmp-commands
+├── Gradle configuration → @kmp-gradle
+├── Test execution → @kmp-commands
+└── Pre-commit checks → @kmp-commands
+```
+
+## Skills (27 Total)
 
 Located in `.claude/skills/`
 
+### Core Architecture
+- **@kmp-critical-patterns** - 6 core patterns (quick reference)
+- **@kmp-architecture** - Module structure, vertical slicing
+- **@kmp-domain** - Domain models, use cases
+- **@kmp-di** - Koin patterns, DI wiring
+- **@kmp-gradle** - Convention plugins, build configuration
+
+### Layer Implementation
+- **@kmp-presentation** - ViewModels, lifecycle, SavedStateHandle
+- **@kmp-data-layer** - Repository patterns, Either<RepoError,T>
+- **@kmp-api-services** - Ktor, API services, DTOs
+- **@kmp-testing-patterns** - Kotest, MockK, property testing
+
+### Platform & Design
+- **@kmp-ios** - SwiftUI + KMP integration
+- **@kmp-navigation** - Navigation 3, scoped routes
+- **@kmp-design-systems** - Design tokens, components, icons
+
+### Specialized
+- **@kmp-compose-unstyled** - Headless components
+- **@kmp-desktop** - JVM-specific patterns
+- **@kmp-testing-strategy** - Testing philosophy (renamed from @testing-strategy)
+- **@kmp-commands** - Build, test, validation commands
+
 ### Development
-- **kmp-developer** - General development (@kmp-developer)
-- **kmp-mobile-expert** - ViewModels, repositories (@kmp-mobile-expert)
-- **compose-screen** - Compose UI (@compose-screen)
-- **swiftui-screen** - SwiftUI iOS (@swiftui-screen)
-- **ktor-backend** - Ktor server (@ktor-backend)
+- **@kmp-developer** - General development
+- **@kmp-mobile-expert** - ViewModels, repositories, iOS
+- **@compose-screen** - Compose UI
+- **@swiftui-screen** - SwiftUI iOS
+- **@ktor-backend** - Ktor server
 
 ### Design & Planning
-- **product-designer** - PRD, acceptance criteria (@product-designer)
-- **ui-ux-designer** - Visual design (@ui-ux-designer)
-- **onboarding** - Onboarding flows (@onboarding)
-- **user-flows** - Journey mapping (@user-flows)
+- **@product-designer** - PRD, acceptance criteria
+- **@ui-ux-designer** - Visual design
+- **@onboarding** - Onboarding flows
+- **@user-flows** - Journey mapping
 
 ### Quality
-- **testing-strategy** - Test planning (@testing-strategy)
-- **docs-maintainer** - Documentation (@docs-maintainer)
+- **@docs-maintainer** - Documentation
 
-## Skill Selection Guide
+## Skill Selection Guide (Quick Reference)
 
 | I want to... | Use Skill |
 |--------------|-----------|
 | Implement a new feature | @kmp-developer |
-| Create a ViewModel | @kmp-mobile-expert |
+| Create a ViewModel | @kmp-presentation |
 | Build a Compose screen | @compose-screen |
 | Build a SwiftUI screen | @swiftui-screen |
 | Create API endpoints | @ktor-backend |
 | Write product requirements | @product-designer |
 | Design UI/animations | @ui-ux-designer |
-| Plan tests | @testing-strategy |
+| Plan tests | @kmp-testing-strategy |
 | Update documentation | @docs-maintainer |
 
 ## Critical Patterns
@@ -51,6 +149,8 @@ Located in `.claude/skills/`
 - **iOS**: Only export `:api` and `:presentation`
 
 ## Essential Commands
+
+See [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for complete command reference or load **@kmp-commands** skill.
 
 | Task | Command |
 |------|---------|
@@ -64,7 +164,7 @@ Located in `.claude/skills/`
 - Full skill guide: [docs/SKILL_USAGE.md](docs/SKILL_USAGE.md)
 - Doc index: [docs/README.md](docs/README.md)
 - AI discovery: [llms.txt](llms.txt)
-- Architecture: [docs/tech/conventions.md](docs/tech/conventions.md)
+- Architecture: [docs/tech/conventions.md](docs/tech/conventions.md) (or load @kmp-architecture)
 
 ## Validation
 
