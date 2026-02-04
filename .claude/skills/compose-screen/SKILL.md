@@ -1,75 +1,43 @@
 ---
 name: compose-screen
-description: This skill should be used when implementing Compose screens from specifications. Use for Android and Desktop UI implementation with @Preview requirements.
+description: "Implement Compose UI screens for Android and Desktop from specifications. Use when: (1) Creating screens in :features:<feature>:ui-material and :ui-unstyled modules, (2) Building Material Design 3 or Compose Unstyled UI, (3) Adding @Preview annotations for composables, (4) Implementing dual-theme support, (5) Building responsive adaptive layouts"
 ---
+
+# Compose Screen Skill
+
+Implement Compose UI screens for Android and Desktop from specifications.
 
 ## When to Use
 
-Use this skill when implementing Compose UI screens for Android and Desktop from specifications:
-
-- Creating new screens in `:features:<feature>:ui-material` and `:features:<feature>:ui-unstyled`
-- Implementing component-based UI with Material Design 3 and Compose Unstyled
-- Adding @Preview annotations for all composables
-- Following dual-theme design system patterns
-- Building responsive layouts with adaptive components
-
-Do NOT use this skill for:
-- Product/PRD decisions → switch to Product Design Mode
-- Visual design/animations → switch to UI/UX Design Mode
-- Shared ViewModel implementation → switch to KMP Mobile Expert Mode
-- SwiftUI iOS screens → switch to SwiftUI Screen Implementation Mode
-- Koin navigation wiring → switch to KMP Mobile Expert Mode
-
-## Mode Detection
-
-### FROM_SPEC Mode (Default)
-
-Use when implementing screens from explicit specifications (requirements, mocks, wireframes):
-
-1. Identify required UI states (Loading, Error, Content, Empty)
-2. Map specification to component structure
-3. Create mock data matching spec requirements
-4. Implement with token-based styling
-5. Add @Preview for all states
-
-### DESIGN_FIRST Mode
-
-Use when no explicit spec exists and you need to design the UI:
-
-1. Reference existing similar screens for patterns
-2. Use design tokens from `MaterialTheme.tokens` and `MaterialTheme.componentTokens`
-3. Apply Material 3 Expressive guidelines
-4. Implement dual-theme support (Material + Unstyled)
-5. Validate with @Preview for all states
+- Creating screens in `:features:<feature>:ui-material` and `:ui-unstyled`
+- Building Material Design 3 or Compose Unstyled UI
+- Adding @Preview annotations for composables
+- Implementing dual-theme support
+- Building responsive adaptive layouts
 
 ## Core Requirements
 
 ### @Preview Mandatory
 
-**Every @Composable function MUST have @Preview annotation:**
+Every @Composable function MUST have @Preview annotation.
 
+**MANDATORY - READ ENTIRE FILE**: For complete preview examples including multi-state, multi-theme, and responsive previews, read [preview-examples.md](references/preview-examples.md) (~150 lines).
+
+**Basic Preview Pattern:**
 ```kotlin
 @Composable
-fun MyComponent(modifier: Modifier = Modifier) {
-    // UI implementation
-}
+fun MyComponent(modifier: Modifier = Modifier) { }
 
-// ✅ CORRECT - Has @Preview
 @Preview(name = "Default")
 @Composable
 private fun MyComponentPreview() {
-    MyTheme {
+    PokemonTheme {
         MyComponent()
     }
 }
 ```
 
-**Preview requirements:**
-- Private preview composables for IDE/Studio rendering
-- Named previews with `name` parameter for clarity
-- Mock ViewModel for screen-level previews
-- Use `Surface` wrapper for isolated component previews
-- Preview all UI states: Loading, Error, Content, Edge cases
+**Do NOT load** `preview-examples.md` if only adding simple component previews.
 
 ### Dual-Theme Check
 
@@ -80,8 +48,7 @@ All features require BOTH Material Design 3 and Compose Unstyled implementations
 :features:<feature>:ui-unstyled/      → Compose Unstyled UI
 ```
 
-**Dual-theme implementation pattern:**
-
+**Pattern:**
 ```kotlin
 // ui-material/PokemonListMaterialScreen.kt
 @Composable
@@ -126,47 +93,17 @@ Card(
 )
 ```
 
-### Mock ViewModel for Previews
-
-Create mock ViewModels for screen-level previews:
-
-```kotlin
-// PokemonListScreenPreviews.kt
-@Composable
-private fun PokemonListContentPreview() {
-    PokemonTheme {
-        Surface {
-            PokemonListMaterialContent(
-                uiState = PokemonListUiState.Content(
-                    pokemons = persistentListOf(
-                        Pokemon(name = "Bulbasaur", detailUrl = "..."),
-                        Pokemon(name = "Charmander", detailUrl = "...")
-                    ),
-                    isLoadingMore = false,
-                    hasMore = true
-                ),
-                restoredScrollIndex = 0,
-                restoredScrollOffset = 0,
-                onLoadMore = {},
-                onPokemonClick = {},
-                onScrollPositionChanged = { _, _ -> }
-            )
-        }
-    }
-}
-```
+---
 
 ## Essential Workflows
 
 ### Workflow 1: Create Feature UI Structure
 
-Create module directories following split-by-layer pattern:
-
 ```bash
 features/<feature>/ui-material/src/commonMain/kotlin/<pkg>/
 └── <Feature>MaterialScreen.kt          # Main screen
 └── <Feature>MaterialScreenPreviews.kt  # Preview composables
-└── components/                          # Reusable components
+└── components/
     ├── <Feature>Card.kt
     ├── <Feature>Grid.kt
     ├── LoadingState.kt
@@ -174,17 +111,14 @@ features/<feature>/ui-material/src/commonMain/kotlin/<pkg>/
     └── EmptyState.kt
 
 features/<feature>/ui-unstyled/src/commonMain/kotlin/<pkg>/
-└── <Feature>UnstyledScreen.kt          # Unstyled variant
-└── <Feature>UnstyledScreenPreviews.kt  # Preview composables
-└── components/                          # Unstyled components
+└── <Feature>UnstyledScreen.kt
+└── <Feature>UnstyledScreenPreviews.kt
+└── components/
 ```
 
 ### Workflow 2: Define Screen Contract
 
-Identify required parameters and callbacks:
-
 ```kotlin
-// Parameters: ViewModel + modifier + navigation callbacks
 @Composable
 fun <Feature>MaterialScreen(
     viewModel: <Feature>ViewModel,
@@ -195,8 +129,6 @@ fun <Feature>MaterialScreen(
 ```
 
 ### Workflow 3: Create UI State Handler
-
-Handle all UI states in main content composable:
 
 ```kotlin
 @Composable
@@ -214,49 +146,7 @@ internal fun <Feature>MaterialContent(
 }
 ```
 
-### Workflow 4: Implement Reusable Components
-
-Create isolated components with @Preview:
-
-```kotlin
-@Composable
-fun <Feature>Card(
-    item: Item,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = MaterialTheme.tokens.elevation.level2
-        ),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier.padding(MaterialTheme.tokens.spacing.medium)
-        ) {
-            // Content
-        }
-    }
-}
-
-@Preview(name = "Default")
-@Composable
-private fun <Feature>CardPreview() {
-    PokemonTheme {
-        Surface {
-            <Feature>Card(
-                item = Item(name = "Sample"),
-                onClick = {}
-            )
-        }
-    }
-}
-```
-
-### Workflow 5: Implement Main Screen
-
-Wire ViewModel state to content:
+### Workflow 4: Implement Main Screen
 
 ```kotlin
 @Composable
@@ -276,146 +166,77 @@ fun <Feature>MaterialScreen(
 }
 ```
 
-### Workflow 6: Add All @Preview Variations
+### Workflow 5: Add All @Preview Variations
 
-Preview all states and edge cases:
+Preview all states: Loading, Error, Content, LoadingMore, EndOfList.
 
-```kotlin
-@Preview(name = "Loading")
-@Composable
-private fun <Feature>LoadingPreview() {
-    PokemonTheme {
-        Surface {
-            <Feature>MaterialContent(
-                uiState = <Feature>UiState.Loading,
-                onLoadMore = {},
-                onItemClick = {},
-                onScrollPositionChanged = { _, _ -> }
-            )
-        }
-    }
-}
+**MANDATORY - READ ENTIRE FILE**: For complete multi-state preview examples, read [preview-examples.md](references/preview-examples.md).
 
-@Preview(name = "Error")
-@Composable
-private fun <Feature>ErrorPreview() {
-    PokemonTheme {
-        Surface {
-            <Feature>MaterialContent(
-                uiState = <Feature>UiState.Error("Network error"),
-                onLoadMore = {},
-                onItemClick = {},
-                onScrollPositionChanged = { _, _ -> }
-            )
-        }
-    }
-}
-
-@Preview(name = "Content")
-@Composable
-private fun <Feature>ContentPreview() {
-    PokemonTheme {
-        Surface {
-            <Feature>MaterialContent(
-                uiState = <Feature>UiState.Content(
-                    items = persistentListOf(Item("A"), Item("B"), Item("C")),
-                    isLoadingMore = false,
-                    hasMore = true
-                ),
-                onLoadMore = {},
-                onItemClick = {},
-                onScrollPositionChanged = { _, _ -> }
-            )
-        }
-    }
-}
-```
-
-### Workflow 7: Validate Implementation
-
-Run primary validation command:
-
-```bash
-./gradlew :composeApp:assembleDebug test --continue
-```
+---
 
 ## Critical Guardrails
 
-1. **NEVER skip @Preview annotations** - Every @Composable function must have preview for IDE validation and visual testing
+1. **NEVER skip @Preview annotations** - Every @Composable must have preview
+2. **NEVER use hardcoded dp values** - Always use `MaterialTheme.tokens`
+3. **NEVER create screens without dual-theme support** - Both Material and Unstyled required
+4. **NEVER use star imports** - Always use explicit imports
+5. **NEVER access ViewModel.state directly** - Use `collectAsStateWithLifecycle()`
+6. **NEVER put navigation callbacks in UI state** - Pass as parameters
 
-2. **NEVER use hardcoded dp values** - Always use `MaterialTheme.tokens.spacing`, `MaterialTheme.tokens.elevation`, `MaterialTheme.tokens.shapes`
-
-3. **NEVER create screens without dual-theme support** - Both Material and Unstyled implementations are required
-
-4. **NEVER use star imports** - Always use explicit imports (enforced by .editorconfig)
-
-5. **NEVER access ViewModel.state directly** - Use `collectAsStateWithLifecycle()` for lifecycle-aware state consumption
-
-6. **NEVER put navigation callbacks in UI state** - Pass callbacks as parameters to composable functions
+---
 
 ## Quick Reference
 
 ### Validation Commands
 
-| Command | Purpose | When to Run |
-| --- | --- | --- |
-| `./gradlew :composeApp:assembleDebug test --continue` | Primary validation (Android build + all tests) | Always, before committing |
-| `./gradlew :composeApp:run` | Run desktop app | Local UI development |
-| `./gradlew :features:<feature>:ui-material:testDebugUnitTest` | Run UI tests for Material variant | After adding UI tests |
+| Command | Purpose |
+|---------|---------|
+| `./gradlew :composeApp:assembleDebug test --continue` | Primary validation |
+| `./gradlew :composeApp:run` | Run desktop app |
 
 ### Token Reference
 
 | Token Category | Access | Example |
-| --- | --- | --- |
+|----------------|--------|---------|
 | Spacing | `MaterialTheme.tokens.spacing.medium` | 16.dp |
 | Elevation | `MaterialTheme.tokens.elevation.level2` | 3.dp |
 | Shapes | `MaterialTheme.tokens.shapes.large` | 24.dp corner |
 | Motion | `MaterialTheme.tokens.motion.durationMedium` | 300ms |
 
-### Preview Example Template
+### Preview Template
 
 ```kotlin
-@Preview(name = "<State/Component Name>")
+@Preview(name = "<State Name>")
 @Composable
 private fun <Feature><State>Preview() {
     PokemonTheme {
         Surface {
-            // Component or Content composable
+            <Feature>MaterialContent(
+                uiState = <Feature>UiState.<State>(/* mock data */)
+            )
         }
     }
 }
 ```
 
-### Component Token Usage
-
-```kotlin
-Card(tokens = MaterialTheme.componentTokens.card())
-TypeBadge(tokens = MaterialTheme.componentTokens.badge())
-AnimatedStatBar(tokens = MaterialTheme.componentTokens.progressBar())
-```
+---
 
 ## Cross-References
 
 | Document | Purpose | Link |
-| --- | --- | --- |
-| Architecture + conventions | Master reference for modules, DI, vertical slicing | [conventions.md](../../../docs/tech/conventions.md) |
-| Design tokens | Token system (spacing, elevation, shapes, motion) | [design_tokens.md](../../../docs/tech/design_tokens.md) |
-| Critical patterns | 6 core patterns (ViewModel, Either, Impl+Factory) | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
-| Navigation 3 | Modular navigation architecture | [navigation.md](../../../docs/tech/navigation.md) |
-| Testing strategy | @Preview requirements and UI testing | [testing_strategy.md](../../../docs/tech/testing_strategy.md) |
-| Animation guides | Creative UI animations and motion | [ui-ux-designer](../ui-ux-designer/SKILL.md) |
-| Product requirements | Feature acceptance criteria | [prd.md](../../../docs/project/prd.md) |
+|----------|---------|------|
+| Architecture + conventions | Master reference | [conventions.md](../../../docs/tech/conventions.md) |
+| Design tokens | Token system | [design_tokens.md](../../../docs/tech/design_tokens.md) |
+| Critical patterns | 6 core patterns | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
+| Navigation 3 | Modular navigation | [navigation.md](../../../docs/tech/navigation.md) |
+| Animation guides | UI animations | [ui-ux-designer](../ui-ux-designer/SKILL.md) |
+| Complete preview examples | Multi-state previews | [references/preview-examples.md](references/preview-examples.md) |
 
 ### Reference Implementations
 
 **Pokemon List (Material):**
-- [PokemonListMaterialScreen.kt](../../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt)
-- [PokemonListMaterialScreenPreviews.kt](../../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreenPreviews.kt)
+- [PokemonListMaterialScreen.kt](../../../features/pokemonlist/ui-material/src/.../PokemonListMaterialScreen.kt)
+- [PokemonListMaterialScreenPreviews.kt](../../../features/pokemonlist/ui-material/src/.../PokemonListMaterialScreenPreviews.kt)
 
-**Pokemon List (Unstyled):**
-- [PokemonListUnstyledScreen.kt](../../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreen.kt)
-- [PokemonListUnstyledScreenPreviews.kt](../../../features/pokemonlist/ui-unstyled/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/unstyled/PokemonListUnstyledScreenPreviews.kt)
-
-**Pokemon Detail (Material with animations):**
-- [PokemonDetailMaterialScreen.kt](../../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreen.kt)
-- [PokemonDetailMaterialScreenPreviews.kt](../../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/PokemonDetailMaterialScreenPreviews.kt)
+**Pokemon Detail (with animations):**
+- [PokemonDetailMaterialScreen.kt](../../../features/pokemondetail/ui-material/src/.../PokemonDetailMaterialScreen.kt)
