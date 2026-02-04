@@ -1,6 +1,6 @@
 ---
 name: docs-maintainer
-description: This skill should be used when updating documentation, checking links, and consolidating information. Use for doc maintenance and consistency.
+description: "Maintain and update documentation with link-first strategy, validate links, and consolidate duplicate content. Use when: (1) Updating documentation or guides, (2) Checking or fixing broken links, (3) Consolidating duplicate documentation, (4) Updating Last Updated dates, (5) Synchronizing multi-entrypoint docs (AGENTS.md, llms.txt, docs/README.md)"
 ---
 
 ## When to Use

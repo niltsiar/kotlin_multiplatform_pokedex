@@ -186,14 +186,27 @@ To add Swagger/OpenAPI documentation:
 
 ## Critical Guardrails
 
+### NEVER List
+
+| NEVER Do | Why | Correct Pattern |
+|----------|-----|-----------------|
+| **NEVER** use string concatenation for route paths | Creates brittle, error-prone routing | Use nested `route()` blocks for hierarchy |
+| **NEVER** expose internal exceptions to clients | Security risk, leaks implementation details | Use sealed response types with sanitized error messages |
+| **NEVER** mix multiple HTTP methods in same route block | Violates REST principles, causes routing conflicts | Separate `get { }`, `post { }`, `put { }`, `delete { }` blocks |
+| **NEVER** skip validation of path/query parameters | Causes NPE and malformed request handling | Always use `toIntOrNull()` with fallback error responses |
+| **NEVER** write endpoints without TestApplication tests | Undetected bugs reach production | Write integration tests for every route |
+| **NEVER** use hardcoded strings for route paths | Makes refactoring difficult and error-prone | Define route constants or use typed route objects |
+| **NEVER** return 200 OK for error responses | Breaks API contracts and client error handling | Use proper status codes: `BadRequest`, `NotFound`, `InternalServerError` |
+| **NEVER** ignore content negotiation setup | Client receives unexpected formats | Always configure `ContentNegotiation` with JSON |
+
+### Best Practices
+
 | Rule | Why It Matters | Enforcement |
 |------|----------------|-------------|
 | Always use `route()` blocks for grouping | Provides logical API structure and path hierarchy | Validation script checks for `route(` presence |
-| Never mix HTTP methods in same route | Violates REST principles, causes routing conflicts | Use separate `get`, `post`, `put`, `delete` blocks |
 | Always validate path parameters | Prevents NPE and malformed requests | Use `toIntOrNull()` with error responses |
 | Always respond with appropriate status codes | API contracts depend on proper HTTP semantics | Use `HttpStatusCode.OK`, `BadRequest`, `NotFound`, etc. |
 | Always write TestApplication tests | Ensures endpoints work before deployment | Required for all new routes |
-| Never expose internal exceptions | Security risk, leaks implementation details | Use sealed response types with error messages |
 
 ## Quick Reference
 
