@@ -35,6 +35,12 @@ Do NOT use this skill for:
 | "How do I pass pokemonId to ViewModel?" | PARAMETRIC_MODE | Parametric ViewModels |
 | "Create a preview for this SwiftUI view" | PREVIEW_MODE | SwiftUI Previews |
 
+## Resource Loading
+
+**MANDATORY - READ ENTIRE FILE**: When implementing parametric ViewModels (screens requiring constructor parameters like pokemonId, userId), you MUST read [resources/parametric-viewmodel-guide.md](resources/parametric-viewmodel-guide.md) (~80 lines) completely.
+
+**Do NOT load** `parametric-viewmodel-guide.md` for simple non-parametric ViewModels (use Workflow 1 only).
+
 ---
 
 ## Essential Workflows
@@ -109,6 +115,8 @@ Use Direct Integration for simple to medium complexity apps with linear navigati
 ### Workflow 2: Parametric ViewModels
 
 Use when ViewModels require constructor parameters (e.g., pokemonId, userId):
+
+**MANDATORY**: Read [resources/parametric-viewmodel-guide.md](resources/parametric-viewmodel-guide.md) for complete patterns including Koin setup, type conversions, and testing.
 
 1. **Create Koin Helper with Parameters**
    ```kotlin
