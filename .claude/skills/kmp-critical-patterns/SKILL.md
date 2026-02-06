@@ -18,7 +18,7 @@ description: Quick reference for 6 core KMP patterns - Impl+Factory, Either Boun
 **Do NOT load when:**
 - Full implementation guidance needed → use @kmp-developer or @kmp-mobile-expert
 - UI-specific work → use @compose-screen or @swiftui-screen
-- Testing strategy questions → use @testing-strategy
+- Testing strategy questions → use @kmp-testing-strategy
 
 ## Pattern Overview
 
@@ -222,7 +222,7 @@ Before implementing any feature:
 | @kmp-mobile-expert | ViewModel details, iOS integration, repository patterns |
 | @compose-screen | Compose UI implementation |
 | @swiftui-screen | SwiftUI iOS screens |
-| @testing-strategy | Test planning, strategy decisions |
+| @kmp-testing-strategy | Test planning, strategy decisions |
 
 ---
 

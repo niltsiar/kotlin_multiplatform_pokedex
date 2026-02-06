@@ -130,7 +130,8 @@ import org.koin.core.parameter.parametersOf
 | Complete architecture | `conventions.md` | docs/tech/conventions.md |
 | All 6 core patterns | `critical_patterns_quick_ref.md` | docs/tech/critical_patterns_quick_ref.md |
 | iOS integration details | `ios_integration.md` | docs/tech/ios_integration.md |
-| Testing strategy | `testing_strategy.md` | docs/tech/testing_strategy.md |
+| Testing strategy | `@kmp-testing-strategy` | Testing strategy and philosophy |
+| Testing implementation patterns | `@kmp-testing-patterns` | Testing implementation patterns (Kotest, MockK, property tests) |
 | Koin DI patterns | `dependency_injection.md` | docs/tech/dependency_injection.md |
 
 ---
