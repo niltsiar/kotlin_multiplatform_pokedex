@@ -1,5 +1,5 @@
 ---
-name: testing-strategy
+name: kmp-testing-strategy
 description: This skill should be used when planning test approach, writing tests, and analyzing coverage. Use for Kotest, MockK, property tests, and coverage analysis.
 ---
 
@@ -172,7 +172,7 @@ class PokemonMapperSpec : StringSpec({
 | `./gradlew test --continue` | Run all tests across all modules |
 | `./gradlew jacocoTestReport` | Generate coverage report (if Jacoco configured) |
 | `./gradlew :features:<feature>:data:testDebugUnitTest --tests "TestClass"` | Run specific test class |
-| `./claude/skills/testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
+| `./claude/skills/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
 
 **Common Test Patterns:**
 ```kotlin

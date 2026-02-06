@@ -301,7 +301,7 @@ Create previews for all UI states to enable visual testing:
 
 | Document | Purpose | Location |
 |----------|---------|----------|
-| iOS Integration Guide | Complete iOS + KMP integration details | [docs/tech/ios_integration.md](../../../docs/tech/ios_integration.md) |
+| iOS Integration Guide | Complete iOS + KMP integration details | [@kmp-ios skill](../kmp-ios/SKILL.md) |
 | Architecture + Conventions | Master architecture reference | [docs/tech/conventions.md](../../../docs/tech/conventions.md) |
 | Critical Patterns | 6 core patterns (ViewModel, Either, etc.) | [docs/tech/critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
 | Product Requirements | Feature acceptance criteria | [docs/project/prd.md](../../../docs/project/prd.md) |
@@ -311,6 +311,7 @@ Create previews for all UI states to enable visual testing:
 
 | Skill | Purpose | When to Switch |
 |-------|---------|----------------|
+| `kmp-ios` | iOS integration patterns, Direct Integration, lifecycle bridging | iOS-specific integration decisions |
 | `kmp-mobile-expert` | Shared ViewModel, repository, and iOS bridging implementation | Implementing shared business logic |
 | `compose-screen` | Compose Multiplatform UI implementation (Android/Desktop) | Building Compose screens |
 | `ui-ux-designer` | Visual design and animations | Creating custom animations or design systems |

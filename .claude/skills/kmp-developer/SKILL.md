@@ -234,7 +234,8 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 | --- | --- | --- |
 | Architecture + conventions | Master reference for architecture, modules, DI | [conventions.md](../../../docs/tech/conventions.md) |
 | Critical patterns | 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
-| Testing strategy | Kotest, MockK, Turbine, property tests | [testing_strategy.md](../../../docs/tech/testing_strategy.md) |
+| Testing strategy | Testing philosophy and coverage guidelines | [@kmp-testing-strategy](../testing-strategy/SKILL.md) |
+| Testing patterns | Testing implementation patterns (Kotest, MockK, property tests) | [@kmp-testing-patterns](../testing-patterns/SKILL.md) |
 | iOS integration | SwiftUI + KMP ViewModels Direct Integration | [ios_integration.md](../../../docs/tech/ios_integration.md) |
 | Navigation 3 | Modular navigation architecture | [navigation.md](../../../docs/tech/navigation.md) |
 | Dependency injection | Koin patterns and troubleshooting | [dependency_injection.md](../../../docs/tech/dependency_injection.md) |
