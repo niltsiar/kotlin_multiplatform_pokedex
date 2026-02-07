@@ -42,6 +42,8 @@ For detailed routing and skill usage, see [SKILL_USAGE.md](SKILL_USAGE.md) and [
 
 ## Essential Commands
 
+**For complete CLI reference, see [@kmp-commands skill](.claude/skills/kmp-commands/SKILL.md).**
+
 ### Primary Validation (ALWAYS RUN FIRST)
 ```bash
 # Android build + ALL tests (fastest feedback: ~45 seconds)
