@@ -306,6 +306,13 @@ Create previews for all UI states to enable visual testing:
 | Critical Patterns | 6 core patterns (ViewModel, Either, etc.) | [docs/tech/critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
 | Product Requirements | Feature acceptance criteria | [docs/project/prd.md](../../../docs/project/prd.md) |
 | Testing Strategy | Test coverage and patterns | [docs/tech/testing_strategy.md](../../../docs/tech/testing_strategy.md) |
+| Module structure | Feature boundaries and iOS exports | [@kmp-architecture skill](../kmp-architecture/SKILL.md) |
+| Critical patterns | Quick reference for 6 core patterns | [@kmp-critical-patterns skill](../kmp-critical-patterns/SKILL.md) |
+| ViewModel patterns | Lifecycle, SavedStateHandle | [@kmp-presentation skill](../kmp-presentation/SKILL.md) |
+| Domain models | Immutable data classes | [@kmp-domain skill](../kmp-domain/SKILL.md) |
+| Koin DI | iOS helpers and configuration | [@kmp-di skill](../kmp-di/SKILL.md) |
+| Testing strategy | Test planning | [@kmp-testing-strategy skill](../kmp-testing-strategy/SKILL.md) |
+| Test patterns | Kotest, MockK | [@kmp-testing-patterns skill](../kmp-testing-patterns/SKILL.md) |
 
 ### Related Skills
 
@@ -315,6 +322,13 @@ Create previews for all UI states to enable visual testing:
 | `kmp-mobile-expert` | Shared ViewModel, repository, and iOS bridging implementation | Implementing shared business logic |
 | `compose-screen` | Compose Multiplatform UI implementation (Android/Desktop) | Building Compose screens |
 | `ui-ux-designer` | Visual design and animations | Creating custom animations or design systems |
+| `kmp-architecture` | Module structure, vertical slicing, iOS framework exports | Architecture guidance for iOS integration |
+| `kmp-critical-patterns` | 6 core patterns quick reference | Quick pattern lookups |
+| `kmp-presentation` | ViewModel patterns, lifecycle, SavedStateHandle | Implementing ViewModels consumed by iOS |
+| `kmp-domain` | Domain models, use cases, immutable data classes | Domain layer design |
+| `kmp-di` | Koin DI patterns, iOS helpers | Koin configuration for iOS |
+| `kmp-testing-strategy` | Testing philosophy and approach | Test planning |
+| `kmp-testing-patterns` | Kotest, MockK, property tests | Test implementation |
 
 ### Reference Implementations
 
