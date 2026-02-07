@@ -143,28 +143,27 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 
 ## 📚 Documentation
 
-### Essential Guides
-- **[conventions.md](docs/tech/conventions.md)** - Architecture master reference (START HERE) — also see @kmp-architecture
-- **[critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) — also see @kmp-critical-patterns
-- **[testing_strategy.md](docs/tech/testing_strategy.md)** - Kotest, MockK, Turbine, property tests (84 tests passing) — also see @kmp-testing-strategy
-- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Commands, patterns, decision matrices
+> **Note:** Technical documentation has been consolidated into Agent Skills (`.agents/` directory). Skills are the canonical reference. See [AGENTS.md](AGENTS.md) for the complete skill catalog and decision trees.
 
-### Architecture & Patterns
-- **[ios_integration.md](docs/tech/ios_integration.md)** - SwiftUI + KMP ViewModels Direct Integration — also see @kmp-ios
-- **[navigation.md](docs/tech/navigation.md)** - Navigation 3 modular architecture — also see @kmp-navigation
-- **[dependency_injection.md](docs/tech/dependency_injection.md)** - Koin patterns and troubleshooting — also see @kmp-di
+### Essential Guides
+- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Commands, patterns, decision matrices
+- **[@kmp-critical-patterns](.agents/kmp-critical-patterns/SKILL.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
+- **[@kmp-architecture](.agents/kmp-architecture/SKILL.md)** - Architecture master reference (START HERE for architecture questions)
+- **[@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md)** - Kotest, MockK, Turbine, property tests (84 tests passing)
+
+### Quick References (Condensed Format)
+- **[koin_di_quick_ref.md](docs/tech/koin_di_quick_ref.md)** - Koin DI quick reference (full guide: @kmp-di)
+- **[kotest_smart_casting_quick_ref.md](docs/tech/kotest_smart_casting_quick_ref.md)** - Kotest smart casting patterns
+- **[testing_quick_ref.md](docs/tech/testing_quick_ref.md)** - Testing quick reference (full guide: @kmp-testing-strategy)
 
 ### Project Documentation
 - **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
 - **[user_flow.md](docs/project/user_flow.md)** - User journeys and flows
 - **[ui_ux.md](docs/project/ui_ux.md)** - UI/UX guidelines
 
-### Build System
-- **[convention_plugins_guide.md](docs/tech/convention_plugins_guide.md)** - Gradle convention plugins reference
-
 ### Agent Skills (26 Total)
 
-Located in `.claude/skills/` — AI agents can load via `@skill-name` syntax.
+Located in `.agents/` — AI agents can load via `@skill-name` syntax.
 
 **For skill selection guidance:** See [AGENTS.md](AGENTS.md) decision trees and skill categories.
 
@@ -214,7 +213,7 @@ Located in `.claude/skills/` — AI agents can load via `@skill-name` syntax.
 ./gradlew :features:pokemonlist:presentation:testDebugUnitTest
 ```
 
-See [testing_strategy.md](docs/tech/testing_strategy.md) for comprehensive guide.
+See [@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md) skill for comprehensive guide.
 
 ---
 

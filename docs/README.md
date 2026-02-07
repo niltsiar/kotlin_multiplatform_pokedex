@@ -54,24 +54,25 @@
 ## Start Here (< 1K tokens)
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Essential commands and workflows
 - [SKILL_QUICK_REFERENCE.md](SKILL_QUICK_REFERENCE.md) - Quick skill reference card
-- [tech/critical_patterns_compact.md](tech/critical_patterns_compact.md) - 6 core patterns (see @kmp-critical-patterns)
 
-## Architecture & Patterns (1-3K tokens)
-- [tech/conventions.md](tech/conventions.md) - Master architecture reference (see @kmp-architecture)
-- [tech/critical_patterns_quick_ref.md](tech/critical_patterns_quick_ref.md) - 6 core patterns (see @kmp-critical-patterns)
-- [tech/navigation.md](tech/navigation.md) - Navigation 3 modular architecture (see @kmp-navigation)
-- [tech/domain.md](tech/domain.md) - Domain layer guidelines (see @kmp-domain)
-- [tech/api_services.md](tech/api_services.md) - API service patterns (see @kmp-api-services)
+## Remaining Technical Guides
+
+> **Note:** Most technical documentation has been consolidated into Agent Skills (`.agents/`). Skills are the canonical reference. Use `@skill-name` syntax to load them.
+
+### Quick References
+- [tech/koin_di_quick_ref.md](tech/koin_di_quick_ref.md) - Koin DI quick reference (see @kmp-di for full guide)
+- [tech/kotest_smart_casting_quick_ref.md](tech/kotest_smart_casting_quick_ref.md) - Kotest smart casting patterns
+- [tech/testing_quick_ref.md](tech/testing_quick_ref.md) - Testing quick reference (see @kmp-testing-strategy for full guide)
+
+### Architecture & Platform-Specific
+- [tech/ios_apps_architecture.md](tech/ios_apps_architecture.md) - iOS app comparison (native vs Compose)
 - [tech/utility_organization.md](tech/utility_organization.md) - Utility module organization
 - [tech/predictive_back_notes.md](tech/predictive_back_notes.md) - Predictive back gesture notes
+- [tech/coroutines.md](tech/coroutines.md) - Coroutines patterns
 
-## Platform-Specific Guides
-- [tech/ios_integration.md](tech/ios_integration.md) - SwiftUI + KMP ViewModels Direct Integration (see @kmp-ios)
-- [tech/ios_official_pattern_guide.md](tech/ios_official_pattern_guide.md) - iOS official pattern quick reference (see @kmp-ios)
-- [tech/desktop_viewmodel_savedstate.md](tech/desktop_viewmodel_savedstate.md) - Desktop ViewModel + SavedStateHandle (see @kmp-desktop)
-- [tech/testing_strategy.md](tech/testing_strategy.md) - Kotest, MockK, Turbine, property tests (see @kmp-testing-strategy)
-- [tech/dependency_injection.md](tech/dependency_injection.md) - Koin patterns and troubleshooting (see @kmp-di)
-- [tech/compose_unstyled_reference.md](tech/compose_unstyled_reference.md) - Compose Unstyled reference (see @kmp-compose-unstyled)
+### Pattern References
+- [patterns/error_handling_patterns.md](patterns/error_handling_patterns.md) - Error handling patterns (see @kmp-data-layer for full guide)
+- [patterns/navigation_patterns.md](patterns/navigation_patterns.md) - Navigation patterns (see @kmp-navigation for full guide)
 
 ## Project Documentation
 - [project/prd.md](project/prd.md) - Product requirements and acceptance criteria
@@ -79,25 +80,27 @@
 - [project/ui_ux.md](project/ui_ux.md) - UI/UX guidelines
 - [project/onboarding.md](project/onboarding.md) - Onboarding flow documentation
 
-## Complete Document Catalog
+## Skill-to-Documentation Mapping
 
-### Tech Guides (21 files)
-See [tech/](tech/) directory for:
-- Architecture patterns
-- Testing strategies
-- iOS integration
-- Navigation
-- Design systems
-- API services
-- And more...
+For comprehensive technical guidance, load Agent Skills:
 
-### Patterns (5 files)
-See [patterns/](patterns/) directory for:
-- Architecture patterns
-- ViewModel patterns
-- DI patterns
-- Error handling
-- Testing patterns
+| Topic | Agent Skill | Command |
+|-------|-------------|---------|
+| Architecture & Modules | @kmp-architecture | Load for module structure, vertical slicing |
+| Critical Patterns (6 core) | @kmp-critical-patterns | Load for quick pattern reference |
+| Testing Strategy | @kmp-testing-strategy | Load for testing philosophy |
+| Testing Patterns | @kmp-testing-patterns | Load for Kotest, MockK, Turbine |
+| Dependency Injection | @kmp-di | Load for Koin patterns |
+| Navigation | @kmp-navigation | Load for Navigation 3 patterns |
+| iOS Integration | @kmp-ios | Load for SwiftUI + KMP |
+| Desktop Patterns | @kmp-desktop | Load for JVM-specific patterns |
+| ViewModels | @kmp-presentation | Load for ViewModel patterns |
+| Repositories | @kmp-data-layer | Load for repository patterns |
+| API Services | @kmp-api-services | Load for Ktor API patterns |
+| Domain Layer | @kmp-domain | Load for domain models |
+| Design Systems | @kmp-design-systems | Load for design tokens, icons |
+| Compose Unstyled | @kmp-compose-unstyled | Load for headless components |
+| Gradle/Build | @kmp-gradle | Load for convention plugins |
 
 ---
 
@@ -105,11 +108,11 @@ See [patterns/](patterns/) directory for:
 
 When working with AI agents, manage context efficiently:
 
-| Task Complexity | Recommended Docs | Token Range |
-|----------------|------------------|-------------|
-| Quick lookup | QUICK_REFERENCE + critical_patterns_compact | ~800-1200 |
-| Feature work | Add conventions.md | ~2000-3000 |
-| iOS work | Add ios_integration.md | ~3000-4000 |
-| Full context | Load all relevant guides | ~5000+ |
+| Task Complexity | Recommended Approach | Token Range |
+|----------------|----------------------|-------------|
+| Quick lookup | Load @kmp-critical-patterns skill | ~800-1500 |
+| Feature work | Load relevant skill (@kmp-architecture, @kmp-developer) | ~2000-3000 |
+| iOS work | Load @kmp-ios skill | ~2500-3500 |
+| Full context | Load multiple skills + quick references | ~5000+ |
 
-**Rule**: Prefer links over pasted prose. Load incrementally.
+**Rule**: Agent Skills are canonical. Load skills first, docs for supplementary context.

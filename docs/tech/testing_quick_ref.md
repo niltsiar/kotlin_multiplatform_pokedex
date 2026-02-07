@@ -3,7 +3,7 @@
 Last Updated: December 20, 2025
 
 Purpose: Token-lean checklist for everyday test work. Use this file when you need enforcement and location rules without
-loading the full strategy. For deep dives, see [testing_strategy.md](testing_strategy.md).
+loading the full strategy. For deep dives, see [@kmp-testing-strategy skill](@kmp-testing-strategy skill).
 
 ## When to Use This File
 
@@ -13,10 +13,10 @@ loading the full strategy. For deep dives, see [testing_strategy.md](testing_str
 
 ## Canonical Sources
 
-- [testing_strategy.md](testing_strategy.md) — deep dive with rationale and playbooks
-- [testing_patterns.md](../patterns/testing_patterns.md) — concise pattern reminders
-- [critical_patterns_quick_ref.md#testing-pattern](critical_patterns_quick_ref.md#testing-pattern) — canonical rules
-- [critical_patterns_compact.md](critical_patterns_compact.md) — pattern cards view
+- [@kmp-testing-strategy skill](@kmp-testing-strategy skill) — deep dive with rationale and playbooks
+- [testing_patterns.md](See @kmp-testing-patterns skill) — concise pattern reminders
+- [See @kmp-critical-patterns skill#testing-pattern](See @kmp-critical-patterns skill#testing-pattern) — canonical rules
+- [See @kmp-critical-patterns skill](See @kmp-critical-patterns skill) — pattern cards view
 
 ## Test Enforcement (NO CODE WITHOUT TESTS)
 
@@ -63,7 +63,7 @@ loading the full strategy. For deep dives, see [testing_strategy.md](testing_str
 
 ## Example Links
 
-- Repository test: [testing_strategy.md#repository-test-androidtest](testing_strategy.md#repository-test-androidtest)
-- Property tests: [testing_strategy.md#property-based-testing-primary-strategy](testing_strategy.md#property-based-testing-primary-strategy)
-- Flow tests: [testing_strategy.md#flow-testing-with-turbine](testing_strategy.md#flow-testing-with-turbine)
-- Screenshots: [testing_strategy.md#screenshot-testing-roborazzi](testing_strategy.md#screenshot-testing-roborazzi)
+- Repository test: [@kmp-testing-strategy skill#repository-test-androidtest](@kmp-testing-strategy skill#repository-test-androidtest)
+- Property tests: [@kmp-testing-strategy skill#property-based-testing-primary-strategy](@kmp-testing-strategy skill#property-based-testing-primary-strategy)
+- Flow tests: [@kmp-testing-strategy skill#flow-testing-with-turbine](@kmp-testing-strategy skill#flow-testing-with-turbine)
+- Screenshots: [@kmp-testing-strategy skill#screenshot-testing-roborazzi](@kmp-testing-strategy skill#screenshot-testing-roborazzi)

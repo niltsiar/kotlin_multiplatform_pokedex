@@ -93,8 +93,8 @@ Last Updated: February 7, 2026
 
 ### File Locations
 
-- **Skills**: `.claude/skills/<skill-name>/SKILL.md`
-- **Validation**: `./.claude/skills/docs-maintainer/scripts/validate-links.sh`
+- **Skills**: `.agents/<skill-name>/SKILL.md`
+- **Validation**: `./.agents/docs-maintainer/scripts/validate-links.sh`
 - **Token Check**: `python3 scripts/check-tokens.py`
 - **Full Guide**: `docs/SKILL_USAGE.md`
 - **Decision Trees**: `AGENTS.md`

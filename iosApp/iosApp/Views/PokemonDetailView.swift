@@ -4,30 +4,27 @@ import Shared
 /**
  * Pokemon detail screen displaying comprehensive information.
  * 
- * Professional redesign matching Compose Unstyled quality:
- * - Hero section with 256pt image
- * - Type badges using TypeBadgeView
- * - Physical info cards (height, weight, base XP)
+ * Features:
+ * - Hero section with large sprite and gradient background
+ * - Type badges with color-coded backgrounds
+ * - Physical info (height, weight, base XP)
  * - Abilities with "Hidden" indicators
- * - Base stats with animated progress bars using StatBarView
- * - Theme spacing tokens throughout (20dp/16dp/12dp)
+ * - Base stats with animated progress bars
  * - Three UI states: Loading, Content, Error
  * - AsyncStream lifecycle management via .task
+ * - Back navigation with swipe gesture support
  * 
- * CONSISTENT SPACING:
- * - Section spacing: 24pt
- * - Component spacing: 12pt
- * - Content padding: 20pt (horizontal)
+ * This view integrates with the KMP PokemonDetailViewModel directly,
+ * observing StateFlow updates and triggering retry on errors.
  */
 struct PokemonDetailView: View {
-    let pokemonUrl: String
+    let pokemonId: Int
     
-    @Environment(\.pokemonTheme) var theme
     @StateObject private var owner = IosViewModelStoreOwner()
     
-    // Computed property delegates to generic viewModel(stringParam:)
+    // Computed property delegates to generic viewModel(intParam:) (ViewModelStore cached)
     private var viewModel: PokemonDetailViewModel {
-        owner.viewModel(stringParam: pokemonUrl)
+        owner.viewModel(intParam: pokemonId)
     }
     
     @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
@@ -37,6 +34,7 @@ struct PokemonDetailView: View {
         content
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
+                // Directly call ViewModel lifecycle method (aligned with official Android KMP ViewModel guide)
                 viewModel.onStart(owner: Shared.DummyLifecycleOwner())
             }
             .task {
@@ -46,7 +44,9 @@ struct PokemonDetailView: View {
                 }
             }
             .onDisappear {
+                // Call lifecycle stop method
                 viewModel.onStop(owner: Shared.DummyLifecycleOwner())
+                // Note: @StateObject's deinit automatically clears ViewModels when view is dismissed
             }
     }
     
@@ -54,33 +54,46 @@ struct PokemonDetailView: View {
     private var content: some View {
         switch uiState {
         case is PokemonDetailUiStateLoading:
-            LoadingStateView(message: "Loading Pokémon details...")
+            loadingView
             
         case let content as PokemonDetailUiStateContent:
             detailContent(pokemon: content.pokemon)
             
         case let error as PokemonDetailUiStateError:
-            ErrorStateView(message: error.message) {
-                viewModel.retry()
-            }
+            errorView(message: error.message)
             
         default:
             EmptyView()
         }
     }
     
+    // MARK: - Loading State
+    
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.5)
+            Text("Loading Pokémon...")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Loading Pokémon details")
+    }
+    
     // MARK: - Detail Content
     
     private func detailContent(pokemon: PokemonDetail) -> some View {
         ScrollView {
-            VStack(spacing: theme.spacing.xl) {  // Section spacing using theme
-                // Hero section with sprite (256pt image)
+            VStack(spacing: 24) {
+                // Hero section with sprite
                 heroSection(pokemon: pokemon)
                 
                 // Type badges
                 typeBadgesSection(types: pokemon.types)
                 
-                // Physical info cards
+                // Physical info
                 physicalInfoSection(pokemon: pokemon)
                 
                 // Abilities
@@ -91,132 +104,294 @@ struct PokemonDetailView: View {
             }
             .padding(.bottom, 32)
         }
-        .navigationTitle(pokemon.name.capitalized)
+        .navigationTitle(pokemon.name)
     }
     
     // MARK: - Hero Section
     
     private func heroSection(pokemon: PokemonDetail) -> some View {
-        VStack(spacing: theme.spacing.sm) {
+        VStack(spacing: 12) {
             AsyncImage(url: URL(string: pokemon.imageUrl)) { phase in
                 switch phase {
                 case .success(let image):
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 256, height: 256)  // 256pt matching Compose
+                        .frame(width: 200, height: 200)
                 case .failure:
                     Image(systemName: "photo.fill")
                         .font(.system(size: 80))
                         .foregroundColor(.secondary)
-                        .frame(width: 256, height: 256)
+                        .frame(width: 200, height: 200)
                 case .empty:
                     ProgressView()
-                        .frame(width: 256, height: 256)
+                        .frame(width: 200, height: 200)
                 @unknown default:
                     EmptyView()
                 }
             }
             
             Text("#\(String(format: "%03d", pokemon.id))")
-                .font(theme.typography.title)
-                .foregroundColor(theme.colors.secondary)
+                .font(.title2)
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, theme.spacing.xl)
-        .background(theme.colors.surface)
+        .padding(.vertical, 24)
+        .background(
+            typeGradient(types: pokemon.types)
+        )
     }
     
     // MARK: - Type Badges
     
     private func typeBadgesSection(types: [TypeOfPokemon]) -> some View {
-        HStack(spacing: theme.spacing.sm) {
+        HStack(spacing: 12) {
             ForEach(types, id: \.name) { type in
-                TypeBadgeView(typeName: type.name)
+                Text(type.name.capitalized)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(typeColor(for: type.name))
+                    .cornerRadius(16)
             }
         }
-        .padding(.horizontal, theme.spacing.lg)
+        .padding(.horizontal)
     }
     
     // MARK: - Physical Info
     
     private func physicalInfoSection(pokemon: PokemonDetail) -> some View {
-        HStack(spacing: theme.spacing.sm) {
-            PhysicalInfoCardView(
+        HStack(spacing: 16) {
+            infoCard(
                 icon: "figure.walk",
                 label: "Height",
                 value: String(format: "%.1f m", Double(pokemon.height) / 10)
             )
             
-            PhysicalInfoCardView(
+            infoCard(
                 icon: "scalemass",
                 label: "Weight",
                 value: String(format: "%.1f kg", Double(pokemon.weight) / 10)
             )
             
-            PhysicalInfoCardView(
+            infoCard(
                 icon: "star.fill",
                 label: "Base XP",
                 value: "\(pokemon.baseExperience)"
             )
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal)
+    }
+    
+    private func infoCard(icon: String, label: String, value: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.blue)
+            
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Text(value)
+                .font(.headline)
+                .foregroundColor(.primary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(16)
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
     }
     
     // MARK: - Abilities
     
     private func abilitiesSection(abilities: [Ability]) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.sm) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Abilities")
-                .font(theme.typography.title)
-                .padding(.horizontal, theme.spacing.lg)
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.horizontal)
             
-            VStack(spacing: theme.spacing.xs) {
+            VStack(spacing: 8) {
                 ForEach(abilities, id: \.name) { ability in
                     HStack {
                         Text(ability.name.replacingOccurrences(of: "-", with: " ").capitalized)
-                            .font(theme.typography.body)
+                            .font(.body)
                         
                         Spacer()
                         
                         if ability.isHidden {
                             Text("Hidden")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.caption)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                                 .background(Color.purple)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .cornerRadius(8)
                         }
                     }
-                    .padding(.vertical, theme.spacing.xs)
-                    .padding(.horizontal, theme.spacing.md)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
                 }
             }
-            .background(theme.colors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: theme.shapes.md))
-            .padding(.horizontal, theme.spacing.lg)
+            .background(Color(UIColor.secondarySystemBackground))
+            .cornerRadius(12)
+            .padding(.horizontal)
         }
     }
     
     // MARK: - Base Stats
     
     private func baseStatsSection(stats: [Stat]) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.md) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Base Stats")
-                .font(theme.typography.title)
-                .padding(.horizontal, theme.spacing.lg)
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.horizontal)
             
-            VStack(spacing: theme.spacing.sm) {
-                ForEach(stats, id: \.name) { stat in
-                    StatBarView(name: stat.name, value: stat.baseStat)
+            VStack(spacing: 12) {
+                ForEach(Array(stats.enumerated()), id: \.element.name) { index, stat in
+                    statRow(stat: stat, index: index)
                 }
             }
-            .padding(theme.spacing.md)
-            .background(theme.colors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: theme.shapes.md))
-            .padding(.horizontal, theme.spacing.lg)
+            .padding(16)
+            .background(Color(UIColor.secondarySystemBackground))
+            .cornerRadius(12)
+            .padding(.horizontal)
         }
+    }
+    
+    @State private var animatedStats: [String: Double] = [:]
+    
+    private func statRow(stat: Stat, index: Int) -> some View {
+        VStack(spacing: 4) {
+            HStack {
+                Text(formatStatName(stat.name))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .frame(width: 100, alignment: .leading)
+                
+                Text("\(stat.baseStat)")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .frame(width: 40, alignment: .trailing)
+                
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        // Background bar
+                        Rectangle()
+                            .fill(Color(UIColor.systemGray5))
+                            .frame(height: 8)
+                            .cornerRadius(4)
+                        
+                        // Progress bar with animation
+                        Rectangle()
+                            .fill(statColor(value: stat.baseStat))
+                            .frame(width: geometry.size.width * CGFloat(animatedStats[stat.name] ?? 0) / 255, height: 8)
+                            .cornerRadius(4)
+                    }
+                }
+                .frame(height: 8)
+            }
+        }
+        .onAppear {
+            // Animate stat bar with delay based on index
+            withAnimation(.easeOut(duration: 0.6).delay(Double(index) * 0.1)) {
+                animatedStats[stat.name] = Double(stat.baseStat)
+            }
+        }
+    }
+    
+    // MARK: - Error State
+    
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.orange)
+            
+            Text("Oops!")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            Text(message)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            Button(action: {
+                viewModel.retry()
+            }) {
+                Text("Retry")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 12)
+                    .background(Color.blue)
+                    .cornerRadius(8)
+            }
+            .padding(.top, 8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Error: \(message). Retry button available.")
+    }
+    
+    // MARK: - Helpers
+    
+    private func formatStatName(_ name: String) -> String {
+        name.replacingOccurrences(of: "-", with: " ")
+            .split(separator: " ")
+            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+            .joined(separator: " ")
+    }
+    
+    private func statColor(value: Int32) -> Color {
+        if value < 50 {
+            return Color(red: 0.96, green: 0.26, blue: 0.21) // #F44336 (red)
+        } else if value < 100 {
+            return Color(red: 1.0, green: 0.92, blue: 0.23) // #FFEB3B (yellow)
+        } else {
+            return Color(red: 0.30, green: 0.69, blue: 0.31) // #4CAF50 (green)
+        }
+    }
+    
+    private func typeColor(for typeName: String) -> Color {
+        // Pokemon type colors matching the design system
+        switch typeName.lowercased() {
+        case "normal": return Color(red: 0.66, green: 0.66, blue: 0.47)
+        case "fire": return Color(red: 0.93, green: 0.51, blue: 0.19)
+        case "water": return Color(red: 0.40, green: 0.56, blue: 0.95)
+        case "electric": return Color(red: 0.98, green: 0.82, blue: 0.18)
+        case "grass": return Color(red: 0.47, green: 0.78, blue: 0.30)
+        case "ice": return Color(red: 0.60, green: 0.85, blue: 0.85)
+        case "fighting": return Color(red: 0.75, green: 0.19, blue: 0.15)
+        case "poison": return Color(red: 0.64, green: 0.25, blue: 0.64)
+        case "ground": return Color(red: 0.89, green: 0.75, blue: 0.42)
+        case "flying": return Color(red: 0.66, green: 0.56, blue: 0.95)
+        case "psychic": return Color(red: 0.98, green: 0.33, blue: 0.45)
+        case "bug": return Color(red: 0.66, green: 0.71, blue: 0.13)
+        case "rock": return Color(red: 0.71, green: 0.63, blue: 0.42)
+        case "ghost": return Color(red: 0.44, green: 0.35, blue: 0.60)
+        case "dragon": return Color(red: 0.44, green: 0.21, blue: 0.99)
+        case "dark": return Color(red: 0.44, green: 0.35, blue: 0.30)
+        case "steel": return Color(red: 0.71, green: 0.71, blue: 0.82)
+        case "fairy": return Color(red: 0.85, green: 0.51, blue: 0.68)
+        default: return Color.gray
+        }
+    }
+    
+    private func typeGradient(types: [TypeOfPokemon]) -> LinearGradient {
+        let colors = types.map { typeColor(for: $0.name).opacity(0.3) }
+        return LinearGradient(
+            gradient: Gradient(colors: colors),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 }
 
@@ -224,13 +399,13 @@ struct PokemonDetailView: View {
 
 #Preview("Loading") {
     NavigationStack {
-        PokemonDetailView(pokemonUrl: "https://pokeapi.co/api/v2/pokemon/25/")
+        PokemonDetailView(pokemonId: 25)
     }
 }
 
 #Preview("Dark Mode") {
     NavigationStack {
-        PokemonDetailView(pokemonUrl: "https://pokeapi.co/api/v2/pokemon/25/")
+        PokemonDetailView(pokemonId: 25)
     }
     .preferredColorScheme(.dark)
 }

@@ -28,9 +28,12 @@ jobs:
         with:
           python-version: '3.x'
       
-      - name: Install dependencies
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies with uv
         run: |
-          pip install tiktoken
+          uv pip install --system tiktoken
           npm install -g markdown-link-check
       
       - name: Check Delta Headers
@@ -41,7 +44,7 @@ jobs:
       - name: Check Token Budgets
         run: |
           echo "Analyzing token budgets..."
-          python3 scripts/check-tokens.py
+          ./scripts/check-tokens
       
       - name: Check Links
         run: |

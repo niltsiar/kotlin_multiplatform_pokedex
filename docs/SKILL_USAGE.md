@@ -6,7 +6,7 @@ Last Updated: February 7, 2026
 
 ### For OpenCode Users
 
-Skills are located in `.claude/skills/` and auto-load when you use the `@mention` syntax.
+Skills are located in `.agents/` and auto-load when you use the `@mention` syntax.
 
 ```bash
 # Use a skill
@@ -21,38 +21,38 @@ skill("kmp-developer")
 | Skill | Use When | Location |
 |-------|----------|----------|
 | **Core Architecture** | — | — |
-| **@kmp-critical-patterns** | Quick reference for 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) | `.claude/skills/kmp-critical-patterns/` |
-| **@kmp-architecture** | Module structure, vertical slicing, feature organization, iOS export boundaries | `.claude/skills/kmp-architecture/` |
-| **@kmp-domain** | Domain models, use cases, repository interfaces, domain exceptions | `.claude/skills/kmp-domain/` |
-| **@kmp-di** | Koin DI configuration, dependency wiring, parametric injection | `.claude/skills/kmp-di/` |
-| **@kmp-gradle** | Convention plugins, build configuration, Gradle customization | `.claude/skills/kmp-gradle/` |
+| **@kmp-critical-patterns** | Quick reference for 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) | `.agents/kmp-critical-patterns/` |
+| **@kmp-architecture** | Module structure, vertical slicing, feature organization, iOS export boundaries | `.agents/kmp-architecture/` |
+| **@kmp-domain** | Domain models, use cases, repository interfaces, domain exceptions | `.agents/kmp-domain/` |
+| **@kmp-di** | Koin DI configuration, dependency wiring, parametric injection | `.agents/kmp-di/` |
+| **@kmp-gradle** | Convention plugins, build configuration, Gradle customization | `.agents/kmp-gradle/` |
 | **Layer Implementation** | — | — |
-| **@kmp-presentation** | ViewModels, lifecycle awareness, SavedStateHandle, UI state management | `.claude/skills/kmp-presentation/` |
-| **@kmp-data-layer** | Repository patterns, Either<RepoError,T>, error handling, DTO mapping | `.claude/skills/kmp-data-layer/` |
-| **@kmp-api-services** | Ktor API services, HTTP clients, API configuration | `.claude/skills/kmp-api-services/` |
-| **@kmp-testing-patterns** | Kotest, MockK, Turbine, property-based testing, test implementation | `.claude/skills/kmp-testing-patterns/` |
+| **@kmp-presentation** | ViewModels, lifecycle awareness, SavedStateHandle, UI state management | `.agents/kmp-presentation/` |
+| **@kmp-data-layer** | Repository patterns, Either<RepoError,T>, error handling, DTO mapping | `.agents/kmp-data-layer/` |
+| **@kmp-api-services** | Ktor API services, HTTP clients, API configuration | `.agents/kmp-api-services/` |
+| **@kmp-testing-patterns** | Kotest, MockK, Turbine, property-based testing, test implementation | `.agents/kmp-testing-patterns/` |
 | **Platform & Design** | — | — |
-| **@kmp-ios** | SwiftUI + KMP ViewModels, lifecycle bridging, framework exports, Direct Integration | `.claude/skills/kmp-ios/` |
-| **@kmp-navigation** | Navigation 3 modular architecture, type-safe routes, scoped navigation | `.claude/skills/kmp-navigation/` |
-| **@kmp-design-systems** | Design tokens, components, icon strategy, Material 3 and Unstyled theming | `.claude/skills/kmp-design-systems/` |
+| **@kmp-ios** | SwiftUI + KMP ViewModels, lifecycle bridging, framework exports, Direct Integration | `.agents/kmp-ios/` |
+| **@kmp-navigation** | Navigation 3 modular architecture, type-safe routes, scoped navigation | `.agents/kmp-navigation/` |
+| **@kmp-design-systems** | Design tokens, components, icon strategy, Material 3 and Unstyled theming | `.agents/kmp-design-systems/` |
 | **Specialized** | — | — |
-| **@kmp-compose-unstyled** | Compose Unstyled reference, headless components, platform-native theming | `.claude/skills/kmp-compose-unstyled/` |
-| **@kmp-desktop** | Desktop/JVM ViewModels, SavedStateHandle, Koin integration | `.claude/skills/kmp-desktop/` |
-| **@kmp-testing-strategy** | Testing philosophy, coverage analysis, Kotest and MockK patterns | `.claude/skills/kmp-testing-strategy/` |
-| **@kmp-commands** | Build commands, test execution, validation, pre-commit checks | `.claude/skills/kmp-commands/` |
+| **@kmp-compose-unstyled** | Compose Unstyled reference, headless components, platform-native theming | `.agents/kmp-compose-unstyled/` |
+| **@kmp-desktop** | Desktop/JVM ViewModels, SavedStateHandle, Koin integration | `.agents/kmp-desktop/` |
+| **@kmp-testing-strategy** | Testing philosophy, coverage analysis, Kotest and MockK patterns | `.agents/kmp-testing-strategy/` |
+| **@kmp-commands** | Build commands, test execution, validation, pre-commit checks | `.agents/kmp-commands/` |
 | **Development** | — | — |
-| **@kmp-developer** | General KMP development, feature implementation, bug fixes, refactoring | `.claude/skills/kmp-developer/` |
-| **@kmp-mobile-expert** | ViewModels with lifecycle awareness, repositories, iOS integration | `.claude/skills/kmp-mobile-expert/` |
-| **@compose-screen** | Compose UI screens for Android and Desktop, Material + Unstyled dual-theme | `.claude/skills/compose-screen/` |
-| **@swiftui-screen** | Native iOS UI with SwiftUI, StateFlow bridging, iOS lifecycle management | `.claude/skills/swiftui-screen/` |
-| **@ktor-backend** | Ktor server endpoints, BFF APIs, REST service implementation | `.claude/skills/ktor-backend/` |
+| **@kmp-developer** | General KMP development, feature implementation, bug fixes, refactoring | `.agents/kmp-developer/` |
+| **@kmp-mobile-expert** | ViewModels with lifecycle awareness, repositories, iOS integration | `.agents/kmp-mobile-expert/` |
+| **@compose-screen** | Compose UI screens for Android and Desktop, Material + Unstyled dual-theme | `.agents/compose-screen/` |
+| **@swiftui-screen** | Native iOS UI with SwiftUI, StateFlow bridging, iOS lifecycle management | `.agents/swiftui-screen/` |
+| **@ktor-backend** | Ktor server endpoints, BFF APIs, REST service implementation | `.agents/ktor-backend/` |
 | **Design & Planning** | — | — |
-| **@product-designer** | Product requirements, acceptance criteria, MVP planning | `.claude/skills/product-designer/` |
-| **@ui-ux-designer** | Visual design, animations, interaction patterns, design systems | `.claude/skills/ui-ux-designer/` |
-| **@onboarding** | First-run experience, user onboarding flows, progressive disclosure | `.claude/skills/onboarding/` |
-| **@user-flows** | User journeys, navigation contracts, UX flow mapping | `.claude/skills/user-flows/` |
+| **@product-designer** | Product requirements, acceptance criteria, MVP planning | `.agents/product-designer/` |
+| **@ui-ux-designer** | Visual design, animations, interaction patterns, design systems | `.agents/ui-ux-designer/` |
+| **@onboarding** | First-run experience, user onboarding flows, progressive disclosure | `.agents/onboarding/` |
+| **@user-flows** | User journeys, navigation contracts, UX flow mapping | `.agents/user-flows/` |
 | **Quality** | — | — |
-| **@docs-maintainer** | Documentation updates, link validation, content consolidation | `.claude/skills/docs-maintainer/` |
+| **@docs-maintainer** | Documentation updates, link validation, content consolidation | `.agents/docs-maintainer/` |
 
 ## Skill Structure
 
@@ -101,10 +101,10 @@ Always validate your work:
 
 ```bash
 # Check all documentation
-./scripts/validate-docs.sh
+.agents/docs-maintainer/scripts/validate-links.sh
 
 # Check token budgets
-python3 scripts/check-tokens.py
+./scripts/check-tokens
 
 # Full validation
 ./gradlew :composeApp:assembleDebug test --continue
@@ -113,7 +113,7 @@ python3 scripts/check-tokens.py
 ## Migration from Agent Prompts
 
 **Old way**: Load agent prompt from `docs/agent-prompts/`
-**New way**: Use skill from `.claude/skills/`
+**New way**: Use skill from `.agents/`
 
 Skills are more focused, task-specific, and include:
 - Mode detection for different scenarios
@@ -124,12 +124,12 @@ Skills are more focused, task-specific, and include:
 ## Troubleshooting
 
 ### Skill not loading?
-- Check skill is in `.claude/skills/<name>/SKILL.md`
+- Check skill is in `.agents/<name>/SKILL.md`
 - Verify YAML frontmatter has `name` and `description`
 - Ensure description is specific (includes trigger keywords)
 
 ### Token budget exceeded?
-- Use compact guides: `docs/tech/critical_patterns_compact.md`
+- Use compact guides: `docs/tech/See @kmp-critical-patterns skill`
 - Load docs incrementally, not all at once
 - Reference by link, don't paste content
 
@@ -146,5 +146,5 @@ Follow the pilot pattern:
 
 - [AGENTS.md](../AGENTS.md) - Agent routing
 - [README.md](README.md) - Documentation index
-- `.claude/skills/` - All skills (11 skill directories)
+- `.agents/` - All skills (11 skill directories)
 - [llms.txt](../llms.txt) - AI discovery index

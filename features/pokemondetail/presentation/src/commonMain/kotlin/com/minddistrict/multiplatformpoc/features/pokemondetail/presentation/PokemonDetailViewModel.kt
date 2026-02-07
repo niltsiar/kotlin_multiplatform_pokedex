@@ -28,10 +28,12 @@ class PokemonDetailViewModel(
 
     private val _uiState = MutableStateFlow<PokemonDetailUiState>(restoreUiState())
     val uiState: StateFlow<PokemonDetailUiState> = _uiState.asStateFlow()
-    
-    // Expose scroll position for UI restoration (same pattern as PokemonListViewModel)
-    val restoredScrollIndex: Int get() = persistedState.scrollPosition
-    val restoredScrollOffset: Int get() = persistedState.scrollOffset
+
+    val restoredScrollIndex: Int
+        get() = persistedState.scrollPosition
+
+    val restoredScrollOffset: Int
+        get() = persistedState.scrollOffset
     
     override fun onStart(owner: LifecycleOwner) {
         // Only load if we have no restored content or error.
@@ -45,24 +47,20 @@ class PokemonDetailViewModel(
             _uiState.update { PokemonDetailUiState.Loading }
             
             repository.getDetailByUrl(pokemonUrl).fold(
-                ifLeft = { error ->
-                    val message = error.toUiMessage()
+                ifLeft = { repoError ->
+                    val message = repoError.toUiMessage()
                     persistedState = persistedState.copy(
                         lastErrorMessage = message,
                         pokemon = null,
                     )
                     _uiState.update { PokemonDetailUiState.Error(message) }
                 },
-                ifRight = { pokemon ->
+                ifRight = { detail ->
                     persistedState = persistedState.copy(
                         lastErrorMessage = null,
-                        pokemon = pokemon.asSnapshot(),
+                        pokemon = detail.asSnapshot(),
                     )
-                    _uiState.update {
-                        PokemonDetailUiState.Content(
-                            pokemon = pokemon,
-                        )
-                    }
+                    _uiState.update { PokemonDetailUiState.Content(pokemon = detail) }
                 }
             )
         }
@@ -72,21 +70,16 @@ class PokemonDetailViewModel(
         loadPokemonDetail()
     }
 
-    /**
-     * Save scroll position to persist across theme switches and process death.
-     */
-    fun saveScrollPosition(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
+    fun saveScrollPosition(index: Int, offset: Int) {
         persistedState = persistedState.copy(
-            scrollPosition = firstVisibleItemIndex,
-            scrollOffset = firstVisibleItemScrollOffset,
+            scrollPosition = index,
+            scrollOffset = offset,
         )
     }
 
     private fun restoreUiState(): PokemonDetailUiState {
         return when {
-            persistedState.pokemon != null -> PokemonDetailUiState.Content(
-                pokemon = persistedState.pokemon!!.asDomain(),
-            )
+            persistedState.pokemon != null -> PokemonDetailUiState.Content(pokemon = persistedState.pokemon!!.asDomain())
             persistedState.lastErrorMessage != null -> PokemonDetailUiState.Error(persistedState.lastErrorMessage!!)
             else -> PokemonDetailUiState.Loading
         }

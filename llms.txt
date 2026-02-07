@@ -9,7 +9,7 @@
 
 ## Skills (26 Total)
 
-Located in `.claude/skills/` - Load via @skill-name syntax
+Located in `.agents/` - Load via @skill-name syntax
 
 ### Core Architecture
 - @kmp-critical-patterns - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Plugins)
@@ -88,13 +88,13 @@ Example: @kmp-presentation for ViewModel patterns, @compose-screen for UI implem
 ## Key Documents
 
 **Architecture & Patterns:**
-- [conventions.md](docs/tech/conventions.md) - Master architecture reference
-- [critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md) - 6 core patterns (full details)
+- See @kmp-architecture skill - Master architecture reference
+- See @kmp-critical-patterns skill - 6 core patterns (full details)
 
 **Implementation:**
-- [ios_integration.md](docs/tech/ios_integration.md) - SwiftUI + KMP ViewModels
-- [dependency_injection.md](docs/tech/dependency_injection.md) - Koin patterns and troubleshooting
-- [testing_strategy.md](docs/tech/testing_strategy.md) - Comprehensive testing guide
+- See @kmp-ios skill - SwiftUI + KMP ViewModels
+- See @kmp-di skill - Koin patterns and troubleshooting
+- See @kmp-testing-strategy skill - Comprehensive testing guide
 
 **Project Planning:**
 - [prd.md](docs/project/prd.md) - Product requirements

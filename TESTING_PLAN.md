@@ -10,11 +10,11 @@ Comprehensive testing strategy to verify the complete agentic documentation over
 ### 1.1 Verify All Skills Exist
 ```bash
 # Count skills
-ls .claude/skills/*/SKILL.md | wc -l
+ls .agents/*/SKILL.md | wc -l
 # Expected: 11
 
 # List all skills
-ls .claude/skills/
+ls .agents/
 # Expected: compose-screen, docs-maintainer, kmp-developer, 
 #           kmp-mobile-expert, ktor-backend, onboarding, 
 #           product-designer, swiftui-screen, testing-strategy, 
@@ -24,13 +24,13 @@ ls .claude/skills/
 ### 1.2 Verify Skill Format
 ```bash
 # Check each skill has YAML frontmatter
-for skill in .claude/skills/*/SKILL.md; do
+for skill in .agents/*/SKILL.md; do
     echo "Checking $skill..."
     head -5 "$skill" | grep -q "^---$" && echo "✅ Has frontmatter" || echo "❌ Missing frontmatter"
 done
 
 # Check line counts (all should be ≤ 500)
-for skill in .claude/skills/*/SKILL.md; do
+for skill in .agents/*/SKILL.md; do
     lines=$(wc -l < "$skill")
     if [ "$lines" -gt 500 ]; then
         echo "❌ $skill: $lines lines (exceeds 500)"
@@ -43,7 +43,7 @@ done
 ### 1.3 Verify Required Sections
 ```bash
 # Check all skills have required sections
-for skill in .claude/skills/*/SKILL.md; do
+for skill in .agents/*/SKILL.md; do
     echo ""
     echo "=== $skill ==="
     grep -q "^## When to Use" "$skill" && echo "✅ When to Use" || echo "❌ Missing When to Use"
@@ -62,7 +62,7 @@ done
 ```bash
 # Search for references to deleted files
 echo "Checking for deleted file references..."
-rg "copilot-instructions|junie/guidelines|agent-prompts" .claude/skills/ --type md | grep -v "Legacy path check" | grep -v "should return no matches"
+rg "copilot-instructions|junie/guidelines|agent-prompts" .agents/ --type md | grep -v "Legacy path check" | grep -v "should return no matches"
 
 # Expected: No output (or only the grep check command)
 ```
@@ -70,7 +70,7 @@ rg "copilot-instructions|junie/guidelines|agent-prompts" .claude/skills/ --type 
 ### 2.2 Validate Internal Links
 ```bash
 # Check relative links in skills
-for skill in .claude/skills/*/SKILL.md; do
+for skill in .agents/*/SKILL.md; do
     echo ""
     echo "=== Checking links in $skill ==="
     # Extract all relative links
@@ -92,7 +92,7 @@ done
 ### 2.3 Check Cross-References to docs/
 ```bash
 # Verify docs/ references exist
-for skill in .claude/skills/*/SKILL.md; do
+for skill in .agents/*/SKILL.md; do
     echo ""
     echo "=== $skill ==="
     grep -oE 'docs/[^)]+\.md' "$skill" | sort -u | while read doc; do
@@ -154,7 +154,7 @@ done
 ```bash
 # Validate all scripts have correct syntax
 echo "=== Script Syntax Validation ==="
-for script in .claude/skills/*/scripts/*.sh; do
+for script in .agents/*/scripts/*.sh; do
     if [ -f "$script" ]; then
         if bash -n "$script" 2>/dev/null; then
             echo "✅ $script - syntax valid"
@@ -170,7 +170,7 @@ done
 # Verify scripts are executable
 echo ""
 echo "=== Script Permissions ==="
-for script in .claude/skills/*/scripts/*.sh; do
+for script in .agents/*/scripts/*.sh; do
     if [ -f "$script" ]; then
         if [ -x "$script" ]; then
             echo "✅ $script is executable"
@@ -188,14 +188,14 @@ echo ""
 echo "=== Script Execution Tests ==="
 
 # Test validate-links.sh (should handle missing markdown-link-check gracefully)
-if .claude/skills/docs-maintainer/scripts/validate-links.sh 2>&1 | grep -q "not installed"; then
+if .agents/docs-maintainer/scripts/validate-links.sh 2>&1 | grep -q "not installed"; then
     echo "✅ validate-links.sh handles missing dependency"
 else
     echo "⚠️  validate-links.sh may need markdown-link-check installed"
 fi
 
 # Test other scripts with --help or usage
-for script in .claude/skills/*/scripts/*.sh; do
+for script in .agents/*/scripts/*.sh; do
     if [ -f "$script" ]; then
         # Check if script has usage/help
         if grep -q "Usage:" "$script"; then
@@ -265,7 +265,7 @@ done
 # Check new structure is in place
 echo ""
 echo "=== New Structure Check ==="
-[ -d ".claude/skills" ] && echo "✅ .claude/skills/ exists" || echo "❌ .claude/skills/ missing"
+[ -d ".agents" ] && echo "✅ .agents/ exists" || echo "❌ .agents/ missing"
 [ -f "AGENTS.md" ] && echo "✅ AGENTS.md exists" || echo "❌ AGENTS.md missing"
 [ -f "llms.txt" ] && echo "✅ llms.txt exists" || echo "❌ llms.txt missing"
 ```
@@ -276,20 +276,17 @@ echo "=== New Structure Check ==="
 
 ### 7.1 Verify Pre-commit Config
 ```bash
-# Check pre-commit config exists and is valid
-echo "=== Pre-commit Configuration ==="
-if [ -f ".pre-commit-config.yaml" ]; then
-    echo "✅ .pre-commit-config.yaml exists"
-    
-    # Basic YAML validation (check for syntax errors)
-    if python3 -c "import yaml; yaml.safe_load(open('.pre-commit-config.yaml'))" 2>/dev/null; then
-        echo "✅ YAML syntax valid"
-    else
-        echo "❌ YAML syntax error"
+# Validate all scripts have correct syntax
+echo "=== Script Syntax Validation ==="
+for script in .agents/*/scripts/*.sh; do
+    if [ -f "$script" ]; then
+        if bash -n "$script" 2>/dev/null; then
+            echo "✅ $script - syntax valid"
+        else
+            echo "❌ $script - syntax error"
+        fi
     fi
-else
-    echo "⚠️  .pre-commit-config.yaml not found (optional)"
-fi
+done
 ```
 
 ---
@@ -302,7 +299,7 @@ fi
 echo "=== Skill Integration Test ==="
 
 # Simulate what Claude Code would do - find and read a skill
-skill=".claude/skills/kmp-developer/SKILL.md"
+skill=".agents/kmp-developer/SKILL.md"
 if [ -f "$skill" ]; then
     echo "✅ Can access skill: $skill"
     
@@ -336,7 +333,7 @@ echo ""
 
 # Test 1: Skills count
 echo "Test 1: Skills Count"
-count=$(ls .claude/skills/*/SKILL.md 2>/dev/null | wc -l)
+count=$(ls .agents/*/SKILL.md 2>/dev/null | wc -l)
 if [ "$count" -eq 11 ]; then
     echo "✅ PASS: Found $count skills"
 else
@@ -390,7 +387,7 @@ fi
 # Test 5: No broken references
 echo ""
 echo "Test 5: Broken References"
-broken=$(grep -r "copilot-instructions\|junie/guidelines\|agent-prompts" .claude/skills/ --type md 2>/dev/null | grep -v "Legacy path check" | grep -v "should return no matches" | wc -l)
+broken=$(grep -r "copilot-instructions\|junie/guidelines\|agent-prompts" .agents/ --type md 2>/dev/null | grep -v "Legacy path check" | grep -v "should return no matches" | wc -l)
 if [ "$broken" -eq 0 ]; then
     echo "✅ PASS: No broken references found"
 else
@@ -411,7 +408,7 @@ echo "=========================================="
 ### Quick Test (5 minutes)
 ```bash
 # Run basic validation
-ls .claude/skills/*/SKILL.md | wc -l  # Should be 11
+ls .agents/*/SKILL.md | wc -l  # Should be 11
 wc -l AGENTS.md  # Should be < 200
 ./gradlew :composeApp:assembleDebug test --continue  # Should pass
 ```
@@ -426,9 +423,9 @@ chmod +x test-agentic-system.sh
 ### Manual Testing
 ```bash
 # Test individual components
-bash -n .claude/skills/*/scripts/*.sh  # Syntax check scripts
+bash -n .agents/*/scripts/*.sh  # Syntax check scripts
 markdown-link-check AGENTS.md  # Check links (if installed)
-rg "copilot-instructions" .claude/skills/  # Should find nothing
+rg "copilot-instructions" .agents/  # Should find nothing
 ```
 
 ---

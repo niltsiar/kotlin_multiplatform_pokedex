@@ -43,7 +43,7 @@ EXPECTED_SKILLS=(
   "docs-maintainer"
 )
 
-SKILLS_DIR=".claude/skills"
+SKILLS_DIR=".agents"
 ERRORS=0
 
 echo "🔍 Validating skill inventory..."

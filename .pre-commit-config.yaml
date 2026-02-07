@@ -3,13 +3,13 @@ repos:
     hooks:
       - id: validate-skills
         name: Validate All Skills
-        entry: bash -c 'for skill in .claude/skills/*/; do echo "Validating $skill..."; skills-ref validate "$skill" || exit 1; done'
+        entry: bash -c 'for skill in .agents/*/; do echo "Validating $skill..."; skills-ref validate "$skill" || exit 1; done'
         language: system
         pass_filenames: false
         
       - id: check-skill-length
         name: Check Skill Line Count
-        entry: bash -c 'find .claude/skills -name "SKILL.md" -exec sh -c "lines=\$(wc -l < \"\$1\"); if [ \"\$lines\" -gt 500 ]; then echo \"\$1: \$lines lines (exceeds 500)\"; exit 1; fi" _ {} \;'
+        entry: bash -c 'find .agents -name "SKILL.md" -exec sh -c "lines=\$(wc -l < \"\$1\"); if [ \"\$lines\" -gt 500 ]; then echo \"\$1: \$lines lines (exceeds 500)\"; exit 1; fi" _ {} \;'
         language: system
         pass_filenames: false
         
