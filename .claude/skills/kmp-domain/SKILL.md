@@ -7,16 +7,20 @@ description: "Domain layer patterns for Kotlin Multiplatform: immutable data cla
 
 Domain layer patterns for pure, immutable, platform-agnostic business logic in Kotlin Multiplatform.
 
-## When to Load This Skill
+## When to Use
 
-**MANDATORY**: Load this skill when working on:
-- Creating domain models and data classes
-- Deciding between use cases vs direct repository calls
-- Implementing domain exceptions for business rules
-- Defining repository interfaces in `:api` modules
-- Writing unit-testable domain logic
+**MANDATORY**: Use this skill when:
+- Designing pure domain models and immutable data classes.
+- Deciding between creating use cases vs calling repositories directly.
+- Implementing domain exceptions (e.g., `UnauthenticatedException`, `PurchaseRequiredException`).
+- Defining repository interfaces in `:api` modules.
+- Writing unit-testable domain logic with fakes.
 
-**Do NOT use for**: Repository implementation details → use @kmp-data-layer, ViewModel patterns → use @kmp-mobile-expert, UI implementation → use @compose-screen or @swiftui-screen, Architecture decisions → use @kmp-architecture
+**Do NOT use for**:
+- Repository implementation details → use **@kmp-data-layer**
+- ViewModel implementation → use **@kmp-presentation**
+- UI screens or components → use **@compose-screen** or **@swiftui-screen**
+- Architecture-level module planning → use **@kmp-architecture**
 
 **Conditional Loading**:
 | Task | Reference | Load When |
@@ -154,26 +158,39 @@ class PokemonUseCaseTest : FunSpec({
 })
 ```
 
-## Related Skills
+## Essential Workflows
 
-| Skill | Use For |
-|-------|---------|
-| @kmp-architecture | Module structure, vertical slicing, feature boundaries |
-| @kmp-data-layer | Repository implementation, DTO mapping, error handling |
-| @kmp-mobile-expert | ViewModel patterns, repository consumption |
-| @kmp-presentation | UI state holders, presentation layer patterns |
+### Workflow 1: Design Immutable Domain Models
+To create stable and pure business logic models:
+1. Define a `data class` with `val` properties for immutability.
+2. Annotate with `@Serializable` if the model is used for navigation or transport.
+3. Use `ImmutableList` or `ImmutableMap` from `kotlinx.collections.immutable`.
+4. Keep models platform-agnostic (no Android/iOS types, no Ktor, no SQL concerns).
+5. Add pure helper functions via extension functions for side-effect-free logic.
 
-## Documentation Sources
+### Workflow 2: Decide When to Create Use Cases
+Avoid overengineering by following the use case decision tree:
+1. **Orchestration**: Does the operation need to coordinate 2+ repositories?
+2. **Business Rules**: Does it enforce authorization gates or complex policies?
+3. **Cross-Cutting**: Does it apply retry policies, transactions, or validation?
+4. **Conclusion**: If none apply, call the repository directly from the ViewModel.
 
-| Document | Purpose | Tokens |
-|----------|---------|--------|
-| [domain.md](../../../docs/tech/domain.md) | Original domain guidelines | ~1500 |
-| [conventions.md](../../../docs/tech/conventions.md) | Architecture master reference | ~3000 |
+### Workflow 3: Define Domain Exceptions
+Use exceptions for control flow dictated by business rules:
+1. Identify scenarios explicitly modeled by PRD/user flows (e.g., `UnauthenticatedException`).
+2. Define specific exception classes in the `:api` module.
+3. Throw exceptions in repositories or use cases for exceptional control flow.
+4. Catch and handle in the ViewModel to trigger UI navigation (e.g., show paywall).
 
-**Internal references**:
-- [domain-models.md](references/domain-models.md) - Model design patterns and examples
-- [use-cases.md](references/use-cases.md) - When to create use cases (with anti-patterns)
-- [exceptions.md](references/exceptions.md) - Domain exceptions reference
+## Critical Guardrails
+
+1. **NEVER use mutable collections** → Use `ImmutableList` or `ImmutableMap`.
+2. **NEVER put business logic in data classes** → Models are pure data; use pure extension functions.
+3. **NEVER return Either from domain** → `Either<RepoError, T>` is for repositories; domain uses pure types or exceptions.
+4. **NEVER create use cases for single repo calls** → Call repositories directly from ViewModels.
+5. **NEVER leak serialization annotations to domain** → Domain models should stay pure unless required for navigation.
+6. **NEVER use nullable domain models for optional states** → Use sealed classes for explicit domain states.
+7. **NEVER place domain models in :core** unless used by 3+ independent features.
 
 ## Quick Reference
 
@@ -181,7 +198,7 @@ class PokemonUseCaseTest : FunSpec({
 
 - [ ] `val` properties only (immutable)
 - [ ] Sensible defaults for optional fields
-- [ ] No `@Serializable`, no Room annotations
+- [ ] No `@Serializable` (unless for navigation), no Room annotations
 - [ ] No Android Context, no UI types
 - [ ] Pure helper functions (side-effect-free)
 
@@ -216,3 +233,37 @@ Does the operation need business logic?
 ### Reference Implementation
 
 Study `features/pokemonlist/api/Pokemon.kt` and `features/pokemonlist/data/PokemonRepository.kt` for domain model and repository interface patterns.
+
+## Cross-References
+
+### Skills (by Category)
+
+**Architecture**
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-architecture | Module structure and feature boundaries | [SKILL.md](../kmp-architecture/SKILL.md) |
+| @kmp-critical-patterns | Quick reference for 6 core patterns | [SKILL.md](../kmp-critical-patterns/SKILL.md) |
+
+**Layer Implementation**
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-data-layer | Repository implementation and DTO mapping | [SKILL.md](../kmp-data-layer/SKILL.md) |
+| @kmp-presentation | ViewModels and UI state management | [SKILL.md](../kmp-presentation/SKILL.md) |
+| @kmp-di | Koin patterns and DI wiring | [SKILL.md](../kmp-di/SKILL.md) |
+
+**Testing**
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-testing-patterns | Kotest, MockK, and property testing | [SKILL.md](../kmp-testing-patterns/SKILL.md) |
+
+### Documents
+| Document | Purpose | Link |
+|----------|---------|------|
+| Architecture + conventions | Master architecture reference | [conventions.md](../../../docs/tech/conventions.md) |
+| Domain layer guidelines | Domain layer guidelines | [domain.md](../../../docs/tech/domain.md) |
+| Product requirements | Feature acceptance criteria | [prd.md](../../../docs/project/prd.md) |
+
+**Internal references**:
+- [domain-models.md](references/domain-models.md) - Model design patterns
+- [use-cases.md](references/use-cases.md) - When to create use cases
+- [exceptions.md](references/exceptions.md) - Domain exceptions reference
