@@ -152,23 +152,88 @@ iosApp/iosApp/
 | `KoinViewModelHelpers.kt` | Generic ViewModel retrieval functions | `shared/src/iosMain/kotlin/` |
 | SKIE | Bridges StateFlow → AsyncSequence | Plugin configuration |
 
-## Related Skills
+## Essential Workflows
 
-| Skill | Use For |
-|-------|---------|
-| @kmp-presentation | ViewModel implementation (Kotlin side) |
-| @kmp-mobile-expert | ViewModels, repositories, iOS integration |
-| @kmp-architecture | Module structure and vertical slicing |
-| @swiftui-screen | Building SwiftUI iOS screens |
-| @kmp-di | Koin DI configuration |
+### Workflow 1: Create SwiftUI View consuming KMP ViewModel
 
-## Documentation Sources
+To create a new SwiftUI view that uses a shared KMP ViewModel:
 
-| Document | Purpose | Tokens |
-|----------|---------|--------|
-| [ios_integration.md](../../../docs/tech/ios_integration.md) | Complete iOS integration guide | ~19000 |
-| [ios_official_pattern_guide.md](../../../docs/tech/ios_official_pattern_guide.md) | Official pattern quick reference | ~4000 |
-| [ios_apps_architecture.md](../../../docs/tech/ios_apps_architecture.md) | Two iOS apps architecture | ~2000 |
+1. **Define the View**: Use `@StateObject` with `IosViewModelStoreOwner` to ensure the ViewModel Store survives view recreations.
+2. **Retrieve ViewModel**: Access the ViewModel through the owner's helper function, letting type inference handle the resolution.
+3. **Setup UI State**: Create a `@State` variable to hold the UI state (bridged from `StateFlow`).
+4. **Implement Body**: Use a `switch` statement or similar to render different states based on the `uiState`.
+
+```swift
+struct MyNewView: View {
+    @StateObject private var owner = IosViewModelStoreOwner()
+    
+    private var viewModel: MyViewModel {
+        owner.viewModel()  // Generic function infers type
+    }
+    
+    @State private var uiState: MyUiState = MyUiStateLoading()
+    
+    var body: some View {
+        content
+            .onAppear { viewModel.onStart(owner: DummyLifecycleOwner()) }
+            .onDisappear { viewModel.onStop(owner: DummyLifecycleOwner()) }
+            .task {
+                for await state in viewModel.uiState {
+                    self.uiState = state
+                }
+            }
+    }
+}
+```
+
+### Workflow 2: Bridge KMP Lifecycle to SwiftUI
+
+To ensure ViewModels correctly handle data loading and cleanup, manually bridge the lifecycle or use the `DisposableEffectObserverBridge` pattern:
+
+1. **Observe Lifecycle**: In `.onAppear`, call `viewModel.onStart(owner: DummyLifecycleOwner())`. This triggers the ViewModel's `onStart` logic (e.g., initial data load).
+2. **Unobserve Lifecycle**: In `.onDisappear`, call `viewModel.onStop(owner: DummyLifecycleOwner())` to notify the ViewModel that the view is no longer visible.
+3. **ViewModel Integration**: Ensure the ViewModel implements `DefaultLifecycleObserver` to receive these events.
+
+### Workflow 3: Configure Framework Exports
+
+To make KMP modules available to Swift, configure the `:shared` framework exports in `shared/build.gradle.kts`:
+
+1. **Identify modules**: Only export layers needed by iOS (contracts and presentation).
+2. **Configure `:shared`**: Update `shared/build.gradle.kts` to `export` modules in the `binaries.framework` block.
+3. **Update dependencies**: Add modules as `api` dependencies in `commonMain`.
+
+```kotlin
+target.binaries.framework {
+    baseName = "Shared"
+    export(projects.features.pokemonlist.api)
+    export(projects.features.pokemonlist.presentation)
+}
+```
+
+### Workflow 4: Handle StateFlow in SwiftUI
+
+SKIE automatically bridges `StateFlow` to `AsyncSequence`. Use the `AsyncStream` bridging pattern with the `.task` modifier:
+
+1. **Use `.task`**: This modifier is tied to the view's lifecycle and auto-cancels when the view is destroyed.
+2. **Iterate with `for await`**: Collect emissions from the ViewModel's `uiState` directly in Swift.
+
+```swift
+.task {
+    for await state in viewModel.uiState {
+        self.uiState = state
+    }
+}
+```
+
+## Critical Guardrails
+
+1. **NEVER export `:data`, `:ui-*`, `:wiring*` to iOS** → only export `:api` and `:presentation` to maintain a strict boundary and prevent framework bloat.
+2. **NEVER use KMP ViewModels directly without lifecycle bridging** → use `DisposableEffectObserverBridge` (or manual appear/disappear calls) to ensure `onStart()` and `onStop()` are triggered.
+3. **NEVER create iOS-specific ViewModels wrapping KMP ViewModels** → use the Direct Integration pattern with `@StateObject` and `IosViewModelStoreOwner` to minimize boilerplate.
+4. **NEVER skip `onStart()` observation** → ViewModels rely on lifecycle events for initialization; skipping them means data will never load.
+5. **NEVER expose `MutableStateFlow` to Swift** → only expose immutable `StateFlow` to ensure state can only be modified from within the Kotlin layer.
+6. **NEVER let iOS code depend on Compose UI** → maintain a strict boundary at the presentation layer; iOS must use native SwiftUI views.
+7. **NEVER manually manage ViewModel lifecycle** → use `@StateObject` + `DisposableEffect` (or direct integration with `IosViewModelStoreOwner`) to let SwiftUI manage instance lifetime.
 
 ## Validation Commands
 
@@ -188,23 +253,46 @@ nm -g shared/build/bin/iosArm64/debugFramework/Shared.framework/Shared \
 cd iosApp && xcodebuild -scheme iosApp -sdk iphonesimulator build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
 ```
 
-## Critical Checklist
+## Cross-References
 
-- [ ] Use `@StateObject` for `IosViewModelStoreOwner` (survives View recreation)
-- [ ] Call `viewModel.onStart(owner:)` in `.onAppear`
-- [ ] Call `viewModel.onStop(owner:)` in `.onDisappear`
-- [ ] Observe StateFlow in `.task` modifier (auto-cancels)
-- [ ] Cast Kotlin `Int32` → Swift `Int` when needed
-- [ ] Export only `:api` and `:presentation` modules to iOS
-- [ ] Use helper functions from `KoinViewModelHelpers.kt`
-- [ ] Use `DummyLifecycleOwner` for lifecycle method calls
+### Skills (by Category)
 
-## Anti-Patterns to Avoid
+**Architecture**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-architecture | Module structure, vertical slicing, feature boundaries | [SKILL.md](../kmp-architecture/SKILL.md) |
+| @kmp-critical-patterns | 6 core patterns quick reference (ViewModel, Either, Impl+Factory, Navigation, Testing, Plugins) | [SKILL.md](../kmp-critical-patterns/SKILL.md) |
 
-| ❌ DON'T | ✅ DO |
-|----------|-------|
-| Direct Koin `get()` calls in Swift | Use helper functions from Kotlin |
-| Store ViewModel as `@State` | Use `@StateObject` for `IosViewModelStoreOwner` |
-| Forget lifecycle method calls | Always call `onStart/onStop` in appear/disappear |
-| Use string interpolation for formatting | Use `String(format:_:)` |
-| Export Compose UI to Shared.framework | Keep Shared.framework Compose-free |
+**Layer Implementation**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-presentation | ViewModels, lifecycle, SavedStateHandle, UI state management | [SKILL.md](../kmp-presentation/SKILL.md) |
+| @kmp-data-layer | Repository patterns, Either<RepoError, T>, DTO mapping | [SKILL.md](../kmp-data-layer/SKILL.md) |
+| @kmp-domain | Domain models, use cases, domain exceptions | [SKILL.md](../kmp-domain/SKILL.md) |
+| @kmp-di | Koin dependency injection patterns and configuration | [SKILL.md](../kmp-di/SKILL.md) |
+
+**Platform & Navigation**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-ios | SwiftUI + KMP ViewModels Direct Integration, iOS export | [SKILL.md](../kmp-ios/SKILL.md) |
+| @swiftui-screen | Building SwiftUI iOS screens | [SKILL.md](../swiftui-screen/SKILL.md) |
+| @kmp-navigation | Navigation 3 modular architecture, scoped routes | [SKILL.md](../kmp-navigation/SKILL.md) |
+| @kmp-desktop | Desktop (JVM) SavedStateHandle, Koin, platform-specific patterns | [SKILL.md](../kmp-desktop/SKILL.md) |
+
+**Development & Quality**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-developer | General KMP development, vertical slice workflows | [SKILL.md](../kmp-developer/SKILL.md) |
+| @kmp-mobile-expert | Shared business logic, ViewModels, repositories | [SKILL.md](../kmp-mobile-expert/SKILL.md) |
+| @kmp-testing-strategy | Testing philosophy, coverage guidelines | [SKILL.md](../kmp-testing-strategy/SKILL.md) |
+
+### Documents
+
+| Document | Purpose | Link |
+| --- | --- | --- |
+| Architecture + conventions | Master reference for architecture, modules, DI | [conventions.md](../../../docs/tech/conventions.md) |
+| iOS integration | SwiftUI + KMP ViewModels Direct Integration details | [ios_integration.md](../../../docs/tech/ios_integration.md) |
+| iOS official patterns | Official pattern quick reference | [ios_official_pattern_guide.md](../../../docs/tech/ios_official_pattern_guide.md) |
+| Dependency injection | Koin patterns and troubleshooting | [dependency_injection.md](../../../docs/tech/dependency_injection.md) |
+| Product requirements | Feature acceptance criteria | [prd.md](../../../docs/project/prd.md) |
+
