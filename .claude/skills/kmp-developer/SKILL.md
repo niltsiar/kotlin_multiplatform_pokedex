@@ -230,14 +230,50 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 
 ## Cross-References
 
+### Skills (by Category)
+
+**Architecture**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-architecture | Module structure, vertical slicing, feature boundaries | [SKILL.md](../kmp-architecture/SKILL.md) |
+| @kmp-critical-patterns | 6 core patterns quick reference (ViewModel, Either, Impl+Factory, Navigation, Testing, Plugins) | [SKILL.md](../kmp-critical-patterns/SKILL.md) |
+
+**Layer Implementation**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-presentation | ViewModels, lifecycle, SavedStateHandle, UI state management | [SKILL.md](../kmp-presentation/SKILL.md) |
+| @kmp-data-layer | Repository patterns, Either<RepoError, T>, DTO mapping | [SKILL.md](../kmp-data-layer/SKILL.md) |
+| @kmp-domain | Domain models, use cases, domain exceptions | [SKILL.md](../kmp-domain/SKILL.md) |
+| @kmp-di | Koin dependency injection patterns and configuration | [SKILL.md](../kmp-di/SKILL.md) |
+
+**Platform & Navigation**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-ios | SwiftUI + KMP ViewModels Direct Integration, iOS export | [SKILL.md](../kmp-ios/SKILL.md) |
+| @kmp-navigation | Navigation 3 modular architecture, scoped routes | [SKILL.md](../kmp-navigation/SKILL.md) |
+| @kmp-desktop | Desktop (JVM) SavedStateHandle, Koin, platform-specific patterns | [SKILL.md](../kmp-desktop/SKILL.md) |
+
+**Design & Build**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-design-systems | Design tokens, component library, icon strategy | [SKILL.md](../kmp-design-systems/SKILL.md) |
+| @kmp-compose-unstyled | Headless components, Compose Unstyled patterns | [SKILL.md](../kmp-compose-unstyled/SKILL.md) |
+| @kmp-api-services | Ktor Client, DTOs, API service patterns | [SKILL.md](../kmp-api-services/SKILL.md) |
+| @kmp-gradle | Convention plugins, Gradle build configuration | [SKILL.md](../kmp-gradle/SKILL.md) |
+| @kmp-commands | CLI reference, build commands, validation scripts | [SKILL.md](../kmp-commands/SKILL.md) |
+
+**Testing**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-testing-strategy | Testing philosophy, coverage guidelines, test planning | [SKILL.md](../kmp-testing-strategy/SKILL.md) |
+| @kmp-testing-patterns | Kotest, MockK, Turbine, property-based testing patterns | [SKILL.md](../kmp-testing-patterns/SKILL.md) |
+
+### Documents
+
 | Document | Purpose | Link |
 | --- | --- | --- |
 | Architecture + conventions | Master reference for architecture, modules, DI | [conventions.md](../../../docs/tech/conventions.md) |
-| Critical patterns | 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
-| Testing strategy | Testing philosophy and coverage guidelines | [@kmp-testing-strategy](../testing-strategy/SKILL.md) |
-| Testing patterns | Testing implementation patterns (Kotest, MockK, property tests) | [@kmp-testing-patterns](../testing-patterns/SKILL.md) |
-| iOS integration | SwiftUI + KMP ViewModels Direct Integration | [ios_integration.md](../../../docs/tech/ios_integration.md) |
-| Navigation 3 | Modular navigation architecture | [navigation.md](../../../docs/tech/navigation.md) |
+| iOS integration | SwiftUI + KMP ViewModels Direct Integration details | [ios_integration.md](../../../docs/tech/ios_integration.md) |
 | Dependency injection | Koin patterns and troubleshooting | [dependency_injection.md](../../../docs/tech/dependency_injection.md) |
 | Product requirements | Feature acceptance criteria | [prd.md](../../../docs/project/prd.md) |
 | User flows | User journeys and sequences | [user_flow.md](../../../docs/project/user_flow.md) |
