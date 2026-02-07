@@ -135,6 +135,11 @@ Create adaptive layouts that work across all screen sizes:
 | `onSurface` | Near-black (#1A1A1A) | Off-white (#F5F5F5) | Text/icon on surface |
 | `error` | Red (#B00020) | Light red (#CF6679) | Error states, destructive actions |
 
+## Related Skills
+
+- **@kmp-design-systems** - Design tokens and component token system patterns
+- **@kmp-compose-unstyled** - Platform-native theming patterns for Compose Unstyled
+
 ## Cross-References
 
 | Document | Purpose | Link |
