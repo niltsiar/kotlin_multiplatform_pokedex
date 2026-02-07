@@ -1,3 +1,9 @@
+---
+Canonical: This is the authoritative source for Pokédex app product requirements and feature specifications
+Type: Artifact
+Related Skills: [@product-designer]
+---
+
 # Pokédex App - Product Requirements Document
 
 Last Updated: January 4, 2026

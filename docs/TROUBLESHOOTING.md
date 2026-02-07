@@ -1,3 +1,9 @@
+---
+Canonical: This is the authoritative living document for development issues, solutions, and troubleshooting guidance
+Type: Reference
+Related Skills: [@kmp-gradle, @kmp-design-systems, @kmp-navigation, @kmp-domain, @compose-screen, @kmp-compose-unstyled, @kmp-testing-patterns]
+---
+
 # Troubleshooting Guide
 
 **Last Updated:** February 7, 2026

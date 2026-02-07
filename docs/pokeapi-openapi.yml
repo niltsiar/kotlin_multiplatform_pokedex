@@ -1,3 +1,6 @@
+# Canonical: This is the authoritative machine-readable API specification for PokéAPI integration
+# Type: Spec
+# Related Skills: [@kmp-api-services]
 openapi: 3.1.0
 info:
   title: PokéAPI

@@ -1,3 +1,9 @@
+---
+Canonical: This is the authoritative source for Pokédex app onboarding flow and first-run experience
+Type: Artifact
+Related Skills: [@onboarding]
+---
+
 # Pokédex App - Onboarding Screens
 
 Last Updated: November 26, 2025

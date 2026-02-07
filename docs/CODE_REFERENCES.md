@@ -1,3 +1,9 @@
+---
+Canonical: This is the authoritative index linking documentation patterns to actual implementation files
+Type: Reference
+Related Skills: [@kmp-presentation, @kmp-data-layer, @kmp-domain, @kmp-navigation, @compose-screen, @kmp-testing-patterns]
+---
+
 # Code Reference Index
 
 **Last Updated:** February 7, 2026

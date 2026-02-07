@@ -1,3 +1,9 @@
+---
+Canonical: This is the authoritative source for Pokédex app UI/UX design guidelines and visual specifications
+Type: Artifact
+Related Skills: [@ui-ux-designer]
+---
+
 # Pokédex App - UI/UX Design Document
 
 Last Updated: January 4, 2026

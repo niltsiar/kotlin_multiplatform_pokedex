@@ -1,3 +1,9 @@
+---
+Canonical: This is the authoritative source for Pokédex app user journeys and flow definitions
+Type: Artifact
+Related Skills: [@user-flows]
+---
+
 # Pokédex App - User Flow Document
 
 Last Updated: November 26, 2025
