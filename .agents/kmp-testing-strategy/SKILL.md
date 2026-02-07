@@ -165,46 +165,70 @@ class PokemonMapperSpec : StringSpec({
 
 ## Quick Reference
 
+### Usage Scenarios
+- Packing context for agents or Copilot with limited budget
+- PR/task summaries where only enforcement and location decisions are needed
+- Choosing the right source set/framework before writing tests
+
+### Canonical Sources
+- [@kmp-testing-strategy skill](@kmp-testing-strategy skill) — deep dive with rationale and playbooks
+- [testing_patterns.md](See @kmp-testing-patterns skill) — concise pattern reminders
+- [See @kmp-critical-patterns skill#testing-pattern](See @kmp-critical-patterns skill#testing-pattern) — canonical rules
+- [See @kmp-critical-patterns skill](See @kmp-critical-patterns skill) — pattern cards view
+
+### Test Enforcement (NO CODE WITHOUT TESTS)
+
+| Production Code | Location | Framework | Key Rule |
+| --- | --- | --- | --- |
+| Repository | `androidUnitTest/` | Kotest + MockK | Success + all error paths |
+| ViewModel | `androidUnitTest/` | Kotest + MockK + Turbine | Initial, Loading, Success, Error + events |
+| Mapper | `androidUnitTest/` | Kotest properties | Property tests proving data preservation |
+| `@Composable` | Same file | `@Preview` (+ Roborazzi where used) | Realistic preview + screenshot baseline |
+| Simple Utility | `commonTest/` | kotlin-test | Pure functions only |
+
+### Property-Based Testing Targets
+- Mappers: **100%** property tests
+- Repositories: **40–50%** property coverage (error mapping, pagination, paging sizes)
+- ViewModels: **30–40%** property coverage (state transitions, random inputs)
+- Use `checkAll` / `forAll` in **androidUnitTest/** for JVM + MockK support
+
+### Flow Testing with Turbine
+- Always test `Flow` / `StateFlow` / `SharedFlow` with Turbine
+- Prefer injecting a `TestScope` via constructor; **NO** `Dispatchers.setMain/resetMain`
+- Use `awaitItem()`, `skipItems()`, and `cancelAndIgnoreRemainingEvents()` with `advanceUntilIdle()`
+
+### Smart Casting
+- Use Kotest contracts: `shouldBeRight { }`, `shouldBeLeft { }`, `shouldBeInstanceOf<>()`
+- Avoid manual casts after assertions
+- See [kotest_smart_casting_quick_ref.md](kotest_smart_casting_quick_ref.md)
+
+### Minimum Coverage Reminders
+- Success + all error paths for repositories
+- Initial/loading/success/error + events for ViewModels
+- Data preservation for mappers
+- Realistic `@Preview` for every `@Composable`
+- Basic assertions for simple utilities (`commonTest/` only when dependency-free)
+
+### Commands
+
 | Command | Purpose |
 |---------|---------|
 | `./gradlew :composeApp:assembleDebug test --continue` | Build Android app + run all tests |
+| `./gradlew recordRoborazziDebug` | Record screenshot baselines |
+| `./gradlew verifyRoborazziDebug` | Verify screenshots against baselines |
 | `./gradlew :features:<feature>:testDebugUnitTest` | Run tests for specific feature module |
 | `./gradlew test --continue` | Run all tests across all modules |
 | `./gradlew jacocoTestReport` | Generate coverage report (if Jacoco configured) |
 | `./gradlew :features:<feature>:data:testDebugUnitTest --tests "TestClass"` | Run specific test class |
 | `./claude/skills/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
 
-**Common Test Patterns:**
-```kotlin
-// MockK basics
-val mockApi = mockk<ApiService>(relaxed = true)
-coEvery { mockApi.method() } returns value
-coVerify { mockApi.method() }
+### Example Links
+- Repository test: [@kmp-testing-strategy skill#repository-test-androidtest](@kmp-testing-strategy skill#repository-test-androidtest)
+- Property tests: [@kmp-testing-strategy skill#property-based-testing-primary-strategy](@kmp-testing-strategy skill#property-based-testing-primary-strategy)
+- Flow tests: [@kmp-testing-strategy skill#flow-testing-with-turbine](@kmp-testing-strategy skill#flow-testing-with-turbine)
+- Screenshots: [@kmp-testing-strategy skill#screenshot-testing-roborazzi](@kmp-testing-strategy skill#screenshot-testing-roborazzi)
 
-// Turbine flow testing
-viewModel.uiState.test {
-    awaitItem() shouldBe expectedState
-    viewModel.doSomething()
-    testScope.advanceUntilIdle()
-    cancelAndIgnoreRemainingEvents()
-}
-
-// Property testing
-checkAll(Arb.int(0..100)) { value ->
-    transform(value) shouldBe expectedTransform(value)
-}
-```
-
-## Cross-References
-
-| Document | Purpose |
-|----------|---------|
-| [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) | Complete testing strategy guide |
-| [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) | Testing pattern reference |
-| [conventions.md](See @kmp-architecture skill for architecture patterns) | Architecture and module structure |
-| [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) | Quick commands reference |
-
-**Implementation Examples:**
+### Implementation Examples
 - [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) - ViewModel test with Turbine
 - [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) - Property tests examples
 - [PokemonListRepositoryTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt) - Repository test with MockK
