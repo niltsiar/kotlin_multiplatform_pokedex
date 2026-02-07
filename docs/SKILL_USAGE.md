@@ -1,6 +1,6 @@
 # Skill Usage Guide
 
-Last Updated: February 2, 2026
+Last Updated: February 7, 2026
 
 ## Quick Start
 
@@ -20,9 +20,39 @@ skill("kmp-developer")
 
 | Skill | Use When | Location |
 |-------|----------|----------|
-| **kmp-developer** | General development, features, bugs | `.claude/skills/kmp-developer/` |
-| **kmp-mobile-expert** | ViewModels, repositories, iOS | `.claude/skills/kmp-mobile-expert/` |
-| **compose-screen** | Compose UI screens | `.claude/skills/compose-screen/` |
+| **Core Architecture** | — | — |
+| **@kmp-critical-patterns** | Quick reference for 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) | `.claude/skills/kmp-critical-patterns/` |
+| **@kmp-architecture** | Module structure, vertical slicing, feature organization, iOS export boundaries | `.claude/skills/kmp-architecture/` |
+| **@kmp-domain** | Domain models, use cases, repository interfaces, domain exceptions | `.claude/skills/kmp-domain/` |
+| **@kmp-di** | Koin DI configuration, dependency wiring, parametric injection | `.claude/skills/kmp-di/` |
+| **@kmp-gradle** | Convention plugins, build configuration, Gradle customization | `.claude/skills/kmp-gradle/` |
+| **Layer Implementation** | — | — |
+| **@kmp-presentation** | ViewModels, lifecycle awareness, SavedStateHandle, UI state management | `.claude/skills/kmp-presentation/` |
+| **@kmp-data-layer** | Repository patterns, Either<RepoError,T>, error handling, DTO mapping | `.claude/skills/kmp-data-layer/` |
+| **@kmp-api-services** | Ktor API services, HTTP clients, API configuration | `.claude/skills/kmp-api-services/` |
+| **@kmp-testing-patterns** | Kotest, MockK, Turbine, property-based testing, test implementation | `.claude/skills/kmp-testing-patterns/` |
+| **Platform & Design** | — | — |
+| **@kmp-ios** | SwiftUI + KMP ViewModels, lifecycle bridging, framework exports, Direct Integration | `.claude/skills/kmp-ios/` |
+| **@kmp-navigation** | Navigation 3 modular architecture, type-safe routes, scoped navigation | `.claude/skills/kmp-navigation/` |
+| **@kmp-design-systems** | Design tokens, components, icon strategy, Material 3 and Unstyled theming | `.claude/skills/kmp-design-systems/` |
+| **Specialized** | — | — |
+| **@kmp-compose-unstyled** | Compose Unstyled reference, headless components, platform-native theming | `.claude/skills/kmp-compose-unstyled/` |
+| **@kmp-desktop** | Desktop/JVM ViewModels, SavedStateHandle, Koin integration | `.claude/skills/kmp-desktop/` |
+| **@kmp-testing-strategy** | Testing philosophy, coverage analysis, Kotest and MockK patterns | `.claude/skills/kmp-testing-strategy/` |
+| **@kmp-commands** | Build commands, test execution, validation, pre-commit checks | `.claude/skills/kmp-commands/` |
+| **Development** | — | — |
+| **@kmp-developer** | General KMP development, feature implementation, bug fixes, refactoring | `.claude/skills/kmp-developer/` |
+| **@kmp-mobile-expert** | ViewModels with lifecycle awareness, repositories, iOS integration | `.claude/skills/kmp-mobile-expert/` |
+| **@compose-screen** | Compose UI screens for Android and Desktop, Material + Unstyled dual-theme | `.claude/skills/compose-screen/` |
+| **@swiftui-screen** | Native iOS UI with SwiftUI, StateFlow bridging, iOS lifecycle management | `.claude/skills/swiftui-screen/` |
+| **@ktor-backend** | Ktor server endpoints, BFF APIs, REST service implementation | `.claude/skills/ktor-backend/` |
+| **Design & Planning** | — | — |
+| **@product-designer** | Product requirements, acceptance criteria, MVP planning | `.claude/skills/product-designer/` |
+| **@ui-ux-designer** | Visual design, animations, interaction patterns, design systems | `.claude/skills/ui-ux-designer/` |
+| **@onboarding** | First-run experience, user onboarding flows, progressive disclosure | `.claude/skills/onboarding/` |
+| **@user-flows** | User journeys, navigation contracts, UX flow mapping | `.claude/skills/user-flows/` |
+| **Quality** | — | — |
+| **@docs-maintainer** | Documentation updates, link validation, content consolidation | `.claude/skills/docs-maintainer/` |
 
 ## Skill Structure
 
