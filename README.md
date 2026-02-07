@@ -144,15 +144,15 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 ## 📚 Documentation
 
 ### Essential Guides
-- **[conventions.md](docs/tech/conventions.md)** - Architecture master reference (START HERE)
-- **[critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
-- **[testing_strategy.md](docs/tech/testing_strategy.md)** - Kotest, MockK, Turbine, property tests (84 tests passing)
+- **[conventions.md](docs/tech/conventions.md)** - Architecture master reference (START HERE) — also see @kmp-architecture
+- **[critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins) — also see @kmp-critical-patterns
+- **[testing_strategy.md](docs/tech/testing_strategy.md)** - Kotest, MockK, Turbine, property tests (84 tests passing) — also see @kmp-testing-strategy
 - **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Commands, patterns, decision matrices
 
 ### Architecture & Patterns
-- **[ios_integration.md](docs/tech/ios_integration.md)** - SwiftUI + KMP ViewModels Direct Integration
-- **[navigation.md](docs/tech/navigation.md)** - Navigation 3 modular architecture
-- **[dependency_injection.md](docs/tech/dependency_injection.md)** - Koin patterns and troubleshooting
+- **[ios_integration.md](docs/tech/ios_integration.md)** - SwiftUI + KMP ViewModels Direct Integration — also see @kmp-ios
+- **[navigation.md](docs/tech/navigation.md)** - Navigation 3 modular architecture — also see @kmp-navigation
+- **[dependency_injection.md](docs/tech/dependency_injection.md)** - Koin patterns and troubleshooting — also see @kmp-di
 
 ### Project Documentation
 - **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
@@ -161,6 +161,32 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 
 ### Build System
 - **[convention_plugins_guide.md](docs/tech/convention_plugins_guide.md)** - Gradle convention plugins reference
+
+### Agent Skills (26 Total)
+
+Located in `.claude/skills/` — AI agents can load via `@skill-name` syntax.
+
+**For skill selection guidance:** See [AGENTS.md](AGENTS.md) decision trees and skill categories.
+
+**Core Skills:**
+@kmp-critical-patterns, @kmp-architecture, @kmp-presentation, @kmp-data-layer, @kmp-testing-strategy, @kmp-di, @kmp-domain
+
+**Platform Skills:**
+@kmp-ios, @kmp-desktop, @compose-screen, @swiftui-screen, @kmp-navigation
+
+**API & Build:**
+@ktor-backend, @kmp-api-services, @kmp-gradle, @kmp-commands
+
+**Development & Testing:**
+@kmp-developer, @kmp-mobile-expert, @kmp-testing-patterns, @kmp-compose-unstyled
+
+**Design & Planning:**
+@product-designer, @ui-ux-designer, @onboarding, @user-flows
+
+**Quality:**
+@docs-maintainer
+
+**Full skill list and detailed descriptions:** See [AGENTS.md](AGENTS.md) for all 26 skills organized by category.
 
 ---
 
