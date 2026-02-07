@@ -1,6 +1,6 @@
 # Code Reference Index
 
-**Last Updated:** February 2, 2026
+**Last Updated:** February 7, 2026
 
 **Purpose:** Central mapping document linking documentation patterns to actual implementation files. Use these canonical references instead of embedding code examples in documentation.
 
@@ -279,6 +279,52 @@
   - Either.catch { } pattern
   - .mapLeft { it.toRepoError() }
   - CancellationException respect
+
+---
+
+## Skills (Pattern Documentation)
+
+The 27 skills in `.claude/skills/` provide expert guidance for implementing patterns documented in this reference. Each skill contains workflows, guardrails, and cross-references.
+
+### Architecture & Core Patterns
+- **[@kmp-architecture](../.claude/skills/kmp-architecture/SKILL.md)** - Module structure, vertical slice organization, feature boundaries
+- **[@kmp-critical-patterns](../.claude/skills/kmp-critical-patterns/SKILL.md)** - Quick reference for 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
+
+### Layer Implementation
+- **[@kmp-presentation](../.claude/skills/kmp-presentation/SKILL.md)** - ViewModels, UI state management, SavedStateHandle, lifecycle patterns
+- **[@kmp-data-layer](../.claude/skills/kmp-data-layer/SKILL.md)** - Repository implementation with Either<RepoError,T>, error handling, DTO mapping
+- **[@kmp-domain](../.claude/skills/kmp-domain/SKILL.md)** - Domain models, immutable data classes, use case guidelines
+- **[@kmp-api-services](../.claude/skills/kmp-api-services/SKILL.md)** - Ktor Client patterns, DTOs, API service boundaries
+- **[@kmp-di](../.claude/skills/kmp-di/SKILL.md)** - Koin dependency injection patterns, parametric injection
+
+### Platform & UI
+- **[@kmp-ios](../.claude/skills/kmp-ios/SKILL.md)** - SwiftUI + KMP ViewModels Direct Integration, lifecycle bridging
+- **[@swiftui-screen](../.claude/skills/swiftui-screen/SKILL.md)** - Native iOS UI with SwiftUI backed by KMP ViewModels
+- **[@compose-screen](../.claude/skills/compose-screen/SKILL.md)** - Compose UI screens for Android and Desktop (Material + Unstyled)
+- **[@kmp-navigation](../.claude/skills/kmp-navigation/SKILL.md)** - Navigation 3 modular architecture, scoped routes
+- **[@kmp-desktop](../.claude/skills/kmp-desktop/SKILL.md)** - Desktop (JVM) patterns, SavedStateHandle on Desktop
+
+### Design & Testing
+- **[@kmp-design-systems](../.claude/skills/kmp-design-systems/SKILL.md)** - Design tokens, Material 3, icon strategy
+- **[@kmp-compose-unstyled](../.claude/skills/kmp-compose-unstyled/SKILL.md)** - Headless component patterns for Unstyled screens
+- **[@ui-ux-designer](../.claude/skills/ui-ux-designer/SKILL.md)** - Visual design, animations, interaction patterns
+- **[@kmp-testing-strategy](../.claude/skills/kmp-testing-strategy/SKILL.md)** - Testing philosophy, coverage analysis, test planning
+- **[@kmp-testing-patterns](../.claude/skills/kmp-testing-patterns/SKILL.md)** - Kotest, MockK, Turbine, property-based tests
+
+### Build & Commands
+- **[@kmp-gradle](../.claude/skills/kmp-gradle/SKILL.md)** - Gradle convention plugins, module creation
+- **[@kmp-commands](../.claude/skills/kmp-commands/SKILL.md)** - CLI reference card, validation commands
+
+### Development & Quality
+- **[@kmp-developer](../.claude/skills/kmp-developer/SKILL.md)** - General Kotlin Multiplatform development patterns
+- **[@kmp-mobile-expert](../.claude/skills/kmp-mobile-expert/SKILL.md)** - Shared business logic with ViewModels, repositories, iOS integration
+- **[@ktor-backend](../.claude/skills/ktor-backend/SKILL.md)** - Ktor server endpoints, BFF APIs, backend services
+- **[@product-designer](../.claude/skills/product-designer/SKILL.md)** - PRD creation, acceptance criteria, MVP planning
+- **[@user-flows](../.claude/skills/user-flows/SKILL.md)** - User journey mapping, navigation contracts
+- **[@onboarding](../.claude/skills/onboarding/SKILL.md)** - First-run experience, welcome screens
+- **[@docs-maintainer](../.claude/skills/docs-maintainer/SKILL.md)** - Documentation maintenance, link validation, skill maintenance
+
+**Usage:** Skills provide step-by-step workflows for implementing the patterns referenced in this document. Load skills when you need guided implementation rather than just code references.
 
 ---
 
