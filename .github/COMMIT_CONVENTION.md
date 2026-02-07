@@ -39,6 +39,7 @@ Use general feature or area names as scopes. Keep them simple and broad:
 - `ios` - iOS-specific implementations
 - `di` - Dependency injection setup
 - `conventions` - Project conventions and documentation
+- `skills` - Agent skill definitions and updates
 
 **Avoid overly specific scopes** like `feat(di,navigation)` or `feat(koin-module-wiring)`. Keep scopes focused on the user-visible feature or architectural area.
 
@@ -93,6 +94,23 @@ build(gradle): refactor convention plugins to use shared config utilities
 - Reduce duplication across feature convention plugins
 - Follow Now in Android base plugin composition pattern
 - Achieve 38% code reduction in build-logic
+```
+
+---
+
+**Poor:**
+```
+Add new skill
+```
+
+**Good:**
+```
+feat(skills): add @kmp-critical-patterns skill for quick pattern reference
+
+- Extract 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
+- Include code examples and antipatterns
+- Add cross-references to detailed guides
+- Target <300 lines for token efficiency
 ```
 
 ## Validation
