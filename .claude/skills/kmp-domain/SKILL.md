@@ -234,6 +234,44 @@ Does the operation need business logic?
 
 Study `features/pokemonlist/api/Pokemon.kt` and `features/pokemonlist/data/PokemonRepository.kt` for domain model and repository interface patterns.
 
+## Troubleshooting Common Domain Model Issues
+
+### Constructor Parameter Mismatches
+
+**Symptom:**
+```kotlin
+Stat(name = "hp", value = 45)
+// Error: No value parameter with type Int
+```
+
+**Cause:** Domain class has different parameters than expected.
+
+**Solution:** Always verify domain class signatures:
+
+```kotlin
+// ✅ CORRECT domain classes (from api module)
+data class Stat(
+    val name: String,
+    val baseStat: Int,  // NOT 'value'
+    val effort: Int     // Required, not optional
+)
+
+data class TypeOfPokemon(
+    val name: String,
+    val slot: Int  // Required for ordering
+)
+
+data class Ability(
+    val name: String,
+    val isHidden: Boolean,
+    val slot: Int  // Required for positioning
+)
+```
+
+**Prevention:** Check `features/<feature>/api/src/commonMain/kotlin/.../domain/` for authoritative definitions.
+
+---
+
 ## Cross-References
 
 ### Skills (by Category)
