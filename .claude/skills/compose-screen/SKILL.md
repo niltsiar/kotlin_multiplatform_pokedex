@@ -223,8 +223,12 @@ private fun <Feature><State>Preview() {
 
 ## Related Skills
 
+- @kmp-architecture - Module structure and vertical slice organization
+- @kmp-presentation - ViewModels and UI state management for screens
+- @kmp-navigation - Navigation 3 modular architecture
 - @kmp-design-systems - Design tokens, components, and icon strategy
 - @kmp-compose-unstyled - Headless component patterns for Unstyled screens
+- @kmp-testing-patterns - Screenshot tests with Roborazzi
 - @ui-ux-designer - Visual design, animations, and interaction patterns
 
 ---
@@ -236,7 +240,10 @@ private fun <Feature><State>Preview() {
 | Architecture + conventions | Master reference | [conventions.md](../../../docs/tech/conventions.md) |
 | Design tokens | Token system | [design_tokens.md](../../../docs/tech/design_tokens.md) |
 | Critical patterns | 6 core patterns | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) |
+| Module structure | Feature modules and UI layers | [kmp-architecture](../kmp-architecture/SKILL.md) |
+| ViewModel patterns | UI state and lifecycle | [kmp-presentation](../kmp-presentation/SKILL.md) |
 | Navigation 3 | Modular navigation | [navigation.md](../../../docs/tech/navigation.md) |
+| Screenshot testing | Roborazzi tests | [kmp-testing-patterns](../kmp-testing-patterns/SKILL.md) |
 | Animation guides | UI animations | [ui-ux-designer](../ui-ux-designer/SKILL.md) |
 | Complete preview examples | Multi-state previews | [references/preview-examples.md](references/preview-examples.md) |
 
