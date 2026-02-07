@@ -231,6 +231,84 @@ plugins {
 
 ## Quick Reference
 
+### Common Violations & Fixes
+
+| Violation | Correct Pattern | See |
+|-----------|----------------|-----|
+| `class XImpl : X` (public) | `internal class XImpl : X` | `patterns/di_patterns.md` |
+| Missing factory function | `fun X(...): X = XImpl(...)` | `patterns/di_patterns.md` |
+| `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` | `patterns/error_handling_patterns.md` |
+| `private val scope = ...` | `viewModelScope: CoroutineScope` param | `patterns/viewmodel_patterns.md` |
+| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | `patterns/viewmodel_patterns.md` |
+| `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | `patterns/viewmodel_patterns.md` |
+| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | `tech/See @kmp-architecture skill` |
+| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | `tech/See @kmp-architecture skill` |
+| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | `tech/See @kmp-architecture skill` |
+| Empty use case | Call repository directly from ViewModel | `patterns/architecture_patterns.md` |
+| `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | `patterns/architecture_patterns.md` |
+| @Composable without @Preview | Add `@Preview` with realistic data | `patterns/testing_patterns.md` |
+| Manual cast after `shouldBeInstanceOf` | Use smart cast directly | `tech/kotest_smart_casting_quick_ref.md` |
+| Thread.sleep() in tests | Use Turbine + testScope | `patterns/testing_patterns.md` |
+
+### Critical DON'Ts (Top 10)
+
+1. ❌ **NEVER run iOS builds** unless explicitly required (5-10min builds)
+2. ❌ **NEVER store `CoroutineScope` as field** in ViewModels (pass to constructor)
+3. ❌ **NEVER perform work in `init`** blocks in ViewModels (use lifecycle callbacks)
+4. ❌ **NEVER return `Result` or nullable** from repositories (use `Either<RepoError, T>`)
+5. ❌ **NEVER swallow `CancellationException`** (use `Either.catch` which handles it)
+6. ❌ **NEVER create empty pass-through** use cases (call repos directly)
+7. ❌ **NEVER export `:data`, `:ui`, or `:wiring`** to iOS (only `:api`, `:presentation`, `:core:*`)
+8. ❌ **NEVER put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
+9. ❌ **NEVER add DI annotations** to production classes (wire in wiring modules)
+10. ❌ **NEVER use star imports or FQN in code**:
+    - ❌ `import com.example.*` — Use explicit imports
+    - ❌ `androidx.compose.ui.text.TextStyle(...)` — Import `TextStyle` first
+    - ❌ `kotlinx.collections.immutable.persistentListOf(...)` — Import `persistentListOf` first
+    - ❌ `val x: com.example.MyClass` — Import `MyClass` first
+    - ✅ Use: `import x.y.ClassName` then write `ClassName()`
+11. ❌ **NEVER omit @Preview** for @Composable functions (MANDATORY)
+
+### Decision Matrices
+
+#### When to Create a New Module?
+```
+IF defining cross-feature contracts → :features:<name>:api (export to iOS)
+IF implementing data layer         → :features:<name>:data (do NOT export)
+IF implementing ViewModels         → :features:<name>:presentation (export to iOS)
+IF implementing Compose UI         → :features:<name>:ui (do NOT export)
+IF wiring dependencies             → :features:<name>:wiring (do NOT export)
+IF shared utilities (3+ features)  → :core:util (export to iOS)
+IF common domain models            → :core:domain (export to iOS)
+ELSE modify existing modules
+```
+
+#### When to Create a Use Case?
+```
+IF orchestrating 2+ repositories   → Create use case
+IF applying business rules         → Create use case
+IF single repository call only     → Call directly from ViewModel
+```
+
+#### When to Use expect/actual?
+```
+IF platform-specific API access    → Use expect/actual in feature/core modules
+IF platform-specific UI:
+  - Android/Desktop               → Use Compose source sets (androidMain, jvmMain)
+  - iOS Production                → Use SwiftUI in :iosApp (separate from Compose)
+  - iOS Experimental              → Use Compose in :iosAppCompose (shares UI)
+IF shared business logic           → Use commonMain in feature/core modules
+IF simple constants                → Use commonMain in appropriate module
+```
+
+#### When to Remove Redundant Tests?
+```
+1. Does a property test cover this scenario?        → Remove concrete test
+2. Is this an edge case not covered by properties?  → Keep concrete test
+3. Does this test document important behavior?      → Keep but add comment
+4. Is this test redundant with another test?        → Merge or remove
+```
+
 ### Pattern Enforcement Checklist
 
 Before implementing any feature:

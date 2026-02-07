@@ -50,7 +50,7 @@ Purpose: Ensure coroutine usage is testable, predictable, and aligned with platf
 - At repository boundaries, wrap throwing blocks with `Either.catch { ... }` and map exceptions via `mapLeft { it.toRepoError() }`.
 - Inside repositories or use cases that orchestrate multiple steps, prefer Arrow monad comprehensions for readability:
 ```kotlin
-val result: Either<RepoError, Domain> = either {
+val result: Either<Error, Domain> = either {
   val a = repo.stepA().bind()
   val b = repo.stepB(a).bind()
   combine(a, b)

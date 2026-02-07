@@ -182,14 +182,14 @@ val myModule = module {
 ```kotlin
 // api/ProfileRepository.kt
 interface ProfileRepository {
-    suspend fun getProfile(): Either<RepoError, Profile>
+    suspend fun getProfile(): Either<Error, Profile>
 }
 
 // data/ProfileRepositoryImpl.kt
 internal class ProfileRepositoryImpl(
     private val api: ProfileApiService
 ) : ProfileRepository {
-    override suspend fun getProfile(): Either<RepoError, Profile> = ...
+    override suspend fun getProfile(): Either<Error, Profile> = ...
 }
 
 // data/ProfileRepositoryFactory.kt

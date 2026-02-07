@@ -23,7 +23,7 @@ When implementing predictive back gestures:
 1. **Use AndroidX Navigation Event Library**
    - Dependency: `androidx.navigationevent:navigationevent` (or newer version)
    - Official support for predictive back patterns
-   - Integrated with Navigation 3
+    - Integrated with modular navigation (Nav 3)
 
 2. **Benefits of Official Solution**
    - First-party support from Android team
