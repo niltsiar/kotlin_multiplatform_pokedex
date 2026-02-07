@@ -1,27 +1,101 @@
 # Kotlin Multiplatform Pokedex
 
-**Last Updated:** February 2, 2026
+**Last Updated:** February 7, 2026
 
 ## Quick Start
-- [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md): Build, test, commit commands
-- [critical_patterns_compact.md](docs/tech/critical_patterns_compact.md): 6 core patterns
+- @kmp-commands - Build, test, validation commands
+- @kmp-critical-patterns - 6 core patterns (quick reference)
+- [AGENTS.md](AGENTS.md) - Skill selection decision trees
 
-## Architecture
-- [conventions.md](docs/tech/conventions.md): Master architecture reference
-- [navigation.md](docs/tech/navigation.md): Navigation 3 modular architecture
-- [critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md): 6 core patterns (full)
+## Skills (26 Total)
 
-## Implementation
-- [testing_strategy.md](docs/tech/testing_strategy.md): Kotest, MockK, property tests
-- [ios_integration.md](docs/tech/ios_integration.md): SwiftUI + KMP ViewModels
-- [dependency_injection.md](docs/tech/dependency_injection.md): Koin patterns
+Located in `.claude/skills/` - Load via @skill-name syntax
+
+### Core Architecture
+- @kmp-critical-patterns - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Plugins)
+- @kmp-architecture - Module structure, vertical slicing, feature boundaries
+- @kmp-domain - Domain models, use cases, domain exceptions
+- @kmp-di - Koin dependency injection patterns and configuration
+- @kmp-gradle - Convention plugins, build configuration
+
+### Layer Implementation
+- @kmp-presentation - ViewModels, lifecycle, SavedStateHandle, UI state management
+- @kmp-data-layer - Repository patterns, Either<RepoError,T>, DTO mapping
+- @kmp-api-services - Ktor Client, API services, DTOs
+- @kmp-testing-patterns - Kotest, MockK, Turbine, property-based testing
+
+### Platform & Design
+- @kmp-ios - SwiftUI + KMP ViewModels Direct Integration, framework exports
+- @kmp-navigation - Navigation 3 modular architecture, scoped routes, type-safe
+- @kmp-design-systems - Design tokens, component library, icon strategy
+
+### Specialized
+- @kmp-compose-unstyled - Headless components, Compose Unstyled patterns
+- @kmp-desktop - JVM-specific patterns, SavedStateHandle, Koin configuration
+- @kmp-testing-strategy - Testing philosophy, coverage guidelines, test planning
+- @kmp-commands - CLI reference, build commands, validation scripts
+
+### Development
+- @kmp-developer - General development, feature implementation, bug fixes
+- @kmp-mobile-expert - ViewModels, repositories, iOS integration, Either patterns
+- @compose-screen - Compose UI screens, Material Design 3, responsive layouts
+- @swiftui-screen - SwiftUI iOS screens, StateFlow bridging, lifecycle management
+- @ktor-backend - Ktor server endpoints, REST APIs, request validation
+
+### Design & Planning
+- @product-designer - Product requirements, acceptance criteria, MVP planning
+- @ui-ux-designer - Visual design, animations, interaction patterns
+- @onboarding - First-run experience, user onboarding flows
+- @user-flows - User journeys, navigation contracts, UX flows
+
+### Quality
+- @docs-maintainer - Documentation updates, link validation, content consolidation
 
 ## Agent Routing
-- [AGENTS.md](AGENTS.md): Agent routing table and mode selection
-- [docs/README.md](docs/README.md): Complete documentation index
+
+- [AGENTS.md](AGENTS.md) - Decision trees for skill selection by task domain
+- [docs/README.md](docs/README.md) - Documentation index for additional references
 
 ## For AI Agents
-- Use link-first approach: Reference docs, don't paste them
-- Start with compact guides, load full docs incrementally
-- Follow patterns in critical_patterns_compact.md
-- Validate with: `./gradlew :composeApp:assembleDebug test --continue`
+
+**Load skills for specialized tasks:**
+```
+Load @skill-name to access domain-specific knowledge and workflows
+Example: @kmp-presentation for ViewModel patterns, @compose-screen for UI implementation
+```
+
+**Workflow:**
+1. **Identify task domain** → Check AGENTS.md decision trees
+2. **Load relevant skill(s)** → Use @skill-name syntax to load specialized guidance
+3. **Start with quick reference** → @kmp-critical-patterns for 6 core patterns
+4. **Domain-specific loading** → Load skills based on implementation area:
+   - Architecture/Planning → @kmp-architecture, @product-designer
+   - ViewModel/Presentation → @kmp-presentation, @kmp-mobile-expert
+   - Data/Repository → @kmp-data-layer, @kmp-api-services
+   - UI Implementation → @compose-screen, @swiftui-screen, @ui-ux-designer
+   - Testing → @kmp-testing-strategy, @kmp-testing-patterns
+   - iOS → @kmp-ios, @swiftui-screen
+   - Navigation → @kmp-navigation
+   - DI/Wiring → @kmp-di, @kmp-commands
+
+**Validation:**
+```bash
+./gradlew :composeApp:assembleDebug test --continue
+```
+
+---
+
+## Key Documents
+
+**Architecture & Patterns:**
+- [conventions.md](docs/tech/conventions.md) - Master architecture reference
+- [critical_patterns_quick_ref.md](docs/tech/critical_patterns_quick_ref.md) - 6 core patterns (full details)
+
+**Implementation:**
+- [ios_integration.md](docs/tech/ios_integration.md) - SwiftUI + KMP ViewModels
+- [dependency_injection.md](docs/tech/dependency_injection.md) - Koin patterns and troubleshooting
+- [testing_strategy.md](docs/tech/testing_strategy.md) - Comprehensive testing guide
+
+**Project Planning:**
+- [prd.md](docs/project/prd.md) - Product requirements
+- [user_flow.md](docs/project/user_flow.md) - User journeys and flows
