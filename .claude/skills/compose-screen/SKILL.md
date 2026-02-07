@@ -221,6 +221,14 @@ private fun <Feature><State>Preview() {
 
 ---
 
+## Related Skills
+
+- @kmp-design-systems - Design tokens, components, and icon strategy
+- @kmp-compose-unstyled - Headless component patterns for Unstyled screens
+- @ui-ux-designer - Visual design, animations, and interaction patterns
+
+---
+
 ## Cross-References
 
 | Document | Purpose | Link |
