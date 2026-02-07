@@ -13,20 +13,7 @@ Repository implementation patterns with Arrow Either for type-safe error handlin
 
 ## Quick Reference
 
-### 1. RepoError Hierarchy
-
-```kotlin
-// :features:<feature>:api - Public contract
-sealed interface RepoError {
-    data object Network : RepoError
-    data class Http(val code: Int, val message: String?) : RepoError
-    data object NotFound : RepoError
-    data object Unauthorized : RepoError
-    data class Unknown(val cause: Throwable) : RepoError
-}
-```
-
-### 2. Repository Pattern (Impl + Factory)
+### 1. Repository Pattern (Impl + Factory)
 
 ```kotlin
 // :features:jobs:data - Implementation
@@ -44,24 +31,7 @@ internal class JobRepositoryImpl(
 fun JobRepository(api: JobApiService): JobRepository = JobRepositoryImpl(api)
 ```
 
-### 3. Exception Mapping
-
-```kotlin
-// Extension function for error mapping
-fun Throwable.toRepoError(): RepoError = when (this) {
-    is ClientRequestException -> when (response.status.value) {
-        401 -> RepoError.Unauthorized
-        404 -> RepoError.NotFound
-        in 400..499 -> RepoError.Http(response.status.value, message)
-        else -> RepoError.Unknown(this)
-    }
-    is ServerResponseException -> RepoError.Http(response.status.value, message)
-    is IOException, is TimeoutCancellationException -> RepoError.Network
-    else -> RepoError.Unknown(this)
-}
-```
-
-### 4. DTO to Domain Mapping
+### 2. DTO to Domain Mapping
 
 ```kotlin
 // Extension functions in data layer
@@ -78,7 +48,7 @@ internal fun JobEntity.asDomain(): Job = Job(
 )
 ```
 
-### 5. Offline-First Pattern
+### 3. Offline-First Pattern
 
 ```kotlin
 interface JobRepository {
@@ -101,7 +71,7 @@ internal class JobRepositoryImpl(
 }
 ```
 
-### 6. Testing with Kotest
+### 4. Testing with Kotest
 
 ```kotlin
 class JobRepositoryTest : StringSpec({
@@ -133,6 +103,69 @@ class JobRepositoryTest : StringSpec({
         error.code shouldBe 404
     }
 })
+```
+
+## Error Handling Patterns
+
+### RepoError Hierarchy
+
+Define feature-specific errors in `:api`.
+
+```kotlin
+sealed interface RepoError {
+    data object Network : RepoError
+    data class Http(val code: Int, val message: String?) : RepoError
+    data object Unauthorized : RepoError
+    data object NotFound : RepoError
+    data class Unknown(val cause: Throwable) : RepoError
+}
+```
+
+### Exception Mapping
+
+Map Ktor/Coroutine exceptions to `RepoError` in `:data`.
+
+```kotlin
+fun Throwable.toRepoError(): RepoError = when (this) {
+    is ClientRequestException -> when (response.status.value) {
+        401 -> RepoError.Unauthorized
+        404 -> RepoError.NotFound
+        in 400..499 -> RepoError.Http(response.status.value, message)
+        else -> RepoError.Unknown(this)
+    }
+    is ServerResponseException -> RepoError.Http(response.status.value, message)
+    is IOException, is TimeoutCancellationException -> RepoError.Network
+    else -> RepoError.Unknown(this)
+}
+```
+
+### Cancellation Handling
+
+`Either.catch` respects cancellation automatically. Re-throw `CancellationException` if using manual `try-catch`.
+
+```kotlin
+// ✅ CORRECT - Either.catch respects cancellation
+override suspend fun getJobs(): Either<RepoError, List<Job>> =
+    Either.catch {
+        api.getJobs().map { it.asDomain() }
+    }.mapLeft { it.toRepoError() }
+
+// ❌ WRONG - Swallowing CancellationException
+try { ... } catch (e: Exception) { Either.Left(e.toRepoError()) } 
+```
+
+### UI Message Mapping
+
+Provide user-friendly messages for errors (usually in `:api` or `:presentation`).
+
+```kotlin
+fun RepoError.toUiMessage(): String = when (this) {
+    is RepoError.Network -> "No internet connection"
+    is RepoError.Http -> "Server error: $message"
+    is RepoError.Unauthorized -> "Please log in again"
+    is RepoError.NotFound -> "Item not found"
+    is RepoError.Unknown -> "Something went wrong"
+}
 ```
 
 ## Module Structure
@@ -172,24 +205,7 @@ internal class JobRepositoryImpl(private val api: JobApiService) : JobRepository
 fun JobRepository(api: JobApiService): JobRepository = JobRepositoryImpl(api)
 ```
 
-### Workflow 2: Map Exceptions to RepoError
-1. Define `sealed interface RepoError` in `:api`.
-2. Create `Throwable.toRepoError()` extension in `:data`.
-3. Map Ktor/Coroutine exceptions to `RepoError` cases.
-4. Apply `.mapLeft { it.toRepoError() }` at all repository boundaries.
-
-```kotlin
-fun Throwable.toRepoError(): RepoError = when (this) {
-    is ClientRequestException -> when (response.status.value) {
-        404 -> RepoError.NotFound
-        else -> RepoError.Http(response.status.value, message)
-    }
-    is IOException -> RepoError.Network
-    else -> RepoError.Unknown(this)
-}
-```
-
-### Workflow 3: Test Repository with Property-Based Tests
+### Workflow 2: Test Repository with Property-Based Tests
 1. Create test class in `androidUnitTest/` using Kotest.
 2. Use `Arb` generators for diverse DTO scenarios.
 3. Verify success paths return `Right` with mapped models.
@@ -204,7 +220,7 @@ fun Throwable.toRepoError(): RepoError = when (this) {
 }
 ```
 
-### Workflow 4: Integrate Repository with ViewModel
+### Workflow 3: Integrate Repository with ViewModel
 1. Inject repository into `ViewModel` and call methods in `viewModelScope`.
 2. Use `.fold()` to handle success/failure.
 3. Update `UiState` based on the result.
