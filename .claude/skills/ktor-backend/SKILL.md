@@ -17,10 +17,16 @@ Use this skill when:
 - Adding server features like CORS, compression, logging
 
 Do NOT use this skill for:
-- Client-side HTTP requests (use KMP Mobile Expert for `HttpClient` setup)
+- Client-side HTTP requests (use @kmp-api-services for Ktor Client and API service patterns)
 - Compose UI implementation (use compose-screen skill)
 - Shared business logic (use kmp-mobile-expert skill)
 - Database schema design (this project uses PokéAPI, no database layer yet)
+
+## Related Skills
+
+- **@kmp-api-services**: Client-side HTTP patterns with Ktor Client, DTOs, and repository integration
+- **@kmp-data-layer**: Repository implementation with Either<RepoError, T> error boundaries
+- **@kmp-testing-patterns**: Kotest and MockEngine patterns for API service testing
 
 ## Essential Workflows
 
