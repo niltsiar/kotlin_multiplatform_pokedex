@@ -45,9 +45,9 @@ To maintain documentation without duplicating content:
    ```
 
 4. **Synchronize multi-entrypoint documents**: When updating agentic system docs, update ALL entrypoints:
-    - `AGENTS.md` (primary entrypoint)
-    - `llms.txt` (AI discovery index)
-    - `docs/README.md` (documentation index)
+     - `AGENTS.md` (primary entrypoint)
+     - `llms.txt` (AI discovery index)
+     - `docs/README.md.migrated` (documentation index)
 
 5. **Validate links after changes**: Run link validation:
    ```bash
@@ -119,7 +119,7 @@ To eliminate documentation duplication:
 
 6. **Run link validation** to ensure all new references work
 
-7. **Document consolidation**: Add note to `docs/README.md` if major consolidation occurred
+7. **Document consolidation**: Add note to `AGENTS.md` if major consolidation occurred
 
 ### Workflow 4: Skill Maintenance Guide
 
@@ -225,7 +225,7 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 **Multi-Entrypoint Sync Checklist:**
 - [ ] `AGENTS.md` updated (primary entrypoint)
 - [ ] `llms.txt` updated (AI discovery index)
-- [ ] `docs/README.md` updated (documentation index)
+- [ ] `docs/README.md.migrated` updated (documentation index)
 - [ ] All Last Updated dates synchronized
 - [ ] Links validated with `validate-links.sh`
 - [ ] Legacy path check: `rg "junie/guides|copilot-instructions|agent-prompts" -n` (should return no matches)
@@ -237,7 +237,7 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 | [conventions.md](See @kmp-architecture skill for architecture patterns) | Master architecture and conventions reference |
 | [AGENTS.md](../../AGENTS.md) | Agent routing table and mode selection |
 | [llms.txt](../../llms.txt) | AI discovery index |
-| [docs/README.md](../../docs/README.md) | Documentation index for AI discovery |
+| [docs/README.md.migrated](../../docs/README.md.migrated) | Documentation index for AI discovery |
 | [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) | Essential commands and workflows |
 | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) | 6 core patterns reference |
 | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) | Testing strategy and coverage guidelines |

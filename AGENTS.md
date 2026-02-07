@@ -163,8 +163,73 @@ See [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for complete command refe
 
 ## Documentation
 
+> **Note:** Most technical documentation has been consolidated into Agent Skills (`.agents/`). Skills are the canonical reference. Use `@skill-name` syntax to load them.
+
+### Start Here (< 1K tokens)
+- [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) - Essential commands and workflows
+- [SKILL_QUICK_REFERENCE.md](docs/SKILL_QUICK_REFERENCE.md) - Quick skill reference card
+
+### Remaining Technical Guides
+
+#### Quick References
+- [tech/koin_di_quick_ref.md](docs/tech/koin_di_quick_ref.md) - Koin DI quick reference (see @kmp-di for full guide)
+- [tech/kotest_smart_casting_quick_ref.md](docs/tech/kotest_smart_casting_quick_ref.md) - Kotest smart casting patterns
+- [tech/testing_quick_ref.md](docs/tech/testing_quick_ref.md) - Testing quick reference (see @kmp-testing-strategy for full guide)
+
+#### Architecture & Platform-Specific
+- [tech/ios_apps_architecture.md](docs/tech/ios_apps_architecture.md) - iOS app comparison (native vs Compose)
+- [tech/utility_organization.md](docs/tech/utility_organization.md) - Utility module organization
+- [tech/predictive_back_notes.md](docs/tech/predictive_back_notes.md) - Predictive back gesture notes
+- [tech/coroutines.md](docs/tech/coroutines.md) - Coroutines patterns
+
+#### Pattern References
+- [patterns/error_handling_patterns.md](docs/patterns/error_handling_patterns.md) - Error handling patterns (see @kmp-data-layer for full guide)
+- [patterns/navigation_patterns.md](docs/patterns/navigation_patterns.md) - Navigation patterns (see @kmp-navigation for full guide)
+
+### Project Documentation
+- [project/prd.md](docs/project/prd.md) - Product requirements and acceptance criteria
+- [project/user_flow.md](docs/project/user_flow.md) - User journeys and flows
+- [project/ui_ux.md](docs/project/ui_ux.md) - UI/UX guidelines
+- [project/onboarding.md](docs/project/onboarding.md) - Onboarding flow documentation
+
+### Skill-to-Documentation Mapping
+
+For comprehensive technical guidance, load Agent Skills:
+
+| Topic | Agent Skill | Command |
+|-------|-------------|---------|
+| Architecture & Modules | @kmp-architecture | Load for module structure, vertical slicing |
+| Critical Patterns (6 core) | @kmp-critical-patterns | Load for quick pattern reference |
+| Testing Strategy | @kmp-testing-strategy | Load for testing philosophy |
+| Testing Patterns | @kmp-testing-patterns | Load for Kotest, MockK, Turbine |
+| Dependency Injection | @kmp-di | Load for Koin patterns |
+| Navigation | @kmp-navigation | Load for Navigation 3 patterns |
+| iOS Integration | @kmp-ios | Load for SwiftUI + KMP |
+| Desktop Patterns | @kmp-desktop | Load for JVM-specific patterns |
+| ViewModels | @kmp-presentation | Load for ViewModel patterns |
+| Repositories | @kmp-data-layer | Load for repository patterns |
+| API Services | @kmp-api-services | Load for Ktor API patterns |
+| Domain Layer | @kmp-domain | Load for domain models |
+| Design Systems | @kmp-design-systems | Load for design tokens, icons |
+| Compose Unstyled | @kmp-compose-unstyled | Load for headless components |
+| Gradle/Build | @kmp-gradle | Load for convention plugins |
+
+### Token Budget Guide
+
+When working with AI agents, manage context efficiently:
+
+| Task Complexity | Recommended Approach | Token Range |
+|----------------|----------------------|-------------|
+| Quick lookup | Load @kmp-critical-patterns skill | ~800-1500 |
+| Feature work | Load relevant skill (@kmp-architecture, @kmp-developer) | ~2000-3000 |
+| iOS work | Load @kmp-ios skill | ~2500-3500 |
+| Full context | Load multiple skills + quick references | ~5000+ |
+
+**Rule**: Agent Skills are canonical. Load skills first, docs for supplementary context.
+
+### Metadata
 - Full skill guide: [docs/SKILL_USAGE.md](docs/SKILL_USAGE.md)
-- Doc index: [docs/README.md](docs/README.md)
+- Doc index: [docs/README.md.migrated](docs/README.md.migrated)
 - AI discovery: [llms.txt](llms.txt)
 - Architecture: [See @kmp-architecture skill](See @kmp-architecture skill) (or load @kmp-architecture)
 

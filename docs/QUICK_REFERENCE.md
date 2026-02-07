@@ -698,4 +698,4 @@ kotlin {
 **Main Documentation:**
 - `AGENTS.md` — Agent routing and skill selection
 - `llms.txt` — AI discovery index
-- `docs/README.md` — Complete documentation index
+- `AGENTS.md` — Complete documentation index

@@ -54,7 +54,7 @@ Located in `.agents/` - Load via @skill-name syntax
 ## Agent Routing
 
 - [AGENTS.md](AGENTS.md) - Decision trees for skill selection by task domain
-- [docs/README.md](docs/README.md) - Documentation index for additional references
+- [AGENTS.md](AGENTS.md) - Documentation index for additional references
 
 ## For AI Agents
 

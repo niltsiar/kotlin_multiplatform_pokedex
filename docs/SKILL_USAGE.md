@@ -145,6 +145,6 @@ Follow the pilot pattern:
 ## References
 
 - [AGENTS.md](../AGENTS.md) - Agent routing
-- [README.md](README.md) - Documentation index
+- [AGENTS.md](../AGENTS.md) - Documentation index
 - `.agents/` - All skills (11 skill directories)
 - [llms.txt](../llms.txt) - AI discovery index
