@@ -232,6 +232,31 @@ class PokemonListViewModelTest : StringSpec({
 | Ignore shouldBeLeft return value | Use return value directly |
 | Concrete tests covered by properties | Remove redundant tests |
 
+## Troubleshooting Common Testing Issues
+
+### Tests Pass But Build Shows Failures
+
+**Symptom:**
+```
+> Task :features:pokemonlist:wiring-ui-unstyled:compileDebugKotlinAndroid FAILED
+BUILD SUCCESSFUL in 1m 23s
+All 84 tests PASSED
+```
+
+**Cause:** `--continue` flag allows tests to run despite task failures.
+
+**Interpretation:**
+- Task failures shown are from earlier in build
+- Tests actually passed (verify with explicit test run)
+- Subsequent clean build resolves stale task states
+
+**Solution:** Run explicit test verification:
+```bash
+./gradlew test --rerun-tasks
+```
+
+---
+
 ### Validation Commands
 
 ```bash
