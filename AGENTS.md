@@ -6,6 +6,20 @@
 
 ## Quick Start
 
+### For OpenCode Users
+
+Skills are located in `.agents/` and auto-load when you use the `@mention` syntax.
+
+```bash
+# Use a skill
+@kmp-developer help me implement a new feature
+
+# Or load it explicitly
+skill("kmp-developer")
+```
+
+### Build & Test
+
 ```bash
 ./gradlew :composeApp:assembleDebug test --continue
 ```
@@ -143,6 +157,55 @@ Located in `.agents/`
 | Plan tests | @kmp-testing-strategy |
 | Update documentation | @docs-maintainer |
 
+## Skill Selection & Usage
+
+### Skill Architecture
+
+Each skill in `.agents/` contains:
+- **SKILL.md**: Main instructions with YAML frontmatter
+- **When to Use**: Trigger conditions and decision points
+- **Workflows**: Step-by-step guidance for specific tasks
+- **Anti-Patterns**: What NOT to do and why
+- **Cross-References**: Links to canonical project documentation
+
+### Usage Examples
+
+#### Example 1: Implement a ViewModel
+```
+User: "I need to create a ViewModel for Pokemon details"
+AI: [Loads kmp-mobile-expert skill]
+Skill guides through:
+1. Mode detection (VM_MODE)
+2. Lifecycle-aware pattern
+3. State persistence with SavedStateHandle
+4. Koin DI wiring
+5. Validation
+```
+
+#### Example 2: Build a Compose Screen
+```
+User: "Implement the Pokemon detail screen"
+AI: [Loads compose-screen skill]
+Skill guides through:
+1. Mode detection (FROM_SPEC or DESIGN_FIRST)
+2. @Preview requirements
+3. Dual-theme support (Material + Unstyled)
+4. Token-based styling
+5. Validation with ./gradlew :composeApp:assembleDebug
+```
+
+## Migration & Troubleshooting
+
+### Migration from Agent Prompts
+- **Old Way**: Load agent prompt from `docs/agent-prompts/`
+- **New Way**: Use skill from `.agents/`
+- **Benefits**: Skills are more focused, include mode detection, and link directly to reference implementations.
+
+### Troubleshooting
+- **Skill not loading?** Check skill is in `.agents/<name>/SKILL.md` and verify YAML frontmatter.
+- **Token budget exceeded?** Use `@kmp-critical-patterns` for quick reference; load docs incrementally.
+- **Need a new skill?** Copy structure from existing skill, define trigger conditions, and include anti-patterns.
+
 ## Critical Patterns
 
 - **ViewModel**: Pass scope to constructor, NO work in init
@@ -159,6 +222,7 @@ See [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for complete command refe
 | Build | `./gradlew :composeApp:assembleDebug` |
 | Test | `./gradlew test --continue` |
 | Check deps | `./gradlew dependencyUpdates` |
+| Check tokens | `./scripts/check-tokens` |
 | Validate docs | `.agents/docs-maintainer/scripts/validate-links.sh` |
 
 ## Documentation
@@ -228,7 +292,7 @@ When working with AI agents, manage context efficiently:
 **Rule**: Agent Skills are canonical. Load skills first, docs for supplementary context.
 
 ### Metadata
-- Full skill guide: [docs/SKILL_USAGE.md](docs/SKILL_USAGE.md)
+- Full skill guide: [docs/SKILL_USAGE.md.migrated](docs/SKILL_USAGE.md.migrated)
 - Doc index: [docs/README.md.migrated](docs/README.md.migrated)
 - AI discovery: [llms.txt](llms.txt)
 - Architecture: [See @kmp-architecture skill](See @kmp-architecture skill) (or load @kmp-architecture)
