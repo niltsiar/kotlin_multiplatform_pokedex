@@ -1,6 +1,6 @@
 # Documentation Index - AI Discovery
 
-**Last Updated:** February 2, 2026
+**Last Updated:** February 7, 2026
 
 > **Quick Navigation**: This index helps AI agents and developers find the right documentation quickly.
 
@@ -28,7 +28,7 @@
 
 ## Skills & Agent Routing
 - [AGENTS.md](../AGENTS.md) - Agent routing table and mode selection
-- [.claude/skills/](../.claude/skills/) - 11 professional skills for development
+- [.claude/skills/](../.claude/skills/) - 27 professional skills for development
 
 ## Project Documentation
 - [project/prd.md](project/prd.md) - Product requirements and acceptance criteria
@@ -48,11 +48,46 @@ See [tech/](tech/) directory for:
 - API services
 - And more...
 
-### Skills (11 professional skills)
+### Skills (27 professional skills)
 See [.claude/skills/](../.claude/skills/) directory for:
-- Development skills (kmp-developer, kmp-mobile-expert, compose-screen, swiftui-screen, ktor-backend)
-- Design skills (product-designer, ui-ux-designer, onboarding, user-flows)
-- Quality skills (testing-strategy, docs-maintainer)
+
+**Architecture & Core (2 skills):**
+- @kmp-architecture - Module structure, vertical slice organization
+- @kmp-critical-patterns - Quick reference for 6 core patterns
+
+**Layer Implementation (5 skills):**
+- @kmp-presentation - ViewModels, UI state management
+- @kmp-data-layer - Repository patterns with Either<RepoError,T>
+- @kmp-domain - Domain models, immutable data classes
+- @kmp-api-services - Ktor Client patterns, DTOs
+- @kmp-di - Koin dependency injection
+
+**Platform & UI (5 skills):**
+- @kmp-ios - SwiftUI + KMP ViewModels integration
+- @swiftui-screen - Native iOS UI with SwiftUI
+- @compose-screen - Compose UI screens (Material + Unstyled)
+- @kmp-navigation - Navigation 3 modular architecture
+- @kmp-desktop - Desktop (JVM) patterns
+
+**Design & Testing (5 skills):**
+- @kmp-design-systems - Design tokens, Material 3
+- @kmp-compose-unstyled - Headless component patterns
+- @ui-ux-designer - Visual design, animations
+- @kmp-testing-strategy - Testing philosophy, coverage
+- @kmp-testing-patterns - Kotest, MockK, Turbine
+
+**Build & Commands (2 skills):**
+- @kmp-gradle - Gradle convention plugins
+- @kmp-commands - CLI reference card
+
+**Development & Quality (7 skills):**
+- @kmp-developer - General KMP development
+- @kmp-mobile-expert - Shared business logic
+- @ktor-backend - Ktor server endpoints
+- @product-designer - PRD creation
+- @user-flows - User journey mapping
+- @onboarding - First-run experience
+- @docs-maintainer - Documentation maintenance
 
 ### Patterns (5 files)
 See [patterns/](patterns/) directory for:
