@@ -34,6 +34,65 @@ Test implementation patterns for Kotlin Multiplatform with Kotest, MockK, Turbin
 | @Composable | Same file | @Preview + Roborazzi |
 | Simple Utility | commonTest/ | kotlin-test |
 
+## Essential Workflows
+
+### Workflow 1: Write ViewModel Test with Turbine
+
+1. Inject `SavedStateHandle()` and `testScope` in ViewModel constructor.
+2. Use Turbine `.test { }` for flow assertions.
+3. Advance time with `testDispatcher.scheduler.advanceUntilIdle()`.
+
+```kotlin
+"state transitions correctly" {
+    viewModel.uiState.test {
+        awaitItem() shouldBe UiState.Loading
+        viewModel.onStart(owner)
+        testScope.advanceUntilIdle()
+        awaitItem().shouldBeInstanceOf<UiState.Content>()
+        cancelAndIgnoreRemainingEvents()
+    }
+}
+```
+
+### Workflow 2: Write Repository Test with MockK
+
+1. Mock the API service using `mockk()`.
+2. Test both success (Right) and all error (Left) paths.
+3. Verify DTO-to-domain mapping.
+
+```kotlin
+"returns Left on Network error" {
+    coEvery { api.getData() } throws IOException()
+    val result = repository.getData()
+    result.shouldBeLeft { it shouldBe RepoError.Network }
+}
+```
+
+### Workflow 3: Write Property-Based Test with Kotest
+
+1. Use `checkAll` with `Arb` generators.
+2. Define invariants (e.g., data preservation).
+
+```kotlin
+"property: mapper preserves all fields" {
+    checkAll(Arb.dto()) { dto ->
+        val domain = dto.toDomain()
+        domain.id shouldBe dto.id
+    }
+}
+```
+
+### Workflow 4: Write Screenshot Test with Roborazzi
+
+1. Add `@Preview` to your `@Composable`.
+2. Establish baseline with `recordRoborazziDebug`.
+3. Verify regressions with `verifyRoborazziDebug`.
+
+```bash
+./gradlew recordRoborazziDebug
+./gradlew verifyRoborazziDebug
+```
+
 ## Quick Reference
 
 ### Repository Test Pattern
@@ -112,21 +171,46 @@ class PokemonListViewModelTest : StringSpec({
 | ViewModel testing | [vm-testing.md](references/vm-testing.md) | Testing ViewModels |
 | Repository testing | [repo-testing.md](references/repo-testing.md) | Testing repositories |
 
-## Related Skills
+## Critical Guardrails
 
-| Skill | Use For |
-|-------|---------|
-| @kmp-testing-strategy | Testing strategy and philosophy |
-| @kmp-presentation | ViewModel patterns |
-| @kmp-data-layer | Repository patterns |
+1. NEVER skip testing error paths → test Network, Http (400-599), and Unknown RepoError cases.
+2. NEVER use `runBlocking` in tests → use `runTest` with `TestScope` for deterministic behavior.
+3. NEVER test implementation details → focus on public API behavior and UI state transitions.
+4. NEVER skip Turbine for StateFlow testing → `awaitItem()` is essential for catching timing and emission issues.
+5. NEVER mock domain models → use real domain objects/data classes; mock only external boundaries (API, DB).
+6. NEVER skip property-based tests for mappers → aim for 100% property test coverage for DTO ↔ Domain mapping.
+7. NEVER commit without running tests → execute `./gradlew test --continue` to ensure all 84+ tests pass.
+8. NEVER use `GlobalScope` in tests → always use `TestScope` or the ViewModel's injected scope for control.
 
-## Documentation Sources
+## Cross-References
 
-| Document | Purpose | Tokens |
-|----------|---------|--------|
-| [testing_patterns.md](../../../docs/patterns/testing_patterns.md) | Complete testing patterns | ~6000 |
-| [kotest_smart_casting_quick_ref.md](../../../docs/tech/kotest_smart_casting_quick_ref.md) | Smart casting patterns | ~3000 |
-| [testing_quick_ref.md](../../../docs/tech/testing_quick_ref.md) | Quick reference | ~2000 |
+### Skills (by Category)
+
+**Architecture**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-architecture | Module structure, vertical slice organization | [SKILL.md](../kmp-architecture/SKILL.md) |
+| @kmp-critical-patterns | Quick reference for 6 core patterns | [SKILL.md](../kmp-critical-patterns/SKILL.md) |
+
+**Layer Implementation**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-presentation | ViewModels, UI state management | [SKILL.md](../kmp-presentation/SKILL.md) |
+| @kmp-data-layer | Repository patterns with Either<RepoError,T> | [SKILL.md](../kmp-data-layer/SKILL.md) |
+
+**Testing**
+| Skill | Purpose | Link |
+| --- | --- | --- |
+| @kmp-testing-strategy | Testing philosophy, coverage guidelines | [SKILL.md](../kmp-testing-strategy/SKILL.md) |
+| @kmp-testing-patterns | Kotest, MockK, Turbine, property tests | [SKILL.md](../kmp-testing-patterns/SKILL.md) |
+
+### Documents
+
+| Document | Purpose | Link |
+| --- | --- | --- |
+| Testing Strategy | Kotest, MockK, Turbine, property tests guide | [testing_strategy.md](../../../docs/tech/testing_strategy.md) |
+| Conventions | Master architecture and testing reference | [conventions.md](../../../docs/tech/conventions.md) |
+| Quick Reference | Essential commands and workflows | [QUICK_REFERENCE.md](../../../docs/QUICK_REFERENCE.md) |
 
 ## Quick Reference
 
