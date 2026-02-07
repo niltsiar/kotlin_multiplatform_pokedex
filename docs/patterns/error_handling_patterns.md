@@ -1,8 +1,8 @@
 # Error Handling Patterns (Arrow Either)
 
-**Last Updated:** November 26, 2025
+**Last Updated:** February 7, 2026
 
-> **Canonical Reference**: See [Either Boundary Pattern](../tech/critical_patterns_quick_ref.md#either-boundary-pattern) for core rules.
+> **Canonical Reference**: See [@kmp-data-layer](../../.agents/kmp-data-layer/SKILL.md) and [@kmp-critical-patterns](../../.agents/kmp-critical-patterns/SKILL.md#either-boundary-pattern) for core rules.
 
 > Comprehensive code examples for Arrow Either boundaries, sealed error hierarchies, and exception mapping.
 
@@ -449,8 +449,8 @@ suspend fun getJobs(): Either<RepoError, List<Job>> =
 
 ## See Also
 
-- [repository.md](../tech/repository.md) — Complete repository pattern guide
+- [@kmp-data-layer](../../.agents/kmp-data-layer/SKILL.md) — Complete repository pattern guide
 - [coroutines.md](../tech/coroutines.md) — Cancellation and structured concurrency
-- `patterns/di_patterns.md` — DI patterns with Either
-- `patterns/viewmodel_patterns.md` — Using Either in ViewModels
-- `patterns/testing_patterns.md` — Testing Either boundaries
+- [@kmp-di](../../.agents/kmp-di/SKILL.md) — DI patterns with Either
+- [@kmp-presentation](../../.agents/kmp-presentation/SKILL.md) — Using Either in ViewModels
+- [@kmp-testing-patterns](../../.agents/kmp-testing-patterns/SKILL.md) — Testing Either boundaries

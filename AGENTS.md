@@ -1,6 +1,8 @@
 # AGENTS.md
 
-**Last Updated:** February 4, 2026
+**Last Updated:** February 7, 2026
+
+> **📌 Important:** Agent Skills in `.agents/` are the **canonical technical reference**. The `docs/` directory contains supplementary guides, project documentation, and quick references. When in doubt, load the skill.
 
 ## Quick Start
 
@@ -85,7 +87,7 @@ Build issues or workflow questions?
 
 ## Skills (27 Total)
 
-Located in `.claude/skills/`
+Located in `.agents/`
 
 ### Core Architecture
 - **@kmp-critical-patterns** - 6 core patterns (quick reference)
@@ -157,14 +159,14 @@ See [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for complete command refe
 | Build | `./gradlew :composeApp:assembleDebug` |
 | Test | `./gradlew test --continue` |
 | Check deps | `./gradlew dependencyUpdates` |
-| Validate docs | `./scripts/validate-docs.sh` |
+| Validate docs | `.agents/docs-maintainer/scripts/validate-links.sh` |
 
 ## Documentation
 
 - Full skill guide: [docs/SKILL_USAGE.md](docs/SKILL_USAGE.md)
 - Doc index: [docs/README.md](docs/README.md)
 - AI discovery: [llms.txt](llms.txt)
-- Architecture: [docs/tech/conventions.md](docs/tech/conventions.md) (or load @kmp-architecture)
+- Architecture: [See @kmp-architecture skill](See @kmp-architecture skill) (or load @kmp-architecture)
 
 ## Validation
 

@@ -37,9 +37,9 @@ The core rule for the dual-iOS-app setup:
 
 Related conventions and module guidelines:
 
-- Architecture and module conventions: [`docs/tech/conventions.md`](./conventions.md)
-- iOS integration overview: [`docs/tech/ios_integration.md`](./ios_integration.md)
-- Navigation conventions: [`docs/tech/navigation.md`](./navigation.md)
+- Architecture and module conventions: [`docs/tech/See @kmp-architecture skill`](@kmp-architecture skill)
+- iOS integration overview: [`docs/tech/ios_integration.md`](@kmp-ios skill)
+- Navigation conventions: [`docs/tech/navigation.md`](@kmp-navigation skill)
 
 ## Validation commands
 

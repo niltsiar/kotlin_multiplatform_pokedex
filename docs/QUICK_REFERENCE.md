@@ -24,7 +24,7 @@ Last Updated: February 7, 2026
 
 ## Agent Selector (Skill Routing)
 
-Use these specialized skills for task routing (located in `.claude/skills/`). Load skills with `@skill-name` when needed.
+Use these specialized skills for task routing (located in `.agents/`). Load skills with `@skill-name` when needed.
 
 ### Architecture & Core
 | Skill | Use When |
@@ -80,7 +80,7 @@ Use these specialized skills for task routing (located in `.claude/skills/`). Lo
 
 ## Essential Commands
 
-**For complete CLI reference, see [@kmp-commands skill](.claude/skills/kmp-commands/SKILL.md).**
+**For complete CLI reference, see [@kmp-commands skill](../.agents/kmp-commands/SKILL.md).**
 
 ### Primary Validation (ALWAYS RUN FIRST)
 ```bash
@@ -320,7 +320,7 @@ beforeTest {
 **Reference Implementations:**
 - [PokemonListViewModel.kt](../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) (delegate pattern)
 - [PokemonDetailViewModel.kt](../features/pokemondetail/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModel.kt) (delegate pattern)
-- [DI Patterns Guide](patterns/di_patterns.md#savedstatehandle-in-viewmodels)
+- [DI Patterns Guide](@kmp-presentation skill for SavedStateHandle patterns)
 
 ## Library Resources Quick Reference
 
@@ -366,7 +366,7 @@ Icon(
 )
 ```
 
-**See:** [material_icons_strategy.md](tech/material_icons_strategy.md) for complete guide
+**See:** [material_icons_strategy.md](@kmp-design-systems skill) for complete guide
 
 ## Module Structure Reference
 
@@ -549,9 +549,9 @@ viewModel.uiState.test {
 | `private val scope = ...` | `viewModelScope: CoroutineScope` param | `patterns/viewmodel_patterns.md` |
 | `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | `patterns/viewmodel_patterns.md` |
 | `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | `patterns/viewmodel_patterns.md` |
-| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | `tech/conventions.md` |
-| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | `tech/conventions.md` |
-| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | `tech/conventions.md` |
+| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | `tech/See @kmp-architecture skill` |
+| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | `tech/See @kmp-architecture skill` |
+| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | `tech/See @kmp-architecture skill` |
 | Empty use case | Call repository directly from ViewModel | `patterns/architecture_patterns.md` |
 | `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | `patterns/architecture_patterns.md` |
 | @Composable without @Preview | Add `@Preview` with realistic data | `patterns/testing_patterns.md` |
@@ -681,14 +681,14 @@ kotlin {
 - `patterns/testing_patterns.md` — Kotest+MockK, property tests, Turbine
 
 **Tech Guides:**
-- `tech/conventions.md` — Master reference (start here)
+- `tech/See @kmp-architecture skill` — Master reference (start here)
 - `tech/dependency_injection.md` — Comprehensive Koin guide
 - `tech/repository.md` — Repository patterns, Either, error handling
 - `tech/presentation_layer.md` — ViewModel lifecycle, UI state
 - `tech/navigation.md` — Navigation 3 complete guide
-- `tech/testing_strategy.md` — Testing enforcement, property tests
+- `tech/@kmp-testing-strategy skill` — Testing enforcement, property tests
 - `tech/ios_integration.md` — iOS SwiftUI + KMP patterns
-- `tech/material_icons_strategy.md` — Vector Drawable XML icons, Rounded Filled style
+- `@kmp-design-systems skill` — Vector Drawable XML icons, Rounded Filled style
 
 **Project Guides:**
 - `project/prd.md` — Product requirements (PRIMARY REFERENCE)

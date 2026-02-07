@@ -101,7 +101,7 @@ Last Updated: January 4, 2026
 - **Component abstraction:** PokemonCard, TypeBadge, AnimatedStatBar accept token interfaces
 - **Automatic aggregation:** `koinEntryProvider()` collects all scoped entries
 
-**See:** [component_library.md](../tech/component_library.md) for component implementation details
+**See:** [component_library.md](See @kmp-design-systems skill) for component implementation details
 
 ### Educational Value
 

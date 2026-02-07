@@ -1,8 +1,8 @@
 # Navigation Patterns (Navigation 3)
 
-**Last Updated:** November 26, 2025
+**Last Updated:** February 7, 2026
 
-> **Canonical Reference**: See [Navigation 3 Pattern](../tech/critical_patterns_quick_ref.md#navigation-3-pattern) for core rules.
+> **Canonical Reference**: See [@kmp-navigation](../../.agents/kmp-navigation/SKILL.md) skill and [@kmp-critical-patterns](../../.agents/kmp-critical-patterns/SKILL.md#navigation-3-pattern) for core rules.
 
 > Comprehensive code examples for Navigation 3 route objects, EntryProviderInstaller, metadata-based animations, and NavDisplay integration.
 
@@ -541,7 +541,7 @@ fun MyScreen(viewModel: MyViewModel, onNavigate: (Any) -> Unit) {
 
 ## See Also
 
-- [navigation.md](../tech/navigation.md) — Complete navigation guide
+- [@kmp-navigation](../../.agents/kmp-navigation/SKILL.md) — Complete navigation guide
 - Official docs: https://developer.android.com/guide/navigation/navigation-3/animate-destinations
-- `patterns/di_patterns.md` — Navigation DI patterns
-- `patterns/viewmodel_patterns.md` — ViewModel with navigation
+- [@kmp-di](../../.agents/kmp-di/SKILL.md) — Navigation DI patterns
+- [@kmp-presentation](../../.agents/kmp-presentation/SKILL.md) — ViewModel with navigation
