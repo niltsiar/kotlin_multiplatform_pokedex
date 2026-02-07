@@ -41,7 +41,7 @@ To maintain documentation without duplicating content:
 
 3. **Update Last Updated headers**: Change the date in the header when content changes:
    ```markdown
-   **Last Updated:** December 22, 2025
+   **Last Updated:** February 7, 2026
    ```
 
 4. **Synchronize multi-entrypoint documents**: When updating agentic system docs, update ALL entrypoints:
@@ -181,6 +181,34 @@ To maintain the 27 skills in `.claude/skills/` directory:
 | `rg 'name:' .claude/skills/*/SKILL.md` | List all skill names from frontmatter |
 | `./.claude/skills/docs-maintainer/scripts/validate-links.sh` | Validate links in skills |
 | `wc -l .claude/skills/*/SKILL.md` | Check skill file sizes (target: <300 lines) |
+| `bash .sisyphus/scripts/validate-no-duplication.sh` | Detect duplication between docs/ and .agents/ |
+
+## Migration Architecture
+
+This project follows a strict separation between executable patterns (Skills) and descriptive artifacts (Docs).
+
+**Boundary Criteria:**
+- **Skills (`.agents/`)**: Contain agent-executable patterns, procedures, decision logic, and normative "how-to" guidance. These are reusable workflows intended for AI consumption.
+- **Docs (`docs/`)**: Contain human-readable artifacts, PRDs, specifications, living references (e.g., Troubleshooting), and project-specific one-off descriptions.
+
+**Linking Rules:**
+- **Docs → Skills**: Encouraged. Documentation should link to skills for technical pattern implementation details.
+- **Skills → Docs**: Discouraged/Minimal. Skills should be self-contained for their specific domain, only linking to canonical docs when necessary for project context.
+
+The architecture consists of **26 consolidated skills** and **7 canonical documentation files** (marked with frontmatter).
+
+## Drift Prevention
+
+To prevent documentation from diverging or duplicating between skills and the `docs/` directory, several measures are in place:
+
+1. **Validation Script**: `.sisyphus/scripts/validate-no-duplication.sh` - This script identifies content overlap by matching pattern headers and key phrases across both directories.
+2. **Canonical Markers**: Authoritative documentation files in `docs/` include YAML frontmatter (e.g., `Canonical: true`, `Type: Artifact`) to signal they are the primary source for that information.
+3. **Migration Stubs**: Technical files that have been moved to skills are replaced with stubs containing a `MIGRATED` notice and a link to the new skill location.
+
+**Monitoring Workflow:**
+- Run the validation script before committing any documentation changes.
+- Ensure new technical patterns are added to the relevant skill, not to `docs/`.
+- If a descriptive artifact (like a PRD) starts containing normative implementation patterns, migrate those patterns to a skill.
 
 ## Critical Guardrails
 
