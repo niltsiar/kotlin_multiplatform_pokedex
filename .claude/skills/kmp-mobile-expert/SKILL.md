@@ -62,6 +62,111 @@ Expert guidance for shared Kotlin Multiplatform business logic across Android, i
 
 ---
 
+## Essential Workflows
+
+### Workflow 1: Create ViewModel with Lifecycle Awareness
+
+All ViewModels in this project MUST be lifecycle-aware to support proper initialization and state preservation.
+
+1. **Define dependencies**: Inject repository, `SavedStateHandle`, and `CoroutineScope` (with default value).
+2. **Implement interfaces**: Extend `ViewModel(viewModelScope)` and implement `DefaultLifecycleObserver`.
+3. **Handle state persistence**: Use `by saved` delegate for automatic state persistence.
+4. **Lifecycle initialization**: Override `onStart(owner)` for initial data loading. **NEVER use `init` block for work.**
+
+```kotlin
+class PokemonListViewModel(
+    private val repository: PokemonListRepository,
+    private val savedStateHandle: SavedStateHandle,
+    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+) : ViewModel(viewModelScope), DefaultLifecycleObserver {
+    private val _uiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
+    val uiState: StateFlow<PokemonListUiState> = _uiState.asStateFlow()
+
+    override fun onStart(owner: LifecycleOwner) {
+        super.onStart(owner)
+        viewModelScope.launch {
+            repository.loadPage(20, 0).fold(
+                { _uiState.value = PokemonListUiState.Error(it) },
+                { _uiState.value = PokemonListUiState.Content(it) }
+            )
+        }
+    }
+}
+```
+*For complete ViewModel patterns, see @kmp-presentation.*
+
+### Workflow 2: Implement Repository with Either Boundary
+
+Repositories bridge data sources to domain logic, ensuring type-safe error handling without exceptions.
+
+1. **Define interface**: Place in `:api` module, returning `Either<RepoError, T>`.
+2. **Implement class**: Create `internal class <Name>Impl` in `:data` module.
+3. **Map errors**: Use `catch { ... }` with `.mapLeft { it.toRepoError() }`.
+4. **Expose factory**: Create a public factory function in `:data`.
+
+```kotlin
+// In :api
+interface PokemonListRepository {
+    suspend fun loadPage(limit: Int, offset: Int): Either<RepoError, PokemonPage>
+}
+
+// In :data
+internal class PokemonListRepositoryImpl(private val api: PokemonListApiService) : PokemonListRepository {
+    override suspend fun loadPage(limit: Int, offset: Int): Either<RepoError, PokemonPage> =
+        catch({ Either.Right(api.getPokemonList(limit, offset).toDomain()) }) { it.toRepoError().left() }
+}
+
+fun PokemonListRepository(api: PokemonListApiService): PokemonListRepository = PokemonListRepositoryImpl(api)
+```
+*For error handling patterns, see @kmp-data-layer.*
+
+### Workflow 3: Set Up iOS Exports for KMP Feature
+
+Only specific layers should be visible to iOS to maintain a clean boundary.
+
+1. **Identify modules**: Export only `:api` (contracts) and `:presentation` (ViewModels).
+2. **Configure `:shared`**: Update `shared/build.gradle.kts` to `export` modules.
+3. **Update dependencies**: Add modules as `api` dependencies in `commonMain`.
+
+```kotlin
+// shared/build.gradle.kts
+iosTarget.binaries.framework {
+    baseName = "Shared"
+    export(projects.features.pokemonlist.api)
+    export(projects.features.pokemonlist.presentation)
+}
+sourceSets {
+    commonMain.dependencies {
+        api(projects.features.pokemonlist.api)
+        api(projects.features.pokemonlist.presentation)
+    }
+}
+```
+*For iOS integration details, see @kmp-ios.*
+
+### Workflow 4: Configure Koin DI for Mobile Feature
+
+Dependency injection connects all layers and supports platform-specific injection for iOS.
+
+1. **Create module**: Define in `:wiring` module using the `module { ... }` DSL.
+2. **Register components**: Use `factory` for repos and `viewModel` DSL for ViewModels.
+3. **Handle parameters**: Use `parametersOf` for components requiring runtime data.
+
+```kotlin
+val pokemonListModule = module {
+    factory { PokemonListApiService(get()) }
+    factory<PokemonListRepository> { PokemonListRepository(get()) }
+    viewModel { PokemonListViewModel(get(), get()) }
+}
+
+// For parametric ViewModels (e.g., in iOS helper)
+fun getPokemonDetailViewModel(id: Int): PokemonDetailViewModel = 
+    KoinPlatform.getKoin().get { parametersOf(id) }
+```
+*For DI patterns, see @kmp-di.*
+
+---
+
 ## Critical Guardrails
 
 | Anti-Pattern | Correct Pattern | Why It Matters |
