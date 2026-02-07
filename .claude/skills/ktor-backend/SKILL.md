@@ -27,6 +27,11 @@ Do NOT use this skill for:
 - **@kmp-api-services**: Client-side HTTP patterns with Ktor Client, DTOs, and repository integration
 - **@kmp-data-layer**: Repository implementation with Either<RepoError, T> error boundaries
 - **@kmp-testing-patterns**: Kotest and MockEngine patterns for API service testing
+- **@kmp-architecture**: Module structure, vertical slicing, and feature boundaries
+- **@kmp-critical-patterns**: Quick reference for 6 core patterns (ViewModel, Either, Testing, etc.)
+- **@kmp-domain**: Domain models and data classes consumed by server endpoints
+- **@kmp-gradle**: Gradle convention plugins and server build configuration
+- **@kmp-commands**: CLI commands for server validation and testing
 
 ## Essential Workflows
 
@@ -287,6 +292,11 @@ data class ErrorResponse(
 | Testing strategy | Kotest, MockK, Turbine for integration tests | [testing_strategy.md](../../../docs/tech/testing_strategy.md) |
 | Ktor documentation | Official Ktor server documentation | https://ktor.io/docs/ |
 | Version catalog | Dependency versions for Ktor plugins | [libs.versions.toml](../../../gradle/libs.versions.toml) |
+| Module structure | Feature boundaries and layer organization | [@kmp-architecture skill](../kmp-architecture/SKILL.md) |
+| Critical patterns | Quick reference for core patterns | [@kmp-critical-patterns skill](../kmp-critical-patterns/SKILL.md) |
+| Domain models | Immutable data classes | [@kmp-domain skill](../kmp-domain/SKILL.md) |
+| Gradle configuration | Convention plugins and server build | [@kmp-gradle skill](../kmp-gradle/SKILL.md) |
+| Server commands | CLI validation and testing | [@kmp-commands skill](../kmp-commands/SKILL.md) |
 
 ### Reference Implementation
 
