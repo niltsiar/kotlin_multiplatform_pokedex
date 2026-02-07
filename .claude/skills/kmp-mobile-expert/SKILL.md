@@ -125,14 +125,32 @@ import org.koin.core.parameter.parametersOf
 
 ## Cross-References
 
-| Topic | Document | Location |
-|-------|----------|----------|
-| Complete architecture | `conventions.md` | docs/tech/conventions.md |
-| All 6 core patterns | `critical_patterns_quick_ref.md` | docs/tech/critical_patterns_quick_ref.md |
-| iOS integration details | `ios_integration.md` | docs/tech/ios_integration.md |
-| Testing strategy | `@kmp-testing-strategy` | Testing strategy and philosophy |
-| Testing implementation patterns | `@kmp-testing-patterns` | Testing implementation patterns (Kotest, MockK, property tests) |
-| Koin DI patterns | `dependency_injection.md` | docs/tech/dependency_injection.md |
+### Architecture & Core Patterns
+| Topic | Reference |
+|-------|-----------|
+| Complete architecture | [conventions.md](docs/tech/conventions.md) |
+| All 6 core patterns | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
+| Module structure & vertical slicing | [@kmp-architecture](../kmp-architecture/SKILL.md) |
+
+### Layers & Patterns
+| Topic | Reference |
+|-------|-----------|
+| ViewModel lifecycle & SavedStateHandle | [@kmp-presentation](../kmp-presentation/SKILL.md) (also [viewmodel-patterns.md](references/viewmodel-patterns.md)) |
+| Repository Either<RepoError,T> patterns | [@kmp-data-layer](../kmp-data-layer/SKILL.md) (also [repository-patterns.md](references/repository-patterns.md)) |
+| Domain models & use cases | [@kmp-domain](../kmp-domain/SKILL.md) |
+| Koin DI configuration | [@kmp-di](../kmp-di/SKILL.md) (also [dependency_injection.md](docs/tech/dependency_injection.md)) |
+
+### Platform & Navigation
+| Topic | Reference |
+|-------|-----------|
+| iOS integration & exports | [@kmp-ios](../kmp-ios/SKILL.md) (also [ios-export.md](references/ios-export.md)) |
+| Navigation 3 architecture | [@kmp-navigation](../kmp-navigation/SKILL.md) |
+
+### Testing
+| Topic | Reference |
+|-------|-----------|
+| Testing strategy & philosophy | [@kmp-testing-strategy](../kmp-testing-strategy/SKILL.md) |
+| Testing patterns (Kotest, MockK, property tests) | [@kmp-testing-patterns](../kmp-testing-patterns/SKILL.md) |
 
 ---
 
