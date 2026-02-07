@@ -189,6 +189,100 @@ fun AnimatedStatBar(value: Float) {
 | `LaunchedEffect` Capture | Access tokens in suspend context | `val motion = MaterialTheme.tokens.motion; LaunchedEffect { ... }` |
 | `painterResource` | Load icon from resources | `painterResource(Res.drawable.ic_search)` |
 
+## Troubleshooting Common Design System Issues
+
+### "Unresolved reference 'generated'" for Compose Resources
+
+**Symptom:**
+```kotlin
+import multiplatformpoc.core.designsystem_core.generated.resources.Res
+// Error: Unresolved reference 'generated'
+```
+
+**Cause:** Library module resources not configured for public access.
+
+**Solution (3 steps in library module's build.gradle.kts):**
+
+```kotlin
+// 1. Add dependency
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.compose.components.resources)  // CRITICAL!
+        }
+    }
+}
+
+// 2. Enable public Res class
+compose.resources {
+    publicResClass = true  // Default internal won't work!
+}
+
+// 3. Android namespace determines package
+android {
+    namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"
+}
+```
+
+**Generated package name:** Namespace with dots → underscores:
+- Input: `com.minddistrict.multiplatformpoc.core.designsystem.core`
+- Output: `multiplatformpoc.core.designsystem_core.generated.resources`
+
+---
+
+### Theme[property][token] Not Found
+
+**Symptom:**
+```kotlin
+Theme[shapes][shapeLarge]
+// Error: Unresolved reference
+```
+
+**Cause:** Wrong imports from platform theme instead of custom theme.
+
+**Solution:**
+```kotlin
+// ❌ WRONG
+import com.composeunstyled.platformtheme.shapes
+
+// ✅ CORRECT
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.shapes
+import com.minddistrict.multiplatformpoc.core.designsystem.unstyled.theme.shapeLarge
+```
+
+**Supported properties in Unstyled:**
+- `Theme[spacing][spacingSm/Md/Lg/Xl/...]`
+- `Theme[shapes][shapeLarge/Medium/Small]`
+- `Theme[typography][labelMedium/bodyLarge/...]`
+- `Theme[colors][primary/onSurface/background/...]`
+- `Theme[elevation][elevationLevel1/2/3]`
+- `Theme[motionDuration][durationShort/Medium/Long]`
+- `Theme[motionEasing][easingStandard]`
+
+**Key insight:** Unstyled theme DOES support full `Theme[property][token]` syntax despite minimal aesthetic.
+
+---
+
+### PokemonTypeColors API Changes
+
+**Symptom:**
+```kotlin
+PokemonTypeColors.getColorForType(type.name)
+// Error: Unresolved reference 'getColorForType'
+```
+
+**Cause:** API method name changed.
+
+**Solution:**
+```kotlin
+// ✅ CORRECT
+val color = PokemonTypeColors.getBackground(type.name, isDark = false)
+```
+
+**Why:** Centralized color system with light/dark mode support.
+
+---
+
 ## Cross-References
 
 ### Skills (by Category)
