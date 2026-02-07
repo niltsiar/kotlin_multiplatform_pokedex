@@ -28,13 +28,15 @@ Navigation 3 modular architecture for Kotlin Multiplatform Compose with type-saf
 
 ```kotlin
 // Simple route (no parameters)
+@Serializable
 object PokemonList
 
 // Parameterized route
+@Serializable
 data class PokemonDetail(val id: Int)
 ```
 
-**Characteristics**: Plain Kotlin objects, no `@Serializable` needed, exported to iOS via `:shared`
+**Characteristics**: Kotlin objects/data classes with `@Serializable` for state persistence, exported to iOS via `:shared`
 
 ### Navigator Class
 
@@ -108,21 +110,120 @@ entry<PokemonDetail>(
 | Parametric routes with type safety | [parametric-routes.md](references/parametric-routes.md) | Creating routes with parameters |
 | Scoped navigation for feature modules | [scoped-navigation.md](references/scoped-navigation.md) | Wiring feature navigation |
 
-## Related Skills
+## Essential Workflows
 
-| Skill | Use For |
-|-------|---------|
-| @kmp-architecture | Module structure and vertical slicing |
-| @compose-screen | Compose UI implementation |
-| @swiftui-screen | SwiftUI navigation (iOS) |
-| @kmp-presentation | ViewModel integration with routes |
+### Workflow 1: Define Route Object in :api
 
-## Documentation Sources
+Create type-safe route objects in the `:api` module for public contract visibility.
 
-| Document | Purpose | Tokens |
-|----------|---------|--------|
-| [navigation.md](../../../docs/tech/navigation.md) | Complete navigation guide | ~9000 |
-| [navigation_patterns.md](../../../docs/patterns/navigation_patterns.md) | Code examples and patterns | ~5500 |
+1. Create a sealed class or object in `:features:<feature>:api/src/commonMain/.../navigation/`.
+2. Annotate with `@Serializable` (required for Navigation 3 state restoration).
+3. Export the `:api` module via `:shared` framework for iOS reference.
+
+```kotlin
+@Serializable
+sealed class PokemonRoute {
+    @Serializable
+    object List : PokemonRoute()
+    
+    @Serializable
+    data class Detail(val id: Int) : PokemonRoute()
+}
+```
+
+### Workflow 2: Register Navigation with EntryProviderInstaller
+
+Register screens in the `:wiring-ui` module using `EntryProviderInstaller`.
+
+1. Define an `EntryProviderInstaller` lambda in `:wiring-ui`.
+2. Use `entry<T> { }` to map routes to screens.
+3. Inject `Navigator` and `ViewModel` using Koin.
+
+```kotlin
+val pokemonNavigationModule = module {
+    single<Set<EntryProviderInstaller>>(named("pokemonInstallers")) {
+        setOf({
+            entry<PokemonRoute.List> {
+                val navigator: Navigator = koinInject()
+                PokemonListScreen(
+                    viewModel = koinInject(),
+                    onPokemonClick = { navigator.goTo(PokemonRoute.Detail(it.id)) }
+                )
+            }
+        })
+    }
+}
+```
+
+### Workflow 3: Navigate with Type-Safe Routes
+
+Use the `Navigator` singleton to trigger state changes.
+
+1. Inject `Navigator` into your Composable or pass via callback.
+2. Call `navigator.goTo(RouteObject)` (equivalent to `navigate`) for forward navigation.
+3. Call `navigator.goBack()` for backward navigation.
+
+```kotlin
+onPokemonClick = { pokemon ->
+    navigator.goTo(PokemonRoute.Detail(pokemon.id))
+}
+```
+
+### Workflow 4: Handle Parametric Routes
+
+Extract parameters from route objects in the navigation graph.
+
+1. Define a `@Serializable` data class for the route.
+2. Receive the typed `route` object in the `entry<T>` block.
+3. Pass parameters to the ViewModel using `parametersOf()`.
+
+```kotlin
+entry<PokemonRoute.Detail> { route ->
+    val viewModel: PokemonDetailViewModel = koinViewModel(
+        parameters = { parametersOf(route.id) }
+    )
+    PokemonDetailScreen(viewModel = viewModel)
+}
+```
+
+## Critical Guardrails
+
+1. **NEVER put routes in `:wiring` modules** → routes belong in `:api` to serve as public navigation contracts.
+2. **NEVER register navigation outside EntryProviderInstaller** → centralized registration in `:wiring-ui` ensures modularity.
+3. **NEVER mix MaterialScope and UnstyledScope routes** → maintain strict scope separation for theme-specific navigation.
+4. **NEVER bypass Navigator** → always use `Navigator.goTo()` to ensure back stack consistency and type safety.
+5. **NEVER use string-based routes** → Navigation 3 in this project is strictly type-safe; use Kotlin objects/classes.
+6. **NEVER skip @Serializable on route data classes** → required for state persistence and Navigation 3 compatibility.
+7. **NEVER register the same route in multiple scopes** → each route should have exactly one UI implementation per theme.
+
+## Cross-References
+
+### Skills (by Category)
+
+**Architecture**
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-architecture | Module structure and vertical slicing | [SKILL.md](../kmp-architecture/SKILL.md) |
+
+**Layer Implementation**
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-presentation | ViewModel and UI state management | [SKILL.md](../kmp-presentation/SKILL.md) |
+| @kmp-di | Koin dependency injection patterns | [SKILL.md](../kmp-di/SKILL.md) |
+
+**Platform**
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-ios | SwiftUI + KMP integration | [SKILL.md](../kmp-ios/SKILL.md) |
+| @compose-screen | Compose UI implementation | [SKILL.md](../compose-screen/SKILL.md) |
+| @swiftui-screen | Native iOS UI with SwiftUI | [SKILL.md](../swiftui-screen/SKILL.md) |
+
+### Documents
+
+| Document | Purpose | Link |
+|----------|---------|------|
+| [navigation.md](../../../docs/tech/navigation.md) | Complete navigation architecture | Complete guide |
+| [conventions.md](../../../docs/tech/conventions.md) | Master reference for architecture | Master ref |
 
 ## Validation Commands
 
@@ -141,7 +242,7 @@ entry<PokemonDetail>(
 
 | ❌ DON'T | ✅ DO |
 |----------|-------|
-| Use `@Serializable` on routes | Plain Kotlin objects |
+| Skip `@Serializable` on routes | Use `@Serializable` for state restoration |
 | Export navigation modules to iOS | Only export `:api` and `:presentation` |
 | Store Navigator in ViewModel | Pass as callback or inject in Composable |
 | Direct transition params on `entry<T>()` | Use metadata with `NavDisplay.transitionSpec` |
