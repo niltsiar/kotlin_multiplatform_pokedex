@@ -259,7 +259,7 @@ See [@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md) skill for com
 
 ### Commit Message Convention
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) format..
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) format.
 
 **Format:**
 ```
@@ -300,10 +300,6 @@ git cliff -o CHANGELOG.md --tag v1.0.0
 ```
 
 **Configuration:** See [`cliff.toml`](cliff.toml) for git-cliff configuration including commit grouping, scope-based sub-grouping, and GitHub link templates.
-
-### Commit Validation (Optional)
-
-
 
 ---
 
