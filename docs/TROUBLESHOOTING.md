@@ -1,8 +1,16 @@
 # Troubleshooting Guide
 
-**Last Updated:** February 2, 2026
+**Last Updated:** February 7, 2026
 
 **Purpose:** Common issues encountered during development and their solutions. Based on real problems solved during Steps 1-7 of Phase 2 redesign.
+
+**For AI Agents:** This content has been integrated into relevant skills. Use skills for troubleshooting:
+- Build issues → @kmp-gradle
+- Design system issues → @kmp-design-systems
+- Navigation issues → @kmp-navigation
+- Domain model issues → @kmp-domain
+- UI component issues → @compose-screen and @kmp-compose-unstyled
+- Testing issues → @kmp-testing-patterns
 
 ---
 
@@ -384,6 +392,15 @@ Result: BUILD SUCCESSFUL, 84 tests passing"
 
 - [CODE_REFERENCES.md](CODE_REFERENCES.md) - Canonical implementation examples
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Common commands
+
+**For detailed troubleshooting, load the relevant skill:**
+- @kmp-gradle - Build and Gradle issues
+- @kmp-design-systems - Theme tokens, resources, colors
+- @kmp-navigation - Navigation provider errors
+- @kmp-domain - Domain model constructor mismatches
+- @compose-screen - UI component issues (Material)
+- @kmp-compose-unstyled - UI component issues (Unstyled)
+- @kmp-testing-patterns - Test execution and verification
 
 ---
 
