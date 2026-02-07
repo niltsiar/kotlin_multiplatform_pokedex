@@ -7,16 +7,21 @@ description: "Kotlin Multiplatform architecture patterns for vertical slice orga
 
 Architecture patterns for organizing Kotlin Multiplatform code with true vertical slicing and clear module boundaries.
 
-## When to Load This Skill
+## When to Use
 
-**MANDATORY**: Load this skill when working on:
-- Creating new feature modules and deciding layer structure
-- Determining what belongs in `:core` vs `:features` modules
+Use this skill when working on:
+- Designing new feature module structure and layer organization
+- Deciding between creating a `:core` module vs keeping logic in `:features`
+- Planning module dependencies and cross-feature interactions
 - Setting up dual-UI theme architecture (Material Design 3 + Compose Unstyled)
-- Planning module dependencies and export boundaries for iOS
-- Migrating from horizontal layers to vertical slices
+- Configuring iOS framework exports via `:shared` framework
+- Migrating from horizontal layers (shared network/data) to vertical slices
 
-**Do NOT use for**: ViewModel implementation details → use @kmp-mobile-expert, Repository patterns → use @kmp-data-layer, DI configuration → use @kmp-di, Product requirements → use @product-designer
+Do NOT use for:
+- ViewModel implementation details → use @kmp-presentation
+- Repository implementation patterns → use @kmp-data-layer
+- Koin DI configuration details → use @kmp-di
+- Product requirements or PRD creation → use @product-designer
 
 **Conditional Loading**:
 | Task | Reference | Load When |
@@ -119,28 +124,110 @@ For dual-theme support (Material + Unstyled):
 
 3. **Both loaded simultaneously** in app - Koin Navigation 3 manages scope automatically
 
-## Related Skills
+## Essential Workflows
 
-| Skill | Use For |
-|-------|---------|
-| @kmp-mobile-expert | ViewModel patterns, repository Either handling, iOS export |
-| @kmp-data-layer | Repository implementation, DTO mapping, error handling |
-| @kmp-di | Koin module configuration, wiring patterns, scope management |
-| @compose-screen | Material/Unstyled UI implementation, @Preview |
-| @swiftui-screen | iOS SwiftUI consuming KMP ViewModels |
+### Workflow 1: Create New Feature Module (Vertical Slice)
 
-## Documentation Sources
+To add a new feature following the vertical slice architecture:
 
-| Document | Purpose | Tokens |
-|----------|---------|--------|
-| [conventions.md](../../../docs/tech/conventions.md) | Master architecture reference | ~3000 |
-| [architecture_patterns.md](../../../docs/patterns/architecture_patterns.md) | Code examples and patterns | ~2000 |
-| [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) | 6 core patterns | ~1500 |
+1. **Create directory structure** in `features/<feature>/`:
+   - `api/`, `data/`, `presentation/`, `ui-material/`, `ui-unstyled/`, `wiring/`, `wiring-ui-material/`, `wiring-ui-unstyled/`.
+2. **Apply convention plugins** in each module's `build.gradle.kts`:
+   - `:api` → `id("convention.feature.api")`
+   - `:data` → `id("convention.feature.data")`
+   - `:presentation` → `id("convention.feature.presentation")`
+   - `:ui-*` → `id("convention.feature.ui")`
+   - `:wiring*` → `id("convention.feature.wiring")`
+3. **Define public contracts** in `:api`:
+   - Create repository interface and Navigation 3 route objects.
+4. **Implement data layer** in `:data`:
+   - Create internal repository implementation class.
+   - Create public factory function (e.g., `fun FeatureRepository(...): FeatureRepository`).
+   - Define feature-specific API service and DTOs.
+5. **Create presentation layer** in `:presentation`:
+   - Implement `ViewModel` with `SavedStateHandle` and `viewModelScope` support.
+   - Define `UiState` sealed hierarchy.
+6. **Implement UI** in `:ui-material` and `:ui-unstyled`:
+   - Build Compose screens and add `@Preview` for all states.
+7. **Assemble DI** in `:wiring`:
+   - Define Koin module registering the implementation classes.
+8. **Register navigation** in `:wiring-ui-*`:
+   - Map routes to screens within `MaterialScope` and `UnstyledScope`.
 
-**Internal references**:
-- [module-structure.md](references/module-structure.md) - Detailed layer breakdown
-- [vertical-slicing.md](references/vertical-slicing.md) - Principles and benefits
-- [core-modules.md](references/core-modules.md) - When to create :core modules
+### Workflow 2: Decide :core vs :features
+
+Follow the **3-Feature Rule** and decision matrix:
+
+1. **Identify the concern**: Is it generic infrastructure or business logic?
+2. **Apply decision matrix**:
+   - **Generic Utilities** (Date, String): Use `:core:util` if 3+ features need it.
+   - **Design System**: Always in `:core:designsystem-*`.
+   - **Domain models**: Keep in the feature's `:api` unless 3+ features share it (then `:core:domain`).
+   - **Platform Abstractions**: Use `:core:platform` for `expect/actual` patterns.
+3. **Avoid the "Common" trap**: Don't create a `:core:common` for "everything else". Use specific, descriptive module names.
+4. **Prefer Duplication**: If only 2 features share a DTO or small utility, duplicate it to maintain vertical slice independence.
+
+### Workflow 3: Add Cross-Feature Dependency
+
+To use logic from Feature A (e.g., `auth`) in Feature B (e.g., `profile`):
+
+1. **Verify Interface Availability**: Ensure the required repository interface or domain model is public in `features/auth/api`.
+2. **Declare Dependency**: Add the `:api` dependency in Feature B's consuming module (usually `:data` or `:presentation`):
+   ```kotlin
+   // features/profile/data/build.gradle.kts
+   dependencies {
+       implementation(projects.features.auth.api)
+   }
+   ```
+3. **Inject via Koin**: Request the dependency in Feature B's wiring module:
+   ```kotlin
+   // features/profile/wiring/ProfileModule.kt
+   val profileModule = module {
+       factory { ProfileRepository(authRepository = get()) }
+   }
+   ```
+4. **Enforce Boundaries**: Never allow `profile` to depend on `auth:data`. If `auth:api` doesn't have what you need, refactor `auth` to expose it via its public API contract.
+
+## Critical Guardrails
+
+1. **NEVER depend on implementation modules**: Features must only depend on the `:api` of other features. No cross-dependencies on `:data`, `:presentation`, or `:ui`.
+2. **NEVER export implementation to iOS**: Only `:api` and `:presentation` modules should be exported via the `:shared` framework to keep the iOS umbrella framework lean.
+3. **NEVER create :core for 1-2 features**: Follow the 3-feature rule. Duplication is cheaper than the wrong abstraction.
+4. **NEVER share DTOs between features**: Each feature defines its own DTOs in its `:data` module, even if calling the same backend API endpoint.
+5. **NEVER create empty use cases**: Call repositories directly from ViewModels. Create `:domain` and use cases only for orchestrating 2+ repositories or complex business rules.
+6. **NEVER do work in ViewModel init**: Override `onStart(owner)` to trigger initial data loading. This ensures network calls only happen when the UI is active and lifecycle-aware.
+7. **NEVER swallow CancellationException**: Ensure `Either.catch` or manual try-catch blocks allow cancellation to propagate, preventing leaked coroutines.
+8. **NEVER use star imports**: Always use explicit imports to prevent naming collisions and improve code readability (enforced by .editorconfig).
+9. **NEVER share database instances**: Features should manage their own persistence layer to maintain independence and avoid global schema migrations.
+
+## Cross-References
+
+### Related Skills
+| Skill | Purpose | Link |
+|-------|---------|------|
+| @kmp-presentation | ViewModel lifecycle, SavedStateHandle, UI state | [SKILL.md](../kmp-presentation/SKILL.md) |
+| @kmp-data-layer | Repository patterns, DTO mapping, RepoError | [SKILL.md](../kmp-data-layer/SKILL.md) |
+| @kmp-di | Koin module configuration, parameter injection | [SKILL.md](../kmp-di/SKILL.md) |
+| @kmp-navigation | Navigation 3 routes, scoped navigation providers | [SKILL.md](../kmp-navigation/SKILL.md) |
+| @kmp-ios | SwiftUI + KMP integration, Direct Integration pattern | [SKILL.md](../kmp-ios/SKILL.md) |
+
+### Documentation
+| Document | Purpose | Link |
+|----------|---------|------|
+| [conventions.md](../../../docs/tech/conventions.md) | Master architecture reference | [Read](../../../docs/tech/conventions.md) |
+| [architecture_patterns.md](../../../docs/patterns/architecture_patterns.md) | Code examples and structural patterns | [Read](../../../docs/patterns/architecture_patterns.md) |
+| [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) | 6 core patterns for rapid development | [Read](../../../docs/tech/critical_patterns_quick_ref.md) |
+| [module-structure.md](references/module-structure.md) | Detailed layer breakdown (8-module pattern) | [Read](references/module-structure.md) |
+| [vertical-slicing.md](references/vertical-slicing.md) | Principles and benefits of vertical slicing | [Read](references/vertical-slicing.md) |
+| [core-modules.md](references/core-modules.md) | Guidelines for creating :core modules | [Read](references/core-modules.md) |
+
+### Reference Implementation
+Study the `features/pokemonlist/` modules for a complete implementation of all 8 layers:
+- **API**: `PokemonListRepository.kt` and navigation routes
+- **Data**: `PokemonListRepositoryImpl.kt`, `ApiService.kt`, and mappers
+- **Presentation**: `PokemonListViewModel.kt` and `UiState.kt`
+- **UI**: Material and Unstyled screen implementations
+- **Wiring**: Koin module registration and Navigation 3 entry providers
 
 ## Quick Reference
 
@@ -177,7 +264,3 @@ Convert dashes to dots: `:features:pokemonlist:ui-material` → `features.pokemo
 # Verify iOS export configuration
 ./gradlew :shared:dependencies --configuration iosMain
 ```
-
-### Reference Implementation
-
-Study `features/pokemonlist/` for complete 8-module implementation demonstrating all patterns.
