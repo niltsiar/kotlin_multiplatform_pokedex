@@ -121,6 +121,67 @@ To eliminate documentation duplication:
 
 7. **Document consolidation**: Add note to `docs/README.md` if major consolidation occurred
 
+### Workflow 4: Skill Maintenance Guide
+
+To maintain the 27 skills in `.claude/skills/` directory:
+
+1. **Validate skill cross-references**: Ensure all skill links are functional
+   ```bash
+   # Check for broken skill links in all skills
+   rg '@[a-z-]+' .claude/skills/ --type md | grep -v "SKILL.md" | while read line; do
+     skill=$(echo $line | grep -oP '@[a-z-]+')
+     if [ ! -f ".claude/skills/${skill#@}/SKILL.md" ]; then
+       echo "Broken link: $line"
+     fi
+   done
+   ```
+
+2. **Check skill structure**: Verify all skills follow convexskills pattern
+   - YAML frontmatter with name, description, version (optional), tags (optional)
+   - "When to Use" section with triggers and exclusions
+   - "Essential Workflows" section with numbered workflows
+   - "Critical Guardrails" section with NEVER rules
+   - "Quick Reference" section with commands and patterns
+   - "Cross-References" section with documentation links
+
+3. **Update skill metadata**: When skills change, update frontmatter description
+   ```markdown
+   ---
+   name: skill-name
+   description: This skill should be used when...
+   ---
+   ```
+
+4. **Synchronize with documentation changes**: When docs move or change
+   - Update skill cross-references to point to new locations
+   - Update Related Skills sections in affected skills
+   - Run link validation: `./.claude/skills/docs-maintainer/scripts/validate-links.sh`
+
+5. **Validate skill inventory**: Ensure AGENTS.md lists all skills
+   ```bash
+   # List all skills
+   find .claude/skills -name "SKILL.md" -type f | wc -l
+   
+   # Check AGENTS.md mentions all skills
+   rg '@[a-z-]+' AGENTS.md | sort -u
+   ```
+
+6. **Update cross-references between skills**: When new skills added
+   - Use pattern from Wave 7: Add relevant skills to Related Skills sections
+   - Add skill links to Cross-References tables
+   - Preserve existing cross-references (NEVER remove)
+   - Use relative paths: `../skill-name/SKILL.md` format
+
+**Skill Maintenance Commands:**
+
+| Command | Purpose |
+|---------|---------|
+| `find .claude/skills -name "SKILL.md" -type f` | List all skill files |
+| `rg '@[a-z-]+' .claude/skills/ --type md` | Find all skill cross-references |
+| `rg 'name:' .claude/skills/*/SKILL.md` | List all skill names from frontmatter |
+| `./.claude/skills/docs-maintainer/scripts/validate-links.sh` | Validate links in skills |
+| `wc -l .claude/skills/*/SKILL.md` | Check skill file sizes (target: <300 lines) |
+
 ## Critical Guardrails
 
 | Rule | Consequence |
@@ -180,6 +241,8 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 | [QUICK_REFERENCE.md](../../../docs/QUICK_REFERENCE.md) | Essential commands and workflows |
 | [critical_patterns_quick_ref.md](../../../docs/tech/critical_patterns_quick_ref.md) | 6 core patterns reference |
 | [testing_strategy.md](../../../docs/tech/testing_strategy.md) | Testing strategy and coverage guidelines |
+| [skill-judge](../../opencode-skills/skill-judge/SKILL.md) | Evaluate skill quality against specifications |
+| [skill-creator](../../opencode-skills/skill-creator/SKILL.md) | Create new skills following best practices |
 
 **Documentation Hierarchy:**
 1. **Canonical sources** (`docs/tech/`, `docs/project/`) → Primary content
