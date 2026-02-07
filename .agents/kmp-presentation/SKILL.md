@@ -144,6 +144,63 @@ val viewModel = koinViewModel { parametersOf(pokemonId) }
 
 **MANDATORY**: Read [viewmodel-patterns.md](references/viewmodel-patterns.md) for complete parametric ViewModel patterns including Navigation 3 key handling.
 
+## Coroutine Patterns
+
+Guidelines to ensure coroutine usage is testable, predictable, and aligned with platform lifecycles.
+
+### Scopes
+
+- **viewModelScope**: All ViewModels must pass `viewModelScope` to the `ViewModel` superclass constructor.
+  ```kotlin
+  class MyViewModel(
+      viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+  ) : ViewModel(viewModelScope) {
+      fun doSomething() = viewModelScope.launch { /* ... */ }
+  }
+  ```
+- **backgroundScope**: Use for repository/data work. Inject the `ioDispatcher` for testability.
+- **ApplicationScope**: For jobs that must outlive screens (e.g., caches, analytics). Provide via DI.
+
+### Dispatchers
+
+- **Inject Dispatchers**: Depend on abstractions (e.g., `DispatchersProvider`) to improve testability.
+- **Dispatchers.IO**: Use for blocking IO or network-bound work.
+- **Dispatchers.Default**: Confine CPU-heavy work here.
+
+### Repositories
+
+- Expose `suspend` functions and `Flow`s. Perform IO using `backgroundScope`.
+- Use `withContext(ioDispatcher)` around discrete IO when a new scope is not required.
+- For long-running operations that should continue across screens, delegate to `ApplicationScope`.
+
+### Structured Concurrency
+
+- Prefer structured concurrency; **NEVER** use `GlobalScope`.
+- Use `SupervisorJob` for scopes handling independent child coroutines so one failure doesn’t cancel siblings.
+
+### Cancellation & Timeouts
+
+- **NEVER** catch and swallow `CancellationException`.
+- Use Arrow `Either.catch { ... }` which respects coroutine cancellation.
+- Propagate `coroutineContext` to Ktor/SQL drivers to make calls cancellable.
+
+### Testing
+
+- Inject dispatchers and scopes; in unit tests, use `StandardTestDispatcher` and `TestScope`.
+- Avoid real delays; use `TestCoroutineScheduler` to advance time.
+
+### Arrow Patterns in Suspend Code
+
+- At repository boundaries, wrap throwing blocks with `Either.catch { ... }` and map exceptions.
+- Inside repositories or use cases, prefer Arrow monad comprehensions:
+  ```kotlin
+  val result: Either<Error, Domain> = either {
+      val a = repo.stepA().bind()
+      val b = repo.stepB(a).bind()
+      combine(a, b)
+  }
+  ```
+
 ## Essential Workflows
 
 ### Workflow 1: Create Lifecycle-Aware ViewModel

@@ -1,37 +1,8 @@
 # Coroutines & Concurrency Guidelines
 
-**Last Updated:** November 26, 2025
+> **MIGRATED**: This documentation has been migrated to the **@kmp-presentation** skill.
 
-Purpose: Ensure coroutine usage is testable, predictable, and aligned with platform lifecycles.
-
-- Scopes
-  - backgroundScope: Use a dedicated CoroutineScope with SupervisorJob() and Dispatchers.IO for repository/data work.
-    - Inject the IO dispatcher (CoroutineDispatcher) for testability. In tests, use a TestDispatcher.
-    - Example construction (DI): backgroundScope = CoroutineScope(SupervisorJob() + ioDispatcher)
-  - ApplicationScope: For jobs that must outlive screens/features (e.g., warm caches, analytics upload, periodic sync), launch in an Application-level scope.
-    - Provide this scope via DI. Tie its Job to app process lifetime.
-
-- Dispatchers
-  - Use Dispatchers.IO (injected) for blocking IO or network-bound work.
-  - Confine CPU-heavy work to Dispatchers.Default (injected) when needed.
-  - Avoid hardcoding Dispatchers in code; depend on abstractions (e.g., a DispatchersProvider) to improve testability.
-
-- Repositories
-  - Expose suspend functions and Flows. Perform IO using backgroundScope.
-  - For long-running operations that should continue across screens, delegate to ApplicationScope.
-  - Use withContext(ioDispatcher) around discrete IO when a new scope is not required.
-
-- ViewModel scopes (KMP)
-  - All ViewModels must extend `androidx.lifecycle.ViewModel`.
-  - Do NOT store a `CoroutineScope` field. Instead, pass a `viewModelScope` parameter to the `ViewModel` superclass constructor with a default value of `CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)` and use `viewModelScope` internally.
-  - Example:
-    ```kotlin
-    class MyViewModel(
-      viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    ) : ViewModel(viewModelScope) {
-      fun doSomething() = viewModelScope.launch { /* ... */ }
-    }
-    ```
+Please use `@kmp-presentation` for the latest coroutine and concurrency patterns.
 
 - Structured Concurrency
   - Prefer structured concurrency; avoid GlobalScope.
