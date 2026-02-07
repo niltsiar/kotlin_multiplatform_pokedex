@@ -1,6 +1,6 @@
 # Quick Reference Guide
 
-Last Updated: February 2, 2026
+Last Updated: February 7, 2026
 
 > Fast lookup for commands, tables, API references, and common patterns.
 
@@ -22,23 +22,61 @@ Last Updated: February 2, 2026
 - Implementation references: [CODE_REFERENCES.md](CODE_REFERENCES.md)
 - Troubleshooting: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
-## Agent Selector (Quick)
+## Agent Selector (Skill Routing)
 
-Use these specialized skills for faster task routing (located in `.claude/skills/`):
+Use these specialized skills for task routing (located in `.claude/skills/`). Load skills with `@skill-name` when needed.
 
+### Architecture & Core
 | Skill | Use When |
 |-------|----------|
-| **@product-designer** | Writing PRD, defining acceptance criteria |
-| **@ui-ux-designer** | Visual design, animations, design systems |
-| **@compose-screen** | Building Compose UI screens |
-| **@swiftui-screen** | Building SwiftUI screens with KMP ViewModels |
-| **@onboarding** | Designing onboarding flows |
-| **@user-flows** | Mapping user journeys |
-| **@testing-strategy** | Planning tests, test coverage |
-| **@ktor-backend** | Creating API endpoints |
-| **@docs-maintainer** | Updating documentation |
+| **@kmp-architecture** | Module structure, vertical slice organization, feature boundaries |
+| **@kmp-critical-patterns** | Quick reference for 6 core patterns (ViewModel, Either, Navigation, Testing) |
 
-For detailed routing and skill usage, see [SKILL_USAGE.md](SKILL_USAGE.md) and [AGENTS.md](../AGENTS.md).
+### Layer Implementation
+| Skill | Use When |
+|-------|----------|
+| **@kmp-presentation** | ViewModels, UI state management, SavedStateHandle |
+| **@kmp-data-layer** | Repository patterns with Either<RepoError,T>, error handling |
+| **@kmp-domain** | Domain models, immutable data classes, use cases |
+| **@kmp-api-services** | Ktor Client patterns, DTOs, API service boundaries |
+| **@kmp-di** | Koin dependency injection, parametric injection |
+
+### Platform & UI
+| Skill | Use When |
+|-------|----------|
+| **@kmp-ios** | SwiftUI + KMP ViewModels integration, lifecycle bridging |
+| **@swiftui-screen** | Building native iOS UI with SwiftUI |
+| **@compose-screen** | Building Compose UI screens (Android, Desktop, Material + Unstyled) |
+| **@kmp-navigation** | Navigation 3 modular architecture, scoped routes |
+| **@kmp-desktop** | Desktop (JVM) patterns, SavedStateHandle on Desktop |
+
+### Design & Testing
+| Skill | Use When |
+|-------|----------|
+| **@kmp-design-systems** | Design tokens, Material 3, icon strategy |
+| **@kmp-compose-unstyled** | Headless component patterns for Unstyled screens |
+| **@ui-ux-designer** | Visual design, animations, interaction patterns |
+| **@kmp-testing-strategy** | Testing philosophy, coverage analysis, test planning |
+| **@kmp-testing-patterns** | Kotest, MockK, Turbine, property-based tests |
+
+### Build & Commands
+| Skill | Use When |
+|-------|----------|
+| **@kmp-gradle** | Gradle convention plugins, module creation |
+| **@kmp-commands** | CLI reference card, validation commands |
+
+### Development & Quality
+| Skill | Use When |
+|-------|----------|
+| **@kmp-developer** | General Kotlin Multiplatform development |
+| **@kmp-mobile-expert** | Shared business logic with ViewModels, repositories |
+| **@ktor-backend** | Ktor server endpoints, BFF APIs, backend services |
+| **@product-designer** | Writing PRD, defining acceptance criteria |
+| **@user-flows** | Mapping user journeys, navigation contracts |
+| **@onboarding** | Designing first-run experience, welcome screens |
+| **@docs-maintainer** | Documentation maintenance, link validation |
+
+**For complete decision trees and detailed routing, see [AGENTS.md](../AGENTS.md).**
 
 ## Essential Commands
 
