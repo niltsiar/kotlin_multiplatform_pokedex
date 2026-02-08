@@ -155,6 +155,7 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 - **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
 - **[user_flow.md](docs/project/user_flow.md)** - User journeys and flows
 - **[ui_ux.md](docs/project/ui_ux.md)** - UI/UX guidelines
+- **[onboarding.md](docs/project/onboarding.md)** - First-run experience and onboarding flows
 
 ### Agent Skills (26 Total)
 

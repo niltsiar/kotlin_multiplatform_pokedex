@@ -99,3 +99,5 @@ Example: @kmp-presentation for ViewModel patterns, @compose-screen for UI implem
 **Project Planning:**
 - [prd.md](docs/project/prd.md) - Product requirements
 - [user_flow.md](docs/project/user_flow.md) - User journeys and flows
+- [ui_ux.md](docs/project/ui_ux.md) - UI/UX guidelines
+- [onboarding.md](docs/project/onboarding.md) - First-run experience

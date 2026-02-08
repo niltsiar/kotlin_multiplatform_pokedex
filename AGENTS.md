@@ -139,6 +139,7 @@ See @kmp-commands skill for complete command reference.
 - [project/prd.md](docs/project/prd.md) - Product requirements
 - [project/user_flow.md](docs/project/user_flow.md) - User journeys
 - [project/ui_ux.md](docs/project/ui_ux.md) - UI/UX guidelines
+- [project/onboarding.md](docs/project/onboarding.md) - First-run experience
 
 ### Token Budget Guide
 
