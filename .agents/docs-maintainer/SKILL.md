@@ -1,6 +1,6 @@
 ---
 name: docs-maintainer
-description: "Maintain and update documentation with link-first strategy, validate links, and consolidate duplicate content. Use when: (1) Updating documentation or guides, (2) Checking or fixing broken links, (3) Consolidating duplicate documentation, (4) Updating Last Updated dates, (5) Synchronizing multi-entrypoint docs (AGENTS.md, llms.txt, docs/README.md)"
+description: "Maintain documentation, validate links, consolidate duplicates, and audit skill quality. Use when: (1) Updating docs or skills, (2) Checking/fixing broken links, (3) Consolidating duplicate content, (4) Auditing skill quality against standards, (5) Synchronizing multi-entrypoint docs (AGENTS.md, llms.txt). Keywords: documentation, links, duplicate content, skill quality, skill audit, skill-creator, skill-judge"
 ---
 
 ## When to Use
@@ -15,10 +15,9 @@ description: "Maintain and update documentation with link-first strategy, valida
 - "cross-reference maintenance", "link verification", "doc cleanup"
 
 **Exclusions:**
-- Do NOT use for writing new feature documentation from scratch (use agent-specific modes)
-- Do NOT use for PRD/product documentation (use Product Design Mode)
-- Do NOT use for UI/UX design documentation (use UI/UX Design Mode)
-- Do NOT use for architecture decisions (use conventions.md as canonical)
+- New feature docs from scratch (use feature-specific skills)
+- PRD/product/UI/UX docs (use @product-designer or @ui-ux-designer)
+- Architecture decisions (use @kmp-architecture skill)
 
 ## Essential Workflows
 
@@ -26,186 +25,118 @@ description: "Maintain and update documentation with link-first strategy, valida
 
 To maintain documentation without duplicating content:
 
-1. **Identify the canonical source**: Find the original location of the information (e.g., `conventions.md` for architecture rules)
-
-2. **Use links instead of copying**: When updating documentation, reference the canonical source:
-   ```markdown
-   <!-- ❌ WRONG: Duplicate content -->
-   The ViewModel pattern requires passing viewModelScope to the constructor...
-
-   <!-- ✅ CORRECT: Link to canonical -->
-   ViewModels must follow the [ViewModel Pattern](See @kmp-critical-patterns skill#viewmodel-pattern):
-   - Pass `viewModelScope` to constructor
-   - Use `onStart()` for initialization (not `init`)
-   ```
-
-3. **Update Last Updated headers**: Change the date in the header when content changes:
-   ```markdown
-   **Last Updated:** February 7, 2026
-   ```
-
-4. **Synchronize multi-entrypoint documents**: When updating agentic system docs, update ALL entrypoints:
-     - `AGENTS.md` (primary entrypoint)
-     - `llms.txt` (AI discovery index)
-
-5. **Validate links after changes**: Run link validation:
-   ```bash
-   ./.agents/docs-maintainer/scripts/validate-links.sh
-   ```
-
-6. **Commit with conventional commit format**:
-   ```bash
-   git commit -m "docs(conventions): add ViewModel pattern guidance"
-   ```
+1. **Identify canonical source**: Find the original location (e.g., skill SKILL.md for patterns)
+2. **Link, don't copy**: Reference canonical sources instead of duplicating content
+   - ✅ `See [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md#viewmodel-pattern)`
+   - ❌ Copying pattern details into multiple docs
+3. **Update Last Updated**: Change date header when content changes
+4. **Sync entrypoints**: Update `AGENTS.md` + `llms.txt` together when structure changes
+5. **Validate links**: Run `./.agents/docs-maintainer/scripts/validate-links.sh`
+6. **Commit**: Use conventional format: `docs(scope): description`
 
 ### Workflow 2: Validate and Fix Broken Links
 
-To ensure all documentation links are functional:
-
-1. **Run link validation script**:
-   ```bash
-   ./.agents/docs-maintainer/scripts/validate-links.sh
-   ```
-
-2. **Analyze failures**: Check each broken link:
-   - File moved/deleted → Update or remove the link
-   - Typo in path → Fix the link
-   - External link → Verify manually or use archive links
-
-3. **Fix broken links systematically**:
-   ```markdown
-   <!-- Before: Broken link -->
-   See [old-pattern.md](old-pattern.md) for details
-
-    <!-- After: Fixed link -->
-    See [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) for details
-    ```
-
-4. **Search for orphaned references**: Use grep to find files that reference removed content:
-   ```bash
-   rg "old-pattern.md" docs/ AGENTS.md
-   ```
-
-5. **Run validation again**: Ensure all fixes pass before committing
-
-6. **Update cross-reference tables** in affected documents to maintain consistency
+1. **Run validation**: `./.agents/docs-maintainer/scripts/validate-links.sh`
+2. **Analyze failures**: File moved → update link, typo → fix, external → verify
+3. **Fix systematically**: Update broken paths, use @skill-name syntax for skills
+4. **Find orphans**: `rg "removed-file.md" docs/ AGENTS.md` to find all references
+5. **Re-validate**: Run script again, update cross-reference tables if needed
 
 ### Workflow 3: Consolidate Duplicate Content
 
-To eliminate documentation duplication:
-
-1. **Identify duplicate content**: Search for repeated patterns:
-   ```bash
-   rg "ViewModel pattern" docs/ --type md
-   ```
-
-2. **Choose canonical source**: Decide which document is the primary source (based on conventions.md hierarchy)
-
-3. **Replace duplicates with links**:
-   ```markdown
-   <!-- Original in conventions.md -->
-   ## ViewModel Pattern
-   Pass viewModelScope to constructor, use onStart() for initialization...
-
-   <!-- Duplicated file - replace with link -->
-    ## ViewModel Pattern
-    See [conventions.md](See @kmp-architecture skill for architecture patterns#presentation-layer) for complete ViewModel pattern guidance.
-   ```
-
-4. **Update cross-references**: Ensure all related documents link to the canonical source
-
-5. **Validate no content lost**: Check that all essential information is preserved in the canonical source
-
-6. **Run link validation** to ensure all new references work
-
-7. **Document consolidation**: Add note to `AGENTS.md` if major consolidation occurred
+1. **Find duplicates**: `rg "pattern text" docs/ .agents/ --type md`
+2. **Choose canonical**: Skills for patterns, `docs/project/` for artifacts
+3. **Replace with links**: Convert duplicate content to links to canonical source
+4. **Validate**: Check no content lost, run link validation, update `AGENTS.md` if major change
 
 ### Workflow 4: Skill Maintenance Guide
 
-To maintain the 26 skills in `.agents/` directory:
+Maintaining the 26 skills in `.agents/`:
 
-1. **Validate skill cross-references**: Ensure all skill links are functional
-   ```bash
-   # Check for broken skill links in all skills
-   rg '@[a-z-]+' .agents/ --type md | grep -v "SKILL.md" | while read line; do
-     skill=$(echo $line | grep -oP '@[a-z-]+')
-     if [ ! -f ".agents/${skill#@}/SKILL.md" ]; then
-       echo "Broken link: $line"
-     fi
-   done
-   ```
+1. **Structure**: All skills follow pattern: frontmatter + When to Use + Workflows + Guardrails + Quick Reference + Cross-References
+2. **Cross-references**: Use `../skill-name/SKILL.md` or `@skill-name` syntax, preserve existing links
+3. **Sync with docs**: When docs move, update skill cross-refs and run link validation
+4. **Inventory**: Ensure AGENTS.md lists all skills: `find .agents -name "SKILL.md" -type f | wc -l`
+5. **Quality**: Target <500 lines for SKILL.md (Grade A standard), use references/ for deep content
 
-2. **Check skill structure**: Verify all skills follow convexskills pattern
-   - YAML frontmatter with name, description, version (optional), tags (optional)
-   - "When to Use" section with triggers and exclusions
-   - "Essential Workflows" section with numbered workflows
-   - "Critical Guardrails" section with NEVER rules
-   - "Quick Reference" section with commands and patterns
-   - "Cross-References" section with documentation links
+**Commands:**
+- List skills: `find .agents -name "SKILL.md" -type f`
+- Find cross-refs: `rg '@[a-z-]+' .agents/ --type md`
+- Validate links: `./.agents/docs-maintainer/scripts/validate-links.sh`
+- Check sizes: `wc -l .agents/*/SKILL.md`
 
-3. **Update skill metadata**: When skills change, update frontmatter description
-   ```markdown
-   ---
-   name: skill-name
-   description: This skill should be used when...
-   ---
-   ```
+## Documentation Architecture
 
-4. **Synchronize with documentation changes**: When docs move or change
-   - Update skill cross-references to point to new locations
-   - Update Related Skills sections in affected skills
-   - Run link validation: `./.agents/docs-maintainer/scripts/validate-links.sh`
-
-5. **Validate skill inventory**: Ensure AGENTS.md lists all skills
-   ```bash
-   # List all skills
-   find .agents -name "SKILL.md" -type f | wc -l
-   
-   # Check AGENTS.md mentions all skills
-   rg '@[a-z-]+' AGENTS.md | sort -u
-   ```
-
-6. **Update cross-references between skills**: When new skills added
-   - Use pattern from Wave 7: Add relevant skills to Related Skills sections
-   - Add skill links to Cross-References tables
-   - Preserve existing cross-references (NEVER remove)
-   - Use relative paths: `../skill-name/SKILL.md` format
-
-**Skill Maintenance Commands:**
-
-| Command | Purpose |
-|---------|---------|
-| `find .agents -name "SKILL.md" -type f` | List all skill files |
-| `rg '@[a-z-]+' .agents/ --type md` | Find all skill cross-references |
-| `rg 'name:' .agents/*/SKILL.md` | List all skill names from frontmatter |
-| `./.agents/docs-maintainer/scripts/validate-links.sh` | Validate links in skills |
-| `wc -l .agents/*/SKILL.md` | Check skill file sizes (target: <300 lines) |
-| Duplication detection script removed | No longer needed |
-
-## Migration Architecture
-
-This project follows a strict separation between executable patterns (Skills) and descriptive artifacts (Docs).
-
-**Boundary Criteria:**
-- **Skills (`.agents/`)**: Contain agent-executable patterns, procedures, decision logic, and normative "how-to" guidance. These are reusable workflows intended for AI consumption.
-- **Docs (`docs/`)**: Contain human-readable artifacts, PRDs, specifications, living references (e.g., Troubleshooting), and project-specific one-off descriptions.
+**Post-Migration Reality:**
+- **Skills (`.agents/`)**: 26 agent-executable pattern libraries with SKILL.md + references/
+- **Docs (`docs/`)**: 5 files total:
+  - `docs/project/prd.md` - Product requirements (canonical)
+  - `docs/project/user_flow.md` - User journeys
+  - `docs/project/ui_ux.md` - UI/UX guidelines  
+  - `docs/project/onboarding.md` - Onboarding flows
+  - `docs/pokeapi-openapi.yml` - API specification
+- **Entry Points**: `AGENTS.md` (primary), `llms.txt` (AI discovery), `README.md` (human entry)
 
 **Linking Rules:**
-- **Docs → Skills**: Encouraged. Documentation should link to skills for technical pattern implementation details.
-- **Skills → Docs**: Discouraged/Minimal. Skills should be self-contained for their specific domain, only linking to canonical docs when necessary for project context.
-
-The architecture consists of **26 consolidated skills** and canonical documentation files (marked with frontmatter).
+- **Docs → Skills**: Encouraged. Project artifacts reference skills for implementation patterns.
+- **Skills → Docs**: Minimal. Skills reference `docs/project/` only when context-specific (e.g., PRD, user flows).
+- **Skills ↔ Skills**: Always use relative paths: `../skill-name/SKILL.md` or `@skill-name` syntax.
 
 ## Drift Prevention
 
-To prevent documentation from diverging or duplicating between skills and the `docs/` directory:
+To prevent documentation from diverging or duplicating:
 
-1. **Canonical Markers**: Authoritative documentation files in `docs/` include YAML frontmatter (e.g., `Canonical: true`, `Type: Artifact`) to signal they are the primary source for that information.
-2. **Migration Complete**: Technical patterns have been migrated to skills in `.agents/` directory.
+1. **Canonical Markers**: Project artifacts in `docs/project/` include YAML frontmatter (`Canonical: true`, `Type: Artifact`) to signal they are the primary source.
+2. **Skill Self-Containment**: Each skill in `.agents/` is self-contained for its domain. Technical patterns live in skills, not docs.
+3. **Entry Point Consistency**: `AGENTS.md`, `llms.txt`, and `README.md` must stay synchronized when skills or documentation structure changes.
 
 **Monitoring Workflow:**
-- Ensure new technical patterns are added to the relevant skill, not to `docs/`.
-- If a descriptive artifact (like a PRD) starts containing normative implementation patterns, migrate those patterns to a skill.
+- New technical patterns → Add to relevant skill in `.agents/`, not `docs/`
+- Descriptive artifacts containing implementation patterns → Migrate patterns to skills
+- Link validation: Run `./.agents/docs-maintainer/scripts/validate-links.sh` before commits
+
+## Skill Quality Auditing
+
+When auditing skills for quality, load these external skills:
+- **@skill-creator**: Creation guidelines, progressive disclosure, <500 line target
+- **@skill-judge**: 8-dimension evaluation framework (120-point scale)
+
+**Key Quality Indicators:**
+
+1. **Description Field (CRITICAL)** - Determines if skill gets used
+   - Answers: WHAT does this skill do? WHEN to use it? 
+   - Includes: Keywords for LLM discovery
+   - Format: `"<What>. Use when: (1) <scenario>, (2) <scenario>. Keywords: <comma-separated>"`
+
+2. **Progressive Disclosure** - Information hierarchy
+   - Metadata (frontmatter) → SKILL.md body (<500 lines) → references/ (unlimited)
+   - Quick answers in SKILL.md, deep dives in references/
+   - Target: <500 lines for SKILL.md (skill-judge Grade A standard)
+
+3. **Knowledge Delta** - Expert knowledge only
+   - What Claude doesn't already know
+   - Domain-specific patterns, project conventions, anti-patterns
+   - NOT: Generic explanations, language basics, framework fundamentals
+
+4. **Anti-Patterns** - Specific NEVER rules with reasoning
+   - Concrete examples of what NOT to do
+   - Explanation of consequences
+   - Pattern: `NEVER <action> → <consequence>`
+
+**Quick Audit Commands:**
+```bash
+# Check description format (WHAT/WHEN/KEYWORDS)
+rg "^description:" .agents/*/SKILL.md
+
+# Check file sizes (<500 lines target)
+wc -l .agents/*/SKILL.md
+
+# Find skills exceeding target
+find .agents -name "SKILL.md" -exec wc -l {} + | awk '$1 > 500'
+
+# Validate links in skills
+./.agents/docs-maintainer/scripts/validate-links.sh
+```
 
 ## Critical Guardrails
 
@@ -258,17 +189,17 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 
 | Document | Purpose | Link |
 |----------|---------|------|
-| [conventions.md](See @kmp-architecture skill for architecture patterns) | Master architecture and conventions reference |
-| [AGENTS.md](../../AGENTS.md) | Agent routing table and mode selection |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Master architecture and conventions reference |
+| [AGENTS.md](../../AGENTS.md) | Agent routing table (26 skills, decision trees) |
 | [llms.txt](../../llms.txt) | AI discovery index |
-| [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) | 6 core patterns reference |
-| [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) | Testing strategy and coverage guidelines |
-| [skill-judge](../../../opencode-skills/skill-judge/SKILL.md) | Evaluate skill quality against specifications |
-| [skill-creator](../../../opencode-skills/skill-creator/SKILL.md) | Create new skills following best practices |
+| [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) | 6 core patterns quick reference |
+| [@kmp-testing-strategy](../kmp-testing-strategy/SKILL.md) | Testing strategy and coverage guidelines |
+| [@skill-judge](Use @skill-judge or load via skill system) | Evaluate skill quality (8 dimensions, 120-point scale) |
+| [@skill-creator](Use @skill-creator or load via skill system) | Create/improve skills (progressive disclosure, <500 lines) |
 
 **Documentation Hierarchy:**
-1. **Canonical sources** (`docs/project/`) → Primary content
-2. **Entry points** (`AGENTS.md`, `llms.txt`) → Routing and AI discovery
-3. **Skills** (`.agents/*/SKILL.md`) → Agent execution patterns
+- **Entry Points**: `AGENTS.md` (primary routing), `llms.txt` (AI discovery), `README.md` (human entry)
+- **Skills (26)**: `.agents/*/SKILL.md` + `references/` - Agent-executable patterns
+- **Project Artifacts (5)**: `docs/project/*.md` + `docs/pokeapi-openapi.yml` - Canonical product/design docs
 
-**When working with docs, always link up to the canonical source, never duplicate down.**
+**Linking Strategy:** Always link to canonical sources. NEVER duplicate content across boundaries.
