@@ -219,3 +219,4 @@ open iosAppCompose/iosAppCompose.xcodeproj  # Compose iOS app (experimental)
 | QUICK_REFERENCE.md | Master command reference | [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) |
 | conventions.md | Architecture master for understanding what to build/test | [conventions.md](See @kmp-architecture skill for architecture patterns) |
 | @kmp-testing-strategy skill | Testing philosophy and when to run what tests | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
+| troubleshooting.md | Common command and git issues | [troubleshooting.md](references/troubleshooting.md) |

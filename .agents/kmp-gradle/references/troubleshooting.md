@@ -50,3 +50,71 @@ versionCatalogs {
 **Symptom**: A `:core` module has Arrow, Coroutines, and other feature dependencies it doesn't need.
 
 **Fix**: Use `convention.core.library` instead of `convention.feature.base`. The core plugin provides KMP targets and testing setup but does NOT include common feature dependencies.
+
+---
+
+## Unresolved Reference Errors (Despite Correct Imports)
+
+**Symptom:**
+```
+e: file:///path/to/BaseTokens.kt:51:47 Unresolved reference 'RoundedCornerShape'
+e: file:///path/to/BaseTokens.kt:59:17 Unresolved reference 'dp'
+```
+
+**Cause:** Gradle build cache corruption from previous failed builds.
+
+**Solution:**
+```bash
+./gradlew clean :composeApp:assembleDebug test --continue
+```
+
+**Why:** Stale dependency resolution cache prevents proper import resolution. Clean build clears cache.
+
+**Prevention:** Run clean build after multiple consecutive failed builds or when seeing import errors on standard library types.
+
+---
+
+## "Unresolved reference 'generated'" for Compose Resources
+
+**Symptom:**
+```kotlin
+import multiplatformpoc.core.designsystem_core.generated.resources.Res
+// Error: Unresolved reference 'generated'
+```
+
+**Cause:** Library module resources not configured for public access.
+
+**Solution (3 steps in library module's build.gradle.kts):**
+
+```kotlin
+// 1. Add dependency
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.compose.components.resources)  // CRITICAL!
+        }
+    }
+}
+
+// 2. Enable public Res class
+compose.resources {
+    publicResClass = true  // Default internal won't work!
+}
+
+// 3. Android namespace determines package
+android {
+    namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"
+}
+```
+
+**Generated package name:** Namespace with dots → underscores:
+- Input: `com.minddistrict.multiplatformpoc.core.designsystem.core`
+- Output: `multiplatformpoc.core.designsystem_core.generated.resources`
+
+---
+
+## Before Debugging Import Errors
+
+1. **Check actual file:** Verify imports are present
+2. **Try clean build first:** Often resolves stale cache
+3. **Check package names:** Verify generated resource packages

@@ -211,6 +211,7 @@ class PokemonListViewModelTest : StringSpec({
 | Testing Strategy | Kotest, MockK, Turbine, property tests guide | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
 | Conventions | Master architecture and testing reference | [conventions.md](See @kmp-architecture skill for architecture patterns) |
 | Quick Reference | Essential commands and workflows | [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) |
+| Troubleshooting | Common testing issues and solutions | [troubleshooting.md](references/troubleshooting.md) |
 
 ## Quick Reference
 

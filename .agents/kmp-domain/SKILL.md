@@ -305,3 +305,4 @@ data class Ability(
 - [domain-models.md](references/domain-models.md) - Model design patterns
 - [use-cases.md](references/use-cases.md) - When to create use cases
 - [exceptions.md](references/exceptions.md) - Domain exceptions reference
+- [troubleshooting.md](references/troubleshooting.md) - Common domain model issues and solutions

@@ -342,3 +342,7 @@ PokemonListMaterialScreen(viewModel = ...)
 - `core/navigation/src/commonMain/kotlin/Navigator.kt` — Back stack manager
 - `features/pokemonlist/wiring-ui/PokemonListNavigationProviders.kt` — Simple navigation
 - `features/pokemondetail/wiring-ui/PokemonDetailNavigationProviders.kt` — Parametric routes
+
+## Troubleshooting
+
+See [troubleshooting.md](references/troubleshooting.md) for common navigation issues and solutions.
