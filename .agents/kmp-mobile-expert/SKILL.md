@@ -233,7 +233,7 @@ import org.koin.core.parameter.parametersOf
 ### Architecture & Core Patterns
 | Topic | Reference |
 |-------|-----------|
-| Complete architecture | [conventions.md](docs/tech/conventions.md) |
+| Complete architecture | See @kmp-architecture skill |
 | All 6 core patterns | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Module structure & vertical slicing | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 
@@ -243,7 +243,7 @@ import org.koin.core.parameter.parametersOf
 | ViewModel lifecycle & SavedStateHandle | [@kmp-presentation](../kmp-presentation/SKILL.md) (also [viewmodel-patterns.md](references/viewmodel-patterns.md)) |
 | Repository Either<RepoError,T> patterns | [@kmp-data-layer](../kmp-data-layer/SKILL.md) (also [repository-patterns.md](references/repository-patterns.md)) |
 | Domain models & use cases | [@kmp-domain](../kmp-domain/SKILL.md) |
-| Koin DI configuration | [@kmp-di](../kmp-di/SKILL.md) (also [dependency_injection.md](docs/tech/dependency_injection.md)) |
+| Koin DI configuration | [@kmp-di](../kmp-di/SKILL.md) |
 
 ### Platform & Navigation
 | Topic | Reference |

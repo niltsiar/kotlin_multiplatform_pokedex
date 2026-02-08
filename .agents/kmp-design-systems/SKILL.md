@@ -307,8 +307,8 @@ val color = PokemonTypeColors.getBackground(type.name, isDark = false)
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| design_tokens.md | Token system architecture | [design_tokens.md](See @kmp-design-systems skill) |
-| component_library.md | Component specifications | [component_library.md](See @kmp-design-systems skill) |
-| material_icons_strategy.md | Icon usage guide | [material_icons_strategy.md](../../docs/tech/material_icons_strategy.md) |
+| design_tokens.md | Token system architecture | See @kmp-design-systems skill |
+| component_library.md | Component specifications | See @kmp-design-systems skill |
+| material_icons_strategy.md | Icon usage guide | [material_icons_strategy.md](references/material_icons_strategy.md) |
 | troubleshooting.md | Common design system issues and solutions | [troubleshooting.md](references/troubleshooting.md) |
-| conventions.md | Master architecture reference | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| conventions.md | Master architecture reference | See @kmp-architecture skill |

@@ -146,15 +146,10 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 > **Note:** Technical documentation has been consolidated into Agent Skills (`.agents/` directory). Skills are the canonical reference. See [AGENTS.md](AGENTS.md) for the complete skill catalog and decision trees.
 
 ### Essential Guides
-- **[QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Commands, patterns, decision matrices
+- **[@kmp-commands](.agents/kmp-commands/SKILL.md)** - Commands, patterns, validation
 - **[@kmp-critical-patterns](.agents/kmp-critical-patterns/SKILL.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
 - **[@kmp-architecture](.agents/kmp-architecture/SKILL.md)** - Architecture master reference (START HERE for architecture questions)
 - **[@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md)** - Kotest, MockK, Turbine, property tests (84 tests passing)
-
-### Quick References (Condensed Format)
-- **[koin_di_quick_ref.md](docs/tech/koin_di_quick_ref.md)** - Koin DI quick reference (full guide: @kmp-di)
-- **[kotest_smart_casting_quick_ref.md](docs/tech/kotest_smart_casting_quick_ref.md)** - Kotest smart casting patterns
-- **[testing_quick_ref.md](docs/tech/testing_quick_ref.md)** - Testing quick reference (full guide: @kmp-testing-strategy)
 
 ### Project Documentation
 - **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
@@ -240,14 +235,9 @@ See [@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md) skill for com
 
 ---
 
-## Quick References
-
-### Testing
-- **[Kotest Smart Casting](docs/tech/kotest_smart_casting_quick_ref.md)** - Avoid unnecessary manual casts in tests
-
-### Build Logic & Convention Plugins
-- For how modules are configured (KMP targets, Android config, Compose, and shared deps), see the consolidated guide:
-  - [docs/tech/convention_plugins_guide.md](docs/tech/convention_plugins_guide.md)
+## Build Logic & Convention Plugins
+- For how modules are configured (KMP targets, Android config, Compose, and shared deps), see:
+  - [@kmp-gradle skill](.agents/kmp-gradle/SKILL.md)
   - Plugins you will see across the repo:
     - `convention.kmp.library`, `convention.core.library`
     - `convention.feature.base`, `convention.feature.api`, `convention.feature.data`, `convention.feature.presentation`, `convention.feature.ui`, `convention.feature.wiring`

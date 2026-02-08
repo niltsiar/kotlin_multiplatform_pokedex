@@ -47,11 +47,10 @@ To maintain documentation without duplicating content:
 4. **Synchronize multi-entrypoint documents**: When updating agentic system docs, update ALL entrypoints:
      - `AGENTS.md` (primary entrypoint)
      - `llms.txt` (AI discovery index)
-     - `docs/README.md.migrated` (documentation index)
 
 5. **Validate links after changes**: Run link validation:
    ```bash
-   ./.claude/skills/docs-maintainer/scripts/validate-links.sh
+   ./.agents/docs-maintainer/scripts/validate-links.sh
    ```
 
 6. **Commit with conventional commit format**:
@@ -65,7 +64,7 @@ To ensure all documentation links are functional:
 
 1. **Run link validation script**:
    ```bash
-   ./.claude/skills/docs-maintainer/scripts/validate-links.sh
+   ./.agents/docs-maintainer/scripts/validate-links.sh
    ```
 
 2. **Analyze failures**: Check each broken link:
@@ -123,14 +122,14 @@ To eliminate documentation duplication:
 
 ### Workflow 4: Skill Maintenance Guide
 
-To maintain the 27 skills in `.claude/skills/` directory:
+To maintain the 26 skills in `.agents/` directory:
 
 1. **Validate skill cross-references**: Ensure all skill links are functional
    ```bash
    # Check for broken skill links in all skills
-   rg '@[a-z-]+' .claude/skills/ --type md | grep -v "SKILL.md" | while read line; do
+   rg '@[a-z-]+' .agents/ --type md | grep -v "SKILL.md" | while read line; do
      skill=$(echo $line | grep -oP '@[a-z-]+')
-     if [ ! -f ".claude/skills/${skill#@}/SKILL.md" ]; then
+     if [ ! -f ".agents/${skill#@}/SKILL.md" ]; then
        echo "Broken link: $line"
      fi
    done
@@ -155,12 +154,12 @@ To maintain the 27 skills in `.claude/skills/` directory:
 4. **Synchronize with documentation changes**: When docs move or change
    - Update skill cross-references to point to new locations
    - Update Related Skills sections in affected skills
-   - Run link validation: `./.claude/skills/docs-maintainer/scripts/validate-links.sh`
+   - Run link validation: `./.agents/docs-maintainer/scripts/validate-links.sh`
 
 5. **Validate skill inventory**: Ensure AGENTS.md lists all skills
    ```bash
    # List all skills
-   find .claude/skills -name "SKILL.md" -type f | wc -l
+   find .agents -name "SKILL.md" -type f | wc -l
    
    # Check AGENTS.md mentions all skills
    rg '@[a-z-]+' AGENTS.md | sort -u
@@ -176,12 +175,12 @@ To maintain the 27 skills in `.claude/skills/` directory:
 
 | Command | Purpose |
 |---------|---------|
-| `find .claude/skills -name "SKILL.md" -type f` | List all skill files |
-| `rg '@[a-z-]+' .claude/skills/ --type md` | Find all skill cross-references |
-| `rg 'name:' .claude/skills/*/SKILL.md` | List all skill names from frontmatter |
-| `./.claude/skills/docs-maintainer/scripts/validate-links.sh` | Validate links in skills |
-| `wc -l .claude/skills/*/SKILL.md` | Check skill file sizes (target: <300 lines) |
-| `bash .sisyphus/scripts/validate-no-duplication.sh` | Detect duplication between docs/ and .agents/ |
+| `find .agents -name "SKILL.md" -type f` | List all skill files |
+| `rg '@[a-z-]+' .agents/ --type md` | Find all skill cross-references |
+| `rg 'name:' .agents/*/SKILL.md` | List all skill names from frontmatter |
+| `./.agents/docs-maintainer/scripts/validate-links.sh` | Validate links in skills |
+| `wc -l .agents/*/SKILL.md` | Check skill file sizes (target: <300 lines) |
+| Duplication detection script removed | No longer needed |
 
 ## Migration Architecture
 
@@ -195,18 +194,16 @@ This project follows a strict separation between executable patterns (Skills) an
 - **Docs → Skills**: Encouraged. Documentation should link to skills for technical pattern implementation details.
 - **Skills → Docs**: Discouraged/Minimal. Skills should be self-contained for their specific domain, only linking to canonical docs when necessary for project context.
 
-The architecture consists of **26 consolidated skills** and **7 canonical documentation files** (marked with frontmatter).
+The architecture consists of **26 consolidated skills** and canonical documentation files (marked with frontmatter).
 
 ## Drift Prevention
 
-To prevent documentation from diverging or duplicating between skills and the `docs/` directory, several measures are in place:
+To prevent documentation from diverging or duplicating between skills and the `docs/` directory:
 
-1. **Validation Script**: `.sisyphus/scripts/validate-no-duplication.sh` - This script identifies content overlap by matching pattern headers and key phrases across both directories.
-2. **Canonical Markers**: Authoritative documentation files in `docs/` include YAML frontmatter (e.g., `Canonical: true`, `Type: Artifact`) to signal they are the primary source for that information.
-3. **Migration Stubs**: Technical files that have been moved to skills are replaced with stubs containing a `MIGRATED` notice and a link to the new skill location.
+1. **Canonical Markers**: Authoritative documentation files in `docs/` include YAML frontmatter (e.g., `Canonical: true`, `Type: Artifact`) to signal they are the primary source for that information.
+2. **Migration Complete**: Technical patterns have been migrated to skills in `.agents/` directory.
 
 **Monitoring Workflow:**
-- Run the validation script before committing any documentation changes.
 - Ensure new technical patterns are added to the relevant skill, not to `docs/`.
 - If a descriptive artifact (like a PRD) starts containing normative implementation patterns, migrate those patterns to a skill.
 
@@ -228,7 +225,7 @@ To prevent documentation from diverging or duplicating between skills and the `d
 
 | Command | Purpose |
 |---------|---------|
-| `./.claude/skills/docs-maintainer/scripts/validate-links.sh` | Validate all markdown links |
+| `./.agents/docs-maintainer/scripts/validate-links.sh` | Validate all markdown links |
 | `rg "pattern" docs/ --type md` | Search documentation for content |
 | `rg "broken-link.md" docs/ AGENTS.md` | Find all references to a file |
 | `bash -n script.sh` | Validate script syntax |
@@ -253,7 +250,6 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 **Multi-Entrypoint Sync Checklist:**
 - [ ] `AGENTS.md` updated (primary entrypoint)
 - [ ] `llms.txt` updated (AI discovery index)
-- [ ] `docs/README.md.migrated` updated (documentation index)
 - [ ] All Last Updated dates synchronized
 - [ ] Links validated with `validate-links.sh`
 - [ ] Legacy path check: `rg "junie/guides|copilot-instructions|agent-prompts" -n` (should return no matches)
@@ -265,16 +261,14 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 | [conventions.md](See @kmp-architecture skill for architecture patterns) | Master architecture and conventions reference |
 | [AGENTS.md](../../AGENTS.md) | Agent routing table and mode selection |
 | [llms.txt](../../llms.txt) | AI discovery index |
-| [docs/README.md.migrated](../../docs/README.md.migrated) | Documentation index for AI discovery |
-| [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) | Essential commands and workflows |
 | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) | 6 core patterns reference |
 | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) | Testing strategy and coverage guidelines |
 | [skill-judge](../../../opencode-skills/skill-judge/SKILL.md) | Evaluate skill quality against specifications |
 | [skill-creator](../../../opencode-skills/skill-creator/SKILL.md) | Create new skills following best practices |
 
 **Documentation Hierarchy:**
-1. **Canonical sources** (`docs/tech/`, `docs/project/`) → Primary content
+1. **Canonical sources** (`docs/project/`) → Primary content
 2. **Entry points** (`AGENTS.md`, `llms.txt`) → Routing and AI discovery
-3. **Skills** (`.claude/skills/*/SKILL.md`) → Agent execution patterns
+3. **Skills** (`.agents/*/SKILL.md`) → Agent execution patterns
 
 **When working with docs, always link up to the canonical source, never duplicate down.**

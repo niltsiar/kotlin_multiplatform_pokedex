@@ -180,7 +180,7 @@ Use the `expect`/`actual` pattern for JVM-specific functionality like file syste
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| Architecture + conventions | Master reference for architecture, modules, DI | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| Desktop SavedStateHandle | Complete guide for SavedStateHandle on Desktop | [desktop_viewmodel_savedstate.md](See @kmp-desktop skill) |
-| Dependency injection | Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |
+| Architecture + conventions | Master reference for architecture, modules, DI | See @kmp-architecture skill |
+| Desktop SavedStateHandle | Complete guide for SavedStateHandle on Desktop | See @kmp-desktop skill |
+| Dependency injection | Koin patterns and troubleshooting | See @kmp-di skill |
 

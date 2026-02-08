@@ -118,7 +118,7 @@ Located in `.agents/`
 
 ## Essential Commands
 
-See [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for complete command reference.
+See @kmp-commands skill for complete command reference.
 
 | Task | Command |
 |------|---------|
@@ -132,14 +132,13 @@ See [docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) for complete command refe
 > **Note:** Skills are the canonical reference. Use `@skill-name` syntax to load them.
 
 ### Start Here
-- [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) - Essential commands
-- [SKILL_USAGE.md](docs/SKILL_USAGE.md) - Detailed usage guide
+- @kmp-commands - Essential commands and validation
+- @kmp-critical-patterns - 6 core patterns quick reference
 
-### References
-- **Guides**: [tech/koin_di_quick_ref.md](docs/tech/koin_di_quick_ref.md), [tech/kotest_smart_casting_quick_ref.md](docs/tech/kotest_smart_casting_quick_ref.md), [tech/testing_quick_ref.md](docs/tech/testing_quick_ref.md)
-- **Architecture**: [tech/ios_apps_architecture.md](docs/tech/ios_apps_architecture.md), [tech/utility_organization.md](docs/tech/utility_organization.md)
-- **Patterns**: [patterns/error_handling_patterns.md](docs/patterns/error_handling_patterns.md), [patterns/navigation_patterns.md](docs/patterns/navigation_patterns.md)
-- **Project**: [project/prd.md](docs/project/prd.md), [project/user_flow.md](docs/project/user_flow.md), [project/ui_ux.md](docs/project/ui_ux.md)
+### Project Documentation
+- [project/prd.md](docs/project/prd.md) - Product requirements
+- [project/user_flow.md](docs/project/user_flow.md) - User journeys
+- [project/ui_ux.md](docs/project/ui_ux.md) - UI/UX guidelines
 
 ### Token Budget Guide
 

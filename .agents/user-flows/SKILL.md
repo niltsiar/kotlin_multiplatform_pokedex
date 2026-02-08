@@ -210,12 +210,12 @@ Use ASCII art or structured description:
 | Document | Purpose | Location |
 |----------|---------|----------|
 | `user_flow.md` | Complete example of user flows for this project | `docs/project/user_flow.md` |
-| `navigation.md` | Navigation 3 architecture and implementation patterns | `docs/tech/navigation.md` |
+| `navigation.md` | Navigation 3 architecture and implementation patterns | See @kmp-navigation skill |
 | `prd.md` | Product requirements with acceptance criteria | `docs/project/prd.md` |
 | `ui_ux.md` | UI/UX guidelines and design system | `docs/project/ui_ux.md` |
-| `conventions.md` | Architecture and technical patterns | `docs/tech/conventions.md` |
-| `critical_patterns_quick_ref.md` | Core patterns including Navigation 3 | `docs/tech/critical_patterns_quick_ref.md` |
-| `journey-mapping-template.md` | Ready-to-use journey mapping template | `.claude/skills/user-flows/resources/journey-mapping-template.md` |
+| `conventions.md` | Architecture and technical patterns | See @kmp-architecture skill |
+| `critical_patterns_quick_ref.md` | Core patterns including Navigation 3 | See @kmp-critical-patterns skill |
+| `journey-mapping-template.md` | Ready-to-use journey mapping template | `.agents/user-flows/resources/journey-mapping-template.md` |
 
 ## Pro Tips
 

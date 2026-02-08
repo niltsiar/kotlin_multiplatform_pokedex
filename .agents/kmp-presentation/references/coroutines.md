@@ -412,7 +412,7 @@ suspend fun <T> retryWithBackoff(
 }
 ```
 
-## Key Guidelines from docs/tech/coroutines.md
+## Key Guidelines
 
 ### Structured Concurrency
 - Prefer structured concurrency; avoid GlobalScope.
@@ -445,5 +445,4 @@ val result: Either<Error, Domain> = either {
 
 ## Documentation Sources
 
-- [coroutines.md](../../docs/tech/coroutines.md) — Original guidelines
 - [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) — Testing patterns

@@ -191,9 +191,9 @@ The core rule for the dual-iOS-app setup:
 
 Related conventions and module guidelines:
 
-- Architecture and module conventions: [`docs/tech/See @kmp-architecture skill`](@kmp-architecture skill)
-- iOS integration overview: [`docs/tech/ios_integration.md`](@kmp-ios skill)
-- Navigation conventions: [`docs/tech/navigation.md`](@kmp-navigation skill)
+- Architecture and module conventions: See @kmp-architecture skill
+- iOS integration overview: See @kmp-ios skill
+- Navigation conventions: See @kmp-navigation skill
 
 ### Validation commands
 
@@ -372,9 +372,9 @@ cd iosApp && xcodebuild -scheme iosApp -sdk iphonesimulator build CODE_SIGN_IDEN
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| Architecture + conventions | Master reference for architecture, modules, DI | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| iOS integration | SwiftUI + KMP ViewModels Direct Integration details | [ios_integration.md](See @kmp-ios skill) |
-| iOS official patterns | Official pattern quick reference | [ios_official_pattern_guide.md](../../docs/tech/ios_official_pattern_guide.md) |
-| Dependency injection | Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |
+| Architecture + conventions | Master reference for architecture, modules, DI | See @kmp-architecture skill |
+| iOS integration | SwiftUI + KMP ViewModels Direct Integration details | See @kmp-ios skill |
+| iOS official patterns | Official pattern quick reference | See @kmp-ios skill |
+| Dependency injection | Koin patterns and troubleshooting | See @kmp-di skill |
 | Product requirements | Feature acceptance criteria | [prd.md](../../docs/project/prd.md) |
 

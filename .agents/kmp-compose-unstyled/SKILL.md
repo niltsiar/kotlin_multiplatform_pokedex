@@ -212,11 +212,11 @@ Related skills: @kmp-developer, @compose-screen
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| compose_unstyled_patterns.md | Detailed patterns catalog | [compose_unstyled_patterns.md](../../docs/patterns/compose_unstyled_patterns.md) |
+| compose_unstyled_patterns.md | Detailed patterns catalog | See @kmp-compose-unstyled skill |
 | compose_unstyled_reference.md | Catalog and implementation reference | [compose_unstyled_reference.md](references/compose_unstyled_reference.md) |
 | component_token_customization_example.md | Customization via CompositionLocal | [component_token_customization_example.md](references/component_token_customization_example.md) |
 | troubleshooting.md | Common UI component issues and solutions | [troubleshooting.md](references/troubleshooting.md) |
-| conventions.md | Architecture and development conventions | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| conventions.md | Architecture and development conventions | See @kmp-architecture skill |
 
 ## Troubleshooting Common Unstyled Component Issues
 

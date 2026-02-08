@@ -220,7 +220,7 @@ class PokemonMapperSpec : StringSpec({
 | `./gradlew test --continue` | Run all tests across all modules |
 | `./gradlew jacocoTestReport` | Generate coverage report (if Jacoco configured) |
 | `./gradlew :features:<feature>:data:testDebugUnitTest --tests "TestClass"` | Run specific test class |
-| `./claude/skills/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
+| `./.agents/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
 
 ### Example Links
 - Repository test: [@kmp-testing-strategy skill#repository-test-androidtest](@kmp-testing-strategy skill#repository-test-androidtest)

@@ -166,4 +166,4 @@ Create adaptive layouts that work across all screen sizes:
 
 **Design Token Customization:**
 - [MaterialComponentTokens.kt](../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialComponentTokens.kt)
-- [component_token_customization_example.md](../../docs/tech/component_token_customization_example.md)
+- See @kmp-compose-unstyled skill

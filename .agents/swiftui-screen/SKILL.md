@@ -288,7 +288,7 @@ Create previews for all UI states to enable visual testing:
 
 | Command | Purpose | When to Run |
 |---------|---------|-------------|
-| `bash -n .claude/skills/swiftui-screen/scripts/validate-swiftui.sh` | Validate script syntax | After creating validation script |
+| `bash -n .agents/swiftui-screen/scripts/validate-swiftui.sh` | Validate script syntax | After creating validation script |
 | `./gradlew :composeApp:assembleDebug test --continue` | Primary validation (Android + tests) | Before committing |
 | `open iosApp/iosApp.xcodeproj` | Open iOS app in Xcode | When working on iOS features |
 | `./gradlew :shared:embedAndSignAppleFrameworkForXcode` | Build iOS framework | Before iOS builds |
@@ -302,10 +302,10 @@ Create previews for all UI states to enable visual testing:
 | Document | Purpose | Location |
 |----------|---------|----------|
 | iOS Integration Guide | Complete iOS + KMP integration details | [@kmp-ios skill](../kmp-ios/SKILL.md) |
-| Architecture + Conventions | Master architecture reference | [docs/tech/conventions.md](See @kmp-architecture skill for architecture patterns) |
-| Critical Patterns | 6 core patterns (ViewModel, Either, etc.) | [docs/tech/critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
+| Architecture + Conventions | Master architecture reference | See @kmp-architecture skill |
+| Critical Patterns | 6 core patterns (ViewModel, Either, etc.) | See @kmp-critical-patterns skill |
 | Product Requirements | Feature acceptance criteria | [docs/project/prd.md](../../docs/project/prd.md) |
-| Testing Strategy | Test coverage and patterns | [docs/tech/@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
+| Testing Strategy | Test coverage and patterns | See @kmp-testing-strategy skill |
 | Module structure | Feature boundaries and iOS exports | [@kmp-architecture skill](../kmp-architecture/SKILL.md) |
 | Critical patterns | Quick reference for 6 core patterns | [@kmp-critical-patterns skill](../kmp-critical-patterns/SKILL.md) |
 | ViewModel patterns | Lifecycle, SavedStateHandle | [@kmp-presentation skill](../kmp-presentation/SKILL.md) |

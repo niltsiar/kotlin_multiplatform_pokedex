@@ -415,4 +415,3 @@ cd iosAppCompose && xcodebuild -scheme iosAppCompose -sdk iphonesimulator build 
 - [Lifecycle Bridging](lifecycle-bridging.md) - SwiftUI lifecycle management
 - [SwiftUI Patterns](swiftui-patterns.md) - SwiftUI-specific patterns
 - [ios_integration.md](See @kmp-ios skill) - Complete iOS integration guide
-- [ios_apps_architecture.md](../../docs/tech/ios_apps_architecture.md) - Two iOS apps architecture

@@ -343,7 +343,7 @@ PokemonListMaterialScreen(viewModel = ...)
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| Convention Plugins Guide | Comprehensive plugin reference | [convention_plugins_guide.md](See @kmp-gradle skill) |
+| Convention Plugins Guide | Comprehensive plugin reference | See @kmp-gradle skill |
 | Plugin Catalog | Detailed list of available plugins | [plugin-catalog.md](references/plugin-catalog.md) |
 | Module Creation | Step-by-step feature setup guide | [module-creation.md](references/module-creation.md) |
 | Troubleshooting | Common Gradle errors and fixes | [troubleshooting.md](references/troubleshooting.md) |

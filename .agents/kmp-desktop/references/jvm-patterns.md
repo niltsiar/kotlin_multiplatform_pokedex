@@ -111,5 +111,4 @@ ProvideDesktopLifecycle {
 ## Related Files
 
 - `composeApp/src/jvmMain/kotlin/main.kt` - Desktop app entry point
-- `docs/tech/desktop_viewmodel_savedstate.md` - Detailed SavedStateHandle guide
 - `features/<feature>/wiring-ui/jvmMain/` - Desktop-specific navigation

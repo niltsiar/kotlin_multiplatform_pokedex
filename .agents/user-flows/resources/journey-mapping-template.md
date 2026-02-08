@@ -187,4 +187,4 @@ Use ASCII art to visualize the complete journey:
 |------------------|------|-------|
 | [Document name] | [Path to document] | [Brief note, e.g., "Contains detailed screen specs"] |
 | [user_flow.md] | `docs/project/user_flow.md` | Complete flows for this project |
-| [navigation.md] | `docs/tech/navigation.md` | Navigation contracts implementation |
+| [navigation.md] | See @kmp-navigation skill | Navigation contracts implementation |

@@ -98,7 +98,7 @@ Example:
 
 ## References
 - [Link 1, e.g., `docs/project/user_flow.md` — User flow for search feature]
-- [Link 2, e.g., `docs/tech/conventions.md` — Architecture patterns for shared logic]
+- [Link 2, e.g., See @kmp-architecture skill — Architecture patterns for shared logic]
 - [Link 3, e.g., External resource, e.g., PokéAPI documentation for filtering options]
 
 ---

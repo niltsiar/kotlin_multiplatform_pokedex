@@ -207,7 +207,6 @@ To set up the Ktor client for JSON serialization:
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| conventions.md | Architecture master reference | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| critical_patterns_quick_ref.md | 6 core patterns guide | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
-| QUICK_REFERENCE.md | Command and pattern reference | [QUICK_REFERENCE.md](../../docs/QUICK_REFERENCE.md) |
+| conventions.md | Architecture master reference | See @kmp-architecture skill |
+| critical_patterns_quick_ref.md | 6 core patterns guide | See @kmp-critical-patterns skill |
 | ktor-configuration.md | Detailed Ktor setup guide | [ktor-configuration.md](references/ktor-configuration.md) |

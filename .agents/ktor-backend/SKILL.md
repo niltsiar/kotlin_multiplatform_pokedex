@@ -112,7 +112,7 @@ To add a new Ktor endpoint following API conventions:
 
 5. **Validate endpoint with script**:
    ```bash
-   .claude/skills/ktor-backend/scripts/validate-endpoint.sh server/src/main/kotlin/com/minddistrict/multiplatformpoc/routes/PokemonRoutes.kt
+   .agents/ktor-backend/scripts/validate-endpoint.sh server/src/main/kotlin/com/minddistrict/multiplatformpoc/routes/PokemonRoutes.kt
    ```
 
 ### Workflow 2: Add API Versioning
@@ -227,7 +227,7 @@ To add Swagger/OpenAPI documentation:
 |---|---|---|
 | `./gradlew :server:run` | Run Ktor server locally | During development |
 | `./gradlew :server:test` | Run server integration tests | After adding endpoints |
-| `.claude/skills/ktor-backend/scripts/validate-endpoint.sh <file>` | Validate endpoint conventions | After creating routes |
+| `.agents/ktor-backend/scripts/validate-endpoint.sh <file>` | Validate endpoint conventions | After creating routes |
 | `bash -n <script>` | Check shell script syntax | Before committing scripts |
 
 ### Ktor Routing Patterns
