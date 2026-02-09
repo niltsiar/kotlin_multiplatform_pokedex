@@ -1,6 +1,6 @@
 ---
 name: docs-maintainer
-description: "Maintain documentation, validate links, consolidate duplicates, and audit skill quality. Use when: (1) Updating docs or skills, (2) Checking/fixing broken links, (3) Consolidating duplicate content, (4) Auditing skill quality against standards, (5) Synchronizing multi-entrypoint docs (AGENTS.md, llms.txt). Keywords: documentation, links, duplicate content, skill quality, skill audit, skill-creator, skill-judge"
+description: "Maintain documentation, validate links, consolidate duplicates, and audit skill quality. Use when: (1) Updating docs or skills, (2) Checking/fixing broken links, (3) Consolidating duplicate content, (4) Auditing skill quality against standards, (5) Synchronizing multi-entrypoint docs (AGENTS.md, llms.txt). Keywords: documentation, links, duplicate content, skill quality, skill audit"
 ---
 
 ## When to Use
@@ -67,7 +67,7 @@ Maintaining the 26 skills in `.agents/`:
 
 ## Documentation Architecture
 
-**Post-Migration Reality:**
+**Documentation Architecture:**
 - **Skills (`.agents/`)**: 26 agent-executable pattern libraries with SKILL.md + references/
 - **Docs (`docs/`)**: 5 files total:
   - `docs/project/prd.md` - Product requirements (canonical)
@@ -97,9 +97,7 @@ To prevent documentation from diverging or duplicating:
 
 ## Skill Quality Auditing
 
-When auditing skills for quality, load these external skills:
-- **@skill-creator**: Creation guidelines, progressive disclosure, <500 line target
-- **@skill-judge**: 8-dimension evaluation framework (120-point scale)
+When auditing skills for quality, evaluate against these criteria:
 
 **Key Quality Indicators:**
 
@@ -109,9 +107,9 @@ When auditing skills for quality, load these external skills:
    - Format: `"<What>. Use when: (1) <scenario>, (2) <scenario>. Keywords: <comma-separated>"`
 
 2. **Progressive Disclosure** - Information hierarchy
-   - Metadata (frontmatter) → SKILL.md body (<500 lines) → references/ (unlimited)
-   - Quick answers in SKILL.md, deep dives in references/
-   - Target: <500 lines for SKILL.md (skill-judge Grade A standard)
+    - Metadata (frontmatter) → SKILL.md body (<500 lines) → references/ (unlimited)
+    - Quick answers in SKILL.md, deep dives in references/
+    - Target: <500 lines for SKILL.md (<500 lines target)
 
 3. **Knowledge Delta** - Expert knowledge only
    - What Claude doesn't already know
@@ -166,7 +164,7 @@ find .agents -name "SKILL.md" -exec wc -l {} + | awk '$1 > 500'
 **Link-First Examples:**
 ```markdown
 <!-- Architecture reference -->
-See [conventions.md](See @kmp-architecture skill for architecture patterns) for architecture rules
+See [@kmp-architecture](../kmp-architecture/SKILL.md) for architecture rules
 
 <!-- Pattern reference -->
 Follow the [ViewModel Pattern](See @kmp-critical-patterns skill#viewmodel-pattern)
@@ -194,8 +192,6 @@ Reference: [PokemonListViewModel.kt](../../features/pokemonlist/presentation/...
 | [llms.txt](../../llms.txt) | AI discovery index |
 | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) | 6 core patterns quick reference |
 | [@kmp-testing-strategy](../kmp-testing-strategy/SKILL.md) | Testing strategy and coverage guidelines |
-| [@skill-judge](Use @skill-judge or load via skill system) | Evaluate skill quality (8 dimensions, 120-point scale) |
-| [@skill-creator](Use @skill-creator or load via skill system) | Create/improve skills (progressive disclosure, <500 lines) |
 
 **Documentation Hierarchy:**
 - **Entry Points**: `AGENTS.md` (primary routing), `llms.txt` (AI discovery), `README.md` (human entry)
