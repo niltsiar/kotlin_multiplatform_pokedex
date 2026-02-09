@@ -275,8 +275,6 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 | Architecture + conventions | Master reference for architecture, modules, DI | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 | iOS integration | SwiftUI + KMP ViewModels Direct Integration details | [@kmp-ios](../kmp-ios/SKILL.md) |
 | Dependency injection | Koin patterns and troubleshooting | [@kmp-di](../kmp-di/SKILL.md) |
-| Product requirements | Feature acceptance criteria | [prd.md](../../docs/project/prd.md) |
-| User flows | User journeys and sequences | [user_flow.md](../../docs/project/user_flow.md) |
 
 **Reference Implementation**: `pokemonlist` feature demonstrates all patterns:
 - [API](../../features/pokemonlist/api/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/PokemonListRepository.kt) • [Data](../../features/pokemonlist/data/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryImpl.kt) • [Presentation](../../features/pokemonlist/presentation/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModel.kt) • [UI](../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/PokemonListMaterialScreen.kt) • [Wiring](../../features/pokemonlist/wiring/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/wiring/PokemonListModule.kt)

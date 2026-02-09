@@ -376,5 +376,4 @@ cd iosApp && xcodebuild -scheme iosApp -sdk iphonesimulator build CODE_SIGN_IDEN
 | iOS integration | SwiftUI + KMP ViewModels Direct Integration details | See @kmp-ios skill |
 | iOS official patterns | Official pattern quick reference | See @kmp-ios skill |
 | Dependency injection | Koin patterns and troubleshooting | See @kmp-di skill |
-| Product requirements | Feature acceptance criteria | [prd.md](../../docs/project/prd.md) |
 

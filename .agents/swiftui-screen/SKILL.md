@@ -304,7 +304,6 @@ Create previews for all UI states to enable visual testing:
 | iOS Integration Guide | Complete iOS + KMP integration details | [@kmp-ios skill](../kmp-ios/SKILL.md) |
 | Architecture + Conventions | Master architecture reference | See @kmp-architecture skill |
 | Critical Patterns | 6 core patterns (ViewModel, Either, etc.) | See @kmp-critical-patterns skill |
-| Product Requirements | Feature acceptance criteria | [docs/project/prd.md](../../docs/project/prd.md) |
 | Testing Strategy | Test coverage and patterns | See @kmp-testing-strategy skill |
 | Module structure | Feature boundaries and iOS exports | [@kmp-architecture skill](../kmp-architecture/SKILL.md) |
 | Critical patterns | Quick reference for 6 core patterns | [@kmp-critical-patterns skill](../kmp-critical-patterns/SKILL.md) |

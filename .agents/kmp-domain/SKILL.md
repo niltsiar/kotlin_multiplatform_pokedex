@@ -299,7 +299,6 @@ data class Ability(
 |----------|---------|------|
 | Architecture + conventions | Master architecture reference | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 | Domain layer guidelines | Domain layer guidelines | [domain.md](See @kmp-domain skill) |
-| Product requirements | Feature acceptance criteria | [prd.md](../../docs/project/prd.md) |
 
 **Internal references**:
 - [domain-models.md](references/domain-models.md) - Model design patterns
