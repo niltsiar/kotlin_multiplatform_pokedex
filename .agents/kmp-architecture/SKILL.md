@@ -657,11 +657,10 @@ To use logic from Feature A (e.g., `auth`) in Feature B (e.g., `profile`):
 ### Documentation
 | Document | Purpose | Link |
 |----------|---------|------|
-| [conventions.md](See @kmp-architecture skill for architecture patterns) | Master architecture reference | [Read](See @kmp-architecture skill for architecture patterns) |
-| [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) | 6 core patterns for rapid development | [Read](See @kmp-critical-patterns skill) |
 | [module-structure.md](references/module-structure.md) | Detailed layer breakdown (8-module pattern) | [Read](references/module-structure.md) |
 | [vertical-slicing.md](references/vertical-slicing.md) | Principles and benefits of vertical slicing | [Read](references/vertical-slicing.md) |
 | [core-modules.md](references/core-modules.md) | Guidelines for creating :core modules | [Read](references/core-modules.md) |
+| [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) | 6 core patterns for rapid development | [Read](../kmp-critical-patterns/SKILL.md) |
 
 ### Reference Implementation
 Study the `features/pokemonlist/` modules for a complete implementation of all 8 layers:

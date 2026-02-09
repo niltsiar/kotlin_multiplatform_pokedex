@@ -851,7 +851,7 @@ val pokemonListModule = module {
 - **Official Documentation**: [insert-koin.io](https://insert-koin.io)
 - **Compose Integration**: [insert-koin.io/docs/reference/koin-compose](https://insert-koin.io/docs/reference/koin-compose/compose/)
 - **Testing**: [insert-koin.io/docs/reference/koin-test/testing](https://insert-koin.io/docs/reference/koin-test/testing)
-- **Full Guide**: [dependency_injection.md](dependency_injection.md)
+- **Full Guide**: This skill contains the complete Koin DI guide.
 
 ---
 
@@ -928,6 +928,5 @@ koinApplication {
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| Dependency injection | Complete Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |
 | Architecture conventions | Wiring module patterns | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 

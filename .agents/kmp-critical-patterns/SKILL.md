@@ -235,20 +235,20 @@ plugins {
 
 | Violation | Correct Pattern | See |
 |-----------|----------------|-----|
-| `class XImpl : X` (public) | `internal class XImpl : X` | `patterns/di_patterns.md` |
-| Missing factory function | `fun X(...): X = XImpl(...)` | `patterns/di_patterns.md` |
-| `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` | `patterns/error_handling_patterns.md` |
-| `private val scope = ...` | `viewModelScope: CoroutineScope` param | `patterns/viewmodel_patterns.md` |
-| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | `patterns/viewmodel_patterns.md` |
-| `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | `patterns/viewmodel_patterns.md` |
-| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | `tech/See @kmp-architecture skill` |
-| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | `tech/See @kmp-architecture skill` |
-| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | `tech/See @kmp-architecture skill` |
-| Empty use case | Call repository directly from ViewModel | `patterns/architecture_patterns.md` |
-| `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | `patterns/architecture_patterns.md` |
-| @Composable without @Preview | Add `@Preview` with realistic data | `patterns/testing_patterns.md` |
-| Manual cast after `shouldBeInstanceOf` | Use smart cast directly | `tech/kotest_smart_casting_quick_ref.md` |
-| Thread.sleep() in tests | Use Turbine + testScope | `patterns/testing_patterns.md` |
+| `class XImpl : X` (public) | `internal class XImpl : X` | See @kmp-di skill |
+| Missing factory function | `fun X(...): X = XImpl(...)` | See @kmp-di skill |
+| `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` | See @kmp-data-layer skill |
+| `private val scope = ...` | `viewModelScope: CoroutineScope` param | See @kmp-presentation skill |
+| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | See @kmp-presentation skill |
+| `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | See @kmp-presentation skill |
+| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | See @kmp-architecture skill |
+| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | See @kmp-architecture skill |
+| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | See @kmp-architecture skill |
+| Empty use case | Call repository directly from ViewModel | See @kmp-architecture skill |
+| `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | See @kmp-architecture skill |
+| @Composable without @Preview | Add `@Preview` with realistic data | See @kmp-testing-patterns skill |
+| Manual cast after `shouldBeInstanceOf` | Use smart cast directly | See @kmp-testing-patterns skill |
+| Thread.sleep() in tests | Use Turbine + testScope | See @kmp-testing-patterns skill |
 
 ### Critical DON'Ts (Top 10)
 
@@ -373,10 +373,9 @@ Before implementing any feature:
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| critical_patterns_quick_ref.md | Detailed pattern guide | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
 | [@kmp-architecture](../kmp-architecture/SKILL.md) | Master architecture reference | Architecture skill |
 | @kmp-testing-strategy skill | Testing philosophy and coverage | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
 | navigation.md | Navigation 3 architecture details | [navigation.md](See @kmp-navigation skill) |
-| dependency_injection.md | Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |
+| [@kmp-di](../kmp-di/SKILL.md) | Koin patterns and troubleshooting | [Read](../kmp-di/SKILL.md) |
 
 **Reference Implementation**: `features/pokemonlist/` demonstrates all 6 patterns end-to-end.
