@@ -158,4 +158,4 @@ Kotlin classes named after Swift keywords get `_` suffix:
 | Sheet/modal presentation | ⚠️ May lose state | ✅ Preserves state |
 | Testing in Previews | ❌ Hard to mock | ✅ Easy to mock |
 
-See [ios_integration.md](See @kmp-ios skill) for complete comparison.
+See [@kmp-ios](../../kmp-ios/SKILL.md) for complete comparison.

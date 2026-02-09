@@ -414,4 +414,4 @@ cd iosAppCompose && xcodebuild -scheme iosAppCompose -sdk iphonesimulator build 
 - [Direct Integration Pattern](direct-integration.md) - Direct Integration guide
 - [Lifecycle Bridging](lifecycle-bridging.md) - SwiftUI lifecycle management
 - [SwiftUI Patterns](swiftui-patterns.md) - SwiftUI-specific patterns
-- [ios_integration.md](See @kmp-ios skill) - Complete iOS integration guide
+- [@kmp-ios](../../kmp-ios/SKILL.md) - Complete iOS integration guide

@@ -149,6 +149,6 @@ CardDefaults.cardElevation(
 
 ## See Also
 
-- [critical_patterns_quick_ref.md](critical_patterns_quick_ref.md) - Core architectural patterns
+- [@kmp-critical-patterns](../../kmp-critical-patterns/SKILL.md) - Core architectural patterns
 - [component_token_customization_example.md](component_token_customization_example.md) - Detailed customization guide
-- [conventions.md](conventions.md) - Complete project architecture
+- [@kmp-architecture](../../kmp-architecture/SKILL.md) - Complete project architecture
