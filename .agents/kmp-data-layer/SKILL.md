@@ -317,8 +317,8 @@ fun JobRepository(api: JobApiService): JobRepository = JobRepositoryImpl(api)
 ### Documents
 | Document | Purpose | Link |
 | --- | --- | --- |
-| Repository patterns | Either boundary implementation | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| Error handling | RepoError hierarchy and mapping | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| Repository patterns | Either boundary implementation | [@kmp-architecture](../kmp-architecture/SKILL.md) |
+| Error handling | RepoError hierarchy and mapping | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 
 ## API Service vs Repository
 

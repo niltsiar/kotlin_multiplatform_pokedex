@@ -216,6 +216,6 @@ open iosAppCompose/iosAppCompose.xcodeproj  # Compose iOS app (experimental)
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| conventions.md | Architecture master for understanding what to build/test | See @kmp-architecture skill |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Architecture master for understanding what to build/test | Architecture skill |
 | @kmp-testing-strategy skill | Testing philosophy and when to run what tests | See @kmp-testing-strategy skill |
 | troubleshooting.md | Common command and git issues | [troubleshooting.md](references/troubleshooting.md) |

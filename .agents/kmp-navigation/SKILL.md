@@ -223,7 +223,7 @@ entry<PokemonRoute.Detail> { route ->
 | Document | Purpose | Link |
 |----------|---------|------|
 | [navigation.md](See @kmp-navigation skill) | Complete navigation architecture | Complete guide |
-| [conventions.md](See @kmp-architecture skill for architecture patterns) | Master reference for architecture | Master ref |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Master reference for architecture | Master ref |
 
 ## Predictive Back Navigation
 

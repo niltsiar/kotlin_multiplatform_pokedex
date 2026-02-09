@@ -15,7 +15,7 @@ description: This skill should be used when planning test approach, writing test
 - "run tests", "execute tests", "test execution"
 
 **Exclusions:**
-- Do NOT use for iOS-specific testing setup (use ios_integration.md for iOS)
+- Do NOT use for iOS-specific testing setup (use @kmp-ios skill for iOS)
 - Do NOT use for UI screenshot testing setup (use Roborazzi-specific guides)
 - Do NOT use for build configuration issues (use convention plugins guide)
 
@@ -172,7 +172,7 @@ class PokemonMapperSpec : StringSpec({
 
 ### Canonical Sources
 - [@kmp-testing-strategy skill](@kmp-testing-strategy skill) — deep dive with rationale and playbooks
-- [testing_patterns.md](See @kmp-testing-patterns skill) — concise pattern reminders
+- [@kmp-testing-patterns](../kmp-testing-patterns/SKILL.md) — concise pattern reminders
 - [See @kmp-critical-patterns skill#testing-pattern](See @kmp-critical-patterns skill#testing-pattern) — canonical rules
 - [See @kmp-critical-patterns skill](See @kmp-critical-patterns skill) — pattern cards view
 
@@ -200,7 +200,7 @@ class PokemonMapperSpec : StringSpec({
 ### Smart Casting
 - Use Kotest contracts: `shouldBeRight { }`, `shouldBeLeft { }`, `shouldBeInstanceOf<>()`
 - Avoid manual casts after assertions
-- See [kotest_smart_casting_quick_ref.md](kotest_smart_casting_quick_ref.md)
+- See [@kmp-testing-patterns](../kmp-testing-patterns/SKILL.md)
 
 ### Minimum Coverage Reminders
 - Success + all error paths for repositories

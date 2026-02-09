@@ -287,8 +287,8 @@ data class ErrorResponse(
 
 | Document | Purpose | Link |
 |---|---|---|
-| Architecture + conventions | Master reference for architecture and patterns | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| Critical patterns | 6 core patterns including Either boundary | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
+| Architecture + conventions | Master reference for architecture and patterns | [@kmp-architecture](../kmp-architecture/SKILL.md) |
+| Critical patterns | 6 core patterns including Either boundary | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Testing strategy | Kotest, MockK, Turbine for integration tests | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
 | Ktor documentation | Official Ktor server documentation | https://ktor.io/docs/ |
 | Version catalog | Dependency versions for Ktor plugins | [libs.versions.toml](../../gradle/libs.versions.toml) |

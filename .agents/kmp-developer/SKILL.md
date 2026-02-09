@@ -272,9 +272,9 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| Architecture + conventions | Master reference for architecture, modules, DI | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| iOS integration | SwiftUI + KMP ViewModels Direct Integration details | [ios_integration.md](See @kmp-ios skill) |
-| Dependency injection | Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |
+| Architecture + conventions | Master reference for architecture, modules, DI | [@kmp-architecture](../kmp-architecture/SKILL.md) |
+| iOS integration | SwiftUI + KMP ViewModels Direct Integration details | [@kmp-ios](../kmp-ios/SKILL.md) |
+| Dependency injection | Koin patterns and troubleshooting | [@kmp-di](../kmp-di/SKILL.md) |
 | Product requirements | Feature acceptance criteria | [prd.md](../../docs/project/prd.md) |
 | User flows | User journeys and sequences | [user_flow.md](../../docs/project/user_flow.md) |
 

@@ -134,8 +134,8 @@ To create clear, testable acceptance criteria:
 |----------|---------|----------|
 | `prd.md` | Example complete PRD for this project | `docs/project/prd.md` |
 | `user_flow.md` | Example user flows and screen definitions | `docs/project/user_flow.md` |
-| `conventions.md` | Architecture and technical constraints | See @kmp-architecture skill |
-| `critical_patterns_quick_ref.md` | Technical patterns that influence scope | See @kmp-critical-patterns skill |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Architecture and technical constraints | Architecture skill |
+| [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) | Technical patterns that influence scope | Critical patterns skill |
 | `prd-template.md` | Ready-to-use PRD template resource | `.agents/product-designer/resources/prd-template.md` |
 
 ## Pro Tips

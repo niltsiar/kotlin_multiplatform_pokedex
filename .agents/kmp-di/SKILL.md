@@ -929,5 +929,5 @@ koinApplication {
 | Document | Purpose | Link |
 | --- | --- | --- |
 | Dependency injection | Complete Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |
-| Architecture conventions | Wiring module patterns | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| Architecture conventions | Wiring module patterns | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 

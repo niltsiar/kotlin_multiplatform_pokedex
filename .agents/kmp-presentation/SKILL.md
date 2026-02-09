@@ -345,9 +345,9 @@ val viewModel = koinViewModel<DetailViewModel> { parametersOf(route.id) }
 
 | Document | Purpose | Link |
 | --- | --- | --- |
-| ViewModel architecture | Master reference for ViewModel patterns | [conventions.md](See @kmp-architecture skill for architecture patterns) |
-| Critical patterns | 6 core patterns including ViewModel lifecycle | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
-| Dependency injection | Koin ViewModel registration patterns | [dependency_injection.md](See @kmp-di skill) |
+| ViewModel architecture | Master reference for ViewModel patterns | [@kmp-architecture](../kmp-architecture/SKILL.md) |
+| Critical patterns | 6 core patterns including ViewModel lifecycle | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
+| Dependency injection | Koin ViewModel registration patterns | [@kmp-di](../kmp-di/SKILL.md) |
 
 ## Quick Reference
 

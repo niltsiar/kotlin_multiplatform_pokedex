@@ -297,7 +297,7 @@ data class Ability(
 ### Documents
 | Document | Purpose | Link |
 |----------|---------|------|
-| Architecture + conventions | Master architecture reference | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| Architecture + conventions | Master architecture reference | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 | Domain layer guidelines | Domain layer guidelines | [domain.md](See @kmp-domain skill) |
 | Product requirements | Feature acceptance criteria | [prd.md](../../docs/project/prd.md) |
 

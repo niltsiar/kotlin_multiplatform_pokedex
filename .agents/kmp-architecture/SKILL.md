@@ -658,7 +658,6 @@ To use logic from Feature A (e.g., `auth`) in Feature B (e.g., `profile`):
 | Document | Purpose | Link |
 |----------|---------|------|
 | [conventions.md](See @kmp-architecture skill for architecture patterns) | Master architecture reference | [Read](See @kmp-architecture skill for architecture patterns) |
-| [architecture_patterns.md](See @kmp-architecture skill) | Code examples and structural patterns | [Read](See @kmp-architecture skill) |
 | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) | 6 core patterns for rapid development | [Read](See @kmp-critical-patterns skill) |
 | [module-structure.md](references/module-structure.md) | Detailed layer breakdown (8-module pattern) | [Read](references/module-structure.md) |
 | [vertical-slicing.md](references/vertical-slicing.md) | Principles and benefits of vertical slicing | [Read](references/vertical-slicing.md) |

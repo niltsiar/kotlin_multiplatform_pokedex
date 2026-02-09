@@ -213,8 +213,8 @@ Use ASCII art or structured description:
 | `navigation.md` | Navigation 3 architecture and implementation patterns | See @kmp-navigation skill |
 | `prd.md` | Product requirements with acceptance criteria | `docs/project/prd.md` |
 | `ui_ux.md` | UI/UX guidelines and design system | `docs/project/ui_ux.md` |
-| `conventions.md` | Architecture and technical patterns | See @kmp-architecture skill |
-| `critical_patterns_quick_ref.md` | Core patterns including Navigation 3 | See @kmp-critical-patterns skill |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Architecture and technical patterns | Architecture skill |
+| [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) | Core patterns including Navigation 3 | Critical patterns skill |
 | `journey-mapping-template.md` | Ready-to-use journey mapping template | `.agents/user-flows/resources/journey-mapping-template.md` |
 
 ## Pro Tips

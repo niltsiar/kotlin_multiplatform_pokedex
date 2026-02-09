@@ -356,4 +356,4 @@ Create previews for all UI states to enable visual testing:
 | Production large-scale app | ⚠️ Risky for complex flows | ✅ Safer choice |
 | MVP/POC project | ✅ Fast iteration | ⚠️ Premature optimization |
 
-See [ios_integration.md](See @kmp-ios skill) for complete comparison and migration guide.
+See [@kmp-ios](../kmp-ios/SKILL.md) for complete comparison.

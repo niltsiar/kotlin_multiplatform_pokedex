@@ -374,7 +374,7 @@ Before implementing any feature:
 | Document | Purpose | Link |
 | --- | --- | --- |
 | critical_patterns_quick_ref.md | Detailed pattern guide | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
-| conventions.md | Master architecture reference | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Master architecture reference | Architecture skill |
 | @kmp-testing-strategy skill | Testing philosophy and coverage | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
 | navigation.md | Navigation 3 architecture details | [navigation.md](See @kmp-navigation skill) |
 | dependency_injection.md | Koin patterns and troubleshooting | [dependency_injection.md](See @kmp-di skill) |

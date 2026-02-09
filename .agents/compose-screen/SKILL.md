@@ -309,9 +309,9 @@ val scale by animateFloatAsState(
 
 | Document | Purpose | Link |
 |----------|---------|------|
-| Architecture + conventions | Master reference | [conventions.md](See @kmp-architecture skill for architecture patterns) |
+| Architecture + conventions | Master reference | [@kmp-architecture](../kmp-architecture/SKILL.md) |
 | Design tokens | Token system | [design_tokens.md](See @kmp-design-systems skill) |
-| Critical patterns | 6 core patterns | [critical_patterns_quick_ref.md](See @kmp-critical-patterns skill) |
+| Critical patterns | 6 core patterns | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Module structure | Feature modules and UI layers | [kmp-architecture](../kmp-architecture/SKILL.md) |
 | ViewModel patterns | UI state and lifecycle | [kmp-presentation](../kmp-presentation/SKILL.md) |
 | Navigation 3 | Modular navigation | [navigation.md](See @kmp-navigation skill) |

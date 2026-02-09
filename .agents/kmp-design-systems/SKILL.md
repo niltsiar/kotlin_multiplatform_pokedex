@@ -311,4 +311,4 @@ val color = PokemonTypeColors.getBackground(type.name, isDark = false)
 | component_library.md | Component specifications | See @kmp-design-systems skill |
 | material_icons_strategy.md | Icon usage guide | [material_icons_strategy.md](references/material_icons_strategy.md) |
 | troubleshooting.md | Common design system issues and solutions | [troubleshooting.md](references/troubleshooting.md) |
-| conventions.md | Master architecture reference | See @kmp-architecture skill |
+| [@kmp-architecture](../kmp-architecture/SKILL.md) | Master architecture reference | Architecture skill |
