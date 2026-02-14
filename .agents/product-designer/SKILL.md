@@ -80,6 +80,9 @@ To create a comprehensive Product Requirements Document:
    - Format: "As a [user], I want [goal], so that [benefit]"
    - Include one story per major feature
    - Prioritize by user value
+   - **This project examples**:
+     - "As a Pokémon fan, I want to browse all Pokémon with infinite scroll, so that I can quickly find any Pokémon without pagination delays"
+     - "As a developer, I want to compare Material vs Unstyled themes in real-time, so that I can learn design system implementation differences"
 
 ### Workflow 2: Define MVP vs Future Scope
 
@@ -124,6 +127,10 @@ To create clear, testable acceptance criteria:
    - Avoid ambiguous words like "quickly", "smoothly", "intuitive"
    - Use specific numbers or thresholds: "loads within 2 seconds", "displays 10 items per page"
    - Tie to success metrics when possible
+   - **This project examples**:
+     - "Given the user is on Pokemon list screen, When the user scrolls to bottom, Then next 20 Pokemon load within 2 seconds"
+     - "Given the user taps Material tab, When theme switches, Then entire app (scaffold + content) switches atomically with no flicker"
+     - "Given the user is on Pokemon detail screen, When viewing stat bars, Then all 6 stats (HP, Attack, Defense, Sp. Atk, Sp. Def, Speed) display with animated progress bars (Material: 400ms, Unstyled: 300ms)"
 
 4. **Organize by Feature or User Story**
    - Group criteria logically (e.g., "Search Feature", "Navigation", "Data Loading")

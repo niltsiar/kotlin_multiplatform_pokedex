@@ -28,32 +28,36 @@ Use this skill for:
 Before designing onboarding, ask yourself:
 
 1. **What is the onboarding goal?**
-   - Feature discovery → Show 1-3 key features (maximum 3 steps)
-   - Value proposition → Explain "why use this app"
+   - Feature discovery → Show dual-theme showcase (Material vs Unstyled)
+   - Value proposition → Explain "compare design systems in real-time"
    - Permission requests → Explain benefit before asking
    - NEVER create tutorial-style onboarding (users skip it)
 
 2. **When should onboarding appear?**
-   - First launch only → Use persistent flag to track completion
-   - After major updates → Version-gated onboarding for new features
-   - Contextual → Show feature hints when user encounters them first time
+   - First launch only → Use SharedPreferences/DataStore flag to track completion
+   - After dual-theme preference is set → NEVER show again (user already knows)
+   - Contextual → Show first-run modal before Pokemon list loads
+   - NEVER block Pokemon list loading for onboarding completion
 
 3. **How do I measure success?**
    - Completion rate → Track users who finish vs skip
    - Time to first action → Measure engagement after onboarding
-   - Feature adoption → Track usage of showcased features
+   - Feature adoption → Track theme switching usage (Material ↔ Unstyled tabs)
    - A/B test different flows to optimize
 
 ## Essential Workflows
 
 ### Workflow 1: Design New Onboarding Flow
 
+**MANDATORY - READ ENTIRE FILE**: Before designing onboarding flow, you MUST read [`resources/onboarding-flow-template.md`](resources/onboarding-flow-template.md) for complete template and examples.
+
 1. Define onboarding goals and success metrics
 2. Identify 1-3 key features to showcase (maximum 3 steps)
+   - **This project**: First-run modal → Explain dual-theme showcase → Explore Material tab → Switch to Unstyled tab → Compare
 3. Create value propositions for each screen
 4. Design progressive disclosure sequence (reveal complexity gradually)
 5. Add skip option on every screen
-6. Implement completion tracking
+6. Implement completion tracking (SharedPreferences/DataStore for onboarding completion flag)
 7. Plan A/B testing variants
 
 ### Workflow 2: Optimize Existing Onboarding
@@ -74,6 +78,30 @@ Before designing onboarding, ask yourself:
 4. Show consequence of declining (graceful degradation)
 5. Re-prompt at natural context later
 6. Track opt-in rates
+
+## When to Show Onboarding? (Decision Tree)
+
+```
+User launches app
+    ├─ First install?
+    │   ├─ YES → Show onboarding modal
+    │   └─ NO → Check dual-theme preference
+    │       ├─ Preference already set? (user has switched themes)
+    │       │   ├─ YES → NEVER show onboarding (user already knows)
+    │       │   └─ NO → Show onboarding modal
+    │       └─ User explicitly dismissed onboarding?
+    │           ├─ YES → NEVER show again (respect user choice)
+    │           └─ NO → Show onboarding modal
+    └─ App update with new feature?
+        ├─ YES → Version-gated onboarding for new feature only
+        └─ NO → Follow first install logic
+```
+
+**This project implementation**:
+- Check SharedPreferences/DataStore flag: `onboarding_completed`
+- Check dual-theme preference: `theme_selection` (Material/Unstyled)
+- If `onboarding_completed == true` OR `theme_selection != null` → Skip onboarding
+- If both false → Show first-run modal explaining dual-theme showcase
 
 ## Critical Guardrails
 
@@ -119,8 +147,8 @@ Track these metrics for all onboarding flows:
 
 **CTA Best Practices**:
 
-- Use action verbs: "Get Started", "Enable", "Explore"
-- Add user benefit: "Get Started → See Pokémon stats"
+- Use action verbs: "Start Exploring", "Compare Themes", "See Pokémon"
+- Add user benefit: "Start Exploring → Browse 1,000+ Pokémon"
 - Avoid generic: "OK", "Next", "Continue"
 - Keep it short: 2-4 words max
 - Secondary CTAs: "Skip", "Not now", "Maybe later"
@@ -128,7 +156,9 @@ Track these metrics for all onboarding flows:
 **Screen Content**:
 
 - Headline: Value proposition (5-10 words)
+  - **This project**: "Your Pokémon Journey Starts Here", "Compare Design Systems Live"
 - Body: Brief description (1-2 sentences)
+  - **This project**: "Explore every Pokémon with dual-theme showcase (Material vs Unstyled)"
 - Visual: Simple illustration or icon
 - Avoid jargon: Use plain language
 
@@ -139,6 +169,16 @@ Track these metrics for all onboarding flows:
 3. **Use anchors**: Connect new info to familiar concepts
 4. **Provide escape**: Skip or defer advanced topics
 5. **Layer depth**: Essential → Important → Optional
+
+## NEVER Do (Anti-Patterns)
+
+| Anti-Pattern | Why It's Wrong | This Project Example |
+|--------------|----------------|----------------------|
+| **Show onboarding after dual-theme preference is set** | User already knows about the feature | NEVER show modal after user has switched Material ↔ Unstyled tabs |
+| **Block Pokemon list loading for onboarding completion** | Delays time-to-value, frustrates users | Show modal AFTER Pokemon list is visible, not before |
+| **Force onboarding without skip option** | Violates user agency, increases drop-off | Always provide "Skip" button in top-right corner |
+| **Show onboarding on every app launch** | Annoying, wastes user time | Use SharedPreferences/DataStore flag to track completion |
+| **Tutorial-style multi-step walkthrough** | Users skip it, doesn't teach effectively | Use single first-run modal explaining dual-theme showcase |
 
 ## A/B Testing Framework
 
@@ -155,4 +195,4 @@ Measure impact on:
 - Completion rate
 - Time to complete
 - 7-day retention
-- Feature engagement
+- Feature engagement (theme switching usage)
