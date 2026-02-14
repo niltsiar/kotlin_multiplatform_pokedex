@@ -310,11 +310,11 @@ val scale by animateFloatAsState(
 | Document | Purpose | Link |
 |----------|---------|------|
 | Architecture + conventions | Master reference | [@kmp-architecture](../kmp-architecture/SKILL.md) |
-| Design tokens | Token system | [design_tokens.md](See @kmp-design-systems skill) |
+| Design tokens | Token system | [@kmp-design-systems](../kmp-design-systems/SKILL.md) |
 | Critical patterns | 6 core patterns | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Module structure | Feature modules and UI layers | [kmp-architecture](../kmp-architecture/SKILL.md) |
 | ViewModel patterns | UI state and lifecycle | [kmp-presentation](../kmp-presentation/SKILL.md) |
-| Navigation 3 | Modular navigation | [navigation.md](See @kmp-navigation skill) |
+| Navigation 3 | Modular navigation | [@kmp-navigation](../kmp-navigation/SKILL.md) |
 | Screenshot testing | Roborazzi tests | [kmp-testing-patterns](../kmp-testing-patterns/SKILL.md) |
 | Animation guides | UI animations | [ui-ux-designer](../ui-ux-designer/SKILL.md) |
 | Complete preview examples | Multi-state previews | [references/preview-examples.md](references/preview-examples.md) |

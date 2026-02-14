@@ -443,5 +443,5 @@ struct LoginView: View {
 
 ## Documentation Sources
 
-- [presentation_layer.md](See @kmp-presentation skill) — Complete presentation guide
-- [viewmodel_patterns.md](See @kmp-presentation skill) — Extended examples
+- [@kmp-presentation](../../kmp-presentation/SKILL.md) — Complete presentation guide
+- [@kmp-presentation](../../kmp-presentation/SKILL.md) — Extended examples

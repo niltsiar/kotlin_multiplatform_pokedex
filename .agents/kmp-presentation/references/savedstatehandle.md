@@ -296,7 +296,7 @@ class DesktopViewModelProvider {
 }
 ```
 
-See [desktop_viewmodel_savedstate.md](See @kmp-desktop skill) for complete setup.
+See [@kmp-desktop](../../kmp-desktop/SKILL.md) for complete setup.
 
 ## Common Patterns
 
@@ -402,6 +402,6 @@ class SearchViewModelTest {
 
 ## Documentation Sources
 
-- [presentation_layer.md](See @kmp-presentation skill) — Navigation integration
-- [viewmodel_patterns.md](See @kmp-presentation skill) — Extended examples
-- [desktop_viewmodel_savedstate.md](See @kmp-desktop skill) — Desktop-specific
+- [@kmp-presentation](../../kmp-presentation/SKILL.md) — Navigation integration
+- [@kmp-presentation](../../kmp-presentation/SKILL.md) — Extended examples
+- [@kmp-desktop](../../kmp-desktop/SKILL.md) — Desktop-specific

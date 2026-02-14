@@ -375,7 +375,7 @@ Before implementing any feature:
 | --- | --- | --- |
 | [@kmp-architecture](../kmp-architecture/SKILL.md) | Master architecture reference | Architecture skill |
 | @kmp-testing-strategy skill | Testing philosophy and coverage | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
-| navigation.md | Navigation 3 architecture details | [navigation.md](See @kmp-navigation skill) |
+| navigation.md | Navigation 3 architecture details | [@kmp-navigation](../kmp-navigation/SKILL.md) |
 | [@kmp-di](../kmp-di/SKILL.md) | Koin patterns and troubleshooting | [Read](../kmp-di/SKILL.md) |
 
 **Reference Implementation**: `features/pokemonlist/` demonstrates all 6 patterns end-to-end.

@@ -68,7 +68,7 @@ viewModel { (pokemonId: Int, savedStateHandle: SavedStateHandle) ->
 
 | Document | Purpose | Tokens |
 |----------|---------|--------|
-| [desktop_viewmodel_savedstate.md](See @kmp-desktop skill) | Complete Desktop SavedStateHandle guide | ~200 |
+| Desktop SavedStateHandle | Complete Desktop SavedStateHandle guide | This skill |
 
 ## Essential Workflows
 

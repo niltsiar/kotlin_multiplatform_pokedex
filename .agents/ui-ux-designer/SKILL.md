@@ -144,9 +144,9 @@ Create adaptive layouts that work across all screen sizes:
 
 | Document | Purpose | Link |
 |----------|---------|------|
-| Design token architecture | CompositionLocal pattern for design + component tokens | [design_tokens.md](See @kmp-design-systems skill) |
+| Design token architecture | CompositionLocal pattern for design + component tokens | [@kmp-design-systems](../kmp-design-systems/SKILL.md) |
 | UI/UX guidelines | Brand essence, dual design system, animation styles | [ui_ux.md](../../docs/project/ui_ux.md) |
-| Component library | Component implementations with token abstraction | [component_library.md](See @kmp-design-systems skill) |
+| Component library | Component implementations with token abstraction | [@kmp-design-systems](../kmp-design-systems/SKILL.md) |
 | Material 3 guidelines | Official Material Design 3 documentation | [material.io](https://m3.material.io/) |
 | Critical patterns | ViewModel, Either, Impl+Factory, Navigation 3, Testing | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Accessibility | WCAG 2.1 guidelines and implementation patterns | [Material 3 accessibility](https://m3.material.io/foundations/accessible-design/overview) |
