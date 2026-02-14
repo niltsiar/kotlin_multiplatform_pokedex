@@ -1,6 +1,6 @@
 ---
 name: kmp-developer
-description: This skill should be used for general Kotlin Multiplatform development tasks including implementing features, fixing bugs, refactoring code, and adding functionality. It provides shared patterns for the KMP Pokedex project.
+description: "General Kotlin Multiplatform development for implementing features, fixing bugs, and refactoring code. Use when: (1) Implementing new features with vertical slice architecture, (2) Fixing bugs in feature modules, (3) Adding repositories, ViewModels, or data layers, (4) Creating Compose UI screens, (5) Writing tests with Kotest. Keywords: feature implementation, bug fixes, refactoring, vertical slice, KMP development"
 ---
 
 ## When to Use
@@ -22,6 +22,27 @@ Do NOT use this skill for:
 - SwiftUI iOS screens → switch to SwiftUI Screen Implementation Mode
 - Test planning/strategy → switch to Testing Strategy Mode
 - Ktor backend changes → switch to Backend Development Mode
+
+## Decision Framework
+
+Before implementing, ask yourself:
+
+1. **What layer needs work?**
+   - New feature contracts → `:api` module
+   - Data fetching/storage → `:data` module (repo + DTOs)
+   - UI state management → `:presentation` module (ViewModel)
+   - User interface → `:ui-material` or `:ui-unstyled` modules
+   - Dependency wiring → `:wiring` or `:wiring-ui-*` modules
+
+2. **What patterns apply?**
+   - Repository → `Either<RepoError, T>` + Impl+Factory
+   - ViewModel → Pass scope to constructor, use `onStart()` not `init`
+   - Tests → Property tests for mappers, Turbine for ViewModels, all error paths for repos
+
+3. **What breaks if I change this?**
+   - Always run validation: `./gradlew :composeApp:assembleDebug test --continue`
+   - Check cross-module dependencies if modifying `:api`
+   - Verify iOS exports if changing `:api` or `:presentation`
 
 ## Essential Workflows
 
@@ -201,21 +222,25 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 
 ## Critical Guardrails
 
-1. NEVER do work in ViewModel `init` block → override `onStart(owner: LifecycleOwner)` instead (lifecycle-aware)
+1. NEVER do work in ViewModel `init` block → override `onStart(owner: LifecycleOwner)` instead (lifecycle-aware initialization prevents premature work before UI attachment)
 
-2. NEVER store `CoroutineScope` as field → pass `viewModelScope` to constructor with default value
+2. NEVER store `CoroutineScope` as field → pass `viewModelScope` to constructor with default value (enables TestScope injection for deterministic testing)
 
-3. NEVER return nullable or `Result` from repositories → return `Either<RepoError, T>` with `Either.catch { }.mapLeft { }`
+3. NEVER return nullable or `Result` from repositories → return `Either<RepoError, T>` with `Either.catch { }.mapLeft { }` (type-safe error handling with exhaustive when clauses)
 
-4. NEVER export `:data`, `:ui`, `:wiring` to iOS → only `:api` and `:presentation` are exported via `:shared` framework
+4. NEVER export `:data`, `:ui`, `:wiring` to iOS → only `:api` and `:presentation` are exported via `:shared` framework (iOS uses SwiftUI, not Compose; implementation details stay private)
 
-5. NEVER use star imports → always use explicit imports (enforced by .editorconfig)
+5. NEVER use star imports → always use explicit imports (prevents namespace pollution, enforced by .editorconfig)
 
-6. NEVER skip tests when adding code → every production file requires a test file in `androidUnitTest/`
+6. NEVER skip tests when adding code → every production file requires a test file in `androidUnitTest/` (current coverage: 84 tests passing, maintain this standard)
 
-7. NEVER create empty use cases → call repositories directly from ViewModels when no orchestration needed
+7. NEVER create empty use cases → call repositories directly from ViewModels when no orchestration needed (reduces unnecessary abstraction layers)
 
-8. NEVER swallow `CancellationException` → `Either.catch` respects cancellation automatically
+8. NEVER swallow `CancellationException` → `Either.catch` respects cancellation automatically (cooperative cancellation is critical for coroutine correctness)
+
+9. NEVER skip Primary Validation before committing → `./gradlew :composeApp:assembleDebug test --continue` must pass (builds app + runs 84 tests in ~45s, catches integration issues early)
+
+10. NEVER mix feature concerns → each feature is a self-contained vertical slice (violating this breaks compilation avoidance and team autonomy)
 
 ## Quick Reference
 
