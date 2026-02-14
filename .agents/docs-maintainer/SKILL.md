@@ -19,6 +19,26 @@ description: "Maintain documentation, validate links, consolidate duplicates, an
 - PRD/product/UI/UX docs (use @product-designer or @ui-ux-designer)
 - Architecture decisions (use @kmp-architecture skill)
 
+## Decision Framework
+
+Before modifying documentation, ask yourself:
+
+1. **Is there a canonical source?** 
+   - Search existing docs: `rg "content" docs/ .agents/ --type md`
+   - If found → Link to it, don't duplicate
+   - If not found → Create in appropriate location (skill for patterns, docs/project/ for artifacts)
+
+2. **What's the scope?**
+   - Single doc update → Use Workflow 1 (link-first strategy)
+   - Multiple broken links → Use Workflow 2 (systematic validation)
+   - Content scattered across files → Use Workflow 3 (consolidation)
+   - Skill quality issues → Use Workflow 4 (maintenance + auditing)
+
+3. **What breaks if I change this?**
+   - Run link validation BEFORE committing: `./.agents/docs-maintainer/scripts/validate-links.sh`
+   - Check cross-references: `rg "filename.md" docs/ .agents/ AGENTS.md`
+   - Multi-entrypoint changes → Sync AGENTS.md + llms.txt together
+
 ## Essential Workflows
 
 ### Workflow 1: Update Documentation with Link-First Strategy
@@ -36,11 +56,15 @@ To maintain documentation without duplicating content:
 
 ### Workflow 2: Validate and Fix Broken Links
 
+**MANDATORY**: Run validation script before any documentation PR or commit:
+
 1. **Run validation**: `./.agents/docs-maintainer/scripts/validate-links.sh`
 2. **Analyze failures**: File moved → update link, typo → fix, external → verify
 3. **Fix systematically**: Update broken paths, use @skill-name syntax for skills
 4. **Find orphans**: `rg "removed-file.md" docs/ AGENTS.md` to find all references
 5. **Re-validate**: Run script again, update cross-reference tables if needed
+
+**Skip validation only if**: Minor typo fixes in prose that don't touch any links or file paths.
 
 ### Workflow 3: Consolidate Duplicate Content
 
@@ -109,7 +133,7 @@ When auditing skills for quality, evaluate against these criteria:
 2. **Progressive Disclosure** - Information hierarchy
     - Metadata (frontmatter) → SKILL.md body (<500 lines) → references/ (unlimited)
     - Quick answers in SKILL.md, deep dives in references/
-    - Target: <500 lines for SKILL.md (<500 lines target)
+    - Target: <500 lines for SKILL.md
 
 3. **Knowledge Delta** - Expert knowledge only
    - What Claude doesn't already know
@@ -167,7 +191,7 @@ find .agents -name "SKILL.md" -exec wc -l {} + | awk '$1 > 500'
 See [@kmp-architecture](../kmp-architecture/SKILL.md) for architecture rules
 
 <!-- Pattern reference -->
-Follow the [ViewModel Pattern](See @kmp-critical-patterns skill#viewmodel-pattern)
+Follow ViewModel Pattern - See [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md#viewmodel-pattern)
 
 <!-- Skill reference -->
 Switch to [Compose Screen skill](../compose-screen/SKILL.md)
