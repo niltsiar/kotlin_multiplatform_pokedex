@@ -9,18 +9,15 @@ description: Quick reference for 6 core KMP patterns - Impl+Factory, Either Boun
 
 ## When to Use
 
-Use this skill when:
-- Starting new feature implementation and need quick pattern reminders
-- Token budget is constrained and full skill context too heavy
-- User asks for "quick reference", "pattern overview", "show me the patterns"
-- Switching between skills and need fast context refresh
-- Want pattern-at-a-glance without detailed implementation
+**Use when:** Quick pattern reminders, token-constrained scenarios, pattern overview requests, switching between skills.
 
-Do NOT use when:
-- Need full implementation guidance → use @kmp-developer or specific layer skills
-- Writing tests → use @kmp-testing-strategy or @kmp-testing-patterns
-- Building UI → use @compose-screen or @swiftui-screen
-- Need detailed examples with full context → use domain-specific skills
+**Do NOT use when:** Need full implementation guidance (use @kmp-developer or layer-specific skills), writing tests (@kmp-testing-strategy), building UI (@compose-screen, @swiftui-screen).
+
+## Loading Triggers
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing any of the 6 patterns for the first time, you MUST read [pattern-examples.md](references/pattern-examples.md) (~300 lines) for complete code examples with detailed syntax.
+
+**Do NOT load** `pattern-examples.md` if you only need quick pattern reminders or decision matrices.
 
 ## Pattern Overview
 
@@ -39,41 +36,18 @@ Do NOT use when:
 
 **Key Rule:** Internal `Impl` class + public factory function. Production classes stay DI-agnostic.
 
-```kotlin
-// In :data module
-internal class PokemonListRepositoryImpl(
-    private val api: PokemonListApiService
-) : PokemonListRepository {
-    override suspend fun getPokemonList(): Either<RepoError, List<Pokemon>> =
-        Either.catch { api.fetch().map { it.toDomain() } }
-            .mapLeft { it.toRepoError() }
-}
-
-// Public factory in same file
-fun PokemonListRepository(api: PokemonListApiService): PokemonListRepository =
-    PokemonListRepositoryImpl(api)
-```
-
 **NEVER:**
 - Make `Impl` classes public
 - Use `@Inject constructor` in production code
 - Create interfaces with single `Impl` differently
+
+**For detailed code examples:** See [pattern-examples.md](references/pattern-examples.md)
 
 ---
 
 ## Pattern 2: Either Boundary
 
 **Key Rule:** Repositories return `Either<RepoError, T>`. Map errors, never throw.
-
-```kotlin
-interface PokemonListRepository {
-    suspend fun getPokemonList(): Either<RepoError, List<Pokemon>>
-}
-
-// Implementation
-Either.catch { api.fetch() }
-    .mapLeft { it.toRepoError() }
-```
 
 **Error Types:**
 - `RepoError.Network` - IO exceptions
@@ -85,31 +59,20 @@ Either.catch { api.fetch() }
 - Return `Result<T>`
 - Throw exceptions from repositories
 
+**For detailed code examples:** See [pattern-examples.md](references/pattern-examples.md)
+
 ---
 
 ## Pattern 3: ViewModel Pattern
 
 **Key Rule:** Pass scope to constructor, NO work in init, use `onStart()`.
 
-```kotlin
-class PokemonListViewModel(
-    private val repository: PokemonListRepository,
-    private val savedStateHandle: SavedStateHandle,
-    viewModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-) : ViewModel(viewModelScope), DefaultLifecycleObserver,
-    UiStateHolder<PokemonListUiState, PokemonListUiEvent> {
-
-    override fun onStart(owner: LifecycleOwner) {
-        // Initialization here, NOT in init
-        loadPokemon()
-    }
-}
-```
-
 **NEVER:**
 - Store `CoroutineScope` as field
 - Do work in `init` block
 - Use default ViewModel() constructor without scope
+
+**For detailed code examples:** See [pattern-examples.md](references/pattern-examples.md)
 
 ---
 
@@ -117,28 +80,12 @@ class PokemonListViewModel(
 
 **Key Rule:** Routes in `:api`, navigation providers in wiring modules.
 
-```kotlin
-// In :api module
-@Serializable
-object PokemonListRoute
-
-// In :wiring-ui-material module
-val pokemonListNavigationModule = module {
-    scope<MaterialScope> {
-        navigation<PokemonListRoute> { route ->
-            PokemonListScreen(
-                viewModel = koinViewModel(),
-                onBack = { navigator.goBack() }
-            )
-        }
-    }
-}
-```
-
 **Module Structure:**
 - `:api` - Route objects and navigation entry points
 - `:wiring-ui-material` - Material Design navigation providers
 - `:wiring-ui-unstyled` - Compose Unstyled navigation providers
+
+**For detailed code examples:** See [pattern-examples.md](references/pattern-examples.md)
 
 ---
 
@@ -150,31 +97,12 @@ val pokemonListNavigationModule = module {
 - 40% property-based tests (mappers, invariant properties)
 - 60% concrete tests (ViewModels, repositories)
 
-**Mapper Test (Property):**
-```kotlin
-"dto to domain preserves all properties" {
-    checkAll(Arb.pokemonDto()) { dto ->
-        val domain = dto.toDomain()
-        domain.id shouldBe dto.id
-        domain.name shouldBe dto.name
-    }
-}
-```
-
-**ViewModel Test (Turbine):**
-```kotlin
-viewModel.uiState.test {
-    awaitItem() shouldBe PokemonListUiState.Loading
-    viewModel.onStart(owner)
-    testScope.advanceUntilIdle()
-    awaitItem() shouldBeInstanceOf PokemonListUiState.Content::class
-}
-```
-
 **NEVER:**
 - Skip tests for production code
 - Forget Turbine for StateFlow testing
 - Skip error path testing
+
+**For detailed code examples:** See [pattern-examples.md](references/pattern-examples.md)
 
 ---
 
@@ -193,39 +121,22 @@ viewModel.uiState.test {
 | `convention.feature.wiring` | `:wiring*` modules (Koin modules) |
 | `convention.feature.base` | Feature foundation dependencies |
 
-**build.gradle.kts example:**
-```kotlin
-plugins {
-    id("convention.feature.data")
-}
-```
+**For detailed code examples:** See [pattern-examples.md](references/pattern-examples.md)
 
 ---
 
-## Essential Workflows
+## Usage Workflows
 
-### Workflow 1: Starting a New Feature with Pattern Checklist
+**Starting a New Feature:**
+1. Check Pattern Overview table → identify applicable patterns
+2. Review Key Rules and NEVER lists
+3. Load [pattern-examples.md](references/pattern-examples.md) for detailed syntax
+4. Use Pattern Enforcement Checklist before committing
 
-1. Read the **Pattern Overview** table to identify which patterns apply to your feature.
-2. For each applicable pattern, jump to the detailed section for a quick refresher.
-3. Use the **Quick Checklist** to verify pattern compliance during implementation.
-4. Cross-reference to full skills for deep implementation details when needed.
-
-- For repository: See @kmp-data-layer for `Either<RepoError, T>` implementation.
-- For ViewModel: See @kmp-presentation for lifecycle management.
-
-### Workflow 2: Pattern Validation During Code Review
-
-1. Compare the proposed code against the canonical examples in each pattern section.
-2. Verify that no "NEVER" rules are violated (e.g., no work in `init` blocks, no public `Impl` classes).
-3. Use the **Quick Checklist** to ensure all 6 core patterns are correctly applied.
-4. Flag any deviations from project conventions for correction.
-
-### Workflow 3: Quick Pattern Lookup During Implementation
-
-1. When unsure about a specific pattern detail (e.g., "Where do routes live?"), search the skill for the pattern name.
-2. Review the **Key Rule** and **Canonical Example** for immediate guidance.
-3. Use the **Plugin Matrix** to quickly find the correct convention plugin for a new module.
+**Pattern Validation:**
+1. Verify no NEVER rules violated
+2. Check Pattern Enforcement Checklist
+3. Cross-reference to full skills for deep context
 
 ---
 
@@ -233,22 +144,15 @@ plugins {
 
 ### Common Violations & Fixes
 
-| Violation | Correct Pattern | See |
-|-----------|----------------|-----|
-| `class XImpl : X` (public) | `internal class XImpl : X` | See @kmp-di skill |
-| Missing factory function | `fun X(...): X = XImpl(...)` | See @kmp-di skill |
-| `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` | See @kmp-data-layer skill |
-| `private val scope = ...` | `viewModelScope: CoroutineScope` param | See @kmp-presentation skill |
-| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner) { ... }` | See @kmp-presentation skill |
-| `_state: MutableStateFlow<List<T>>` | `_state: MutableStateFlow<ImmutableList<T>>` | See @kmp-presentation skill |
-| `androidx.compose.ui.text.TextStyle(...)` | Import `TextStyle`, use `TextStyle(...)` | See @kmp-architecture skill |
-| `kotlinx.collections.immutable.persistentListOf(...)` | Import `persistentListOf`, use `persistentListOf(...)` | See @kmp-architecture skill |
-| `val x: com.example.MyClass` | Import `MyClass`, use `val x: MyClass` | See @kmp-architecture skill |
-| Empty use case | Call repository directly from ViewModel | See @kmp-architecture skill |
-| `:data`, `:ui` exported to iOS | Only `:api`, `:presentation`, `:core:*` | See @kmp-architecture skill |
-| @Composable without @Preview | Add `@Preview` with realistic data | See @kmp-testing-patterns skill |
-| Manual cast after `shouldBeInstanceOf` | Use smart cast directly | See @kmp-testing-patterns skill |
-| Thread.sleep() in tests | Use Turbine + testScope | See @kmp-testing-patterns skill |
+| Violation | Correct Pattern |
+|-----------|----------------|
+| `class XImpl : X` (public) | `internal class XImpl : X` + factory |
+| `suspend fun get(): T?` | `suspend fun get(): Either<RepoError, T>` |
+| `private val scope = ...` | `viewModelScope: CoroutineScope` param |
+| `init { loadData() }` | `override fun onStart(owner: LifecycleOwner)` |
+| FQN in code | Import first, then use short name |
+| Empty use case | Call repository directly from ViewModel |
+| @Composable without @Preview | Add `@Preview` with realistic data |
 
 ### Critical DON'Ts (Top 10)
 
@@ -261,12 +165,7 @@ plugins {
 7. ❌ **NEVER export `:data`, `:ui`, or `:wiring`** to iOS (only `:api`, `:presentation`, `:core:*`)
 8. ❌ **NEVER put business logic in `:shared`** itself (it's an umbrella; logic goes in feature/core modules)
 9. ❌ **NEVER add DI annotations** to production classes (wire in wiring modules)
-10. ❌ **NEVER use star imports or FQN in code**:
-    - ❌ `import com.example.*` — Use explicit imports
-    - ❌ `androidx.compose.ui.text.TextStyle(...)` — Import `TextStyle` first
-    - ❌ `kotlinx.collections.immutable.persistentListOf(...)` — Import `persistentListOf` first
-    - ❌ `val x: com.example.MyClass` — Import `MyClass` first
-    - ✅ Use: `import x.y.ClassName` then write `ClassName()`
+10. ❌ **NEVER use star imports or FQN** — Import explicitly, use short names
 11. ❌ **NEVER omit @Preview** for @Composable functions (MANDATORY)
 
 ### Decision Matrices
@@ -334,48 +233,20 @@ Before implementing any feature:
 
 ## Critical Guardrails
 
-1. NEVER use this skill as the only reference for implementation → always cross-reference to full skills for complete context (incomplete context leads to bugs).
-2. NEVER skip the **Quick Checklist** before committing → patterns must be complete to prevent architectural violations.
-3. NEVER implement patterns without understanding their rationale → read linked full skills or documentation first (avoids "cargo cult" coding).
-4. NEVER mix patterns from different architectural boundaries → follow vertical slice structure to avoid leaky abstractions.
-5. NEVER skip pattern validation for any feature → technical debt accumulates quickly when conventions are ignored.
-6. NEVER treat these patterns as suggestions → they are mandatory project conventions for a consistent codebase.
-7. NEVER use this skill for initial learning → it is a refresher, not a tutorial; it lacks the necessary depth for first-time learners.
-8. NEVER skip cross-references to documentation → patterns need architectural context for proper understanding.
+1. NEVER use this as the only reference → cross-reference to full skills for complete context
+2. NEVER skip Pattern Enforcement Checklist before committing
+3. NEVER treat patterns as suggestions → they are mandatory project conventions
+4. NEVER use for initial learning → this is a refresher, not a tutorial
 
 ---
 
 ## Cross-References
 
-### Skills (by Category)
+**For detailed implementation:** See Pattern-to-Skill Mapping table above.
 
-**Pattern Implementation**
-| Skill | Patterns Covered | Link |
-| --- | --- | --- |
-| @kmp-data-layer | Either Boundary, Impl+Factory | [SKILL.md](../kmp-data-layer/SKILL.md) |
-| @kmp-presentation | ViewModel, Impl+Factory | [SKILL.md](../kmp-presentation/SKILL.md) |
-| @kmp-navigation | Navigation 3 | [SKILL.md](../kmp-navigation/SKILL.md) |
-| @kmp-testing-patterns | Testing | [SKILL.md](../kmp-testing-patterns/SKILL.md) |
-| @kmp-gradle | Convention Plugins | [SKILL.md](../kmp-gradle/SKILL.md) |
+**Key Skills:**
+- @kmp-architecture - Module structure, vertical slicing
+- @kmp-developer - Full implementation patterns
+- @kmp-mobile-expert - ViewModel + repository patterns
 
-**Comprehensive Guides**
-| Skill | Purpose | Link |
-| --- | --- | --- |
-| @kmp-developer | Full implementation patterns | [SKILL.md](../kmp-developer/SKILL.md) |
-| @kmp-mobile-expert | ViewModel + repository patterns | [SKILL.md](../kmp-mobile-expert/SKILL.md) |
-| @kmp-architecture | Module structure, vertical slicing | [SKILL.md](../kmp-architecture/SKILL.md) |
-| @kmp-di | Koin dependency injection patterns | [SKILL.md](../kmp-di/SKILL.md) |
-| @kmp-domain | Domain models and use cases | [SKILL.md](../kmp-domain/SKILL.md) |
-| @compose-screen | UI patterns and implementation | [SKILL.md](../compose-screen/SKILL.md) |
-| @swiftui-screen | Native iOS UI patterns | [SKILL.md](../swiftui-screen/SKILL.md) |
-
-### Documents
-
-| Document | Purpose | Link |
-| --- | --- | --- |
-| [@kmp-architecture](../kmp-architecture/SKILL.md) | Master architecture reference | Architecture skill |
-| [@kmp-testing-strategy](../kmp-testing-strategy/SKILL.md) | Testing philosophy and coverage | Testing strategy skill |
-| [@kmp-navigation](../kmp-navigation/SKILL.md) | Navigation 3 architecture details | Navigation skill |
-| [@kmp-di](../kmp-di/SKILL.md) | Koin patterns and troubleshooting | DI skill |
-
-**Reference Implementation**: `features/pokemonlist/` demonstrates all 6 patterns end-to-end.
+**Reference Implementation:** `features/pokemonlist/` demonstrates all 6 patterns end-to-end.
