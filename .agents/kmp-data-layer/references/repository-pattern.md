@@ -79,11 +79,9 @@ fun JobRepository(
 
 ```kotlin
 // :features:jobs:wiring/JobsWiring.kt
-@Provides 
-fun provideJobRepository(
-    api: JobApiService, 
-    dao: SavedJobDao
-): JobRepository = JobRepository(api, dao)
+val jobsModule = module {
+    factory<JobRepository> { JobRepository(api = get(), dao = get()) }
+}
 ```
 
 ## Repository Interfaces
