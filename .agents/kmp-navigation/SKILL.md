@@ -102,13 +102,21 @@ entry<PokemonDetail>(
 ) { /* content */ }
 ```
 
-## Reference Loading Guide
+## Mode Detection
 
-| Task | Reference | Load When |
-|------|-----------|-----------|
-| Navigation 3 setup & configuration | [navigation3-setup.md](references/navigation3-setup.md) | Setting up new navigation |
-| Parametric routes with type safety | [parametric-routes.md](references/parametric-routes.md) | Creating routes with parameters |
-| Scoped navigation for feature modules | [scoped-navigation.md](references/scoped-navigation.md) | Wiring feature navigation |
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Setup Navigation 3" / "Configure Navigator" | [navigation3-setup.md](references/navigation3-setup.md) | MANDATORY - Read before implementing |
+| "Create parametric route" / "Route with parameters" | [parametric-routes.md](references/parametric-routes.md) | MANDATORY - Read before implementing |
+| "Scoped navigation" / "Feature navigation wiring" | [scoped-navigation.md](references/scoped-navigation.md) | MANDATORY - Read before implementing |
+| "Navigation not working" / "Route errors" | [troubleshooting.md](references/troubleshooting.md) | Check for common issues |
+
+**MANDATORY - READ ENTIRE FILE**: Before setting up Navigation 3 with Navigator and EntryProviderInstaller, you MUST read [navigation3-setup.md](references/navigation3-setup.md) (~335 lines) for complete setup patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing parametric routes with type safety, you MUST read [parametric-routes.md](references/parametric-routes.md) (~453 lines) for type-safe parameter handling.
+
+**Do NOT load** `scoped-navigation.md` for simple route objects - only load when wiring navigation in :wiring-ui modules.
+**Do NOT load** `troubleshooting.md` unless experiencing specific navigation errors.
 
 ## Decision Framework
 

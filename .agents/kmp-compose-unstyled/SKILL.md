@@ -14,6 +14,21 @@ Headless component library implementation patterns for the Pokédex project. Uns
 - **Implementing Headless Components** (Button, Text, ProgressIndicator, etc.) with custom styling.
 - **Ensuring Platform-Native Accessibility** using interactive size modifiers and platform-specific indications.
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create Unstyled component" / "buildPlatformTheme" | [compose_unstyled_reference.md](references/compose_unstyled_reference.md) | MANDATORY - Read before implementing |
+| "Customize tokens" / "CompositionLocal theming" | [component_token_customization_example.md](references/component_token_customization_example.md) | MANDATORY - Read before customizing |
+| "Component not working" / "UI issues" | [troubleshooting.md](references/troubleshooting.md) | Check for common issues |
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing Unstyled components with buildPlatformTheme or buildTheme, you MUST read [compose_unstyled_reference.md](references/compose_unstyled_reference.md) (~1319 lines) for comprehensive component catalog and patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before customizing component tokens via CompositionLocal, you MUST read [component_token_customization_example.md](references/component_token_customization_example.md) (~142 lines) for customization patterns.
+
+**Do NOT load** `component_token_customization_example.md` for basic component usage - only load when implementing custom token overrides.
+**Do NOT load** `troubleshooting.md` unless experiencing specific UI component issues.
+
 ## Core Patterns
 
 ### 1. buildPlatformTheme DSL

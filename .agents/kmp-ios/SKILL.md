@@ -18,6 +18,22 @@ iOS integration patterns for native SwiftUI consuming shared Kotlin Multiplatfor
 
 **Do NOT use for**: ViewModel implementation → use @kmp-presentation, Repository implementation → use @kmp-data-layer, DI configuration → use @kmp-di
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create SwiftUI View" / "Implement iOS screen" | [swiftui-patterns.md](references/swiftui-patterns.md) | MANDATORY - Read before implementing |
+| "Setup iOS ViewModel" / "Direct Integration" | [direct-integration.md](references/direct-integration.md) | MANDATORY - Read before implementing |
+| "Configure lifecycle" / "Lifecycle bridging" | [lifecycle-bridging.md](references/lifecycle-bridging.md) | MANDATORY - Read before implementing |
+| "Export to iOS" / "Configure :shared" | [export-setup.md](references/export-setup.md) | MANDATORY - Read before setting up exports |
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing SwiftUI Views consuming KMP ViewModels, you MUST read [swiftui-patterns.md](references/swiftui-patterns.md) (~519 lines) for StateFlow observation and platform patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before setting up Direct Integration pattern, you MUST read [direct-integration.md](references/direct-integration.md) (~392 lines) for IosViewModelStoreOwner and lifecycle patterns.
+
+**Do NOT load** `export-setup.md` for SwiftUI View implementation - only load when configuring :shared framework exports.
+**Do NOT load** `lifecycle-bridging.md` unless working on custom lifecycle integration patterns.
+
 ## Core Principle: Direct Integration
 
 **Philosophy**: Align with the [official Android KMP ViewModel guide](https://developer.android.com/kotlin/multiplatform/viewmodel). ViewModels implement `DefaultLifecycleObserver`, and SwiftUI calls lifecycle methods directly.
@@ -43,75 +59,6 @@ struct PokemonListView: View {
     }
 }
 ```
-
-## Quick Reference
-
-### Non-Parametric ViewModel
-
-```swift
-struct PokemonListView: View {
-    @StateObject private var owner = IosViewModelStoreOwner()
-
-    private var viewModel: PokemonListViewModel {
-        owner.viewModel()  // Generic function infers type
-    }
-
-    @State private var uiState: PokemonListUiState = PokemonListUiStateLoading()
-
-    var body: some View {
-        // State switching, .onAppear, .onDisappear, .task
-    }
-}
-```
-
-### Parametric ViewModel (with Int)
-
-```swift
-struct PokemonDetailView: View {
-    let pokemonId: Int
-    @StateObject private var owner = IosViewModelStoreOwner()
-
-    private var viewModel: PokemonDetailViewModel {
-        owner.viewModel(intParam: pokemonId)
-    }
-
-    @State private var uiState: PokemonDetailUiState = PokemonDetailUiStateLoading()
-
-    var body: some View {
-        // Same pattern, with pokemonId parameter
-    }
-}
-```
-
-### StateFlow Observation
-
-```swift
-.task {
-    // SKIE: StateFlow → AsyncSequence bridging
-    for await state in viewModel.uiState {
-        self.uiState = state
-    }
-}
-```
-
-### Type Conversions
-
-```swift
-// Kotlin Int32 → Swift Int
-String(format: "#%03d", Int(pokemon.id))
-
-// Kotlin Int32 → Swift Double for formatting
-String(format: "%.1f m", Double(pokemon.height) / 10.0)
-```
-
-## Reference Loading Guide
-
-| Task | Reference | Load When |
-|------|-----------|-----------|
-| Direct Integration pattern | [direct-integration.md](references/direct-integration.md) | Setting up SwiftUI + KMP ViewModels |
-| Lifecycle bridging details | [lifecycle-bridging.md](references/lifecycle-bridging.md) | Implementing SwiftUI lifecycle with KMP |
-| SwiftUI patterns | [swiftui-patterns.md](references/swiftui-patterns.md) | Creating iOS Views, observing StateFlow |
-| Export configuration | [export-setup.md](references/export-setup.md) | Configuring `:shared` framework exports |
 
 ## Architecture Overview
 
@@ -254,79 +201,6 @@ Before implementing iOS integration, ask yourself:
    - Always test iOS framework export: `./gradlew :shared:linkDebugFrameworkIosSimulatorArm64`
    - Verify Swift can see exported types (check `:shared` dependencies)
    - NEVER export `:data`, `:ui`, `:wiring` modules
-
-## Essential Workflows
-
-### Workflow 1: Create SwiftUI View consuming KMP ViewModel
-
-To create a new SwiftUI view that uses a shared KMP ViewModel:
-
-1. **Define the View**: Use `@StateObject` with `IosViewModelStoreOwner` to ensure the ViewModel Store survives view recreations.
-2. **Retrieve ViewModel**: Access the ViewModel through the owner's helper function, letting type inference handle the resolution.
-3. **Setup UI State**: Create a `@State` variable to hold the UI state (bridged from `StateFlow`).
-4. **Implement Body**: Use a `switch` statement or similar to render different states based on the `uiState`.
-
-```swift
-struct MyNewView: View {
-    @StateObject private var owner = IosViewModelStoreOwner()
-    
-    private var viewModel: MyViewModel {
-        owner.viewModel()  // Generic function infers type
-    }
-    
-    @State private var uiState: MyUiState = MyUiStateLoading()
-    
-    var body: some View {
-        content
-            .onAppear { viewModel.onStart(owner: DummyLifecycleOwner()) }
-            .onDisappear { viewModel.onStop(owner: DummyLifecycleOwner()) }
-            .task {
-                for await state in viewModel.uiState {
-                    self.uiState = state
-                }
-            }
-    }
-}
-```
-
-### Workflow 2: Bridge KMP Lifecycle to SwiftUI
-
-To ensure ViewModels correctly handle data loading and cleanup, manually bridge the lifecycle or use the `DisposableEffectObserverBridge` pattern:
-
-1. **Observe Lifecycle**: In `.onAppear`, call `viewModel.onStart(owner: DummyLifecycleOwner())`. This triggers the ViewModel's `onStart` logic (e.g., initial data load).
-2. **Unobserve Lifecycle**: In `.onDisappear`, call `viewModel.onStop(owner: DummyLifecycleOwner())` to notify the ViewModel that the view is no longer visible.
-3. **ViewModel Integration**: Ensure the ViewModel implements `DefaultLifecycleObserver` to receive these events.
-
-### Workflow 3: Configure Framework Exports
-
-To make KMP modules available to Swift, configure the `:shared` framework exports in `shared/build.gradle.kts`:
-
-1. **Identify modules**: Only export layers needed by iOS (contracts and presentation).
-2. **Configure `:shared`**: Update `shared/build.gradle.kts` to `export` modules in the `binaries.framework` block.
-3. **Update dependencies**: Add modules as `api` dependencies in `commonMain`.
-
-```kotlin
-target.binaries.framework {
-    baseName = "Shared"
-    export(projects.features.pokemonlist.api)
-    export(projects.features.pokemonlist.presentation)
-}
-```
-
-### Workflow 4: Handle StateFlow in SwiftUI
-
-SKIE automatically bridges `StateFlow` to `AsyncSequence`. Use the `AsyncStream` bridging pattern with the `.task` modifier:
-
-1. **Use `.task`**: This modifier is tied to the view's lifecycle and auto-cancels when the view is destroyed.
-2. **Iterate with `for await`**: Collect emissions from the ViewModel's `uiState` directly in Swift.
-
-```swift
-.task {
-    for await state in viewModel.uiState {
-        self.uiState = state
-    }
-}
-```
 
 ## Critical Guardrails
 
