@@ -1,6 +1,6 @@
 ---
 name: kmp-compose-unstyled
-description: Headless component library with platform-native theming and accessibility. Use when building Unstyled UI screens, working with buildPlatformTheme, implementing headless components, or platform-native theming.
+description: "Headless component library with platform-native theming and accessibility. Use when: (1) Building Unstyled UI screens in :ui-unstyled modules, (2) Configuring themes with buildPlatformTheme DSL, (3) Implementing headless components (Button, Text, ProgressIndicator), (4) Ensuring platform-native accessibility, (5) Creating custom-styled components. Keywords: Compose Unstyled, headless components, platform theming, accessibility"
 version: 1.0.0
 tags: [unstyled, headless, theming, platform-native, accessibility]
 ---
@@ -68,6 +68,27 @@ ProgressIndicator(progress = progress) {
 6. **NEVER forget the inner fill Box for `ProgressIndicator`** → always implement the rendering block (reason: unlike Material, Unstyled ProgressIndicator renders no UI by default).
 7. **NEVER skip `@Preview` annotations** → every UI component needs a preview with its theme (reason: essential for visual verification and developer efficiency).
 8. **NEVER access tokens via `MaterialTheme.tokens` in unstyled modules** → use the Unstyled `Theme` object (reason: prevents tight coupling and breaks dual-theme encapsulation).
+
+## Decision Framework
+
+Before implementing Unstyled components, ask yourself:
+
+1. **What level of customization is needed?**
+   - Platform-native defaults → Use `buildPlatformTheme` (automatic fonts, sizes, indications)
+   - Custom styling → Use `buildTheme` with explicit token values
+   - Component-specific → Apply Modifier chains to headless components
+
+2. **Which headless components should I use?**
+   - Interactive elements → `Button`, `IconButton` (handle touch targets, accessibility)
+   - Text display → `Text` (platform-native typography)
+   - Loading states → `ProgressIndicator` (platform-specific animations)
+   - Custom components → Build with `Modifier.interactiveSize()` for accessibility
+
+3. **How do I ensure accessibility?**
+   - Always use `Modifier.interactiveSize()` for touch targets (48dp minimum)
+   - Use `Modifier.indication()` for platform-native feedback
+   - Add `@Preview` with theme applied for visual verification
+   - Test on both Android and iOS for platform consistency
 
 ## Essential Workflows
 

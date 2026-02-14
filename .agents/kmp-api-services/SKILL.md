@@ -1,6 +1,6 @@
 ---
 name: kmp-api-services
-description: KMP API service patterns using Ktor, focusing on type-safe DTOs, serialization, and repository integration. Use for HTTP networking, DTO design, and remote data mapping.
+description: "KMP API service patterns using Ktor for HTTP networking, DTOs, and serialization. Use when: (1) Implementing API services with Ktor Client, (2) Designing type-safe DTOs with kotlinx.serialization, (3) Mapping remote data to domain models, (4) Configuring HTTP clients with retries and timeouts, (5) Testing API services with MockEngine. Keywords: Ktor, DTOs, API services, serialization, HTTP client"
 version: 1.0.0
 tags: [kmp, networking, ktor, api, dto, serialization]
 ---
@@ -67,6 +67,26 @@ override suspend fun getJobs(): Either<RepoError, List<Job>> =
 6. NEVER share DTOs between features → each feature must own its DTOs in its `:data` module (reason: maintains vertical slice independence and prevents tight coupling).
 7. NEVER catch exceptions in API services → let exceptions propagate to the repository layer (reason: repositories use `Either.catch` to establish a consistent error boundary).
 8. NEVER use public for implementation classes → use `internal class` with a public factory function (reason: supports Gradle compilation avoidance).
+
+## Decision Framework
+
+Before implementing API services, ask yourself:
+
+1. **What data structure does the API return?**
+   - JSON response → Define `@Serializable` DTO with `@SerialName` annotations
+   - Nested objects → Create separate DTO classes for each level
+   - Lists/arrays → Use `List<DTO>` in response, map to `ImmutableList` in domain
+
+2. **How should errors be handled?**
+   - API service → Let exceptions propagate (NO try/catch)
+   - Repository layer → Wrap with `Either.catch { api.call() }.mapLeft { it.toRepoError() }`
+   - Network errors → Caught by repository as `RepoError.Network`
+   - HTTP errors → Caught by repository as `RepoError.Http(code, message)`
+
+3. **What testing strategy is needed?**
+   - Use Ktor MockEngine for API service tests
+   - Test DTO serialization/deserialization with property tests
+   - Test domain mapping with `dto.asDomain()` property tests (100% coverage)
 
 ## Essential Workflows
 
