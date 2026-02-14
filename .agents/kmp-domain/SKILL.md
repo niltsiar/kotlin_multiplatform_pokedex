@@ -22,12 +22,24 @@ Domain layer patterns for pure, immutable, platform-agnostic business logic in K
 - UI screens or components → use **@compose-screen** or **@swiftui-screen**
 - Architecture-level module planning → use **@kmp-architecture**
 
-**Conditional Loading**:
-| Task | Reference | Load When |
-|------|-----------|-----------|
-| Domain model design | [domain-models.md](references/domain-models.md) | Creating data classes |
-| Use case guidelines | [use-cases.md](references/use-cases.md) | Deciding use case boundaries |
-| Domain exceptions | [exceptions.md](references/exceptions.md) | Implementing business rule exceptions |
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create domain model", "design data class", "immutable model" | [domain-models.md](references/domain-models.md) | MANDATORY - Read before creating domain models |
+| "Create use case", "when to use use case", "orchestration" | [use-cases.md](references/use-cases.md) | MANDATORY - Read before deciding on use cases |
+| "Domain exception", "UnauthenticatedException", "business rule exception" | [exceptions.md](references/exceptions.md) | MANDATORY - Read before implementing exceptions |
+| "Constructor mismatch", "domain model error", "parameter issue" | [troubleshooting.md](references/troubleshooting.md) | When encountering domain model errors |
+
+**MANDATORY - READ ENTIRE FILE**: Before creating domain models, you MUST read [domain-models.md](references/domain-models.md) for complete immutability and purity patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before deciding on use cases, you MUST read [use-cases.md](references/use-cases.md) for orchestration decision tree.
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing domain exceptions, you MUST read [exceptions.md](references/exceptions.md) for control flow patterns.
+
+**Do NOT load** `troubleshooting.md` unless encountering specific domain model errors.
+**Do NOT load** `exceptions.md` for simple domain model creation.
+**Do NOT load** `use-cases.md` when calling repositories directly from ViewModels (no orchestration needed).
 
 ## Core Principles
 
@@ -39,13 +51,31 @@ Domain models are the source of truth inside the app:
 - **Platform-agnostic**: No Android/iOS classes, no Ktor, no SQL types
 - **Testable**: Unit-testable without Android/iOS dependencies
 
+**Project example** (from `features/pokemondetail/api`):
 ```kotlin
-// ✅ Pure domain model
-data class Pokemon(
-    val id: PokemonId,
+// ✅ Pure domain model with ImmutableList
+data class PokemonDetail(
+    val id: Int,
     val name: String,
-    val types: List<PokemonType> = emptyList(),
-    val spriteUrl: String? = null,
+    val height: Int,
+    val weight: Int,
+    val baseExperience: Int,
+    val types: ImmutableList<TypeOfPokemon>,  // Immutable collections
+    val stats: ImmutableList<Stat>,
+    val abilities: ImmutableList<Ability>,
+    val imageUrl: String
+)
+
+// ✅ Nested domain types
+data class TypeOfPokemon(
+    val name: String,
+    val slot: Int  // Required for ordering
+)
+
+data class Stat(
+    val name: String,
+    val baseStat: Int,
+    val effort: Int
 )
 ```
 
@@ -161,12 +191,17 @@ class PokemonUseCaseTest : FunSpec({
 ## Essential Workflows
 
 ### Workflow 1: Design Immutable Domain Models
+
+**MANDATORY**: Read [domain-models.md](references/domain-models.md) for complete design patterns.
+
 To create stable and pure business logic models:
-1. Define a `data class` with `val` properties for immutability.
-2. Annotate with `@Serializable` if the model is used for navigation or transport.
-3. Use `ImmutableList` or `ImmutableMap` from `kotlinx.collections.immutable`.
-4. Keep models platform-agnostic (no Android/iOS types, no Ktor, no SQL concerns).
-5. Add pure helper functions via extension functions for side-effect-free logic.
+1. Define a `data class` with `val` properties for immutability
+2. Use `ImmutableList` or `ImmutableMap` from `kotlinx.collections.immutable` (see `PokemonDetail.types`)
+3. Keep models platform-agnostic (no Android/iOS types, no Ktor, no SQL concerns)
+4. Add computed properties for derived values (see `Pokemon.id` computed from `detailUrl`)
+5. Add pure helper functions via extension functions for side-effect-free logic
+
+**Project reference**: Study `features/pokemondetail/api/PokemonDetail.kt` and `features/pokemonlist/api/Pokemon.kt` for immutability patterns with ImmutableList and computed properties.
 
 ### Workflow 2: Decide When to Create Use Cases
 Avoid overengineering by following the use case decision tree:

@@ -22,6 +22,16 @@ Do NOT use this skill for:
 - Shared business logic (use kmp-mobile-expert skill)
 - Database schema design (this project uses PokéAPI, no database layer yet)
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create endpoint", "REST API", "routing", "API versioning", "request validation" | [endpoint-patterns.md](references/endpoint-patterns.md) | MANDATORY - Read before implementing endpoints |
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing Ktor endpoints, you MUST read [endpoint-patterns.md](references/endpoint-patterns.md) (~180 lines) for complete routing, versioning, and validation patterns.
+
+**Do NOT load** for OpenAPI/Swagger setup or server feature configuration (CORS, compression, logging) - those remain in main SKILL.md.
+
 ## Related Skills
 
 - **@kmp-api-services**: Client-side HTTP patterns with Ktor Client, DTOs, and repository integration
@@ -60,129 +70,27 @@ Before implementing Ktor endpoints, ask yourself:
 
 ### Workflow 1: Create New REST Endpoint
 
-To add a new Ktor endpoint following API conventions:
+**MANDATORY**: Read [endpoint-patterns.md](references/endpoint-patterns.md) for complete details.
 
-1. **Define request/response models** with `@Serializable`:
-   ```kotlin
-   @Serializable
-   data class PokemonListRequest(val limit: Int, val offset: Int)
+Quick steps:
+1. Define `@Serializable` request/response models with sealed interfaces for success/error
+2. Create nested `route()` blocks with version prefix (`/api/v1`)
+3. Add parameter validation with `toIntOrNull()` and error responses
+4. Write `TestApplication` integration tests
+5. Validate with script: `.agents/ktor-backend/scripts/validate-endpoint.sh`
 
-   sealed interface PokemonListResponse {
-       @Serializable
-       data class Success(
-           val pokemons: List<Pokemon>,
-           val count: Int,
-           val next: String?
-       ) : PokemonListResponse
-
-       @Serializable
-       data class Error(val message: String, val code: Int) : PokemonListResponse
-   }
-   ```
-
-2. **Create route in `routing` block** with proper grouping:
-   ```kotlin
-   fun Application.module() {
-       routing {
-           route("/api/v1") {
-               route("/pokemon") {
-                   get {
-                       val request = call.receive<PokemonListRequest>()
-                       val response = getPokemonList(request)
-                       call.respond(HttpStatusCode.OK, response)
-                   }
-
-                   get("/{id}") {
-                       val id = call.parameters["id"]?.toIntOrNull()
-                           ?: return@get call.respond(HttpStatusCode.BadRequest, PokemonListResponse.Error("Invalid ID", 400))
-                       val response = getPokemonById(id)
-                       call.respond(HttpStatusCode.OK, response)
-                   }
-           }
-       }
-   }
-   ```
-
-3. **Add request validation** before processing:
-   ```kotlin
-   fun Application.configureValidation() {
-       install(ContentNegotiation) {
-           json(Json {
-               ignoreUnknownKeys = true
-               prettyPrint = true
-           })
-       }
-   }
-   ```
-
-4. **Write TestApplication integration test**:
-   ```kotlin
-   class PokemonRouteTest : FunSpec({
-       test("GET /api/v1/pokemon returns list") {
-           withTestApplication({
-               configureRouting()
-               configureSerialization()
-           }) {
-               with(handleRequest(HttpMethod.Get, "/api/v1/pokemon?limit=20&offset=0")) {
-                   response.status() shouldBe HttpStatusCode.OK
-                   val content = response.content!!
-                   content shouldContain "\"pokemons\":"
-               }
-           }
-       }
-   })
-   ```
-
-5. **Validate endpoint with script**:
-   ```bash
-   .agents/ktor-backend/scripts/validate-endpoint.sh server/src/main/kotlin/com/minddistrict/multiplatformpoc/routes/PokemonRoutes.kt
-   ```
+See [endpoint-patterns.md](references/endpoint-patterns.md) for full code examples and templates.
 
 ### Workflow 2: Add API Versioning
 
-To implement API versioning strategy:
+**MANDATORY**: Read [endpoint-patterns.md](references/endpoint-patterns.md) for complete versioning strategy.
 
-1. **Route by version prefix**:
-   ```kotlin
-   routing {
-       // v1 API - stable
-       route("/api/v1") {
-           pokemonRoutes()  // Existing stable endpoints
-       }
+Quick steps:
+1. Route by version prefix (`/api/v1`, `/api/v2`)
+2. Use version-specific sealed response types
+3. Add deprecation headers to old versions
 
-       // v2 API - beta/new features
-       route("/api/v2") {
-           pokemonRoutesV2()  // New endpoints with breaking changes
-       }
-   }
-   ```
-
-2. **Use sealed classes for version-specific responses**:
-   ```kotlin
-   // v1 response (stable)
-   @Serializable
-   data class PokemonResponseV1(val name: String, val url: String)
-
-   // v2 response (with additional fields)
-   @Serializable
-   data class PokemonResponseV2(
-       val id: Int,
-       val name: String,
-       val types: List<String>,
-       val sprites: Sprites
-   )
-   ```
-
-3. **Deprecate old versions** with headers:
-   ```kotlin
-   route("/api/v1") {
-       intercept(ApplicationCallPipeline.Call) {
-           call.response.headers.append("X-API-Deprecated", "true")
-           call.response.headers.append("X-API-Version", "v2 available at /api/v2")
-           proceed()
-       }
-   }
-   ```
+See [endpoint-patterns.md](references/endpoint-patterns.md) for full implementation.
 
 ### Workflow 3: Set Up OpenAPI Documentation
 
@@ -263,48 +171,7 @@ To add Swagger/OpenAPI documentation:
 | Nested routes | `route("/api/v1") { route("/pokemon") { } }` | API versioning |
 | POST with body | `post { val body = call.receive<Request>() }` | Create resources |
 
-### Request/Response Templates
-
-**GET endpoint:**
-```kotlin
-get("/pokemon/{id}") {
-    val id = call.parameters["id"]?.toIntOrNull()
-        ?: return@get call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse(message = "Invalid ID", code = 400)
-        )
-
-    val pokemon = repository.getPokemonById(id)
-    call.respond(HttpStatusCode.OK, pokemon)
-}
-```
-
-**POST endpoint:**
-```kotlin
-post("/pokemon") {
-    val request = try {
-        call.receive<CreatePokemonRequest>()
-    } catch (e: Exception) {
-        return@post call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse(message = "Invalid request body", code = 400)
-        )
-    }
-
-    val pokemon = repository.createPokemon(request)
-    call.respond(HttpStatusCode.Created, pokemon)
-}
-```
-
-**Error response:**
-```kotlin
-@Serializable
-data class ErrorResponse(
-    val message: String,
-    val code: Int,
-    val details: Map<String, String>? = null
-)
-```
+**For complete endpoint templates**: See [endpoint-patterns.md](references/endpoint-patterns.md)
 
 ## Cross-References
 

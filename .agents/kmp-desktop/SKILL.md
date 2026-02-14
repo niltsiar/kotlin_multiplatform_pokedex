@@ -17,6 +17,20 @@ Patterns for implementing ViewModels and DI on Desktop/JVM with Kotlin Multiplat
 
 **Do NOT use for**: General ViewModel patterns → use @kmp-presentation, General DI → use @kmp-di
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Desktop ViewModel", "SavedStateHandle on Desktop", "CreationExtras error" | [desktop-savedstate.md](references/desktop-savedstate.md) | MANDATORY - Read before Desktop ViewModel wiring |
+| "Desktop platform", "JVM-specific", "ProvideDesktopLifecycle" | [jvm-patterns.md](references/jvm-patterns.md) | MANDATORY - Read before platform configuration |
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing Desktop ViewModels, you MUST read [desktop-savedstate.md](references/desktop-savedstate.md) for complete SavedStateHandle pattern.
+
+**MANDATORY - READ ENTIRE FILE**: Before configuring Desktop platform-specific code, you MUST read [jvm-patterns.md](references/jvm-patterns.md) for JVM patterns.
+
+**Do NOT load** `jvm-patterns.md` for SavedStateHandle-only tasks.
+**Do NOT load** `desktop-savedstate.md` for platform configuration-only tasks.
+
 ## Critical Patterns (Read First)
 
 ### Desktop SavedStateHandle Pattern
@@ -47,13 +61,6 @@ viewModel { (pokemonId: Int, savedStateHandle: SavedStateHandle) ->
 - Android's `ComponentActivity` provides proper `CreationExtras` automatically
 - Desktop/JVM lacks this automatic population of `CreationExtras`
 - Solution: Pass `SavedStateHandle` explicitly via `parametersOf`
-
-## Reference Loading Guide
-
-| Task | Reference | Load When |
-|------|-----------|-----------|
-| SavedStateHandle patterns | [desktop-savedstate.md](references/desktop-savedstate.md) | Desktop ViewModel wiring |
-| JVM-specific patterns | [jvm-patterns.md](references/jvm-patterns.md) | Platform configuration |
 
 ## Related Skills
 
