@@ -201,6 +201,26 @@ Guidelines to ensure coroutine usage is testable, predictable, and aligned with 
   }
   ```
 
+## Decision Framework
+
+Before implementing ViewModels, ask yourself:
+
+1. **What state needs management?**
+   - Loading state → `UiState.Loading` sealed class
+   - Success state → `UiState.Content(data)` with ImmutableList
+   - Error state → `UiState.Error(message)`
+   - One-time events (navigation, snackbar) → `Channel` + `receiveAsFlow()`
+
+2. **What needs to survive process death?**
+   - User selections, form input → `by saved` delegate with SavedStateHandle
+   - Transient UI state (loading spinners) → Regular MutableStateFlow
+   - Navigation state → Already handled by Navigation 3
+
+3. **When should initialization happen?**
+   - Data loading on screen appear → `onStart()` lifecycle callback
+   - NEVER in `init` block → Screen not attached yet
+   - Background sync → Use `ApplicationScope` via DI
+
 ## Essential Workflows
 
 ### Workflow 1: Create Lifecycle-Aware ViewModel
