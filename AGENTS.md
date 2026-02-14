@@ -1,12 +1,12 @@
 # AGENTS.md
 
-**Last Updated:** February 7, 2026
+**Last Updated:** February 14, 2026
 
 > **📌 Important:** Agent Skills in `.agents/` are the **canonical technical reference**. The `docs/` directory contains supplementary guides, project documentation, and quick references. When in doubt, load the skill.
 
 ## Quick Start
 
-### For OpenCode Users
+### For Claude Code Users
 
 Skills are located in `.agents/` and auto-load when you use the `@mention` syntax.
 
@@ -151,7 +151,7 @@ See @kmp-commands skill for complete command reference.
 
 ### Metadata
 - AI discovery: [llms.txt](llms.txt)
-- Architecture: [See @kmp-architecture skill](See @kmp-architecture skill)
+- Architecture: [See @kmp-architecture skill](.agents/kmp-architecture/SKILL.md)
 
 ## Validation
 

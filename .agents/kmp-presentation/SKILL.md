@@ -7,6 +7,23 @@ description: "Kotlin Multiplatform presentation layer patterns for ViewModels, U
 
 Patterns for implementing ViewModels and UI state management in Kotlin Multiplatform with lifecycle awareness and proper coroutine handling.
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create ViewModel" / "Implement ViewModel" | [viewmodel-patterns.md](references/viewmodel-patterns.md) | MANDATORY - Read before implementing |
+| "SavedStateHandle" / "State persistence" | [savedstatehandle.md](references/savedstatehandle.md) | MANDATORY - Read before implementing |
+| "Configure coroutines" / "viewModelScope" | [coroutines.md](references/coroutines.md) | MANDATORY - Read before implementing |
+| "One-time events" / "Navigation events" | [onetime-events.md](references/onetime-events.md) | MANDATORY - Read before implementing |
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing ViewModels, you MUST read [viewmodel-patterns.md](references/viewmodel-patterns.md) (~437 lines) for complete lifecycle-aware and parametric patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing state persistence, you MUST read [savedstatehandle.md](references/savedstatehandle.md) (~407 lines) for SavedStateHandle delegate patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before configuring coroutines, you MUST read [coroutines.md](references/coroutines.md) (~448 lines) for scope and dispatcher patterns.
+
+**Do NOT load** `onetime-events.md` unless handling navigation or one-time UI events.
+
 ## When to Use This Skill
 
 **MANDATORY**: Load this skill when working on:
@@ -141,8 +158,6 @@ factory { params ->
 // Compose injection
 val viewModel = koinViewModel { parametersOf(pokemonId) }
 ```
-
-**MANDATORY**: Read [viewmodel-patterns.md](references/viewmodel-patterns.md) for complete parametric ViewModel patterns including Navigation 3 key handling.
 
 ## Coroutine Patterns
 

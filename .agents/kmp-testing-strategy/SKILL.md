@@ -19,6 +19,19 @@ description: This skill should be used when planning test approach, writing test
 - Do NOT use for UI screenshot testing setup (use Roborazzi-specific guides)
 - Do NOT use for build configuration issues (use convention plugins guide)
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Property test examples" / "write property-based tests" | [property-testing-examples.md](references/property-testing-examples.md) | MANDATORY |
+
+**MANDATORY - READ ENTIRE FILE**: Before writing property-based tests, you MUST read [property-testing-examples.md](references/property-testing-examples.md) (~130 lines) for Kotest property test patterns, custom Arb generators, and coverage targets specific to this project.
+
+**Do NOT load** `property-testing-examples.md` when:
+- Writing only concrete tests (repository success paths, ViewModel state transitions)
+- Running or analyzing existing tests
+- Setting up test infrastructure
+
 ## Decision Framework
 
 Before planning tests, ask yourself:
@@ -36,7 +49,7 @@ Before planning tests, ask yourself:
    - Coroutines → TestScope + StandardTestDispatcher
 
 3. **How do I verify test quality?**
-   - Run full suite: `./gradlew test --continue` (84 tests passing baseline)
+    - Run full suite: `./gradlew test --continue` (114 tests passing baseline)
    - Check coverage: All production code has corresponding test file
    - Verify patterns: Property tests for mappers, Turbine for flows, all error paths
    - NEVER skip tests when adding production code
@@ -67,20 +80,14 @@ class PokemonListRepositoryTest : StringSpec({
 
     "returns Right on success" {
         coEvery { mockApi.getPokemonList(20, 0) } returns mockDto
-
         val result = repository.loadPage(20, 0)
-
-        val page = result.shouldBeRight()
-        page.pokemons shouldNotBeEmpty()
+        result.shouldBeRight().pokemons shouldNotBeEmpty()
     }
 
     "returns Left on network error" {
         coEvery { mockApi.getPokemonList(any(), any()) } throws IOException()
-
         val result = repository.loadPage(20, 0)
-
-        val error = result.shouldBeLeft()
-        error shouldBe RepoError.Network
+        result.shouldBeLeft() shouldBe RepoError.Network
     }
 })
 ```
@@ -116,13 +123,10 @@ class PokemonListViewModelTest : StringSpec({
 
         viewModel.uiState.test {
             awaitItem() shouldBe PokemonListUiState.Loading
-
             viewModel.loadInitialPage()
             testScope.advanceUntilIdle()
-
-            val content = awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>()
-            content.pokemons shouldHaveSize 20
-
+            awaitItem().shouldBeInstanceOf<PokemonListUiState.Content>()
+                .pokemons shouldHaveSize 20
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -131,47 +135,15 @@ class PokemonListViewModelTest : StringSpec({
 
 ### Workflow 3: Write Property-Based Tests with Kotest
 
-1. Identify invariants (data preservation, transformation rules, mathematical properties)
-2. Use appropriate `Arb` generators: `Arb.int(range)`, `Arb.string(length)`, `Arb.list()`, `.orNull()`
-3. Write property tests with `checkAll()` for assertions or `forAll()` for boolean returns
-4. Default iterations = 1000 (do NOT override unless necessary)
-5. Use descriptive names starting with "property:"
-6. Balance with concrete tests (30-40% property, 60-70% concrete)
-7. Remove redundant concrete tests covered by property tests
-8. Target: 100% property test coverage for mappers
+**MANDATORY**: Before writing property tests, read [property-testing-examples.md](references/property-testing-examples.md) for complete patterns, custom Arb generators, and examples.
 
-**Example:**
-```kotlin
-class PokemonMapperSpec : StringSpec({
-    "property: mapper preserves all fields" {
-        checkAll(Arb.pokemonDto()) { dto ->
-            val domain = dto.toDomain()
-
-            domain.id shouldBe dto.id
-            domain.name shouldBe dto.name.lowercase()
-            domain.imageUrl shouldContain dto.id.toString()
-        }
-    }
-
-    "property: HTTP error codes always produce Error state" {
-        checkAll(Arb.int(400..599)) { errorCode ->
-            coEvery { mockApi.getPokemonList(any(), any()) } throws
-                ClientRequestException(
-                    HttpResponse(
-                        status = HttpStatusCode.fromValue(errorCode),
-                        requestTime = null
-                    ),
-                    "HTTP error"
-                )
-
-            val result = repository.loadPage(20, 0)
-            val error = result.shouldBeLeft()
-            error shouldBeInstanceOf<RepoError.Http>()
-            (error as RepoError.Http).code shouldBe errorCode
-        }
-    }
-})
-```
+**Quick checklist:**
+1. Identify invariants (data preservation, transformation rules)
+2. Use `Arb` generators: `Arb.int(range)`, `Arb.string()`, `Arb.list()`, custom generators
+3. Write with `checkAll()` or `forAll()` (default 1000 iterations)
+4. Name tests with "property:" prefix
+5. Balance: 30-40% property, 60-70% concrete tests
+6. Target: 100% property coverage for mappers
 
 ## Critical Guardrails
 
@@ -186,11 +158,6 @@ class PokemonMapperSpec : StringSpec({
 | NO `Dispatchers.setMain()` with testScope | Violates ViewModel pattern |
 
 ## Quick Reference
-
-### Usage Scenarios
-- Packing context for agents or Copilot with limited budget
-- PR/task summaries where only enforcement and location decisions are needed
-- Choosing the right source set/framework before writing tests
 
 ### Canonical Sources
 - [@kmp-testing-strategy skill](@kmp-testing-strategy skill) — deep dive with rationale and playbooks
@@ -208,12 +175,6 @@ class PokemonMapperSpec : StringSpec({
 | `@Composable` | Same file | `@Preview` (+ Roborazzi where used) | Realistic preview + screenshot baseline |
 | Simple Utility | `commonTest/` | kotlin-test | Pure functions only |
 
-### Property-Based Testing Targets
-- Mappers: **100%** property tests
-- Repositories: **40–50%** property coverage (error mapping, pagination, paging sizes)
-- ViewModels: **30–40%** property coverage (state transitions, random inputs)
-- Use `checkAll` / `forAll` in **androidUnitTest/** for JVM + MockK support
-
 ### Flow Testing with Turbine
 - Always test `Flow` / `StateFlow` / `SharedFlow` with Turbine
 - Prefer injecting a `TestScope` via constructor; **NO** `Dispatchers.setMain/resetMain`
@@ -224,31 +185,14 @@ class PokemonMapperSpec : StringSpec({
 - Avoid manual casts after assertions
 - See [@kmp-testing-patterns](../kmp-testing-patterns/SKILL.md)
 
-### Minimum Coverage Reminders
-- Success + all error paths for repositories
-- Initial/loading/success/error + events for ViewModels
-- Data preservation for mappers
-- Realistic `@Preview` for every `@Composable`
-- Basic assertions for simple utilities (`commonTest/` only when dependency-free)
-
 ### Commands
 
 | Command | Purpose |
 |---------|---------|
 | `./gradlew :composeApp:assembleDebug test --continue` | Build Android app + run all tests |
-| `./gradlew recordRoborazziDebug` | Record screenshot baselines |
-| `./gradlew verifyRoborazziDebug` | Verify screenshots against baselines |
-| `./gradlew :features:<feature>:testDebugUnitTest` | Run tests for specific feature module |
 | `./gradlew test --continue` | Run all tests across all modules |
-| `./gradlew jacocoTestReport` | Generate coverage report (if Jacoco configured) |
-| `./gradlew :features:<feature>:data:testDebugUnitTest --tests "TestClass"` | Run specific test class |
+| `./gradlew :features:<feature>:testDebugUnitTest` | Run tests for specific feature module |
 | `./.agents/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
-
-### Example Links
-- Repository test: [@kmp-testing-strategy skill#repository-test-androidtest](@kmp-testing-strategy skill#repository-test-androidtest)
-- Property tests: [@kmp-testing-strategy skill#property-based-testing-primary-strategy](@kmp-testing-strategy skill#property-based-testing-primary-strategy)
-- Flow tests: [@kmp-testing-strategy skill#flow-testing-with-turbine](@kmp-testing-strategy skill#flow-testing-with-turbine)
-- Screenshots: [@kmp-testing-strategy skill#screenshot-testing-roborazzi](@kmp-testing-strategy skill#screenshot-testing-roborazzi)
 
 ### Implementation Examples
 - [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) - ViewModel test with Turbine

@@ -232,13 +232,13 @@ To maintain test coverage requirements (100% for mappers, 30-40% property tests)
 
 5. NEVER use star imports → always use explicit imports (prevents namespace pollution, enforced by .editorconfig)
 
-6. NEVER skip tests when adding code → every production file requires a test file in `androidUnitTest/` (current coverage: 84 tests passing, maintain this standard)
+6. NEVER skip tests when adding code → every production file requires a test file in `androidUnitTest/` (current coverage: 114 tests passing, maintain this standard)
 
 7. NEVER create empty use cases → call repositories directly from ViewModels when no orchestration needed (reduces unnecessary abstraction layers)
 
 8. NEVER swallow `CancellationException` → `Either.catch` respects cancellation automatically (cooperative cancellation is critical for coroutine correctness)
 
-9. NEVER skip Primary Validation before committing → `./gradlew :composeApp:assembleDebug test --continue` must pass (builds app + runs 84 tests in ~45s, catches integration issues early)
+9. NEVER skip Primary Validation before committing → `./gradlew :composeApp:assembleDebug test --continue` must pass (builds app + runs 114 tests in ~45s, catches integration issues early)
 
 10. NEVER mix feature concerns → each feature is a self-contained vertical slice (violating this breaks compilation avoidance and team autonomy)
 

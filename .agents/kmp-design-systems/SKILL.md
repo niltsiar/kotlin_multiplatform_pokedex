@@ -1,11 +1,18 @@
 ---
 name: kmp-design-systems
-description: Design tokens, components, and icon strategy for dual-theme system
-version: 1.0.0
-tags: [design, tokens, components, icons, material, unstyled]
+description: "Design tokens, component library, and Material Icons strategy for dual-theme KMP apps. Use when: (1) Working with design tokens (spacing, shapes, elevation, motion), (2) Creating or customizing themed components (PokemonCard, TypeBadge, AnimatedStatBar), (3) Implementing Material Icons as Vector Drawable XML, (4) Integrating Material Design 3 vs Compose Unstyled themes, (5) Troubleshooting LaunchedEffect token access in suspend contexts. Keywords: design tokens, CompositionLocal, Material Symbols, WCAG, LaunchedEffect, component tokens"
 ---
 
 # KMP Design Systems
+
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|---|---|---|
+| "Design token values" | [design_tokens.md](references/design_tokens.md) | MANDATORY |
+| "Component styling" | [component_library.md](references/component_library.md) | MANDATORY |
+| "Material Icons/Symbols" | [material_icons_strategy.md](references/material_icons_strategy.md) | MANDATORY |
+| "Troubleshooting themes" | [troubleshooting.md](references/troubleshooting.md) | When debugging |
 
 Design system architecture for organizing design tokens, reusable components, and icon strategies in Kotlin Multiplatform.
 
@@ -18,6 +25,12 @@ Use this skill when:
 - **Integrating themes** (Material Design 3 vs Compose Unstyled)
 
 ## Design System Architecture
+
+**MANDATORY - READ ENTIRE FILE**: Before working with design tokens or component styling, you MUST read:
+- [`design_tokens.md`](references/design_tokens.md) completely from start to finish (~154 lines) for foundation tokens
+- [`component_library.md`](references/component_library.md) completely from start to finish (~440 lines) for component patterns
+
+**Do NOT load** `material_icons_strategy.md` or `troubleshooting.md` unless specifically working with icons or debugging.
 
 The design system uses a two-layer token system provided via `CompositionLocal`:
 
@@ -54,6 +67,10 @@ Shared components live in `:core:designsystem-core` and are theme-agnostic. They
 See [component_library.md](references/component_library.md) for full specs and usage.
 
 ## Material Icons Strategy
+
+**MANDATORY - READ ENTIRE FILE**: Before working with Material Icons or Material Symbols, you MUST read [`material_icons_strategy.md`](references/material_icons_strategy.md) completely from start to finish (~272 lines).
+
+**Do NOT load** `design_tokens.md`, `component_library.md`, or `troubleshooting.md` unless specifically needed.
 
 We use **Material Symbols Rounded Filled** as Vector Drawable XML files.
 
@@ -210,6 +227,10 @@ fun AnimatedStatBar(value: Float) {
 | `painterResource` | Load icon from resources | `painterResource(Res.drawable.ic_search)` |
 
 ## Troubleshooting Common Design System Issues
+
+**MANDATORY - READ ENTIRE FILE**: When encountering design system errors or unexpected behavior, you MUST read [`troubleshooting.md`](references/troubleshooting.md) completely from start to finish (~85 lines) for comprehensive solutions.
+
+**Do NOT load** `design_tokens.md`, `component_library.md`, or `material_icons_strategy.md` unless the troubleshooting guide specifically directs you to them.
 
 ### "Unresolved reference 'generated'" for Compose Resources
 

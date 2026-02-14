@@ -62,7 +62,7 @@ This project demonstrates production-ready Kotlin Multiplatform architecture wit
 ```shell
 ./gradlew :composeApp:assembleDebug test --continue
 ```
-This builds the Android app and runs all 84 tests across all modules (~45 seconds on modern hardware).
+This builds the Android app and runs all 114 tests across all modules (~45 seconds on modern hardware).
 
 ### Build and Run Android Application
 
@@ -149,7 +149,7 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 - **[@kmp-commands](.agents/kmp-commands/SKILL.md)** - Commands, patterns, validation
 - **[@kmp-critical-patterns](.agents/kmp-critical-patterns/SKILL.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
 - **[@kmp-architecture](.agents/kmp-architecture/SKILL.md)** - Architecture master reference (START HERE for architecture questions)
-- **[@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md)** - Kotest, MockK, Turbine, property tests (84 tests passing)
+- **[@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md)** - Kotest, MockK, Turbine, property tests (114 tests passing)
 
 ### Project Documentation
 - **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
@@ -187,7 +187,7 @@ Located in `.agents/` — AI agents can load via `@skill-name` syntax.
 
 ## 🧪 Testing
 
-**Test Suite:** 84 tests passing (androidUnitTest + commonTest)
+**Test Suite:** 114 tests passing (androidUnitTest + commonTest)
 
 **Coverage:**
 - Repository tests: Success + all error paths (Network, Http, Unknown)

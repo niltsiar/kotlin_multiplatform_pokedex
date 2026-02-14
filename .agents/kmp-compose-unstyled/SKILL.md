@@ -1,8 +1,6 @@
 ---
 name: kmp-compose-unstyled
 description: "Headless component library with platform-native theming and accessibility. Use when: (1) Building Unstyled UI screens in :ui-unstyled modules, (2) Configuring themes with buildPlatformTheme DSL, (3) Implementing headless components (Button, Text, ProgressIndicator), (4) Ensuring platform-native accessibility, (5) Creating custom-styled components. Keywords: Compose Unstyled, headless components, platform theming, accessibility"
-version: 1.0.0
-tags: [unstyled, headless, theming, platform-native, accessibility]
 ---
 
 # KMP Compose Unstyled

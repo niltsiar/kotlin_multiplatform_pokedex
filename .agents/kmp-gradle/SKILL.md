@@ -1,8 +1,6 @@
 ---
 name: kmp-gradle
 description: Gradle convention plugins and build configuration for Kotlin Multiplatform. Use when (1) Creating or configuring KMP modules, (2) Troubleshooting build errors, (3) Managing KMP targets (Android, JVM, iOS), (4) Updating shared dependencies or test configuration, (5) Working with the build-logic/convention directory.
-version: 1.0.0
-tags: [gradle, kmp, build, convention-plugins, architecture]
 ---
 
 # KMP Gradle Convention Plugins

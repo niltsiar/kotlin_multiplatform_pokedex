@@ -109,7 +109,7 @@ Provide users with a fast, intuitive mobile-first Pokédex that enables browsing
 - **No account required**: Instant access without registration or authentication
 - **Cross-platform**: Seamless experience on phone, tablet, or desktop
 - **Type-safe architecture**: Robust error handling with Arrow Either pattern prevents crashes
-- **Comprehensive testing**: 84 tests with property-based testing (40% property tests, 34,000+ scenarios per run)
+- **Comprehensive testing**: 114 tests with property-based testing (40% property tests, 34,000+ scenarios per run)
 
 ## Technical Notes
 - **Platforms**: Android (minSDK 24), iOS (14+), Desktop (JVM)

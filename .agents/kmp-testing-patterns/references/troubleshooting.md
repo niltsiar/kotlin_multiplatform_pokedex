@@ -10,7 +10,7 @@ Common test execution and validation problems.
 ```
 > Task :features:pokemonlist:wiring-ui-unstyled:compileDebugKotlinAndroid FAILED
 BUILD SUCCESSFUL in 1m 23s
-All 84 tests PASSED
+All 114 tests PASSED
 ```
 
 **Cause:** `--continue` flag allows tests to run despite task failures.

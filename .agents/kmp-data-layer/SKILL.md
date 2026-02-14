@@ -7,6 +7,22 @@ description: Data layer patterns for Kotlin Multiplatform - repository implement
 
 Repository implementation patterns with Arrow Either for type-safe error handling in Kotlin Multiplatform.
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create repository" / "Implement repository" | [repository-pattern.md](references/repository-pattern.md) | MANDATORY - Read before implementing |
+| "Define RepoError" / "Error handling" | [error-handling.md](references/error-handling.md) | MANDATORY - Read before implementing |
+| "Map DTO to domain" / "DTO mapping" | [dto-mapping.md](references/dto-mapping.md) | MANDATORY - Read before implementing |
+| "Test repository" / "Write tests" | [testing.md](references/testing.md) | MANDATORY - Read before writing tests |
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing repositories, you MUST read [repository-pattern.md](references/repository-pattern.md) (~316 lines) for complete Impl + Factory and Either boundary patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before defining error hierarchies, you MUST read [error-handling.md](references/error-handling.md) (~341 lines) for RepoError sealed class and exception mapping patterns.
+
+**Do NOT load** `dto-mapping.md` unless DTO mapping is specifically required.
+**Do NOT load** `testing.md` unless writing test code.
+
 ## Core Principle
 
 **Repositories return `Either<RepoError, T>` at boundaries. NEVER throw, return null, or use `Result`.**

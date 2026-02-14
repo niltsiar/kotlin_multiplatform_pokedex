@@ -1,6 +1,6 @@
 # Kotlin Multiplatform Pokedex
 
-**Last Updated:** February 7, 2026
+**Last Updated:** February 14, 2026
 
 ## Quick Start
 - @kmp-commands - Build, test, validation commands

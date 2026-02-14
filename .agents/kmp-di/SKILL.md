@@ -7,6 +7,22 @@ description: "Koin dependency injection patterns for Kotlin Multiplatform. Use w
 
 Kotlin Multiplatform dependency injection using Koin 4.x with type-safe DSL and vertical-slice feature modules.
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create Koin module" / "Configure Koin" | [koin-modules.md](references/koin-modules.md) | MANDATORY - Read before implementing |
+| "Parametric injection" / "parametersOf" | [parametric-injection.md](references/parametric-injection.md) | MANDATORY - Read before implementing |
+| "Wire ViewModel" / "ViewModel injection" | [viewmodel-wiring.md](references/viewmodel-wiring.md) | MANDATORY - Read before implementing |
+| "Factory function" / "Impl + Factory" | [factory-functions.md](references/factory-functions.md) | MANDATORY - Read before implementing |
+
+**MANDATORY - READ ENTIRE FILE**: Before creating Koin modules, you MUST read [koin-modules.md](references/koin-modules.md) (~80 lines) for module definition patterns.
+
+**MANDATORY - READ ENTIRE FILE**: Before implementing parametric injection, you MUST read [parametric-injection.md](references/parametric-injection.md) (~100 lines) for parametersOf patterns.
+
+**Do NOT load** `factory-functions.md` unless implementing Impl + Factory repository pattern.
+**Do NOT load** `viewmodel-wiring.md` unless wiring ViewModels to Koin.
+
 ## When to Use This Skill
 
 **MANDATORY**: Load this skill when:

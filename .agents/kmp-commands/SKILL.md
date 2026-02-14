@@ -1,8 +1,6 @@
 ---
 name: kmp-commands
 description: "Essential CLI command reference for Kotlin Multiplatform development. Use when: (1) Running validation before commits, (2) Building Android/Desktop/iOS apps, (3) Running tests across modules, (4) Managing dependencies, (5) Generating changelogs with git-cliff. Keywords: gradle, build, test, validation, CLI commands, git-cliff"
-version: 1.0.0
-tags: [gradle, cli, workflow, kmp]
 ---
 
 # KMP Commands

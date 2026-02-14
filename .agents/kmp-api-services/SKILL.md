@@ -1,8 +1,6 @@
 ---
 name: kmp-api-services
 description: "KMP API service patterns using Ktor for HTTP networking, DTOs, and serialization. Use when: (1) Implementing API services with Ktor Client, (2) Designing type-safe DTOs with kotlinx.serialization, (3) Mapping remote data to domain models, (4) Configuring HTTP clients with retries and timeouts, (5) Testing API services with MockEngine. Keywords: Ktor, DTOs, API services, serialization, HTTP client"
-version: 1.0.0
-tags: [kmp, networking, ktor, api, dto, serialization]
 ---
 
 # KMP API Services
@@ -21,6 +19,20 @@ API service patterns for Kotlin Multiplatform using Ktor to keep remote APIs str
 
 - **@kmp-data-layer**: Handles the `Either<RepoError, T>` boundary and repository implementation.
 - **@kmp-architecture**: Guidelines for module structure and vertical slicing.
+
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Test API service" / "MockEngine" | [testing.md](references/testing.md) | MANDATORY - Read before testing |
+| "Configure Ktor client" / "Setup HTTP client" | [ktor-configuration.md](references/ktor-configuration.md) | MANDATORY - Read before configuration |
+
+**MANDATORY - READ ENTIRE FILE**: Before testing API services, you MUST read [testing.md](references/testing.md) (~48 lines) for MockEngine patterns, DTO round-trip tests, and error simulation.
+
+**MANDATORY - READ ENTIRE FILE**: Before configuring Ktor client, you MUST read [ktor-configuration.md](references/ktor-configuration.md) (~41 lines) for centralized client factory, platform engines, and best practices.
+
+**Do NOT load** `testing.md` for configuration-only tasks.
+**Do NOT load** `ktor-configuration.md` for testing-only tasks.
 
 ## Critical Patterns
 
