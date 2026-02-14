@@ -33,6 +33,29 @@ Do NOT use this skill for:
 - **@kmp-gradle**: Gradle convention plugins and server build configuration
 - **@kmp-commands**: CLI commands for server validation and testing
 
+## Decision Framework
+
+Before implementing Ktor endpoints, ask yourself:
+
+1. **What HTTP method and route structure?**
+   - GET for reads → `/api/v1/resources/{id}`
+   - POST for creates → `/api/v1/resources` with request body
+   - PUT for updates → `/api/v1/resources/{id}` with request body
+   - DELETE for deletes → `/api/v1/resources/{id}`
+   - Use versioned routes (`/api/v1/`) for API stability
+
+2. **How should errors be handled?**
+   - Validation errors → `400 Bad Request` with error details
+   - Not found → `404 Not Found`
+   - Server errors → `500 Internal Server Error` (log details, return generic message)
+   - Use `call.respond(HttpStatusCode.X, ErrorResponse(...))`
+
+3. **What testing is needed?**
+   - Use `testApplication { }` for endpoint tests
+   - Test success path + all error cases (validation, not found, server error)
+   - Verify response serialization with `@Serializable` models
+   - Run server tests: `./gradlew :server:test`
+
 ## Essential Workflows
 
 ### Workflow 1: Create New REST Endpoint

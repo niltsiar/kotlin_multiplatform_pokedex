@@ -19,6 +19,28 @@ description: This skill should be used when planning test approach, writing test
 - Do NOT use for UI screenshot testing setup (use Roborazzi-specific guides)
 - Do NOT use for build configuration issues (use convention plugins guide)
 
+## Decision Framework
+
+Before planning tests, ask yourself:
+
+1. **What coverage level is required?**
+   - Mappers (DTO→Domain) → 100% property-based test coverage (MANDATORY)
+   - ViewModels → All state transitions + error paths
+   - Repositories → Success path + all error types (Network, Http, Unknown)
+   - Overall target → 40% property tests, 60% concrete tests
+
+2. **What testing tools should I use?**
+   - State flows → Turbine (NEVER use Thread.sleep or delays)
+   - Mocking → MockK for interfaces, Fake implementations for complex logic
+   - Property tests → Kotest with Arb generators
+   - Coroutines → TestScope + StandardTestDispatcher
+
+3. **How do I verify test quality?**
+   - Run full suite: `./gradlew test --continue` (84 tests passing baseline)
+   - Check coverage: All production code has corresponding test file
+   - Verify patterns: Property tests for mappers, Turbine for flows, all error paths
+   - NEVER skip tests when adding production code
+
 ## Essential Workflows
 
 ### Workflow 1: Write Repository Tests with Kotest + MockK

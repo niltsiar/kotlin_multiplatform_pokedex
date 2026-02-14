@@ -34,6 +34,27 @@ Test implementation patterns for Kotlin Multiplatform with Kotest, MockK, Turbin
 | @Composable | Same file | @Preview + Roborazzi |
 | Simple Utility | commonTest/ | kotlin-test |
 
+## Decision Framework
+
+Before writing tests, ask yourself:
+
+1. **What type of test is needed?**
+   - ViewModel → Turbine for StateFlow, TestScope for coroutines, mock repositories
+   - Repository → MockK for API services, test all error paths (Network, Http, Unknown)
+   - Mapper (DTO→Domain) → Property-based tests with Kotest (100% coverage target)
+   - Composable → @Preview annotation (MANDATORY for all @Composable functions)
+
+2. **What test distribution should I target?**
+   - 40% property-based tests (mappers, invariant properties)
+   - 60% concrete tests (ViewModels, repositories, edge cases)
+   - 100% property coverage for mappers (DTO→Domain transformations)
+
+3. **How do I verify correctness?**
+   - ViewModels → Test state transitions with `awaitItem()`, verify all UiState variants
+   - Repositories → Test success + all error paths, verify Either.Left/Right
+   - Flows → Use Turbine, NEVER use `Thread.sleep()` or delays
+   - Run validation: `./gradlew :composeApp:assembleDebug test --continue`
+
 ## Essential Workflows
 
 ### Workflow 1: Write ViewModel Test with Turbine
