@@ -53,6 +53,28 @@ Located in `build-logic/convention/src/main/kotlin/com/minddistrict/multiplatfor
 - **Presentation**: AndroidX Lifecycle ViewModel (KMP)
 - **UI**: Compose Multiplatform full stack
 
+## Decision Framework
+
+Before configuring Gradle modules, ask yourself:
+
+1. **Which convention plugin should I use?**
+   - `:api` module → `convention.feature.api` (contracts, domain models)
+   - `:data` module → `convention.feature.data` (repos, DTOs, mappers)
+   - `:presentation` module → `convention.feature.presentation` (ViewModels)
+   - `:ui-*` module → `convention.feature.ui` (Compose screens)
+   - `:wiring*` module → `convention.feature.wiring` (Koin DI)
+   - `:core` module → `convention.core.library` or `convention.kmp.library`
+
+2. **What dependencies are needed?**
+   - Use version catalog: `libs.arrow.core`, `libs.koin.core`, etc.
+   - Use project references: `implementation(projects.core.domain)`
+   - NEVER use hardcoded versions in build.gradle.kts
+
+3. **What KMP targets are required?**
+   - Convention plugins auto-configure: Android, iOS, JVM (Desktop)
+   - Platform-specific code → Use source sets: `androidMain`, `iosMain`, `jvmMain`
+   - Shared code → Use `commonMain` for maximum reuse
+
 ## Essential Workflows
 
 ### Workflow 1: Creating a New Feature Module with Convention Plugins

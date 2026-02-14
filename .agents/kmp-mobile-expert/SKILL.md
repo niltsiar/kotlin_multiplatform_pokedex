@@ -62,6 +62,25 @@ Expert guidance for shared Kotlin Multiplatform business logic across Android, i
 
 ---
 
+## Decision Framework
+
+Before implementing mobile features, ask yourself:
+
+1. **What layer am I working in?**
+   - ViewModel (`:presentation`) → Pass scope to constructor, use `onStart()` not `init`
+   - Repository (`:data`) → Return `Either<RepoError, T>`, use Impl+Factory pattern
+   - UI (`:ui-*`) → Collect state with `collectAsState()`, use `@Preview`
+
+2. **How should iOS consume this?**
+   - ViewModels → Export via `:shared` framework, use in SwiftUI with `IosViewModelStoreOwner`
+   - Domain models → Export from `:api` modules
+   - Repositories → NEVER export, iOS uses ViewModels only
+
+3. **What testing is required?**
+   - ViewModels → Turbine for StateFlow, TestScope for coroutines
+   - Repositories → All error paths (Network, Http, Unknown)
+   - Mappers → Property-based tests (100% coverage target)
+
 ## Essential Workflows
 
 ### Workflow 1: Create ViewModel with Lifecycle Awareness

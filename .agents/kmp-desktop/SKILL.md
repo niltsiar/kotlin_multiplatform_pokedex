@@ -70,6 +70,25 @@ viewModel { (pokemonId: Int, savedStateHandle: SavedStateHandle) ->
 |----------|---------|--------|
 | Desktop SavedStateHandle | Complete Desktop SavedStateHandle guide | This skill |
 
+## Decision Framework
+
+Before implementing Desktop/JVM features, ask yourself:
+
+1. **Does this ViewModel need state persistence?**
+   - YES → Create `SavedStateHandle` manually with `SavedStateHandle()`
+   - NO → Pass `SavedStateHandle()` anyway for consistency with Android
+   - Desktop lacks automatic CreationExtras, must create explicitly
+
+2. **What platform-specific code is needed?**
+   - File operations → Use `expect/actual` in `:core` modules
+   - Window management → Desktop-specific in `jvmMain` source set
+   - Shared business logic → Keep in `commonMain` (ViewModels, repos)
+
+3. **How do I test Desktop-specific code?**
+   - Use `jvmTest` source set for Desktop-specific tests
+   - Test SavedStateHandle persistence with `by saved` delegate
+   - Verify window lifecycle with Desktop test harness
+
 ## Essential Workflows
 
 ### Workflow 1: Configure SavedStateHandle on Desktop
