@@ -23,6 +23,28 @@ Use this skill when:
 - Code architecture decisions (use technical patterns documentation)
 - Backend API specifications (use backend-development skill)
 
+## Decision Framework
+
+Before writing PRDs, ask yourself:
+
+1. **What problem are we solving?**
+   - User pain point → Define problem statement with user research
+   - Business goal → Align with company objectives and metrics
+   - Technical debt → Justify with impact on velocity or quality
+   - NEVER start with solution, start with problem
+
+2. **What are the success criteria?**
+   - Quantitative metrics → User engagement, conversion, retention
+   - Qualitative goals → User satisfaction, NPS, feedback
+   - Technical metrics → Performance, reliability, scalability
+   - Define BEFORE implementation, not after
+
+3. **What is out of scope?**
+   - Explicitly list what we're NOT building
+   - Defer nice-to-haves to future iterations
+   - Set boundaries to prevent scope creep
+   - Document assumptions and dependencies
+
 ## Essential Workflows
 
 ### Workflow 1: Create a Complete PRD

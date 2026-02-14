@@ -23,6 +23,28 @@ Do NOT use this skill for:
 - Shared ViewModel logic → switch to KMP Mobile Expert Mode
 - Navigation flow definitions → switch to User Flow Planning Mode
 
+## Decision Framework
+
+Before designing UI/UX, ask yourself:
+
+1. **What design system should I use?**
+   - Material Design 3 → Use Material components, expressive theme
+   - Compose Unstyled → Use headless components, platform-native theming
+   - Custom design → Define design tokens first (spacing, colors, typography)
+   - NEVER mix design systems within same screen
+
+2. **What interaction patterns are needed?**
+   - Touch targets → Minimum 48dp for accessibility
+   - Feedback → Visual indication on press (ripple, scale, opacity)
+   - Loading states → Skeleton screens or progress indicators
+   - Error states → Clear messaging with recovery actions
+
+3. **How do I ensure accessibility?**
+   - Color contrast → WCAG AA minimum (4.5:1 for text)
+   - Touch targets → 48dp minimum size
+   - Screen readers → Semantic content descriptions
+   - Motion → Respect reduced motion preferences
+
 ## Essential Workflows
 
 ### Workflow 1: Design System Creation

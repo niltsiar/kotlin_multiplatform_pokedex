@@ -43,6 +43,28 @@ Do NOT use this skill for:
 
 ---
 
+## Decision Framework
+
+Before implementing SwiftUI screens, ask yourself:
+
+1. **How should I consume KMP ViewModels?**
+   - Use `IosViewModelStoreOwner` for lifecycle management
+   - Use `@StateObject` for ViewModel ownership in SwiftUI
+   - Collect StateFlow with `@Published` wrapper or AsyncStream
+   - NEVER create ViewModels directly, use factory pattern
+
+2. **What state management pattern?**
+   - Simple screens → Direct ViewModel access with `@StateObject`
+   - Complex navigation → Use SwiftUI NavigationStack with routes
+   - Shared state → Pass ViewModels down hierarchy or use environment
+   - One-time events → Handle via Combine or async/await
+
+3. **How do I test SwiftUI screens?**
+   - Use SwiftUI Previews for visual verification
+   - Test ViewModel logic in KMP (shared tests)
+   - Use XCTest for SwiftUI-specific behavior
+   - Verify iOS framework export: `./gradlew :shared:linkDebugFrameworkIosSimulatorArm64`
+
 ## Essential Workflows
 
 ### Workflow 1: Direct Integration (Current Pattern)

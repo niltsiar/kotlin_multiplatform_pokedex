@@ -25,6 +25,28 @@ Use this skill when:
 - Test planning → use Testing Strategy Mode
 - Navigation 3 implementation details → use technical documentation
 
+## Decision Framework
+
+Before mapping user flows, ask yourself:
+
+1. **What is the user's goal?**
+   - Primary goal → Main task user wants to accomplish
+   - Entry point → How user arrives at this flow (deep link, navigation, search)
+   - Success criteria → What defines completion of this flow
+   - NEVER map flows without clear user goal
+
+2. **What are the decision points?**
+   - Branching logic → Identify where flow splits based on user choice or state
+   - Error paths → What happens when things go wrong
+   - Alternative paths → Different ways to achieve same goal
+   - Dead ends → Identify and eliminate or provide recovery
+
+3. **How do I validate the flow?**
+   - User testing → Observe real users attempting the flow
+   - Analytics → Track completion rates and drop-off points
+   - Edge cases → Test with missing data, errors, slow networks
+   - Cross-platform → Verify flow works on Android, iOS, Desktop
+
 ## Essential Workflows
 
 ### Workflow 1: Map End-to-End User Journey

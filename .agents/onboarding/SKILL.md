@@ -23,6 +23,27 @@ Use this skill for:
   - Product requirements → Use Product Design Mode
   - Static help/documentation → Use Documentation Mode
 
+## Decision Framework
+
+Before designing onboarding, ask yourself:
+
+1. **What is the onboarding goal?**
+   - Feature discovery → Show 1-3 key features (maximum 3 steps)
+   - Value proposition → Explain "why use this app"
+   - Permission requests → Explain benefit before asking
+   - NEVER create tutorial-style onboarding (users skip it)
+
+2. **When should onboarding appear?**
+   - First launch only → Use persistent flag to track completion
+   - After major updates → Version-gated onboarding for new features
+   - Contextual → Show feature hints when user encounters them first time
+
+3. **How do I measure success?**
+   - Completion rate → Track users who finish vs skip
+   - Time to first action → Measure engagement after onboarding
+   - Feature adoption → Track usage of showcased features
+   - A/B test different flows to optimize
+
 ## Essential Workflows
 
 ### Workflow 1: Design New Onboarding Flow
