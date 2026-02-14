@@ -95,6 +95,25 @@ Card(
 
 ---
 
+## Decision Framework
+
+Before implementing Compose screens, ask yourself:
+
+1. **Which design system should I use?**
+   - Material Design 3 → `:ui-material` module, use Material components
+   - Compose Unstyled → `:ui-unstyled` module, use headless components
+   - Both themes → Implement both modules with shared composable logic
+
+2. **What state do I need?**
+   - From ViewModel → `val state by viewModel.uiState.collectAsState()`
+   - Loading/Content/Error → Use sealed UiState hierarchy from ViewModel
+   - Events (navigation, snackbar) → `LaunchedEffect` + ViewModel event channel
+
+3. **How do I make it testable?**
+   - ALWAYS add `@Preview` annotation with realistic data
+   - Extract stateless components for easier preview
+   - Use `onX` callbacks for actions, not direct ViewModel calls in components
+
 ## Essential Workflows
 
 ### Workflow 1: Create Feature UI Structure

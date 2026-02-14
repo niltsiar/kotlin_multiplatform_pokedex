@@ -186,6 +186,27 @@ fun RepoError.toUiMessage(): String = when (this) {
     └── JobEntity.kt          # DB entities
 ```
 
+## Decision Framework
+
+Before implementing repositories, ask yourself:
+
+1. **What error types can occur?**
+   - Network failures (IOException) → `RepoError.Network`
+   - HTTP errors (4xx, 5xx) → `RepoError.Http(code, message)`
+   - Parsing/serialization errors → `RepoError.Unknown`
+   - Map ALL exceptions to RepoError, NEVER throw
+
+2. **What DTO mapping is needed?**
+   - Remote DTO → Domain model: `dto.asDomain()` or `dto.toDomain()`
+   - Test with property-based tests (100% coverage target for mappers)
+   - Keep DTOs in `:data`, domain models in `:api`
+
+3. **How should this be tested?**
+   - Success path: Mock API returns data → verify domain mapping
+   - Network error: Mock throws IOException → verify RepoError.Network
+   - HTTP error: Mock returns error response → verify RepoError.Http
+   - Unknown error: Mock throws RuntimeException → verify RepoError.Unknown
+
 ## Essential Workflows
 
 ### Workflow 1: Implement Repository with Either Boundary
