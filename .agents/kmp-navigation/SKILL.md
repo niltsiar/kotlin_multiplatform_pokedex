@@ -110,6 +110,25 @@ entry<PokemonDetail>(
 | Parametric routes with type safety | [parametric-routes.md](references/parametric-routes.md) | Creating routes with parameters |
 | Scoped navigation for feature modules | [scoped-navigation.md](references/scoped-navigation.md) | Wiring feature navigation |
 
+## Decision Framework
+
+Before implementing navigation, ask yourself:
+
+1. **Where do routes belong?**
+   - Route objects → `:features:<feature>:api` (public contracts)
+   - Navigation providers → `:wiring-ui-material` or `:wiring-ui-unstyled` (platform-specific)
+   - NEVER in `:presentation` or `:data` modules
+
+2. **Does this route need parameters?**
+   - Simple navigation → `@Serializable object HomeRoute`
+   - With parameters → `@Serializable data class DetailRoute(val id: String)`
+   - Type-safe parameters → Navigation 3 handles serialization automatically
+
+3. **Which design system scope?**
+   - Material Design screens → `scope<MaterialScope> { navigation<Route> { ... } }`
+   - Compose Unstyled screens → `scope<UnstyledScope> { navigation<Route> { ... } }`
+   - Both → Register in both wiring modules with appropriate scopes
+
 ## Essential Workflows
 
 ### Workflow 1: Define Route Object in :api

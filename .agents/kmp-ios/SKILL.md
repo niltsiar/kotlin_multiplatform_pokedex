@@ -234,6 +234,27 @@ cd iosApp && xcodebuild -scheme iosApp -sdk iphonesimulator build CODE_SIGN_IDEN
 cd ../iosAppCompose && xcodebuild -scheme iosAppCompose -sdk iphonesimulator build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
 ```
 
+## Decision Framework
+
+Before implementing iOS integration, ask yourself:
+
+1. **What needs to be exported to iOS?**
+   - ViewModels (`:presentation`) → YES, export via `:shared` framework
+   - Domain models (`:api`) → YES, export for contracts
+   - Repositories (`:data`) → NO, implementation stays in KMP
+   - UI (`:ui-*`) → NO, iOS uses native SwiftUI
+
+2. **How should ViewModels be consumed?**
+   - Use `IosViewModelStoreOwner` for lifecycle management
+   - Use `@StateObject` in SwiftUI for ViewModel ownership
+   - Collect StateFlow with `@Published` wrapper or AsyncStream
+   - Handle one-time events via Combine or async/await
+
+3. **What build validation is needed?**
+   - Always test iOS framework export: `./gradlew :shared:linkDebugFrameworkIosSimulatorArm64`
+   - Verify Swift can see exported types (check `:shared` dependencies)
+   - NEVER export `:data`, `:ui`, `:wiring` modules
+
 ## Essential Workflows
 
 ### Workflow 1: Create SwiftUI View consuming KMP ViewModel

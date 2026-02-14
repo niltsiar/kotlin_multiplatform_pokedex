@@ -69,6 +69,26 @@ See [material_icons_strategy.md](references/material_icons_strategy.md) for conf
 - @compose-screen - Using design system in screens
 - @ui-ux-designer - Visual design guidelines
 
+## Decision Framework
+
+Before working with design systems, ask yourself:
+
+1. **Which design system should I modify?**
+   - Material Design 3 tokens → `:core:designsystem-material`
+   - Compose Unstyled theme → `:core:designsystem-unstyled`
+   - Shared design tokens (spacing, shapes) → `:core:designsystem-core`
+   - NEVER duplicate tokens across modules
+
+2. **What level of customization is needed?**
+   - Theme-wide tokens (colors, typography) → Modify design token objects
+   - Component-specific styling → Material components or Unstyled overrides
+   - One-off customization → Modifier chains in screen implementation
+
+3. **How do I test design changes?**
+   - Use `@Preview` annotations for all components with theme applied
+   - Test both Material and Unstyled themes if component is shared
+   - Verify color contrast meets WCAG AA standards (use type colors)
+
 ## Essential Workflows
 
 ### Workflow 1: Creating Design Tokens for a New Theme
