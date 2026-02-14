@@ -28,10 +28,12 @@ skill("kmp-developer")
 
 **What are you building?**
 
+- **Quick Reference**: Patterns (@kmp-critical-patterns)
 - **Feature**: Architecture (@kmp-architecture), ViewModel (@kmp-presentation), Repository (@kmp-data-layer), API (@kmp-api-services), Domain (@kmp-domain), DI (@kmp-di), Navigation (@kmp-navigation), Testing (@kmp-testing-strategy)
 - **UI**: Compose (@compose-screen), Unstyled (@kmp-compose-unstyled), SwiftUI (@swiftui-screen), Design Tokens (@kmp-design-systems), Icons (@kmp-design-systems)
 - **Platforms**: iOS Integration (@kmp-ios), Desktop/JVM (@kmp-desktop), Ktor Backend (@ktor-backend)
-- **Quality**: Build/Commands (@kmp-commands), Testing Patterns (@kmp-testing-patterns), Documentation (@docs-maintainer)
+- **Build & Development**: Build/Commands (@kmp-commands), Gradle (@kmp-gradle), General Development (@kmp-developer), Mobile Expert (@kmp-mobile-expert)
+- **Quality**: Testing Patterns (@kmp-testing-patterns), Documentation (@docs-maintainer)
 - **Planning**: PRD (@product-designer), UI/UX (@ui-ux-designer), Onboarding (@onboarding), User Flows (@user-flows)
 
 ## Skills (26 Total)
