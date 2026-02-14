@@ -1,6 +1,6 @@
 ---
 name: kmp-critical-patterns
-description: Quick reference for 6 core KMP patterns - Impl+Factory, Either Boundary, ViewModel, Navigation 3, Testing, Convention Plugins. Use when Claude needs a fast pattern reminder or initial project setup guidance without full skill context. Triggers - 'show me the patterns', 'quick reference', 'pattern overview', before implementing new features, when switching skills, token-constrained scenarios.
+description: Quick reference for 6 core KMP patterns - Impl+Factory, Either Boundary, ViewModel, Navigation 3, Testing, Convention Plugins. Use when the agent needs a fast pattern reminder or initial project setup guidance without full skill context. Triggers - 'show me the patterns', 'quick reference', 'pattern overview', before implementing new features, when switching skills, token-constrained scenarios.
 ---
 
 # KMP Critical Patterns

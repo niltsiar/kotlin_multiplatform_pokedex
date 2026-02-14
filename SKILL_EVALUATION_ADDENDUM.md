@@ -354,9 +354,9 @@
 **Action Plan:**
 ```bash
 # Step 1: Create project-specific examples
-.agents/onboarding/references/pokedex-onboarding-examples.md
-.agents/ui-ux-designer/references/pokedex-design-examples.md
-.agents/user-flows/references/pokedex-flow-examples.md
+.agents/skills/onboarding/references/pokedex-onboarding-examples.md
+.agents/skills/ui-ux-designer/references/pokedex-design-examples.md
+.agents/skills/user-flows/references/pokedex-flow-examples.md
 
 # Step 2: Update SKILL.md with loading triggers
 "MANDATORY: Read pokedex-onboarding-examples.md for first-run experience design"

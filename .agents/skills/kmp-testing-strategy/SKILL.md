@@ -192,9 +192,9 @@ class PokemonListViewModelTest : StringSpec({
 | `./gradlew :composeApp:assembleDebug test --continue` | Build Android app + run all tests |
 | `./gradlew test --continue` | Run all tests across all modules |
 | `./gradlew :features:<feature>:testDebugUnitTest` | Run tests for specific feature module |
-| `./.agents/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
+| `./.agents/skills/kmp-testing-strategy/scripts/test-coverage.sh [feature]` | Run tests + coverage for feature or all |
 
 ### Implementation Examples
-- [PokemonListViewModelTest.kt](../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) - ViewModel test with Turbine
-- [PokemonDetailViewModelTest.kt](../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) - Property tests examples
-- [PokemonListRepositoryTest.kt](../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt) - Repository test with MockK
+- [PokemonListViewModelTest.kt](../../../features/pokemonlist/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/presentation/PokemonListViewModelTest.kt) - ViewModel test with Turbine
+- [PokemonDetailViewModelTest.kt](../../../features/pokemondetail/presentation/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/presentation/PokemonDetailViewModelTest.kt) - Property tests examples
+- [PokemonListRepositoryTest.kt](../../../features/pokemonlist/data/src/androidUnitTest/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/data/PokemonListRepositoryTest.kt) - Repository test with MockK

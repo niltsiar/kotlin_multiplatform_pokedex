@@ -310,7 +310,7 @@ Create previews for all UI states to enable visual testing:
 
 | Command | Purpose | When to Run |
 |---------|---------|-------------|
-| `bash -n .agents/swiftui-screen/scripts/validate-swiftui.sh` | Validate script syntax | After creating validation script |
+| `bash -n .agents/skills/swiftui-screen/scripts/validate-swiftui.sh` | Validate script syntax | After creating validation script |
 | `./gradlew :composeApp:assembleDebug test --continue` | Primary validation (Android + tests) | Before committing |
 | `open iosApp/iosApp.xcodeproj` | Open iOS app in Xcode | When working on iOS features |
 | `./gradlew :shared:embedAndSignAppleFrameworkForXcode` | Build iOS framework | Before iOS builds |

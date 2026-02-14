@@ -15,7 +15,7 @@ fi
 echo "🔍 Validating documentation links..."
 
 # Find all markdown files recursively (cross-shell compatible)
-# Includes: docs/, .agents/, and root-level AGENTS.md + llms.txt
+# Includes: docs/, .agents/skills/, and root-level AGENTS.md + llms.txt
 FILES=$(find docs .agents -name "*.md" -type f 2>/dev/null; echo "AGENTS.md"; echo "llms.txt")
 
 # Validate all files

@@ -165,7 +165,7 @@ To create clear, testable acceptance criteria:
 | `user_flow.md` | Example user flows and screen definitions | `docs/project/user_flow.md` |
 | [@kmp-architecture](../kmp-architecture/SKILL.md) | Architecture and technical constraints | Architecture skill |
 | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) | Technical patterns that influence scope | Critical patterns skill |
-| `prd-template.md` | Ready-to-use PRD template resource | `.agents/product-designer/resources/prd-template.md` |
+| `prd-template.md` | Ready-to-use PRD template resource | `.agents/skills/product-designer/resources/prd-template.md` |
 
 ## Pro Tips
 

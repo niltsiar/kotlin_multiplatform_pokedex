@@ -6,7 +6,7 @@
 
 ## Quick Start
 
-### For Claude Code Users
+### Quick Start
 
 Skills are located in `.agents/` and auto-load when you use the `@mention` syntax.
 
@@ -14,8 +14,6 @@ Skills are located in `.agents/` and auto-load when you use the `@mention` synta
 # Use a skill
 @kmp-developer help me implement a new feature
 
-# Or load it explicitly
-skill("kmp-developer")
 ```
 
 ### Build & Test
@@ -127,7 +125,7 @@ See @kmp-commands skill for complete command reference.
 | Build | `./gradlew :composeApp:assembleDebug` |
 | Test | `./gradlew test --continue` |
 | Check deps | `./gradlew dependencyUpdates` |
-| Validate docs | `.agents/docs-maintainer/scripts/validate-links.sh` |
+| Validate docs | `.agents/skills/docs-maintainer/scripts/validate-links.sh` |
 
 ## Documentation
 
@@ -153,7 +151,7 @@ See @kmp-commands skill for complete command reference.
 
 ### Metadata
 - AI discovery: [llms.txt](llms.txt)
-- Architecture: [See @kmp-architecture skill](.agents/kmp-architecture/SKILL.md)
+- Architecture: [See @kmp-architecture skill](.agents/skills/kmp-architecture/SKILL.md)
 
 ## Validation
 

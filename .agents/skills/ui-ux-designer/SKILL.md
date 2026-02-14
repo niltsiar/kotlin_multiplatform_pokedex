@@ -167,25 +167,25 @@ Create adaptive layouts that work across all screen sizes:
 | Document | Purpose | Link |
 |----------|---------|------|
 | Design token architecture | CompositionLocal pattern for design + component tokens | [@kmp-design-systems](../kmp-design-systems/SKILL.md) |
-| UI/UX guidelines | Brand essence, dual design system, animation styles | [ui_ux.md](../../docs/project/ui_ux.md) |
+| UI/UX guidelines | Brand essence, dual design system, animation styles | [ui_ux.md](../../../docs/project/ui_ux.md) |
 | Component library | Component implementations with token abstraction | [@kmp-design-systems](../kmp-design-systems/SKILL.md) |
 | Material 3 guidelines | Official Material Design 3 documentation | [material.io](https://m3.material.io/) |
 | Critical patterns | ViewModel, Either, Impl+Factory, Navigation 3, Testing | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Accessibility | WCAG 2.1 guidelines and implementation patterns | [Material 3 accessibility](https://m3.material.io/foundations/accessible-design/overview) |
-| Product requirements | Feature acceptance criteria and user flows | [prd.md](../../docs/project/prd.md) |
+| Product requirements | Feature acceptance criteria and user flows | [prd.md](../../../docs/project/prd.md) |
 
 ### Reference Implementations
 
 **Material 3 Design System:**
-- [MaterialTokens.kt](../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialTokens.kt)
-- [MaterialThemeTokens.kt](../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialThemeTokens.kt)
-- [Theme.kt](../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/theme/Theme.kt)
+- [MaterialTokens.kt](../../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialTokens.kt)
+- [MaterialThemeTokens.kt](../../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialThemeTokens.kt)
+- [Theme.kt](../../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/theme/Theme.kt)
 
 **Animated Components:**
-- [PokemonListGrid.kt](../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListGrid.kt) - Staggered entrance animation
-- [BaseStatsSection.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/BaseStatsSection.kt) - Sequential stat bar animation
-- [TypeBadgeRow.kt](../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/TypeBadgeRow.kt) - Badge bounce animation
+- [PokemonListGrid.kt](../../../features/pokemonlist/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemonlist/ui/material/components/PokemonListGrid.kt) - Staggered entrance animation
+- [BaseStatsSection.kt](../../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/BaseStatsSection.kt) - Sequential stat bar animation
+- [TypeBadgeRow.kt](../../../features/pokemondetail/ui-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/features/pokemondetail/ui/material/components/TypeBadgeRow.kt) - Badge bounce animation
 
 **Design Token Customization:**
-- [MaterialComponentTokens.kt](../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialComponentTokens.kt)
+- [MaterialComponentTokens.kt](../../../core/designsystem-material/src/commonMain/kotlin/com/minddistrict/multiplatformpoc/core/designsystem/material/tokens/MaterialComponentTokens.kt)
 - See @kmp-compose-unstyled skill

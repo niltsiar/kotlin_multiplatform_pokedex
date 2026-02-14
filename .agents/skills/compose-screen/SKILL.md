@@ -350,8 +350,8 @@ val scale by animateFloatAsState(
 ### Reference Implementations
 
 **Pokemon List (Material):**
-- [PokemonListMaterialScreen.kt](../../features/pokemonlist/ui-material/src/.../PokemonListMaterialScreen.kt)
-- [PokemonListMaterialScreenPreviews.kt](../../features/pokemonlist/ui-material/src/.../PokemonListMaterialScreenPreviews.kt)
+- [PokemonListMaterialScreen.kt](../../../features/pokemonlist/ui-material/src/.../PokemonListMaterialScreen.kt)
+- [PokemonListMaterialScreenPreviews.kt](../../../features/pokemonlist/ui-material/src/.../PokemonListMaterialScreenPreviews.kt)
 
 **Pokemon Detail (with animations):**
-- [PokemonDetailMaterialScreen.kt](../../features/pokemondetail/ui-material/src/.../PokemonDetailMaterialScreen.kt)
+- [PokemonDetailMaterialScreen.kt](../../../features/pokemondetail/ui-material/src/.../PokemonDetailMaterialScreen.kt)

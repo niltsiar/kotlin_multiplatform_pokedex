@@ -77,7 +77,7 @@ Quick steps:
 2. Create nested `route()` blocks with version prefix (`/api/v1`)
 3. Add parameter validation with `toIntOrNull()` and error responses
 4. Write `TestApplication` integration tests
-5. Validate with script: `.agents/ktor-backend/scripts/validate-endpoint.sh`
+5. Validate with script: `.agents/skills/ktor-backend/scripts/validate-endpoint.sh`
 
 See [endpoint-patterns.md](references/endpoint-patterns.md) for full code examples and templates.
 
@@ -158,7 +158,7 @@ To add Swagger/OpenAPI documentation:
 |---|---|---|
 | `./gradlew :server:run` | Run Ktor server locally | During development |
 | `./gradlew :server:test` | Run server integration tests | After adding endpoints |
-| `.agents/ktor-backend/scripts/validate-endpoint.sh <file>` | Validate endpoint conventions | After creating routes |
+| `.agents/skills/ktor-backend/scripts/validate-endpoint.sh <file>` | Validate endpoint conventions | After creating routes |
 | `bash -n <script>` | Check shell script syntax | Before committing scripts |
 
 ### Ktor Routing Patterns
@@ -181,7 +181,7 @@ To add Swagger/OpenAPI documentation:
 | Critical patterns | 6 core patterns including Either boundary | [@kmp-critical-patterns](../kmp-critical-patterns/SKILL.md) |
 | Testing strategy | Kotest, MockK, Turbine for integration tests | [@kmp-testing-strategy skill](See @kmp-testing-strategy skill) |
 | Ktor documentation | Official Ktor server documentation | https://ktor.io/docs/ |
-| Version catalog | Dependency versions for Ktor plugins | [libs.versions.toml](../../gradle/libs.versions.toml) |
+| Version catalog | Dependency versions for Ktor plugins | [libs.versions.toml](../../../gradle/libs.versions.toml) |
 | Module structure | Feature boundaries and layer organization | [@kmp-architecture skill](../kmp-architecture/SKILL.md) |
 | Critical patterns | Quick reference for core patterns | [@kmp-critical-patterns skill](../kmp-critical-patterns/SKILL.md) |
 | Domain models | Immutable data classes | [@kmp-domain skill](../kmp-domain/SKILL.md) |
@@ -191,8 +191,8 @@ To add Swagger/OpenAPI documentation:
 ### Reference Implementation
 
 **Current server setup:**
-- [Application.kt](../../server/src/main/kotlin/com/minddistrict/multiplatformpoc/Application.kt) - Basic Ktor server with Netty
-- [server/build.gradle.kts](../../server/build.gradle.kts) - Server build configuration
+- [Application.kt](../../../server/src/main/kotlin/com/minddistrict/multiplatformpoc/Application.kt) - Basic Ktor server with Netty
+- [server/build.gradle.kts](../../../server/build.gradle.kts) - Server build configuration
 
 **Examples to reference:**
 - Ktor routing: `Application.kt` shows basic `route()` and `get()` usage

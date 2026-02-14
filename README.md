@@ -146,10 +146,10 @@ See [iosAppCompose/README.md](./iosAppCompose/README.md) for detailed informatio
 > **Note:** Technical documentation has been consolidated into Agent Skills (`.agents/` directory). Skills are the canonical reference. See [AGENTS.md](AGENTS.md) for the complete skill catalog and decision trees.
 
 ### Essential Guides
-- **[@kmp-commands](.agents/kmp-commands/SKILL.md)** - Commands, patterns, validation
-- **[@kmp-critical-patterns](.agents/kmp-critical-patterns/SKILL.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
-- **[@kmp-architecture](.agents/kmp-architecture/SKILL.md)** - Architecture master reference (START HERE for architecture questions)
-- **[@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md)** - Kotest, MockK, Turbine, property tests (114 tests passing)
+- **[@kmp-commands](.agents/skills/kmp-commands/SKILL.md)** - Commands, patterns, validation
+- **[@kmp-critical-patterns](.agents/skills/kmp-critical-patterns/SKILL.md)** - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Convention Plugins)
+- **[@kmp-architecture](.agents/skills/kmp-architecture/SKILL.md)** - Architecture master reference (START HERE for architecture questions)
+- **[@kmp-testing-strategy](.agents/skills/kmp-testing-strategy/SKILL.md)** - Kotest, MockK, Turbine, property tests (114 tests passing)
 
 ### Project Documentation
 - **[prd.md](docs/project/prd.md)** - Product requirements (CANONICAL)
@@ -209,7 +209,7 @@ Located in `.agents/` — AI agents can load via `@skill-name` syntax.
 ./gradlew :features:pokemonlist:presentation:testDebugUnitTest
 ```
 
-See [@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md) skill for comprehensive guide.
+See [@kmp-testing-strategy](.agents/skills/kmp-testing-strategy/SKILL.md) skill for comprehensive guide.
 
 ---
 
@@ -238,7 +238,7 @@ See [@kmp-testing-strategy](.agents/kmp-testing-strategy/SKILL.md) skill for com
 
 ## Build Logic & Convention Plugins
 - For how modules are configured (KMP targets, Android config, Compose, and shared deps), see:
-  - [@kmp-gradle skill](.agents/kmp-gradle/SKILL.md)
+  - [@kmp-gradle skill](.agents/skills/kmp-gradle/SKILL.md)
   - Plugins you will see across the repo:
     - `convention.kmp.library`, `convention.core.library`
     - `convention.feature.base`, `convention.feature.api`, `convention.feature.data`, `convention.feature.presentation`, `convention.feature.ui`, `convention.feature.wiring`

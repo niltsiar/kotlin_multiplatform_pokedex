@@ -9,7 +9,7 @@
 
 ## Skills (26 Total)
 
-Located in `.agents/` - Load via @skill-name syntax
+Located in `.agents/skills/` - Load via @skill-name syntax
 
 ### Core Architecture
 - @kmp-critical-patterns - 6 core patterns (ViewModel, Either, Impl+Factory, Navigation, Testing, Plugins)

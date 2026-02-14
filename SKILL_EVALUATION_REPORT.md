@@ -88,7 +88,7 @@
 
 ### Fixed Issues
 
-1. **Metro/@Provides Reference** (.agents/kmp-data-layer/references/repository-pattern.md:82)
+1. **Metro/@Provides Reference** (.agents/skills/kmp-data-layer/references/repository-pattern.md:82)
    - **Issue**: Legacy Dagger/Hilt `@Provides` annotation in example code
    - **Fix**: Replaced with Koin `module { factory { ... } }` pattern
    - **Status**: ✅ RESOLVED

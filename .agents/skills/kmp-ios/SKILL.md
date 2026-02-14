@@ -112,10 +112,10 @@ This repo ships **two iOS apps** that consume Kotlin Multiplatform code with **d
 - Rule: **MUST remain Compose-free** (no Compose UI and no Compose-only navigation symbols)
 
 Framework definition:
-- [`shared/build.gradle.kts`](../../shared/build.gradle.kts)
+- [`shared/build.gradle.kts`](../../../shared/build.gradle.kts)
 
 App Xcode project:
-- [`iosApp/iosApp.xcodeproj`](../../iosApp/iosApp.xcodeproj)
+- [`iosApp/iosApp.xcodeproj`](../../../iosApp/iosApp.xcodeproj)
 
 #### `iosAppCompose` (experimental, SwiftUI wrapper around Compose)
 
@@ -124,10 +124,10 @@ App Xcode project:
 - Rule: **is allowed to include Compose UI + Compose navigation**
 
 Framework definition:
-- [`composeApp/build.gradle.kts`](../../composeApp/build.gradle.kts)
+- [`composeApp/build.gradle.kts`](../../../composeApp/build.gradle.kts)
 
 App Xcode project:
-- [`iosAppCompose/iosAppCompose.xcodeproj`](../../iosAppCompose/iosAppCompose.xcodeproj)
+- [`iosAppCompose/iosAppCompose.xcodeproj`](../../../../iosAppCompose/iosAppCompose.xcodeproj)
 
 ### Boundary rules (critical)
 

@@ -79,7 +79,7 @@ To add a new Ktor endpoint following API conventions:
 
 5. **Validate endpoint with script**:
    ```bash
-   .agents/ktor-backend/scripts/validate-endpoint.sh server/src/main/kotlin/com/minddistrict/multiplatformpoc/routes/PokemonRoutes.kt
+   .agents/skills/ktor-backend/scripts/validate-endpoint.sh server/src/main/kotlin/com/minddistrict/multiplatformpoc/routes/PokemonRoutes.kt
    ```
 
 ## Workflow 2: Add API Versioning
