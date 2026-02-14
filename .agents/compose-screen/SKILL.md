@@ -15,6 +15,15 @@ Implement Compose UI screens for Android and Desktop from specifications.
 - Implementing dual-theme support
 - Building responsive adaptive layouts
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Add @Preview" / "Multi-state preview" / "Preview examples" | [preview-examples.md](references/preview-examples.md) | MANDATORY - Read for complete preview patterns |
+| Simple component preview | See Basic Preview Pattern below | N/A |
+
+**Do NOT load** `preview-examples.md` if only adding simple single-state component previews.
+
 ## Core Requirements
 
 ### @Preview Mandatory

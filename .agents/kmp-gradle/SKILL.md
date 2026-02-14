@@ -16,6 +16,25 @@ Master reference for the project's Gradle configuration using the Convention Plu
 - Adding new shared dependencies (Arrow, Ktor, Compose)
 - Debugging "Plugin not found" or version catalog errors
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Create a new feature module" / "Add a module" | [module-creation.md](references/module-creation.md) | MANDATORY - Read before creating modules |
+| "Plugin not found" / "Build logic error" | [plugin-catalog.md](references/plugin-catalog.md) | MANDATORY - Read for plugin reference |
+| "Build fails" / "Gradle error" / Troubleshooting | [troubleshooting.md](references/troubleshooting.md) | MANDATORY - Read when debugging build issues |
+| General convention plugin guidance | See workflows below | N/A |
+
+**MANDATORY - READ ENTIRE FILE**: Before creating new modules, you MUST read [module-creation.md](references/module-creation.md) (~200 lines) for step-by-step feature setup.
+
+**MANDATORY - READ ENTIRE FILE**: When encountering plugin errors, you MUST read [plugin-catalog.md](references/plugin-catalog.md) (~150 lines) for complete plugin reference.
+
+**MANDATORY - READ ENTIRE FILE**: When debugging build issues, you MUST read [troubleshooting.md](references/troubleshooting.md) (~120 lines) for common errors and solutions.
+
+**Do NOT load** `module-creation.md` for plugin configuration-only tasks.
+**Do NOT load** `plugin-catalog.md` for module creation tasks.
+**Do NOT load** `troubleshooting.md` if build is working correctly.
+
 ## Related Skills
 
 | Skill | Use For |
@@ -209,96 +228,7 @@ If Gradle fails to locate a convention plugin:
 7. **NEVER add feature-specific dependencies to `feature.base`** → Add them to layer-specific plugins or local `build.gradle.kts` (maintains clear layer boundaries).
 8. **NEVER skip validation after modifying `build-logic`** → Always run `./gradlew :build-logic:convention:build` to catch compilation errors in plugins.
 
-## Troubleshooting Common Build Issues
 
-### Unresolved Reference Errors (Despite Correct Imports)
-
-**Symptom:**
-```
-e: file:///path/to/BaseTokens.kt:51:47 Unresolved reference 'RoundedCornerShape'
-e: file:///path/to/BaseTokens.kt:59:17 Unresolved reference 'dp'
-```
-
-**Cause:** Gradle build cache corruption from previous failed builds.
-
-**Solution:**
-```bash
-./gradlew clean :composeApp:assembleDebug test --continue
-```
-
-**Why:** Stale dependency resolution cache prevents proper import resolution. Clean build clears cache.
-
-**Prevention:** Run clean build after multiple consecutive failed builds or when seeing import errors on standard library types.
-
----
-
-### "Unresolved reference 'generated'" for Compose Resources
-
-**Symptom:**
-```kotlin
-import multiplatformpoc.core.designsystem_core.generated.resources.Res
-// Error: Unresolved reference 'generated'
-```
-
-**Cause:** Library module resources not configured for public access.
-
-**Solution (3 steps in library module's build.gradle.kts):**
-
-```kotlin
-// 1. Add dependency
-kotlin {
-    sourceSets {
-        commonMain.dependencies {
-            implementation(libs.compose.components.resources)  // CRITICAL!
-        }
-    }
-}
-
-// 2. Enable public Res class
-compose.resources {
-    publicResClass = true  // Default internal won't work!
-}
-
-// 3. Android namespace determines package
-android {
-    namespace = "com.minddistrict.multiplatformpoc.core.designsystem.core"
-}
-```
-
-**Generated package name:** Namespace with dots → underscores:
-- Input: `com.minddistrict.multiplatformpoc.core.designsystem.core`
-- Output: `multiplatformpoc.core.designsystem_core.generated.resources`
-
----
-
-### Navigation Provider "Unresolved reference" Errors
-
-**Symptom:**
-```kotlin
-PokemonListScreenUnstyled(viewModel = ...)
-// Error: Unresolved reference 'PokemonListScreenUnstyled'
-```
-
-**Cause:** Screen function naming convention mismatch.
-
-**Correct Pattern:**
-- ✅ `{Feature}UnstyledScreen` (e.g., `PokemonListUnstyledScreen`)
-- ✅ `{Feature}MaterialScreen` (e.g., `PokemonListMaterialScreen`)
-- ❌ `{Feature}ScreenUnstyled` (wrong suffix order)
-
-**Solution:**
-```kotlin
-// ✅ CORRECT imports and usage
-import ...ui.unstyled.PokemonListUnstyledScreen
-PokemonListUnstyledScreen(viewModel = ...)
-
-import ...ui.material.PokemonListMaterialScreen  
-PokemonListMaterialScreen(viewModel = ...)
-```
-
-**Why:** Consistent naming convention: `{Adjective}{Noun}` not `{Noun}{Adjective}`.
-
----
 
 ## Quick Reference
 

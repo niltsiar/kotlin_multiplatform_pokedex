@@ -10,6 +10,17 @@ Essential CLI reference for KMP development.
 ## When to Use This Skill
 Use this skill when you need to execute build, test, or maintenance commands. Triggers include: "command", "build", "test", "gradle", "validation", "commit".
 
+## Mode Detection
+
+| User Request | Reference File | Load When |
+|--------------|----------------|-----------|
+| "Commit message error" / "PTY break" / "Git issues" | [troubleshooting.md](references/troubleshooting.md) | MANDATORY - Read when encountering command/git errors |
+| Standard build/test commands | See Quick Reference below | N/A |
+
+**MANDATORY - READ ENTIRE FILE**: When encountering CLI command or git commit errors, you MUST read [troubleshooting.md](references/troubleshooting.md) (~50 lines) for common issues and solutions.
+
+**Do NOT load** `troubleshooting.md` if commands are working correctly.
+
 ## Related Skills
 - **@kmp-gradle**: For Gradle configuration and convention plugins.
 
